@@ -27,6 +27,7 @@ library = gapic.java_library(
     artman_output_name='')
 
 java.fix_proto_headers(library / 'proto-google-cloud-spanner-v1')
+java.fix_grpc_headers(library / 'grpc-google-cloud-spanner-v1', 'com.google.spanner.v1')
 s.copy(library / 'gapic-google-cloud-spanner-v1/src', 'google-cloud-spanner/src')
 s.copy(library / 'grpc-google-cloud-spanner-v1/src', 'grpc-google-cloud-spanner-v1/src')
 s.copy(library / 'proto-google-cloud-spanner-v1/src', 'proto-google-cloud-spanner-v1/src')
@@ -38,6 +39,7 @@ library = gapic.java_library(
     artman_output_name='')
 
 java.fix_proto_headers(library / 'proto-google-cloud-spanner-admin-database-v1')
+java.fix_grpc_headers(library / 'grpc-google-cloud-spanner-admin-database-v1', 'com.google.spanner.admin.database.v1')
 s.copy(library / 'gapic-google-cloud-spanner-admin-database-v1/src', 'google-cloud-spanner/src')
 s.copy(library / 'grpc-google-cloud-spanner-admin-database-v1/src', 'grpc-google-cloud-spanner-admin-database-v1/src')
 s.copy(library / 'proto-google-cloud-spanner-admin-database-v1/src', 'proto-google-cloud-spanner-admin-database-v1/src')
@@ -49,6 +51,7 @@ library = gapic.java_library(
     artman_output_name='')
 
 java.fix_proto_headers(library / 'proto-google-cloud-spanner-admin-instance-v1')
+java.fix_grpc_headers(library / 'grpc-google-cloud-spanner-admin-instance-v1', 'com.google.spanner.admin.instance.v1')
 s.copy(library / 'gapic-google-cloud-spanner-admin-instance-v1/src', 'google-cloud-spanner/src')
 s.copy(library / 'grpc-google-cloud-spanner-admin-instance-v1/src', 'grpc-google-cloud-spanner-admin-instance-v1/src')
 s.copy(library / 'proto-google-cloud-spanner-admin-instance-v1/src', 'proto-google-cloud-spanner-admin-instance-v1/src')
