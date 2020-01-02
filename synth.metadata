@@ -1,5 +1,5 @@
 {
-  "updateTime": "2020-01-02T18:03:04.804597Z",
+  "updateTime": "2020-01-02T18:06:37.052416Z",
   "sources": [
     {
       "generator": {
@@ -1549,64 +1549,7 @@
       "path": "proto-google-cloud-spanner-admin-database-v1/src/main/proto/google/spanner/admin/database/v1/spanner_database_admin.proto"
     },
     {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$ResumableStreamIterator.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcValueIterator.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$PrimitiveArray.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStruct.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Int64Array.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStreamIterator$ConsumerImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/BatchClientImpl$BatchReadOnlyTransactionImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/ForwardingResultSet.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Listener.class"
-    },
-    {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/Instance.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcValueIterator$StreamValue.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl$1.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl$TransactionContextImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$CloseableIterator.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcResultSet.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStreamIterator.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Float64Array.class"
     },
     {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/v1/SpannerClient.class"
@@ -2075,9 +2018,6 @@
     },
     {
       "path": ".github/ISSUE_TEMPLATE/bug_report.md"
-    },
-    {
-      "path": "__pycache__/synth.cpython-36.pyc"
     },
     {
       "path": "grpc-google-cloud-spanner-admin-instance-v1/target/classes/com/google/spanner/admin/instance/v1/InstanceAdminGrpc.class"
