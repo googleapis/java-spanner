@@ -1,5 +1,5 @@
 {
-  "updateTime": "2020-01-02T18:06:37.052416Z",
+  "updateTime": "2020-01-02T18:16:39.690070Z",
   "sources": [
     {
       "generator": {
@@ -1549,7 +1549,184 @@
       "path": "proto-google-cloud-spanner-admin-database-v1/src/main/proto/google/spanner/admin/database/v1/spanner_database_admin.proto"
     },
     {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$ResumableStreamIterator.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcValueIterator.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/DatabaseAdminClientImpl$PolicyMarshaller.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionClient$SessionId.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceInfo.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$SessionConsumerImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$LeakedSessionException.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$PrimitiveArray.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/DatabaseAdminClientImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$SessionState.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStruct.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$AutoClosingTransactionManager$SessionPoolTransactionContext.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Int64Array.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionClient$SessionOption.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStreamIterator$ConsumerImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClientImpl$3.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerOptions$DefaultSpannerRpcFactory.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$SessionOrError.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/BatchClientImpl$BatchReadOnlyTransactionImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$Waiter.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$AutoClosingTransactionManager.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClientImpl$2.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$Position.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceInfo$InstanceField.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$AutoClosingReadContext.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClientImpl$PolicyMarshaller.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/ForwardingResultSet.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Listener.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerOptions$Builder.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerOptions.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionClient$BatchCreateSessionsRunnable.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$SessionPoolTransactionRunner.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionClient$SessionConsumer.class"
+    },
+    {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/Instance.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClientImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcValueIterator$StreamValue.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$PoolMaintainer.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$AutoClosingTransactionManager$SessionPoolResultSet.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerImpl$DirectExecutor.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerOptions$DefaultSpannerFactory.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$Clock.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl$1.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClient.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerOptions$SpannerDefaults.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/TransactionRunnerImpl$TransactionContextImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$PooledSession.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$CloseableIterator.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceAdminClientImpl$1.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcResultSet.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionClient.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerImpl$PageFetcher.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SpannerImpl.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$GrpcStreamIterator.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/AbstractResultSet$Float64Array.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/SessionPool$AutoClosingReadTransaction.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/InstanceConfig.class"
     },
     {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/v1/SpannerClient.class"
@@ -1645,9 +1822,6 @@
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient$ListDatabasesFixedSizeCollection.class"
     },
     {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.class"
-    },
-    {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient$ListDatabasesPagedResponse$1.class"
     },
     {
@@ -1657,28 +1831,10 @@
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient$ListDatabasesPagedResponse.class"
     },
     {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings$Builder.class"
-    },
-    {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient$ListDatabasesPage.class"
     },
     {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/package-info.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStubSettings$Builder.class"
-    },
-    {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminCallableFactory.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStubSettings.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStub.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminStub.class"
     },
     {
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClient$ListInstancesPagedResponse.class"
@@ -1732,6 +1888,63 @@
       "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminStub.class"
     },
     {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/SpannerRpc$ResultStreamConsumer.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/GapicSpannerRpc$SpannerResponseObserver.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/GapicSpannerRpc$ManagedInstantiatingExecutorProvider.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/SpannerRpc$Paginated.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/SpannerRpc.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/GapicSpannerRpc.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/classes/com/google/cloud/spanner/spi/v1/SpannerRpc$Option.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest$ExceptionType$1.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest$ExceptionType$3.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/DatabaseAdminGaxTest.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/IntegrationTestEnv.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest$ExceptionType.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/SpannerOptionsTest.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest$DelayedStatusRuntimeException.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminGaxTest$ExceptionType$2.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/InstanceAdminClientImplTest.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/it/ITInstanceAdminTest.class"
+    },
+    {
       "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/v1/SpannerClientTest.class"
     },
     {
@@ -1741,15 +1954,6 @@
       "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/v1/MockSpanner.class"
     },
     {
-      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/admin/database/v1/MockDatabaseAdmin.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/admin/database/v1/MockDatabaseAdminImpl.class"
-    },
-    {
-      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClientTest.class"
-    },
-    {
       "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClientTest.class"
     },
     {
@@ -1757,6 +1961,9 @@
     },
     {
       "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/admin/instance/v1/MockInstanceAdmin.class"
+    },
+    {
+      "path": "google-cloud-spanner/target/test-classes/com/google/cloud/spanner/spi/v1/GapicSpannerRpcTest.class"
     },
     {
       "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/v1/MockSpanner.java"
@@ -2018,6 +2225,9 @@
     },
     {
       "path": ".github/ISSUE_TEMPLATE/bug_report.md"
+    },
+    {
+      "path": "__pycache__/synth.cpython-36.pyc"
     },
     {
       "path": "grpc-google-cloud-spanner-admin-instance-v1/target/classes/com/google/spanner/admin/instance/v1/InstanceAdminGrpc.class"
