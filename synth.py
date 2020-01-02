@@ -26,9 +26,9 @@ library = gapic.java_library(
     config_path='/google/spanner/artman_spanner.yaml',
     artman_output_name='')
 
-s.copy(library / 'gapic-google-cloud-spanner-v1/src', 'src')
-s.copy(library / 'grpc-google-cloud-spanner-v1/src', '../../google-api-grpc/grpc-google-cloud-spanner-v1/src')
-s.copy(library / 'proto-google-cloud-spanner-v1/src', '../../google-api-grpc/proto-google-cloud-spanner-v1/src')
+s.copy(library / 'gapic-google-cloud-spanner-v1/src', 'google-cloud-spanner/src')
+s.copy(library / 'grpc-google-cloud-spanner-v1/src', 'grpc-google-cloud-spanner-v1/src')
+s.copy(library / 'proto-google-cloud-spanner-v1/src', 'proto-google-cloud-spanner-v1/src')
 
 library = gapic.java_library(
     service='spanner',
@@ -36,9 +36,9 @@ library = gapic.java_library(
     config_path='/google/spanner/admin/database/artman_spanner_admin_database.yaml',
     artman_output_name='')
 
-s.copy(library / 'gapic-google-cloud-spanner-admin-database-v1/src', 'src')
-s.copy(library / 'grpc-google-cloud-spanner-admin-database-v1/src', '../../google-api-grpc/grpc-google-cloud-spanner-admin-database-v1/src')
-s.copy(library / 'proto-google-cloud-spanner-admin-database-v1/src', '../../google-api-grpc/proto-google-cloud-spanner-admin-database-v1/src')
+s.copy(library / 'gapic-google-cloud-spanner-admin-database-v1/src', 'google-cloud-spanner/src')
+s.copy(library / 'grpc-google-cloud-spanner-admin-database-v1/src', 'grpc-google-cloud-spanner-admin-database-v1/src')
+s.copy(library / 'proto-google-cloud-spanner-admin-database-v1/src', 'proto-google-cloud-spanner-admin-database-v1/src')
 
 library = gapic.java_library(
     service='spanner',
@@ -46,14 +46,20 @@ library = gapic.java_library(
     config_path='/google/spanner/admin/instance/artman_spanner_admin_instance.yaml',
     artman_output_name='')
 
-s.copy(library / 'gapic-google-cloud-spanner-admin-instance-v1/src', 'src')
-s.copy(library / 'grpc-google-cloud-spanner-admin-instance-v1/src', '../../google-api-grpc/grpc-google-cloud-spanner-admin-instance-v1/src')
-s.copy(library / 'proto-google-cloud-spanner-admin-instance-v1/src', '../../google-api-grpc/proto-google-cloud-spanner-admin-instance-v1/src')
+s.copy(library / 'gapic-google-cloud-spanner-admin-instance-v1/src', 'google-cloud-spanner/src')
+s.copy(library / 'grpc-google-cloud-spanner-admin-instance-v1/src', 'grpc-google-cloud-spanner-admin-instance-v1/src')
+s.copy(library / 'proto-google-cloud-spanner-admin-instance-v1/src', 'proto-google-cloud-spanner-admin-instance-v1/src')
 
-java.format_code('./src')
-java.format_code(f'../../google-api-grpc/grpc-google-cloud-spanner-v1/src')
-java.format_code(f'../../google-api-grpc/proto-google-cloud-spanner-v1/src')
-java.format_code(f'../../google-api-grpc/grpc-google-cloud-spanner-admin-database-v1/src')
-java.format_code(f'../../google-api-grpc/proto-google-cloud-spanner-admin-database-v1/src')
-java.format_code(f'../../google-api-grpc/grpc-google-cloud-spanner-admin-instance-v1/src')
-java.format_code(f'../../google-api-grpc/proto-google-cloud-spanner-admin-instance-v1/src')
+java.format_code('google-cloud-spanner/src')
+java.format_code('grpc-google-cloud-spanner-v1/src')
+java.format_code('proto-google-cloud-spanner-v1/src')
+java.format_code('grpc-google-cloud-spanner-admin-database-v1/src')
+java.format_code('proto-google-cloud-spanner-admin-database-v1/src')
+java.format_code('grpc-google-cloud-spanner-admin-instance-v1/src')
+java.format_code('proto-google-cloud-spanner-admin-instance-v1/src')
+
+common_templates = gcp.CommonTemplates()
+templates = common_templates.java_library()
+s.copy(templates, excludes=[
+    'README.md',
+])
