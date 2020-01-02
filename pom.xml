@@ -255,7 +255,7 @@
     <module>grpc-google-cloud-spanner-admin-instance-v1</module>
     <module>grpc-google-cloud-spanner-admin-database-v1</module>
     <module>google-cloud-spanner</module>
-  <module>google-cloud-spanner-bom</module>
+    <module>google-cloud-spanner-bom</module>
   </modules>
 
   <reporting>

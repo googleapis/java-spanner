@@ -41,7 +41,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M4</version>
+        <version>3.0.0-M3</version>
         <configuration>
           <excludedGroups>com.google.cloud.spanner.IntegrationTest</excludedGroups>
           <reportNameSuffix>sponge_log</reportNameSuffix>
@@ -50,7 +50,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M4</version>
+        <version>3.0.0-M3</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
@@ -64,7 +64,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit47</artifactId>
-            <version>3.0.0-M4</version>
+            <version>3.0.0-M3</version>
           </dependency>
         </dependencies>
         <executions>
