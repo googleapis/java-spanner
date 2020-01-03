@@ -1,0 +1,793 @@
+{
+  "updateTime": "2020-01-02T18:28:01.170427Z",
+  "sources": [
+    {
+      "generator": {
+        "name": "artman",
+        "version": "0.42.3",
+        "dockerImage": "googleapis/artman@sha256:feed210b5723c6f524b52ef6d7740a030f2d1a8f7c29a71c5e5b4481ceaad7f5"
+      }
+    },
+    {
+      "git": {
+        "name": "googleapis",
+        "remote": "https://github.com/googleapis/googleapis.git",
+        "sha": "ec285d3d230810147ebbf8d5b691ee90320c6d2d",
+        "internalRef": "287608953"
+      }
+    },
+    {
+      "template": {
+        "name": "java_library",
+        "origin": "synthtool.gcp",
+        "version": "2019.10.17"
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "client": {
+        "source": "googleapis",
+        "apiName": "spanner",
+        "apiVersion": "v1",
+        "language": "java",
+        "generator": "gapic",
+        "config": "google/spanner/artman_spanner.yaml"
+      }
+    },
+    {
+      "client": {
+        "source": "googleapis",
+        "apiName": "spanner",
+        "apiVersion": "v1",
+        "language": "java",
+        "generator": "gapic",
+        "config": "google/spanner/admin/database/artman_spanner_admin_database.yaml"
+      }
+    },
+    {
+      "client": {
+        "source": "googleapis",
+        "apiName": "spanner",
+        "apiVersion": "v1",
+        "language": "java",
+        "generator": "gapic",
+        "config": "google/spanner/admin/instance/artman_spanner_admin_instance.yaml"
+      }
+    }
+  ],
+  "newFiles": [
+    {
+      "path": "codecov.yaml"
+    },
+    {
+      "path": "CONTRIBUTING.md"
+    },
+    {
+      "path": "license-checks.xml"
+    },
+    {
+      "path": "java.header"
+    },
+    {
+      "path": "LICENSE"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md"
+    },
+    {
+      "path": "renovate.json"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstancesResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/GetInstanceRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/GetInstanceConfigRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/GetInstanceConfigRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/Instance.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/DeleteInstanceRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/DeleteInstanceRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/UpdateInstanceMetadataOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstancesRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/UpdateInstanceRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceConfigName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceConfigOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ProjectName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/CreateInstanceMetadata.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ReplicaInfoOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstanceConfigsResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/SpannerInstanceAdminProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstanceConfigsResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ReplicaInfo.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstanceConfigsRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/CreateInstanceRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstancesResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstancesRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/CreateInstanceMetadataOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceConfig.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/UpdateInstanceMetadata.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/CreateInstanceRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/ListInstanceConfigsRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/UpdateInstanceRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/GetInstanceRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-instance-v1/src/main/proto/google/spanner/admin/instance/v1/spanner_instance_admin.proto"
+    },
+    {
+      "path": "grpc-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/SpannerGrpc.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RollbackRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PlanNodeOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RollbackRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteBatchDmlRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BatchCreateSessionsResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteBatchDmlResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/MutationOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionSelectorOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadataOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteSqlRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadata.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BatchCreateSessionsRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/KeysProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSet.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/Transaction.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionOptionsOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionReadRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionSelector.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionReadRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PlanNode.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ListSessionsRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/SpannerProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/StructType.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeCode.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/KeySetOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/KeyRange.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/GetSessionRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DeleteSessionRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DatabaseName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartialResultSetOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BatchCreateSessionsResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/StructTypeOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BatchCreateSessionsRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionOptionsOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionQueryRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/Type.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionOptions.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteBatchDmlRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/GetSessionRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetStats.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionQueryRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteBatchDmlResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartitionOptions.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ListSessionsResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ListSessionsRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/PartialResultSet.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BeginTransactionRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ListSessionsResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/SessionOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/Mutation.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/SessionName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/KeySet.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/MutationProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/KeyRangeOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/BeginTransactionRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TransactionOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/Session.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ExecuteSqlRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/QueryPlanProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/QueryPlanOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DeleteSessionRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetStatsOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/Partition.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/QueryPlan.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/type.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/transaction.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/query_plan.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/result_set.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/mutation.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/keys.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/spanner.proto"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseDdlRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/UpdateDatabaseDdlMetadata.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/ListDatabasesRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/UpdateDatabaseDdlMetadataOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadataOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadata.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/ListDatabasesRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/UpdateDatabaseDdlRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/ListDatabasesResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/UpdateDatabaseDdlRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseDdlResponse.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DropDatabaseRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/InstanceName.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/SpannerDatabaseAdminProto.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DropDatabaseRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequestOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/ListDatabasesResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseDdlRequest.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseDdlResponseOrBuilder.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/Database.java"
+    },
+    {
+      "path": "proto-google-cloud-spanner-admin-database-v1/src/main/proto/google/spanner/admin/database/v1/spanner_database_admin.proto"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/v1/MockSpanner.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/v1/MockSpannerImpl.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/v1/SpannerClientTest.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/database/v1/MockDatabaseAdminImpl.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClientTest.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/database/v1/MockDatabaseAdmin.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClientTest.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/instance/v1/MockInstanceAdmin.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/test/java/com/google/cloud/spanner/admin/instance/v1/MockInstanceAdminImpl.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/package-info.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerClient.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerStub.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerCallableFactory.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/SpannerStubSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/SpannerStub.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/package-info.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStubSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminStub.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminCallableFactory.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStub.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/package-info.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClient.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminCallableFactory.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/InstanceAdminStubSettings.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminStub.java"
+    },
+    {
+      "path": "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/InstanceAdminStub.java"
+    },
+    {
+      "path": ".kokoro/dependencies.sh"
+    },
+    {
+      "path": ".kokoro/trampoline.sh"
+    },
+    {
+      "path": ".kokoro/linkage-monitor.sh"
+    },
+    {
+      "path": ".kokoro/build.sh"
+    },
+    {
+      "path": ".kokoro/coerce_logs.sh"
+    },
+    {
+      "path": ".kokoro/build.bat"
+    },
+    {
+      "path": ".kokoro/common.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/dependencies.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/linkage-monitor.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/java7.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/integration.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/clirr.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/java11.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/java8.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/lint.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/java8-win.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/java8-osx.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/common.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/propose_release.sh"
+    },
+    {
+      "path": ".kokoro/continuous/propose_release.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/dependencies.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/java7.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/integration.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/java11.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/java8.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/lint.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/java8-win.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/java8-osx.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/common.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/dependencies.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/java7.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/integration.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/java11.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/java8.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/lint.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/java8-win.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/java8-osx.cfg"
+    },
+    {
+      "path": ".kokoro/nightly/common.cfg"
+    },
+    {
+      "path": ".kokoro/release/bump_snapshot.cfg"
+    },
+    {
+      "path": ".kokoro/release/stage.sh"
+    },
+    {
+      "path": ".kokoro/release/promote.sh"
+    },
+    {
+      "path": ".kokoro/release/snapshot.sh"
+    },
+    {
+      "path": ".kokoro/release/drop.cfg"
+    },
+    {
+      "path": ".kokoro/release/snapshot.cfg"
+    },
+    {
+      "path": ".kokoro/release/publish_javadoc.cfg"
+    },
+    {
+      "path": ".kokoro/release/publish_javadoc.sh"
+    },
+    {
+      "path": ".kokoro/release/bump_snapshot.sh"
+    },
+    {
+      "path": ".kokoro/release/drop.sh"
+    },
+    {
+      "path": ".kokoro/release/common.cfg"
+    },
+    {
+      "path": ".kokoro/release/common.sh"
+    },
+    {
+      "path": ".kokoro/release/stage.cfg"
+    },
+    {
+      "path": ".kokoro/release/promote.cfg"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md"
+    },
+    {
+      "path": ".github/release-please.yml"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/support_request.md"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md"
+    },
+    {
+      "path": "__pycache__/synth.cpython-36.pyc"
+    },
+    {
+      "path": "grpc-google-cloud-spanner-admin-instance-v1/src/main/java/com/google/spanner/admin/instance/v1/InstanceAdminGrpc.java"
+    },
+    {
+      "path": "grpc-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseAdminGrpc.java"
+    }
+  ]
+}
