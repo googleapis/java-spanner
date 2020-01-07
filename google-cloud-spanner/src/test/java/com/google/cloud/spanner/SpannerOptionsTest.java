@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ServerStreamingCallSettings;

@@ -18,7 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;

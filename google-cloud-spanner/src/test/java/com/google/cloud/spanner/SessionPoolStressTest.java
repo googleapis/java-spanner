@@ -36,9 +36,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -53,7 +51,6 @@ import org.mockito.stubbing.Answer;
  */
 @RunWith(Parameterized.class)
 public class SessionPoolStressTest extends BaseSessionPoolTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Parameter(0)
   public double writeSessionsFraction;
