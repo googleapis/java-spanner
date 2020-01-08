@@ -25,15 +25,12 @@ import com.google.cloud.Identity;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
-import java.io.IOException;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -47,7 +44,6 @@ public class InstanceAdminClientTest {
   private LocalChannelProvider channelProvider;
   private Spanner spanner;
   private InstanceAdminClient client;
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   @BeforeClass
   public static void startStaticServer() {
@@ -63,7 +59,7 @@ public class InstanceAdminClientTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     serviceHelper.reset();
     channelProvider = serviceHelper.createChannelProvider();
     spanner =
@@ -77,7 +73,7 @@ public class InstanceAdminClientTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 
