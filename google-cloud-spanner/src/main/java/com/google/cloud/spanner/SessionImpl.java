@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
@@ -26,7 +27,9 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -194,6 +197,27 @@ class SessionImpl implements Session {
   public void prepareReadWriteTransaction() {
     setActive(null);
     readyTransactionId = beginTransaction();
+  }
+
+  @Override
+  public ApiFuture<Empty> asyncClose() {
+    final Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
+    final ApiFuture<Empty> res = spanner.getRpc().asyncDeleteSession(name, options);
+    res.addListener(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              // Get the result to trigger an exception if the operation failed.
+              res.get();
+              span.end();
+            } catch (Exception e) {
+              TraceUtil.endSpanWithFailure(span, e);
+            }
+          }
+        },
+        MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override

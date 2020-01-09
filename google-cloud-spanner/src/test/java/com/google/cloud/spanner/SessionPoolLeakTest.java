@@ -29,6 +29,7 @@ import io.grpc.Server;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,7 +56,12 @@ public class SessionPoolLeakTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     String uniqueName = InProcessServerBuilder.generateName();
-    server = InProcessServerBuilder.forName(uniqueName).addService(mockSpanner).build().start();
+    server =
+        InProcessServerBuilder.forName(uniqueName)
+            .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
+            .addService(mockSpanner)
+            .build()
+            .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
   }
 

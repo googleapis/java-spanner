@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -34,6 +36,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
@@ -767,6 +770,12 @@ final class SessionPool {
     }
 
     @Override
+    public ApiFuture<Empty> asyncClose() {
+      close();
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
@@ -989,7 +998,7 @@ final class SessionPool {
       }
       for (PooledSession sess : sessionsToClose) {
         logger.log(Level.FINE, "Closing session {0}", sess.getName());
-        closeSession(sess);
+        closeSessionAsync(sess);
       }
     }
 
@@ -1566,37 +1575,27 @@ final class SessionPool {
     }
   }
 
-  private void closeSessionAsync(final PooledSession sess) {
-    executor.submit(
+  private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
+    ApiFuture<Empty> res = sess.delegate.asyncClose();
+    res.addListener(
         new Runnable() {
           @Override
           public void run() {
-            closeSession(sess);
+            synchronized (lock) {
+              allSessions.remove(sess);
+              if (isClosed()) {
+                decrementPendingClosures(1);
+                return;
+              }
+              // Create a new session if needed to unblock some waiter.
+              if (numWaiters() > numSessionsBeingCreated) {
+                createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated));
+              }
+            }
           }
-        });
-  }
-
-  private void closeSession(PooledSession sess) {
-    try {
-      sess.delegate.close();
-    } catch (SpannerException e) {
-      // Backend will delete these sessions after a while even if we fail to close them.
-      if (logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "Failed to close session: " + sess.getName(), e);
-      }
-    } finally {
-      synchronized (lock) {
-        allSessions.remove(sess);
-        if (isClosed()) {
-          decrementPendingClosures(1);
-          return;
-        }
-        // Create a new session if needed to unblock some waiter.
-        if (numWaiters() > numSessionsBeingCreated) {
-          createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated));
-        }
-      }
-    }
+        },
+        MoreExecutors.directExecutor());
+    return res;
   }
 
   private void prepareSession(final PooledSession sess) {
