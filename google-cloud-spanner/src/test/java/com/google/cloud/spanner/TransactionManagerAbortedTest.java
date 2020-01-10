@@ -160,9 +160,10 @@ public class TransactionManagerAbortedTest {
   }
 
   @AfterClass
-  public static void stopServer() {
+  public static void stopServer() throws InterruptedException {
     spannerClient.close();
     server.shutdown();
+    server.awaitTermination();
   }
 
   @Before
