@@ -851,7 +851,7 @@ final class SessionPool {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
-        try (Scope ss = tracer.withSpan(span)) {
+        try (Scope waitScope = tracer.withSpan(span)) {
           SessionOrError s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
