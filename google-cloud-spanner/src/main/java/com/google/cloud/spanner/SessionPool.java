@@ -1594,7 +1594,7 @@ final class SessionPool {
             }
           }
         },
-        MoreExecutors.directExecutor());
+        executor);
     return res;
   }
 
