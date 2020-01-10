@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -1056,6 +1057,9 @@ final class SessionPool {
   @GuardedBy("lock")
   private SettableFuture<Void> closureFuture;
 
+//  @GuardedBy("lock")
+//  private DatabaseNotFoundException databaseNotFound;
+
   @GuardedBy("lock")
   private final LinkedList<PooledSession> readSessions = new LinkedList<>();
 
@@ -1193,7 +1197,7 @@ final class SessionPool {
   }
 
   private boolean isDatabaseNotFound(SpannerException e) {
-    return e.getErrorCode() == ErrorCode.NOT_FOUND && e.getMessage().contains("Database not found");
+    return e instanceof DatabaseNotFoundException;
   }
 
   private boolean isPermissionDenied(SpannerException e) {
@@ -1251,6 +1255,10 @@ final class SessionPool {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
+//      if (databaseNotFound != null) {
+//        span.addAnnotation("Database has been deleted");
+//        throw SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "The session pool has been invalidated because a previous RPC returned 'Database not found'.", databaseNotFound);
+//      }
       sess = readSessions.poll();
       if (sess == null) {
         sess = writePreparedSessions.poll();
@@ -1304,8 +1312,13 @@ final class SessionPool {
     PooledSession sess = null;
     synchronized (lock) {
       if (closureFuture != null) {
+        span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
+//      if (databaseNotFound != null) {
+//        span.addAnnotation("Database has been deleted");
+//        throw SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "The session pool has been invalidated because a previous RPC returned 'Database not found'.", databaseNotFound);
+//      }
       sess = writePreparedSessions.poll();
       if (sess == null) {
         if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
@@ -1448,6 +1461,7 @@ final class SessionPool {
           break;
         }
       }
+//      this.databaseNotFound = MoreObjects.firstNonNull(this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
     }
   }
 
@@ -1470,6 +1484,7 @@ final class SessionPool {
         if (isClosed()) {
           decrementPendingClosures(1);
         }
+//        this.databaseNotFound = MoreObjects.firstNonNull(this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
       } else if (readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);

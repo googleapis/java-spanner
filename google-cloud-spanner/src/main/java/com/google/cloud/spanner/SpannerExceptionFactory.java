@@ -176,6 +176,8 @@ public final class SpannerExceptionFactory {
       case NOT_FOUND:
         if (message != null && message.contains("Session not found")) {
           return new SessionNotFoundException(token, message, cause);
+        } else if (message != null && message.contains("Database not found")) {
+          return new DatabaseNotFoundException(token, message, cause);
         }
         // Fall through to the default.
       default:

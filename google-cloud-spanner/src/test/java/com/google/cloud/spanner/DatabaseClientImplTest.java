@@ -342,16 +342,12 @@ public class DatabaseClientImplTest {
       // The create session failure should propagate to the client and not retry.
       try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
         fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.NOT_FOUND)));
-        assertThat(e.getMessage(), containsString(DATABASE_DOES_NOT_EXIST_MSG));
+      } catch (DatabaseNotFoundException e) {
       }
       try {
         dbClient.readWriteTransaction();
         fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.NOT_FOUND)));
-        assertThat(e.getMessage(), containsString(DATABASE_DOES_NOT_EXIST_MSG));
+      } catch (DatabaseNotFoundException e) {
       }
     }
   }
@@ -425,6 +421,69 @@ public class DatabaseClientImplTest {
       fail("missing expected PERMISSION_DENIED exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode(), is(equalTo(ErrorCode.PERMISSION_DENIED)));
+    }
+  }
+
+  @Test
+  public void testDatabaseDoesNotExistOnQueryAndIsThenRecreated() throws Exception {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService()) {
+      DatabaseClientImpl dbClient =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      // Wait until all sessions have been created and prepared.
+      Stopwatch watch = Stopwatch.createStarted();
+      while (watch.elapsed(TimeUnit.SECONDS) < 5
+          && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0
+          || dbClient.pool.getNumberOfSessionsBeingPrepared() > 0)) {
+        Thread.sleep(1L);
+      }
+      // Simulate that the database has been deleted.
+      mockSpanner.setStickyGlobalExceptions(true);
+      mockSpanner.addException(Status.NOT_FOUND.withDescription(DATABASE_DOES_NOT_EXIST_MSG).asRuntimeException());
+
+      // All subsequent calls should fail with a DatabaseNotFoundException.
+      try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+        while(rs.next()) {
+        }
+        fail("missing expected exception");
+      } catch (DatabaseNotFoundException e) {
+      }
+      try {
+        dbClient.readWriteTransaction().run(new TransactionCallable<Void>(){
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            return null;
+          }
+        });
+        fail("missing expected exception");
+      } catch (DatabaseNotFoundException e) {
+      }
+
+      // Now simulate that the database has been re-created. The database client should still throw DatabaseNotFoundExceptions, as it is not the same database.
+      mockSpanner.reset();
+      // All subsequent calls should fail with a DatabaseNotFoundException.
+      try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+        while(rs.next()) {
+        }
+//        fail("missing expected exception");
+//      } catch (DatabaseNotFoundException e) {
+      }
+//      try {
+        dbClient.readWriteTransaction().run(new TransactionCallable<Void>(){
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            return null;
+          }
+        });
+//        fail("missing expected exception");
+//      } catch (DatabaseNotFoundException e) {
+//      }
     }
   }
 
