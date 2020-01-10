@@ -27,7 +27,6 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -201,23 +200,7 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    final Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
-    final ApiFuture<Empty> res = spanner.getRpc().asyncDeleteSession(name, options);
-    res.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              // Get the result to trigger an exception if the operation failed.
-              res.get();
-              span.end();
-            } catch (Exception e) {
-              TraceUtil.endSpanWithFailure(span, e);
-            }
-          }
-        },
-        MoreExecutors.directExecutor());
-    return res;
+    return spanner.getRpc().asyncDeleteSession(name, options);
   }
 
   @Override
