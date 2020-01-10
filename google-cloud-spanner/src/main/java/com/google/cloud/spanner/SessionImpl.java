@@ -138,7 +138,7 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       CommitResponse response = spanner.getRpc().commit(request, options);
       Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       return t;
     } catch (IllegalArgumentException e) {
       TraceUtil.endSpanWithFailure(span, e);
@@ -201,7 +201,7 @@ class SessionImpl implements Session {
     Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       spanner.getRpc().deleteSession(name, options);
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -222,7 +222,7 @@ class SessionImpl implements Session {
       if (txn.getId().isEmpty()) {
         throw newSpannerException(ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
       }
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       return txn.getId();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);

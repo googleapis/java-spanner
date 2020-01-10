@@ -115,7 +115,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
         txnState = TransactionState.ROLLED_BACK;
       }
     } finally {
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 

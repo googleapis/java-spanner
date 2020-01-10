@@ -72,10 +72,6 @@ final class SessionPool {
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
 
-  static {
-    TraceUtil.exportSpans(WAIT_FOR_SESSION);
-  }
-
   /**
    * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
    * Clock.
@@ -854,7 +850,8 @@ final class SessionPool {
     private PooledSession take() throws SpannerException {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
-        try (Scope waitScope = tracer.spanBuilder(WAIT_FOR_SESSION).startScopedSpan()) {
+        Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
+        try (Scope ss = tracer.withSpan(span)) {
           SessionOrError s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
@@ -870,6 +867,8 @@ final class SessionPool {
         } catch (Exception e) {
           TraceUtil.endSpanWithFailure(tracer.getCurrentSpan(), e);
           throw e;
+        } finally {
+          span.end(TraceUtil.END_SPAN_OPTIONS);
         }
       }
     }

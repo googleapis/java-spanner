@@ -130,7 +130,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
         }
         commitTimestamp = Timestamp.fromProto(commitResponse.getCommitTimestamp());
-        opSpan.end();
+        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
       } catch (RuntimeException e) {
         span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
         TraceUtil.endSpanWithFailure(opSpan, e);

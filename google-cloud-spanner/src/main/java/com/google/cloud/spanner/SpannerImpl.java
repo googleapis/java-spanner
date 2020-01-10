@@ -37,6 +37,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Context;
 import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
@@ -70,18 +71,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String COMMIT = "CloudSpannerOperation.Commit";
   static final String QUERY = "CloudSpannerOperation.ExecuteStreamingQuery";
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
-
-  static {
-    TraceUtil.exportSpans(
-        BATCH_CREATE_SESSIONS,
-        BATCH_CREATE_SESSIONS_REQUEST,
-        CREATE_SESSION,
-        DELETE_SESSION,
-        BEGIN_TRANSACTION,
-        COMMIT,
-        QUERY,
-        READ);
-  }
+  static final EndSpanOptions END_SPAN_OPTIONS =
+      EndSpanOptions.builder().setSampleToLocalSpanStore(true).build();
 
   private final SpannerRpc gapicRpc;
 
