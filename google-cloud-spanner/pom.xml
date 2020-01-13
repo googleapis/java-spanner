@@ -225,6 +225,7 @@
           <artifactId>objenesis</artifactId>
         </exclusion>
       </exclusions>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
