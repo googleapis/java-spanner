@@ -219,7 +219,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         invalidatedDbClients.add(dbClients.get(db));
         dbClients.remove(db);
       }
-      if (dbClients.containsKey(db) && dbClients.get(db).pool.isValid()) {
+      if (dbClients.containsKey(db)) {
         return dbClients.get(db);
       } else {
         SessionPool pool =
