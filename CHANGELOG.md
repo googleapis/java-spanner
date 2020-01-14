@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.48.1](https://www.github.com/googleapis/java-spanner/compare/v1.48.0...v1.48.1) (2020-01-14)
+
+
+### Dependencies
+
+* update dependency org.threeten:threetenbp to v1.4.1 ([c22c831](https://www.github.com/googleapis/java-spanner/commit/c22c831473dd0b18b71e1ea4d000cd34555a3a48))
+
 ## [1.48.0](https://www.github.com/googleapis/java-spanner/compare/1.47.0...v1.48.0) (2020-01-10)
 
 
