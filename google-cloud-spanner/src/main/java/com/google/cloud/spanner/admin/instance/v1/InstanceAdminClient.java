@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,7 +363,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final InstanceConfig getInstanceConfig(InstanceConfigName name) {
-
     GetInstanceConfigRequest request =
         GetInstanceConfigRequest.newBuilder()
             .setName(name == null ? null : name.toString())
@@ -389,7 +388,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final InstanceConfig getInstanceConfig(String name) {
-
     GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder().setName(name).build();
     return getInstanceConfig(request);
   }
@@ -589,7 +587,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Instance getInstance(InstanceName name) {
-
     GetInstanceRequest request =
         GetInstanceRequest.newBuilder().setName(name == null ? null : name.toString()).build();
     return getInstance(request);
@@ -613,7 +610,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Instance getInstance(String name) {
-
     GetInstanceRequest request = GetInstanceRequest.newBuilder().setName(name).build();
     return getInstance(request);
   }
@@ -718,7 +714,6 @@ public class InstanceAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
       ProjectName parent, String instanceId, Instance instance) {
-
     CreateInstanceRequest request =
         CreateInstanceRequest.newBuilder()
             .setParent(parent == null ? null : parent.toString())
@@ -783,7 +778,6 @@ public class InstanceAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
       String parent, String instanceId, Instance instance) {
-
     CreateInstanceRequest request =
         CreateInstanceRequest.newBuilder()
             .setParent(parent)
@@ -1021,7 +1015,6 @@ public class InstanceAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Instance, UpdateInstanceMetadata> updateInstanceAsync(
       Instance instance, FieldMask fieldMask) {
-
     UpdateInstanceRequest request =
         UpdateInstanceRequest.newBuilder().setInstance(instance).setFieldMask(fieldMask).build();
     return updateInstanceAsync(request);
@@ -1228,7 +1221,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void deleteInstance(InstanceName name) {
-
     DeleteInstanceRequest request =
         DeleteInstanceRequest.newBuilder().setName(name == null ? null : name.toString()).build();
     deleteInstance(request);
@@ -1261,7 +1253,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void deleteInstance(String name) {
-
     DeleteInstanceRequest request = DeleteInstanceRequest.newBuilder().setName(name).build();
     deleteInstance(request);
   }
@@ -1354,7 +1345,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy setIamPolicy(ResourceName resource, Policy policy) {
-
     SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -1388,7 +1378,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy setIamPolicy(String resource, Policy policy) {
-
     SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder().setResource(resource).setPolicy(policy).build();
     return setIamPolicy(request);
@@ -1471,7 +1460,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy getIamPolicy(ResourceName resource) {
-
     GetIamPolicyRequest request =
         GetIamPolicyRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -1501,7 +1489,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy getIamPolicy(String resource) {
-
     GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder().setResource(resource).build();
     return getIamPolicy(request);
   }
@@ -1586,7 +1573,6 @@ public class InstanceAdminClient implements BackgroundResource {
    */
   public final TestIamPermissionsResponse testIamPermissions(
       ResourceName resource, List<String> permissions) {
-
     TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -1622,7 +1608,6 @@ public class InstanceAdminClient implements BackgroundResource {
    */
   public final TestIamPermissionsResponse testIamPermissions(
       String resource, List<String> permissions) {
-
     TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource)

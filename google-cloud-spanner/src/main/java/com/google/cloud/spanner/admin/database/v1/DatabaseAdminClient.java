@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,7 +226,6 @@ public class DatabaseAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Database, CreateDatabaseMetadata> createDatabaseAsync(
       InstanceName parent, String createStatement) {
-
     CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(parent == null ? null : parent.toString())
@@ -268,7 +267,6 @@ public class DatabaseAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Database, CreateDatabaseMetadata> createDatabaseAsync(
       String parent, String createStatement) {
-
     CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(parent)
@@ -391,7 +389,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Database getDatabase(DatabaseName name) {
-
     GetDatabaseRequest request =
         GetDatabaseRequest.newBuilder().setName(name == null ? null : name.toString()).build();
     return getDatabase(request);
@@ -415,7 +412,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Database getDatabase(String name) {
-
     GetDatabaseRequest request = GetDatabaseRequest.newBuilder().setName(name).build();
     return getDatabase(request);
   }
@@ -493,7 +489,6 @@ public class DatabaseAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdlAsync(
       DatabaseName database, List<String> statements) {
-
     UpdateDatabaseDdlRequest request =
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(database == null ? null : database.toString())
@@ -530,7 +525,6 @@ public class DatabaseAdminClient implements BackgroundResource {
       "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdlAsync(
       String database, List<String> statements) {
-
     UpdateDatabaseDdlRequest request =
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(database)
@@ -652,7 +646,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void dropDatabase(DatabaseName database) {
-
     DropDatabaseRequest request =
         DropDatabaseRequest.newBuilder()
             .setDatabase(database == null ? null : database.toString())
@@ -677,7 +670,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void dropDatabase(String database) {
-
     DropDatabaseRequest request = DropDatabaseRequest.newBuilder().setDatabase(database).build();
     dropDatabase(request);
   }
@@ -746,7 +738,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final GetDatabaseDdlResponse getDatabaseDdl(DatabaseName database) {
-
     GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder()
             .setDatabase(database == null ? null : database.toString())
@@ -773,7 +764,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final GetDatabaseDdlResponse getDatabaseDdl(String database) {
-
     GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder().setDatabase(database).build();
     return getDatabaseDdl(request);
@@ -854,7 +844,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy setIamPolicy(ResourceName resource, Policy policy) {
-
     SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -888,7 +877,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy setIamPolicy(String resource, Policy policy) {
-
     SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder().setResource(resource).setPolicy(policy).build();
     return setIamPolicy(request);
@@ -971,7 +959,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy getIamPolicy(ResourceName resource) {
-
     GetIamPolicyRequest request =
         GetIamPolicyRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -1001,7 +988,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Policy getIamPolicy(String resource) {
-
     GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder().setResource(resource).build();
     return getIamPolicy(request);
   }
@@ -1086,7 +1072,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    */
   public final TestIamPermissionsResponse testIamPermissions(
       ResourceName resource, List<String> permissions) {
-
     TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource == null ? null : resource.toString())
@@ -1122,7 +1107,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    */
   public final TestIamPermissionsResponse testIamPermissions(
       String resource, List<String> permissions) {
-
     TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource)

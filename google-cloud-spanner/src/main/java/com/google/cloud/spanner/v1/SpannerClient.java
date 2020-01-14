@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Session createSession(DatabaseName database) {
-
     CreateSessionRequest request =
         CreateSessionRequest.newBuilder()
             .setDatabase(database == null ? null : database.toString())
@@ -252,7 +251,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Session createSession(String database) {
-
     CreateSessionRequest request = CreateSessionRequest.newBuilder().setDatabase(database).build();
     return createSession(request);
   }
@@ -356,7 +354,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final BatchCreateSessionsResponse batchCreateSessions(
       DatabaseName database, int sessionCount) {
-
     BatchCreateSessionsRequest request =
         BatchCreateSessionsRequest.newBuilder()
             .setDatabase(database == null ? null : database.toString())
@@ -390,7 +387,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final BatchCreateSessionsResponse batchCreateSessions(String database, int sessionCount) {
-
     BatchCreateSessionsRequest request =
         BatchCreateSessionsRequest.newBuilder()
             .setDatabase(database)
@@ -473,7 +469,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Session getSession(SessionName name) {
-
     GetSessionRequest request =
         GetSessionRequest.newBuilder().setName(name == null ? null : name.toString()).build();
     return getSession(request);
@@ -497,7 +492,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Session getSession(String name) {
-
     GetSessionRequest request = GetSessionRequest.newBuilder().setName(name).build();
     return getSession(request);
   }
@@ -697,7 +691,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void deleteSession(SessionName name) {
-
     DeleteSessionRequest request =
         DeleteSessionRequest.newBuilder().setName(name == null ? null : name.toString()).build();
     deleteSession(request);
@@ -721,7 +714,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void deleteSession(String name) {
-
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(name).build();
     deleteSession(request);
   }
@@ -1077,7 +1069,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Transaction beginTransaction(SessionName session, TransactionOptions options) {
-
     BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(session == null ? null : session.toString())
@@ -1107,7 +1098,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final Transaction beginTransaction(String session, TransactionOptions options) {
-
     BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder().setSession(session).setOptions(options).build();
     return beginTransaction(request);
@@ -1195,7 +1185,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final CommitResponse commit(
       SessionName session, ByteString transactionId, List<Mutation> mutations) {
-
     CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(session == null ? null : session.toString())
@@ -1234,7 +1223,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final CommitResponse commit(
       String session, ByteString transactionId, List<Mutation> mutations) {
-
     CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(session)
@@ -1279,7 +1267,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final CommitResponse commit(
       SessionName session, TransactionOptions singleUseTransaction, List<Mutation> mutations) {
-
     CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(session == null ? null : session.toString())
@@ -1324,7 +1311,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final CommitResponse commit(
       String session, TransactionOptions singleUseTransaction, List<Mutation> mutations) {
-
     CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(session)
@@ -1416,7 +1402,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void rollback(SessionName session, ByteString transactionId) {
-
     RollbackRequest request =
         RollbackRequest.newBuilder()
             .setSession(session == null ? null : session.toString())
@@ -1450,7 +1435,6 @@ public class SpannerClient implements BackgroundResource {
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final void rollback(String session, ByteString transactionId) {
-
     RollbackRequest request =
         RollbackRequest.newBuilder().setSession(session).setTransactionId(transactionId).build();
     rollback(request);
