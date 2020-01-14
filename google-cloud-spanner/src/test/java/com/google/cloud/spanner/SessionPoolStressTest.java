@@ -163,8 +163,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               public ApiFuture<Empty> answer(InvocationOnMock invocation) throws Throwable {
                 synchronized (lock) {
                   if (expiredSessions.contains(session.getName())) {
-                    throw SpannerExceptionFactory.newSpannerException(
-                        ErrorCode.NOT_FOUND, "Session not found");
+                    return ApiFutures.immediateFailedFuture(
+                        SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.NOT_FOUND, "Session not found"));
                   }
                   if (sessions.remove(session.getName()) == null) {
                     setFailed(closedSessions.get(session.getName()));
