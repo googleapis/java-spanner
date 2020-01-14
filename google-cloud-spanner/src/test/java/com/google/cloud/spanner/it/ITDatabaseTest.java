@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,7 +32,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class ITDatabaseTest {
   }
 
   @Test
-  public void databaseDeletedTest() throws InterruptedException, ExecutionException {
+  public void databaseDeletedTest() throws Exception {
     // Create a test db, do a query, then delete it and verify that it returns
     // DatabaseNotFoundExceptions.
     Database db = env.getTestHelper().createTestDatabase();
@@ -70,14 +70,25 @@ public class ITDatabaseTest {
     // Delete the database.
     db.drop();
     // We need to wait a little before Spanner actually starts sending DatabaseNotFound errors.
-    Thread.sleep(5000L);
-    // Queries to this database should now return DatabaseNotFoundExceptions.
-    try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
-      rs.next();
-      fail("Missing expected DatabaseNotFoundException");
-    } catch (DatabaseNotFoundException e) {
-      // This is what we expect.
+    ExponentialBackOff backoff =
+        new ExponentialBackOff.Builder()
+            .setInitialIntervalMillis(1000)
+            .setMaxElapsedTimeMillis(35000)
+            .setMaxIntervalMillis(5000)
+            .build();
+    DatabaseNotFoundException notFoundException = null;
+    long millis = 0L;
+    while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
+      Thread.sleep(millis);
+      // Queries to this database should eventually return DatabaseNotFoundExceptions.
+      try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+        rs.next();
+      } catch (DatabaseNotFoundException e) {
+        // This is what we expect.
+        notFoundException = e;
+      }
     }
+    assertThat(notFoundException).isNotNull();
 
     // Now re-create a database with the same name.
     OperationFuture<Database, CreateDatabaseMetadata> op =
