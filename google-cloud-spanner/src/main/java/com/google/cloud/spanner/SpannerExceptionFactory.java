@@ -26,6 +26,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLHandshakeException;
 
@@ -36,6 +37,11 @@ import javax.net.ssl.SSLHandshakeException;
  * ErrorCode#ABORTED} are always represented by {@link AbortedException}.
  */
 public final class SpannerExceptionFactory {
+  static final String DATABASE_NOT_FOUND_MSG =
+      "Database not found: projects/.*/instances/.*/databases/.*\nresource_type: \"type.googleapis.com/google.spanner.admin.database.v1.Database\"\nresource_name: \"projects/.*/instances/.*/databases/.*\"\ndescription: \"Database does not exist.\"\n";
+  private static final Pattern DATABASE_NOT_FOUND_MSG_PATTERN =
+      Pattern.compile(".*" + DATABASE_NOT_FOUND_MSG + ".*");
+
   public static SpannerException newSpannerException(ErrorCode code, @Nullable String message) {
     return newSpannerException(code, message, null);
   }
@@ -176,7 +182,7 @@ public final class SpannerExceptionFactory {
       case NOT_FOUND:
         if (message != null && message.contains("Session not found")) {
           return new SessionNotFoundException(token, message, cause);
-        } else if (message != null && message.contains("Database not found")) {
+        } else if (message != null && DATABASE_NOT_FOUND_MSG_PATTERN.matcher(message).matches()) {
           return new DatabaseNotFoundException(token, message, cause);
         }
         // Fall through to the default.

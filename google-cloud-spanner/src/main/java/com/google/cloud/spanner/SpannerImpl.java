@@ -89,6 +89,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
 
   @GuardedBy("this")
+  private final List<DatabaseClientImpl> invalidatedDbClients = new ArrayList<>();
+
+  @GuardedBy("this")
   private final Map<DatabaseId, SessionClient> sessionClients = new HashMap<>();
 
   private final DatabaseAdminClient dbAdminClient;
@@ -210,7 +213,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   public DatabaseClient getDatabaseClient(DatabaseId db) {
     synchronized (this) {
       Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
-      if (dbClients.containsKey(db)) {
+      if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
+        // Move the invalidated client to a separate list, so we can close it together with the
+        // other database clients when the Spanner instance is closed.
+        invalidatedDbClients.add(dbClients.get(db));
+        dbClients.remove(db);
+      }
+      if (dbClients.containsKey(db) && dbClients.get(db).pool.isValid()) {
         return dbClients.get(db);
       } else {
         SessionPool pool =
@@ -239,7 +248,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
       spannerIsClosed = true;
       closureFutures = new ArrayList<>();
-      for (DatabaseClientImpl dbClient : dbClients.values()) {
+      invalidatedDbClients.addAll(dbClients.values());
+      for (DatabaseClientImpl dbClient : invalidatedDbClients) {
         closureFutures.add(dbClient.closeAsync());
       }
       dbClients.clear();

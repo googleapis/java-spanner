@@ -776,6 +776,15 @@ final class SessionPool {
       if (lastException != null && isSessionNotFound(lastException)) {
         invalidateSession(this);
       } else {
+        if (lastException != null && isDatabaseNotFound(lastException)) {
+          // Mark this session pool as no longer valid and then release the session into the pool as
+          // there is nothing we can do with it anyways.
+          synchronized (lock) {
+            SessionPool.this.databaseNotFound =
+                MoreObjects.firstNonNull(
+                    SessionPool.this.databaseNotFound, (DatabaseNotFoundException) lastException);
+          }
+        }
         lastException = null;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
@@ -1057,8 +1066,8 @@ final class SessionPool {
   @GuardedBy("lock")
   private SettableFuture<Void> closureFuture;
 
-//  @GuardedBy("lock")
-//  private DatabaseNotFoundException databaseNotFound;
+  @GuardedBy("lock")
+  private DatabaseNotFoundException databaseNotFound;
 
   @GuardedBy("lock")
   private final LinkedList<PooledSession> readSessions = new LinkedList<>();
@@ -1229,6 +1238,13 @@ final class SessionPool {
     return null;
   }
 
+  /** @return true if this {@link SessionPool} is still valid. */
+  boolean isValid() {
+    synchronized (lock) {
+      return closureFuture == null && databaseNotFound == null;
+    }
+  }
+
   /**
    * Returns a session to be used for read requests to spanner. It will block if a session is not
    * currently available. In case the pool is exhausted and {@link
@@ -1255,10 +1271,15 @@ final class SessionPool {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
-//      if (databaseNotFound != null) {
-//        span.addAnnotation("Database has been deleted");
-//        throw SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "The session pool has been invalidated because a previous RPC returned 'Database not found'.", databaseNotFound);
-//      }
+      if (databaseNotFound != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                databaseNotFound.getMessage()),
+            databaseNotFound);
+      }
       sess = readSessions.poll();
       if (sess == null) {
         sess = writePreparedSessions.poll();
@@ -1315,10 +1336,15 @@ final class SessionPool {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
-//      if (databaseNotFound != null) {
-//        span.addAnnotation("Database has been deleted");
-//        throw SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "The session pool has been invalidated because a previous RPC returned 'Database not found'.", databaseNotFound);
-//      }
+      if (databaseNotFound != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                databaseNotFound.getMessage()),
+            databaseNotFound);
+      }
       sess = writePreparedSessions.poll();
       if (sess == null) {
         if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
@@ -1461,7 +1487,9 @@ final class SessionPool {
           break;
         }
       }
-//      this.databaseNotFound = MoreObjects.firstNonNull(this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
+      this.databaseNotFound =
+          MoreObjects.firstNonNull(
+              this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
     }
   }
 
@@ -1484,7 +1512,10 @@ final class SessionPool {
         if (isClosed()) {
           decrementPendingClosures(1);
         }
-//        this.databaseNotFound = MoreObjects.firstNonNull(this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
+        this.databaseNotFound =
+            MoreObjects.firstNonNull(
+                this.databaseNotFound,
+                isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
       } else if (readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);

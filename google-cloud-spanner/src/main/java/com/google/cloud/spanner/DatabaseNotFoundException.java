@@ -20,7 +20,8 @@ import javax.annotation.Nullable;
 
 /**
  * Exception thrown by Cloud Spanner when an operation detects that the database that is being used
- * no longer exists. This type of error has its own subclass as it is a condition that should cause the client library to stop trying to send RPCs to the backend until the user has taken action.
+ * no longer exists. This type of error has its own subclass as it is a condition that should cause
+ * the client library to stop trying to send RPCs to the backend until the user has taken action.
  */
 public class DatabaseNotFoundException extends SpannerException {
   private static final long serialVersionUID = -6395746612598975751L;
