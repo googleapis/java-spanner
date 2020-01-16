@@ -142,8 +142,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   private void setupSession(final Session session) {
     ReadContext mockContext = mock(ReadContext.class);
     final ResultSet mockResult = mock(ResultSet.class);
-    //
-    // when(session.asyncClose()).thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
