@@ -82,7 +82,8 @@ public class IntegrationTestEnv extends ExternalResource {
       isOwnedInstance = false;
       logger.log(Level.INFO, "Using existing test instance: {0}", instanceId);
     } else {
-      instanceId = InstanceId.of(config.spannerOptions().getProjectId(), "test-instance");
+      String instanceName = "test-instance-" + System.currentTimeMillis();
+      instanceId = InstanceId.of(config.spannerOptions().getProjectId(), instanceName);
       isOwnedInstance = true;
     }
     testHelper = createTestHelper(options, instanceId);
