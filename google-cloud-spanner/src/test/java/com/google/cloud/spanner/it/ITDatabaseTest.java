@@ -86,6 +86,7 @@ public class ITDatabaseTest {
       } catch (DatabaseNotFoundException e) {
         // This is what we expect.
         notFoundException = e;
+        break;
       }
     }
     assertThat(notFoundException).isNotNull();

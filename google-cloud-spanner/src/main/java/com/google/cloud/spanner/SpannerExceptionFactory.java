@@ -38,7 +38,10 @@ import javax.net.ssl.SSLHandshakeException;
  */
 public final class SpannerExceptionFactory {
   static final String DATABASE_NOT_FOUND_MSG =
-      "Database not found: projects/.*/instances/.*/databases/.*\nresource_type: \"type.googleapis.com/google.spanner.admin.database.v1.Database\"\nresource_name: \"projects/.*/instances/.*/databases/.*\"\ndescription: \"Database does not exist.\"\n";
+      "Database not found: projects/.*/instances/.*/databases/.*\n"
+          + "resource_type: \"type.googleapis.com/google.spanner.admin.database.v1.Database\"\n"
+          + "resource_name: \"projects/.*/instances/.*/databases/.*\"\n"
+          + "description: \"Database does not exist.\"\n";
   private static final Pattern DATABASE_NOT_FOUND_MSG_PATTERN =
       Pattern.compile(".*" + DATABASE_NOT_FOUND_MSG + ".*");
 

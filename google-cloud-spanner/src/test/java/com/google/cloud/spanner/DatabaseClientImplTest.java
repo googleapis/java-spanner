@@ -52,7 +52,10 @@ import org.threeten.bp.Duration;
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
   private static final String DATABASE_NOT_FOUND_FORMAT =
-      SpannerExceptionFactory.DATABASE_NOT_FOUND_MSG.replaceAll("\\.\\*", "%s");
+      "Database not found: projects/%s/instances/%s/databases/%s\n"
+          + "resource_type: \"type.googleapis.com/google.spanner.admin.database.v1.Database\"\n"
+          + "resource_name: \"projects/%s/instances/%s/databases/%s\"\n"
+          + "description: \"Database does not exist.\"\n";
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
