@@ -34,8 +34,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import org.junit.Before;
@@ -46,6 +44,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
+import org.threeten.bp.Instant;
 
 /** Integration test for commit timestamp of Cloud Spanner. */
 @Category(IntegrationTest.class)
