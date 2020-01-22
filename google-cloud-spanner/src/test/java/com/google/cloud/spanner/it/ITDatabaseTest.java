@@ -17,10 +17,21 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Statement;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import java.util.Collections;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,5 +53,70 @@ public class ITDatabaseTest {
     expectedException.expectMessage("Syntax error on line 1");
 
     env.getTestHelper().createTestDatabase("CREATE TABLE T ( Illegal Way To Define A Table )");
+  }
+
+  @Test
+  public void databaseDeletedTest() throws Exception {
+    // Create a test db, do a query, then delete it and verify that it returns
+    // DatabaseNotFoundExceptions.
+    Database db = env.getTestHelper().createTestDatabase();
+    DatabaseClient client = env.getTestHelper().getClient().getDatabaseClient(db.getId());
+    try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+
+    // Delete the database.
+    db.drop();
+    // We need to wait a little before Spanner actually starts sending DatabaseNotFound errors.
+    ExponentialBackOff backoff =
+        new ExponentialBackOff.Builder()
+            .setInitialIntervalMillis(1000)
+            .setMaxElapsedTimeMillis(35000)
+            .setMaxIntervalMillis(5000)
+            .build();
+    DatabaseNotFoundException notFoundException = null;
+    long millis = 0L;
+    while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
+      Thread.sleep(millis);
+      // Queries to this database should eventually return DatabaseNotFoundExceptions.
+      try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+        rs.next();
+      } catch (DatabaseNotFoundException e) {
+        // This is what we expect.
+        notFoundException = e;
+        break;
+      }
+    }
+    assertThat(notFoundException).isNotNull();
+
+    // Now re-create a database with the same name.
+    OperationFuture<Database, CreateDatabaseMetadata> op =
+        env.getTestHelper()
+            .getClient()
+            .getDatabaseAdminClient()
+            .createDatabase(
+                db.getId().getInstanceId().getInstance(),
+                db.getId().getDatabase(),
+                Collections.<String>emptyList());
+    Database newDb = op.get();
+
+    // Queries using the same DatabaseClient should still return DatabaseNotFoundExceptions.
+    try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      rs.next();
+      fail("Missing expected DatabaseNotFoundException");
+    } catch (DatabaseNotFoundException e) {
+      // This is what we expect.
+    }
+
+    // Now get a new DatabaseClient for the database. This should now result in a valid
+    // DatabaseClient.
+    DatabaseClient newClient = env.getTestHelper().getClient().getDatabaseClient(newDb.getId());
+    try (ResultSet rs = newClient.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
   }
 }
