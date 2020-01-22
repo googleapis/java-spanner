@@ -30,6 +30,7 @@ import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.common.Scope;
@@ -77,6 +78,7 @@ class SessionImpl implements Session {
 
   private final SpannerImpl spanner;
   private final String name;
+  private final SessionName sessionName;
   private SessionTransaction activeTransaction;
   private ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
@@ -85,6 +87,7 @@ class SessionImpl implements Session {
     this.spanner = spanner;
     this.options = options;
     this.name = checkNotNull(name);
+    this.sessionName = SessionName.parse(name);
   }
 
   @Override
@@ -99,7 +102,8 @@ class SessionImpl implements Session {
   @Override
   public long executePartitionedUpdate(Statement stmt) {
     setActive(null);
-    PartitionedDMLTransaction txn = new PartitionedDMLTransaction(this, spanner.getRpc());
+    PartitionedDMLTransaction txn =
+            new PartitionedDMLTransaction(this, spanner.getRpc(sessionName));
     return txn.executePartitionedUpdate(stmt, spanner.getOptions().getPartitionedDmlTimeout());
   }
 
@@ -136,7 +140,7 @@ class SessionImpl implements Session {
             .build();
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      CommitResponse response = spanner.getRpc().commit(request, options);
+      CommitResponse response = spanner.getRpc(sessionName).commit(request, options);
       Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
       span.end();
       return t;
@@ -157,7 +161,8 @@ class SessionImpl implements Session {
   @Override
   public ReadContext singleUse(TimestampBound bound) {
     return setActive(
-        new SingleReadContext(this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+            new SingleReadContext(
+                    this, bound, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
@@ -169,7 +174,7 @@ class SessionImpl implements Session {
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
     return setActive(
         new SingleUseReadOnlyTransaction(
-            this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+            this, bound, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
@@ -181,13 +186,13 @@ class SessionImpl implements Session {
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
     return setActive(
         new MultiUseReadOnlyTransaction(
-            this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+            this, bound, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
   public TransactionRunner readWriteTransaction() {
     return setActive(
-        new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+        new TransactionRunnerImpl(this, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
@@ -200,7 +205,7 @@ class SessionImpl implements Session {
   public void close() {
     Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      spanner.getRpc().deleteSession(name, options);
+      spanner.getRpc(sessionName).deleteSession(name, options);
       span.end();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
@@ -218,7 +223,7 @@ class SessionImpl implements Session {
                   TransactionOptions.newBuilder()
                       .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
               .build();
-      Transaction txn = spanner.getRpc().beginTransaction(request, options);
+      Transaction txn = spanner.getRpc(sessionName).beginTransaction(request, options);
       if (txn.getId().isEmpty()) {
         throw newSpannerException(ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
       }
@@ -233,7 +238,7 @@ class SessionImpl implements Session {
   TransactionContextImpl newTransaction() {
     TransactionContextImpl txn =
         new TransactionContextImpl(
-            this, readyTransactionId, spanner.getRpc(), spanner.getDefaultPrefetchChunks());
+            this, readyTransactionId, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks());
     return txn;
   }
 

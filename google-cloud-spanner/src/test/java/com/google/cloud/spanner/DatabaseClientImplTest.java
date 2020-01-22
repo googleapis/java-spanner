@@ -56,6 +56,7 @@ public class DatabaseClientImplTest {
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
+  private static Spanner spanner;
   private static final Statement UPDATE_STATEMENT =
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
   private static final Statement INVALID_UPDATE_STATEMENT =
@@ -84,7 +85,6 @@ public class DatabaseClientImplTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
-  private Spanner spanner;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -116,20 +116,20 @@ public class DatabaseClientImplTest {
 
   @Before
   public void setUp() throws IOException {
-    spanner =
+    mockSpanner.reset();
+    mockSpanner.removeAllExecutionTimes();
+    SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService();
+                .build();
+    spanner = options.getService();
   }
 
   @After
   public void tearDown() throws Exception {
     spanner.close();
-    mockSpanner.reset();
-    mockSpanner.removeAllExecutionTimes();
   }
 
   /**

@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -35,13 +36,16 @@ import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
 import com.google.rpc.RetryInfo;
+import com.google.spanner.admin.instance.v1.ProjectName;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
+import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import io.grpc.Metadata;
 import io.grpc.Status;
@@ -105,8 +109,10 @@ public class TransactionRunnerImplTest {
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder().setMinSessions(0).build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
+    when(options.getProjectId()).thenReturn(ProjectName.of("test").toString());
     when(options.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
     SpannerRpc rpc = mock(SpannerRpc.class);
+    when(rpc.getOptions()).thenReturn(options);
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
@@ -114,9 +120,18 @@ public class TransactionRunnerImplTest {
               @Override
               public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
                   throws Throwable {
+                DatabaseName databaseName =
+                        DatabaseName.parse((String) invocation.getArguments()[0]);
+                String sessionName =
+                        SessionName.of(
+                                databaseName.getProject(),
+                                databaseName.getInstance(),
+                                databaseName.getDatabase(),
+                                UUID.randomUUID().toString())
+                                .toString();
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0])
+                        .setName(sessionName)
                         .setCreateTime(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build());
@@ -143,6 +158,8 @@ public class TransactionRunnerImplTest {
                     .build();
               }
             });
+    when(rpc.getRpc(any(DatabaseName.class))).thenReturn(rpc);
+    when(rpc.getRpc(any(SessionName.class))).thenReturn(rpc);
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

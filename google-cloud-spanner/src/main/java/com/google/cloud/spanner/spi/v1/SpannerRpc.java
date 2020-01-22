@@ -19,8 +19,11 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.v1.stub.SpannerStub;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
@@ -31,12 +34,14 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
+import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -48,6 +53,7 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +189,8 @@ public interface SpannerRpc extends ServiceRpc {
 
   Instance getInstance(String instanceName) throws SpannerException;
 
+  Instance getInstance(GetInstanceRequest request) throws SpannerException;
+
   void deleteInstance(String instanceName) throws SpannerException;
 
   // Database admin APIs.
@@ -279,4 +287,14 @@ public interface SpannerRpc extends ServiceRpc {
   public void shutdown();
 
   boolean isClosed();
+
+  SpannerOptions getOptions();
+
+  SpannerStub getStub();
+
+  @VisibleForTesting
+  SpannerRpc getRpc(SessionName sessionName);
+
+  @VisibleForTesting
+  SpannerRpc getRpc(DatabaseName databaseName);
 }

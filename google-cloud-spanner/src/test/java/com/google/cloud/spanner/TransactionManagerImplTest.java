@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -34,6 +35,8 @@ import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
+import com.google.spanner.v1.DatabaseName;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import java.util.Arrays;
 import java.util.Collections;
@@ -189,6 +192,7 @@ public class TransactionManagerImplTest {
   @Test
   public void usesPreparedTransaction() {
     SpannerOptions options = mock(SpannerOptions.class);
+    SpannerOptions.Builder builder = mock(SpannerOptions.Builder.class);
     when(options.getNumChannels()).thenReturn(4);
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(new TestExecutorFactory());
@@ -196,6 +200,10 @@ public class TransactionManagerImplTest {
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder().setMinSessions(0).build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
+    when(options.getProjectId()).thenReturn("test");
+    when(builder.build()).thenReturn(options);
+    when(options.toBuilder()).thenReturn(builder);
+    when(options.getClientLibToken()).thenReturn("test");
     when(options.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.batchCreateSessions(
@@ -205,9 +213,18 @@ public class TransactionManagerImplTest {
               @Override
               public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
                   throws Throwable {
+                DatabaseName databaseName =
+                        DatabaseName.parse((String) invocation.getArguments()[0]);
+                String sessionName =
+                        SessionName.of(
+                                databaseName.getProject(),
+                                databaseName.getInstance(),
+                                databaseName.getDatabase(),
+                                UUID.randomUUID().toString())
+                                .toString();
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0])
+                        .setName(sessionName)
                         .setCreateTime(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
@@ -236,6 +253,9 @@ public class TransactionManagerImplTest {
                     .build();
               }
             });
+    when(rpc.getOptions()).thenReturn(options);
+    when(rpc.getRpc(any(SessionName.class))).thenReturn(rpc);
+    when(rpc.getRpc(any(DatabaseName.class))).thenReturn(rpc);
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.spanner.v1.DatabaseName;
+import com.google.spanner.v1.SessionName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,7 +111,8 @@ public class SessionClientTest {
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spanner.getOptions()).thenReturn(spannerOptions);
-    when(spanner.getRpc()).thenReturn(rpc);
+    when(spanner.getRpc(any(SessionName.class))).thenReturn(rpc);
+    when(spanner.getRpc(any(DatabaseName.class))).thenReturn(rpc);
   }
 
   @Test

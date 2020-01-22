@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
+import com.google.spanner.admin.instance.v1.InstanceName;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -39,6 +40,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
   public static final String GCE_PROJECT_ID = "spanner.gce.config.project_id";
   public static final String GCE_SERVER_URL = "spanner.gce.config.server_url";
   public static final String GCE_CREDENTIALS_FILE = "spanner.gce.config.credentials_file";
+  public static final String TEST_ENV_INSTANCE = "spanner.testenv.instance";
   public static final String GCE_STREAM_BROKEN_PROBABILITY =
       "spanner.gce.config.stream_broken_probability";
 
@@ -48,10 +50,15 @@ public class GceTestEnvConfig implements TestEnvConfig {
     String projectId = System.getProperty(GCE_PROJECT_ID, "");
     String serverUrl = System.getProperty(GCE_SERVER_URL, "");
     String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "");
+    String instanceId = System.getProperty(TEST_ENV_INSTANCE, "");
     double errorProbability =
         Double.parseDouble(System.getProperty(GCE_STREAM_BROKEN_PROBABILITY, "0.0"));
     checkState(errorProbability <= 1.0);
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+    if (!instanceId.isEmpty() && InstanceName.isParsableFrom(instanceId)) {
+      InstanceName instanceName = InstanceName.parse(instanceId);
+      builder.setProjectId(instanceName.getProject());
+    }
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }

@@ -100,7 +100,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public ServiceRpc create(SpannerOptions options) {
-      return new GapicSpannerRpc(options);
+      return new GapicSpannerRpc(options, true);
     }
   }
 

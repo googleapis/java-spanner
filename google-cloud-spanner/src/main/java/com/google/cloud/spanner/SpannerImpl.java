@@ -35,6 +35,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.spanner.v1.DatabaseName;
+import com.google.spanner.v1.SessionName;
 import io.grpc.Context;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Tracer;
@@ -83,7 +85,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         READ);
   }
 
-  private final SpannerRpc gapicRpc;
+  private final SpannerRpc spannerRpc;
 
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
@@ -98,12 +100,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private boolean spannerIsClosed = false;
 
   @VisibleForTesting
-  SpannerImpl(SpannerRpc gapicRpc, SpannerOptions options) {
+  SpannerImpl(SpannerRpc spannerRpc, SpannerOptions options) {
     super(options);
-    this.gapicRpc = gapicRpc;
-    this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
+    this.spannerRpc = spannerRpc;
+    this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), spannerRpc);
     this.instanceClient =
-        new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+        new InstanceAdminClientImpl(options.getProjectId(), spannerRpc, dbAdminClient);
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -164,8 +166,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
-  SpannerRpc getRpc() {
-    return gapicRpc;
+  SpannerRpc getRpc(SessionName sessionName) {
+    return spannerRpc.getRpc(sessionName);
+  }
+
+  /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
+  SpannerRpc getRpc(DatabaseName databaseName) {
+    return spannerRpc.getRpc(databaseName);
   }
 
   /** Returns the default setting for prefetchChunks of this {@link SpannerImpl} instance. */
@@ -253,11 +260,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       sessionClient.close();
     }
     sessionClients.clear();
-    try {
-      gapicRpc.shutdown();
-    } catch (RuntimeException e) {
-      logger.log(Level.WARNING, "Failed to close channels", e);
-    }
+    spannerRpc.shutdown();
   }
 
   @Override

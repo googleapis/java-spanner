@@ -136,6 +136,18 @@ public class GapicSpannerRpcTest {
 
     mockInstanceAdmin = new MockInstanceAdminImpl();
     mockDatabaseAdmin = new MockDatabaseAdminImpl();
+    mockInstanceAdmin.addResponse(
+            Instance.newBuilder()
+                    .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
+                    .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
+                    .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
+                    .build());
+    mockInstanceAdmin.addResponse(
+            Instance.newBuilder()
+                    .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
+                    .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
+                    .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
+                    .build());
     address = new InetSocketAddress("localhost", 0);
     server =
         NettyServerBuilder.forAddress(address)
@@ -240,6 +252,7 @@ public class GapicSpannerRpcTest {
       // Create Spanner instance.
       SpannerOptions options = createSpannerOptions();
       Spanner spanner = options.getService();
+      mockInstanceAdmin.addResponse(Instance.getDefaultInstance());
       spanners.add(spanner);
       // Get a database client and do a query. This should initiate threads for the Spanner service.
       DatabaseClient client =
@@ -289,7 +302,7 @@ public class GapicSpannerRpcTest {
                   }
                 })
             .build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
     // existence.
     assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
@@ -310,7 +323,7 @@ public class GapicSpannerRpcTest {
                   }
                 })
             .build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
     assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
         .isNull();
     rpc.shutdown();
@@ -319,7 +332,7 @@ public class GapicSpannerRpcTest {
   @Test
   public void testNoCallCredentials() {
     SpannerOptions options = SpannerOptions.newBuilder().setCredentials(STATIC_CREDENTIALS).build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
     assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
         .isNull();
     rpc.shutdown();

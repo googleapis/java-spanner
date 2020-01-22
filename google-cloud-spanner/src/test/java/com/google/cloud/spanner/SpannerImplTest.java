@@ -31,6 +31,8 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.spanner.admin.instance.v1.ProjectName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +60,8 @@ public class SpannerImplTest {
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
+    when(spannerOptions.getProjectId()).thenReturn(ProjectName.of("[PROJECT]").toString());
+    when(rpc.getOptions()).thenReturn(spannerOptions);
     when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
     impl = new SpannerImpl(rpc, spannerOptions);
   }

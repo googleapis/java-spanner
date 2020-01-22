@@ -95,7 +95,7 @@ public class SpannerGaxRetryTest {
           .asRuntimeException();
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
-  private static LocalChannelProvider channelProvider;
+  private static String uniqueName;
   private Spanner spanner;
   private DatabaseClient client;
   private Spanner spannerWithTimeout;
@@ -110,7 +110,7 @@ public class SpannerGaxRetryTest {
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
 
-    String uniqueName = InProcessServerBuilder.generateName();
+    uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
             // We need to use a real executor for timeouts to occur.
@@ -118,7 +118,6 @@ public class SpannerGaxRetryTest {
             .addService(mockSpanner)
             .build()
             .start();
-    channelProvider = LocalChannelProvider.create(uniqueName);
   }
 
   @AfterClass
@@ -133,7 +132,7 @@ public class SpannerGaxRetryTest {
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
+            .setChannelProvider(LocalChannelProvider.create(uniqueName))
             .setCredentials(NoCredentials.getInstance());
     // Make sure the session pool is empty by default.
     builder.setSessionPoolOption(

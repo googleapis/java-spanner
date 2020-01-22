@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,11 +35,13 @@ import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
+import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.Mutation.Write;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.Session;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -86,6 +89,9 @@ public class SessionImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
+    when(spannerOptions.getProjectId()).thenReturn("p1");
+    when(spannerOptions.toBuilder()).thenReturn(SpannerOptions.newBuilder().setProjectId("p1"));
+    when(rpc.getOptions()).thenReturn(spannerOptions);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
     String dbName = "projects/p1/instances/i1/databases/d1";
@@ -110,6 +116,8 @@ public class SessionImplTest {
             .build();
     Mockito.when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.any(Map.class)))
         .thenReturn(commitResponse);
+    Mockito.when(rpc.getRpc(any(DatabaseName.class))).thenReturn(rpc);
+    Mockito.when(rpc.getRpc(any(SessionName.class))).thenReturn(rpc);
     session = spanner.getSessionClient(db).createSession();
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();

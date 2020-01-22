@@ -25,6 +25,7 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.spanner.v1.DatabaseName;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import java.util.ArrayList;
@@ -201,10 +202,9 @@ class SessionClient implements AutoCloseable {
     }
     Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.CREATE_SESSION).startSpan();
     try (Scope s = SpannerImpl.tracer.withSpan(span)) {
+      SpannerRpc spannerRpc = spanner.getRpc(DatabaseName.parse(db.getName()));
       com.google.spanner.v1.Session session =
-          spanner
-              .getRpc()
-              .createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
+              spannerRpc.createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
       span.end();
       return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {
@@ -278,7 +278,7 @@ class SessionClient implements AutoCloseable {
     try (Scope s = SpannerImpl.tracer.withSpan(span)) {
       List<com.google.spanner.v1.Session> sessions =
           spanner
-              .getRpc()
+              .getRpc(DatabaseName.parse(db.getName()))
               .batchCreateSessions(
                   db.getName(), sessionCount, spanner.getOptions().getSessionLabels(), options);
       span.addAnnotation(

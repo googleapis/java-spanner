@@ -26,6 +26,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -43,6 +44,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
 public class BatchCreateSessionsTest {
@@ -78,6 +81,7 @@ public class BatchCreateSessionsTest {
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
+  @Mock private SpannerRpc gapicRpc;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -104,6 +108,7 @@ public class BatchCreateSessionsTest {
   @Before
   public void setUp() throws IOException {
     mockSpanner.reset();
+    MockitoAnnotations.initMocks(this);
   }
 
   private Spanner createSpanner(int minSessions, int maxSessions) {
@@ -112,13 +117,14 @@ public class BatchCreateSessionsTest {
             .setMinSessions(minSessions)
             .setMaxSessions(maxSessions)
             .build();
-    return SpannerOptions.newBuilder()
-        .setProjectId("[PROJECT]")
-        .setChannelProvider(channelProvider)
-        .setSessionPoolOption(sessionPoolOptions)
-        .setCredentials(NoCredentials.getInstance())
-        .build()
-        .getService();
+    SpannerOptions options =
+            SpannerOptions.newBuilder()
+                    .setProjectId("[PROJECT]")
+                    .setChannelProvider(channelProvider)
+                    .setSessionPoolOption(sessionPoolOptions)
+                    .setCredentials(NoCredentials.getInstance())
+                    .build();
+    return options.getService();
   }
 
   @Test
