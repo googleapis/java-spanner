@@ -118,12 +118,12 @@ public class BatchCreateSessionsTest {
             .setMaxSessions(maxSessions)
             .build();
     SpannerOptions options =
-            SpannerOptions.newBuilder()
-                    .setProjectId("[PROJECT]")
-                    .setChannelProvider(channelProvider)
-                    .setSessionPoolOption(sessionPoolOptions)
-                    .setCredentials(NoCredentials.getInstance())
-                    .build();
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setSessionPoolOption(sessionPoolOptions)
+            .setCredentials(NoCredentials.getInstance())
+            .build();
     return options.getService();
   }
 

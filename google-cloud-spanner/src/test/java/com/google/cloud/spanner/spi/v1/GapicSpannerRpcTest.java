@@ -160,17 +160,17 @@ public class GapicSpannerRpcTest {
             .build()
             .start();
     mockInstanceAdmin.addResponse(
-            Instance.newBuilder()
-                    .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
-                    .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
-                    .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
-                    .build());
+        Instance.newBuilder()
+            .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
+            .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
+            .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
+            .build());
     mockInstanceAdmin.addResponse(
-            Instance.newBuilder()
-                    .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
-                    .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
-                    .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
-                    .build());
+        Instance.newBuilder()
+            .setName(InstanceName.format("[PROJECT]", "[INSTANCE]"))
+            .setConfig(InstanceConfigName.format("[PROJECT]", "[TEST-CONFIG]"))
+            .addEndpointUris("http://" + address.getHostString() + ":" + server.getPort())
+            .build());
     optionsMap.put(Option.CHANNEL_HINT, Long.valueOf(1L));
   }
 

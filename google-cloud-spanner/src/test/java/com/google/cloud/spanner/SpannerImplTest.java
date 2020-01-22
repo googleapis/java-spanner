@@ -28,11 +28,10 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.admin.instance.v1.ProjectName;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.spanner.admin.instance.v1.ProjectName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

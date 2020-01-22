@@ -123,7 +123,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-                .build();
+            .build();
     spanner = options.getService();
   }
 

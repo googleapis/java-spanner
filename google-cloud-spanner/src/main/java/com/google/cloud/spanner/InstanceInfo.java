@@ -23,7 +23,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -173,7 +172,6 @@ public class InstanceInfo {
   private final State state;
   private final ImmutableMap<String, String> labels;
   private final ImmutableList<String> endpointUris;
-
 
   InstanceInfo(BuilderImpl builder) {
     this.id = builder.id;

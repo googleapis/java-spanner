@@ -103,7 +103,7 @@ class SessionImpl implements Session {
   public long executePartitionedUpdate(Statement stmt) {
     setActive(null);
     PartitionedDMLTransaction txn =
-            new PartitionedDMLTransaction(this, spanner.getRpc(sessionName));
+        new PartitionedDMLTransaction(this, spanner.getRpc(sessionName));
     return txn.executePartitionedUpdate(stmt, spanner.getOptions().getPartitionedDmlTimeout());
   }
 
@@ -161,8 +161,8 @@ class SessionImpl implements Session {
   @Override
   public ReadContext singleUse(TimestampBound bound) {
     return setActive(
-            new SingleReadContext(
-                    this, bound, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
+        new SingleReadContext(
+            this, bound, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
@@ -192,7 +192,8 @@ class SessionImpl implements Session {
   @Override
   public TransactionRunner readWriteTransaction() {
     return setActive(
-        new TransactionRunnerImpl(this, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
+        new TransactionRunnerImpl(
+            this, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks()));
   }
 
   @Override
@@ -238,7 +239,10 @@ class SessionImpl implements Session {
   TransactionContextImpl newTransaction() {
     TransactionContextImpl txn =
         new TransactionContextImpl(
-            this, readyTransactionId, spanner.getRpc(sessionName), spanner.getDefaultPrefetchChunks());
+            this,
+            readyTransactionId,
+            spanner.getRpc(sessionName),
+            spanner.getDefaultPrefetchChunks());
     return txn;
   }
 

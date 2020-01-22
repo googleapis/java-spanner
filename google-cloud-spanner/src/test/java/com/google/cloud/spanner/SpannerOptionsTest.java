@@ -389,14 +389,14 @@ public class SpannerOptionsTest {
     final String jdbcToken = "sp-jdbc";
     final String hibernateToken = "sp-hib";
     SpannerOptions options =
-            SpannerOptions.newBuilder().setProjectId("[PROJECT]").setClientLibToken(jdbcToken).build();
+        SpannerOptions.newBuilder().setProjectId("[PROJECT]").setClientLibToken(jdbcToken).build();
     assertThat(options.getClientLibToken()).isEqualTo(jdbcToken);
 
     options =
-            SpannerOptions.newBuilder()
-                    .setProjectId("[PROJECT]")
-                    .setClientLibToken(hibernateToken)
-                    .build();
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setClientLibToken(hibernateToken)
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
 
     options = SpannerOptions.newBuilder().setProjectId("[PROJECT]").build();

@@ -529,7 +529,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return get(getSpannerStub(DatabaseName.parse(databaseName))
             .batchCreateSessionsCallable()
             .futureCall(request, context))
-            .getSessionList();
+        .getSessionList();
   }
 
   @Override
@@ -545,18 +545,21 @@ public class GapicSpannerRpc implements SpannerRpc {
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context = newCallContext(options, databaseName);
     return get(
-            getSpannerStub(DatabaseName.parse(databaseName))
-                    .createSessionCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(DatabaseName.parse(databaseName))
+            .createSessionCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public void deleteSession(String sessionName, @Nullable Map<Option, ?> options)
       throws SpannerException {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context = newCallContext(options, sessionName);
-    get(getSpannerStub(SessionName.parse(sessionName))
-                    .deleteSessionCallable()
-                    .futureCall(request, context));  }
+    get(
+        getSpannerStub(SessionName.parse(sessionName))
+            .deleteSessionCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public StreamingCall read(
@@ -564,8 +567,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = newCallContext(options, request.getSession());
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     getSpannerStub(SessionName.parse(request.getSession()))
-            .streamingReadCallable()
-            .call(request, responseObserver, context);    final StreamController controller = responseObserver.getController();
+        .streamingReadCallable()
+        .call(request, responseObserver, context);
+    final StreamController controller = responseObserver.getController();
     return new StreamingCall() {
       @Override
       public void request(int numMessage) {
@@ -585,18 +589,20 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .executeSqlCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .executeSqlCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout) {
     GrpcCallContext context = newCallContext(options, request.getSession(), timeout);
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .executeSqlCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .executeSqlCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public StreamingCall executeQuery(
@@ -604,8 +610,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = newCallContext(options, request.getSession());
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     getSpannerStub(SessionName.parse(request.getSession()))
-            .executeStreamingSqlCallable()
-            .call(request, responseObserver, context);
+        .executeStreamingSqlCallable()
+        .call(request, responseObserver, context);
     final StreamController controller = responseObserver.getController();
     return new StreamingCall() {
       @Override
@@ -628,9 +634,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .executeBatchDmlCallable()
-                    .futureCall(request, context));
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .executeBatchDmlCallable()
+            .futureCall(request, context));
   }
 
   @Override
@@ -638,44 +644,50 @@ public class GapicSpannerRpc implements SpannerRpc {
       BeginTransactionRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .beginTransactionCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .beginTransactionCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
     GrpcCallContext context = newCallContext(options, commitRequest.getSession());
     return get(
-            getSpannerStub(SessionName.parse(commitRequest.getSession()))
-                    .commitCallable()
-                    .futureCall(commitRequest, context));  }
+        getSpannerStub(SessionName.parse(commitRequest.getSession()))
+            .commitCallable()
+            .futureCall(commitRequest, context));
+  }
 
   @Override
   public void rollback(RollbackRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    get(getSpannerStub(SessionName.parse(request.getSession()))
-                    .rollbackCallable()
-                    .futureCall(request, context));  }
+    get(
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .rollbackCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public PartitionResponse partitionQuery(
       PartitionQueryRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .partitionQueryCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .partitionQueryCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public PartitionResponse partitionRead(
       PartitionReadRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(
-            getSpannerStub(SessionName.parse(request.getSession()))
-                    .partitionReadCallable()
-                    .futureCall(request, context));  }
+        getSpannerStub(SessionName.parse(request.getSession()))
+            .partitionReadCallable()
+            .futureCall(request, context));
+  }
 
   @Override
   public Policy getDatabaseAdminIAMPolicy(String resource) {

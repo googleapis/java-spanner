@@ -21,7 +21,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
-
 import java.util.List;
 import java.util.Map;
 

@@ -214,14 +214,14 @@ public class TransactionManagerImplTest {
               public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
                   throws Throwable {
                 DatabaseName databaseName =
-                        DatabaseName.parse((String) invocation.getArguments()[0]);
+                    DatabaseName.parse((String) invocation.getArguments()[0]);
                 String sessionName =
-                        SessionName.of(
-                                databaseName.getProject(),
-                                databaseName.getInstance(),
-                                databaseName.getDatabase(),
-                                UUID.randomUUID().toString())
-                                .toString();
+                    SessionName.of(
+                            databaseName.getProject(),
+                            databaseName.getInstance(),
+                            databaseName.getDatabase(),
+                            UUID.randomUUID().toString())
+                        .toString();
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName(sessionName)

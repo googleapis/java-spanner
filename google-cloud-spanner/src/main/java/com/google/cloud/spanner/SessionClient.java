@@ -204,7 +204,7 @@ class SessionClient implements AutoCloseable {
     try (Scope s = SpannerImpl.tracer.withSpan(span)) {
       SpannerRpc spannerRpc = spanner.getRpc(DatabaseName.parse(db.getName()));
       com.google.spanner.v1.Session session =
-              spannerRpc.createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
+          spannerRpc.createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
       span.end();
       return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {

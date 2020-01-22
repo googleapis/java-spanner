@@ -27,6 +27,8 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.v1.DatabaseName;
+import com.google.spanner.v1.SessionName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,9 +41,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.google.spanner.v1.DatabaseName;
-import com.google.spanner.v1.SessionName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
