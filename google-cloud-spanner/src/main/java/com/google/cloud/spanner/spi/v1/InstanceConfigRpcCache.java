@@ -40,14 +40,20 @@ class InstanceConfigRpcCache {
   private Logger logger = Logger.getLogger(InstanceConfigRpcCache.class.getName());
   private final GapicSpannerRpc projectClient;
 
+  private static final String RBR_ENABLED_FLAG = "GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING";
+
+  private final boolean rbrEnabled;
+
   InstanceConfigRpcCache(final GapicSpannerRpc projectClient) {
     this.projectClient = projectClient;
+    this.rbrEnabled = Boolean.parseBoolean(System.getProperty(RBR_ENABLED_FLAG, "false"));
     cache =
         CacheBuilder.newBuilder()
             .build(
                 new CacheLoader<InstanceName, SpannerRpc>() {
                   @Override
                   public SpannerRpc load(InstanceName instanceName) throws SpannerException {
+                    if (!rbrEnabled) return projectClient;
                     GetInstanceRequest request =
                         GetInstanceRequest.newBuilder()
                             .setName(instanceName.toString())
