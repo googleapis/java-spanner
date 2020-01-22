@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.spi.v1;
 
-import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
-import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -31,14 +33,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class InstanceConfigRpcCache {
+class InstanceConfigRpcCache {
 
   private final LoadingCache<InstanceName, SpannerRpc> cache;
 
   private Logger logger = Logger.getLogger(InstanceConfigRpcCache.class.getName());
   private final GapicSpannerRpc projectClient;
 
-  public InstanceConfigRpcCache(final GapicSpannerRpc projectClient) {
+  InstanceConfigRpcCache(final GapicSpannerRpc projectClient) {
     this.projectClient = projectClient;
     cache =
         CacheBuilder.newBuilder()
@@ -85,13 +87,13 @@ public class InstanceConfigRpcCache {
                 });
   }
 
-  public SpannerRpc get(SessionName sessionName) {
+  SpannerRpc get(SessionName sessionName) {
     InstanceName instanceName =
         InstanceName.of(sessionName.getProject(), sessionName.getInstance());
     return get(instanceName);
   }
 
-  public SpannerRpc get(DatabaseName databaseName) {
+  SpannerRpc get(DatabaseName databaseName) {
     InstanceName instanceName =
         InstanceName.of(databaseName.getProject(), databaseName.getInstance());
     return get(instanceName);
@@ -111,7 +113,7 @@ public class InstanceConfigRpcCache {
     }
   }
 
-  public void invalidateAll() {
+  void invalidateAll() {
     for (SpannerRpc rpc : cache.asMap().values()) {
       if (rpc == this.projectClient) continue;
       rpc.shutdown();
