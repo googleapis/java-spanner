@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -775,6 +776,15 @@ final class SessionPool {
       if (lastException != null && isSessionNotFound(lastException)) {
         invalidateSession(this);
       } else {
+        if (lastException != null && isDatabaseNotFound(lastException)) {
+          // Mark this session pool as no longer valid and then release the session into the pool as
+          // there is nothing we can do with it anyways.
+          synchronized (lock) {
+            SessionPool.this.databaseNotFound =
+                MoreObjects.firstNonNull(
+                    SessionPool.this.databaseNotFound, (DatabaseNotFoundException) lastException);
+          }
+        }
         lastException = null;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
@@ -1057,6 +1067,9 @@ final class SessionPool {
   private SettableFuture<Void> closureFuture;
 
   @GuardedBy("lock")
+  private DatabaseNotFoundException databaseNotFound;
+
+  @GuardedBy("lock")
   private final LinkedList<PooledSession> readSessions = new LinkedList<>();
 
   @GuardedBy("lock")
@@ -1193,7 +1206,7 @@ final class SessionPool {
   }
 
   private boolean isDatabaseNotFound(SpannerException e) {
-    return e.getErrorCode() == ErrorCode.NOT_FOUND && e.getMessage().contains("Database not found");
+    return e instanceof DatabaseNotFoundException;
   }
 
   private boolean isPermissionDenied(SpannerException e) {
@@ -1225,6 +1238,13 @@ final class SessionPool {
     return null;
   }
 
+  /** @return true if this {@link SessionPool} is still valid. */
+  boolean isValid() {
+    synchronized (lock) {
+      return closureFuture == null && databaseNotFound == null;
+    }
+  }
+
   /**
    * Returns a session to be used for read requests to spanner. It will block if a session is not
    * currently available. In case the pool is exhausted and {@link
@@ -1250,6 +1270,15 @@ final class SessionPool {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
+      }
+      if (databaseNotFound != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                databaseNotFound.getMessage()),
+            databaseNotFound);
       }
       sess = readSessions.poll();
       if (sess == null) {
@@ -1304,7 +1333,17 @@ final class SessionPool {
     PooledSession sess = null;
     synchronized (lock) {
       if (closureFuture != null) {
+        span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
+      }
+      if (databaseNotFound != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                databaseNotFound.getMessage()),
+            databaseNotFound);
       }
       sess = writePreparedSessions.poll();
       if (sess == null) {
@@ -1448,6 +1487,9 @@ final class SessionPool {
           break;
         }
       }
+      this.databaseNotFound =
+          MoreObjects.firstNonNull(
+              this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
     }
   }
 
@@ -1470,6 +1512,10 @@ final class SessionPool {
         if (isClosed()) {
           decrementPendingClosures(1);
         }
+        this.databaseNotFound =
+            MoreObjects.firstNonNull(
+                this.databaseNotFound,
+                isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
       } else if (readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);
