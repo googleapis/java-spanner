@@ -172,10 +172,9 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @AfterClass
-  public static void stopServer() throws InterruptedException {
+  public static void stopServer() {
     spannerClient.close();
     server.shutdown();
-    server.awaitTermination();
   }
 
   @Before

@@ -18,7 +18,6 @@ package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -524,14 +523,9 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public void deleteSession(String sessionName, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    get(asyncDeleteSession(sessionName, options));
-  }
-
-  @Override
-  public ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options) {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context = newCallContext(options, sessionName);
-    return spannerStub.deleteSessionCallable().futureCall(request, context);
+    get(spannerStub.deleteSessionCallable().futureCall(request, context));
   }
 
   @Override

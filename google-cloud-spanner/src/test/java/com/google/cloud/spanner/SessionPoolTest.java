@@ -32,8 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
@@ -47,7 +45,6 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -220,8 +217,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     leakedSession.clearLeakedException();
     session1.close();
     pool.closeAsync().get(5L, TimeUnit.SECONDS);
-    verify(mockSession1).asyncClose();
-    verify(mockSession2).asyncClose();
+    verify(mockSession1).close();
+    verify(mockSession2).close();
   }
 
   @Test
@@ -877,16 +874,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), any(SessionConsumer.class));
     for (Session session : new Session[] {session1, session2, session3}) {
       doAnswer(
-              new Answer<ApiFuture<Empty>>() {
+              new Answer<Void>() {
 
                 @Override
-                public ApiFuture<Empty> answer(InvocationOnMock invocation) throws Throwable {
+                public Void answer(InvocationOnMock invocation) throws Throwable {
                   numSessionClosed.incrementAndGet();
-                  return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+                  return null;
                 }
               })
           .when(session)
-          .asyncClose();
+          .close();
     }
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
@@ -1164,8 +1161,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerRpc.StreamingCall closedStreamingCall = mock(SpannerRpc.StreamingCall.class);
         doThrow(sessionNotFound).when(closedStreamingCall).request(Mockito.anyInt());
         SpannerRpc rpc = mock(SpannerRpc.class);
-        when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(rpc.executeQuery(
                 any(ExecuteSqlRequest.class), any(ResultStreamConsumer.class), any(Map.class)))
             .thenReturn(closedStreamingCall);
@@ -1182,8 +1177,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             hasPreparedTransaction ? ByteString.copyFromUtf8("test-txn") : null;
         final TransactionContextImpl closedTransactionContext =
             new TransactionContextImpl(closedSession, preparedTransactionId, rpc, 10);
-        when(closedSession.asyncClose())
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
         when(closedSession.beginTransaction()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
@@ -1191,8 +1184,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
         final SessionImpl openSession = mock(SessionImpl.class);
-        when(openSession.asyncClose())
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(openSession.getName())
             .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
         final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);

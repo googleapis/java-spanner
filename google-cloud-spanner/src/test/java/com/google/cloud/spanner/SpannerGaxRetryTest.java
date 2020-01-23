@@ -122,9 +122,8 @@ public class SpannerGaxRetryTest {
   }
 
   @AfterClass
-  public static void stopServer() throws InterruptedException {
+  public static void stopServer() {
     server.shutdown();
-    server.awaitTermination();
   }
 
   @Before
