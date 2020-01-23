@@ -114,7 +114,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
           Thread.sleep(500L);
         } catch (SpannerException e) {
           if (e.getErrorCode() == ErrorCode.NOT_FOUND
-              && e.getMessage().contains("Session not found")) {
+              && (e.getMessage().contains("Session not found")
+                  || e.getMessage().contains("Session was concurrently deleted"))) {
             break;
           } else {
             throw e;
