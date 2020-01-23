@@ -163,9 +163,8 @@ public class GapicSpannerRpcTest {
   }
 
   @After
-  public void stopServer() throws InterruptedException {
+  public void stopServer() {
     server.shutdown();
-    server.awaitTermination();
   }
 
   private static final int NUMBER_OF_TEST_RUNS = 2;

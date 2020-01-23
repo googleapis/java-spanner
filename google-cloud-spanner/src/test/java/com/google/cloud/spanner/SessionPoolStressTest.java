@@ -22,12 +22,9 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.protobuf.Empty;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -155,15 +152,14 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             });
     when(mockResult.next()).thenReturn(true);
     doAnswer(
-            new Answer<ApiFuture<Empty>>() {
+            new Answer<Void>() {
 
               @Override
-              public ApiFuture<Empty> answer(InvocationOnMock invocation) throws Throwable {
+              public Void answer(InvocationOnMock invocation) throws Throwable {
                 synchronized (lock) {
                   if (expiredSessions.contains(session.getName())) {
-                    return ApiFutures.immediateFailedFuture(
-                        SpannerExceptionFactory.newSpannerException(
-                            ErrorCode.NOT_FOUND, "Session not found"));
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.NOT_FOUND, "Session not found");
                   }
                   if (sessions.remove(session.getName()) == null) {
                     setFailed(closedSessions.get(session.getName()));
@@ -173,11 +169,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     minSessionsWhenSessionClosed = sessions.size();
                   }
                 }
-                return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+                return null;
               }
             })
         .when(session)
-        .asyncClose();
+        .close();
 
     doAnswer(
             new Answer<Void>() {
