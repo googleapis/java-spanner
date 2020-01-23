@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -32,6 +33,7 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
+import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
 import com.google.rpc.RetryInfo;
@@ -107,6 +109,8 @@ public class TransactionRunnerImplTest {
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
     SpannerRpc rpc = mock(SpannerRpc.class);
+    when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
+        .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
