@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.InternalApi;
 import com.google.protobuf.Empty;
 
 /**
@@ -42,6 +43,7 @@ import com.google.protobuf.Empty;
  * require external synchronization; {@code Session} implementations are not required to be
  * thread-safe.
  */
+@InternalApi
 public interface Session extends DatabaseClient, AutoCloseable {
   /** Returns the resource name associated with this session. */
   String getName();
