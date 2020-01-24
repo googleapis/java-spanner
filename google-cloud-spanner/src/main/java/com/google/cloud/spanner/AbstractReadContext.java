@@ -457,7 +457,7 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
-    span.end();
+    span.end(TraceUtil.END_SPAN_OPTIONS);
     synchronized (lock) {
       isClosed = true;
     }

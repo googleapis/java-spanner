@@ -71,18 +71,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String QUERY = "CloudSpannerOperation.ExecuteStreamingQuery";
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
 
-  static {
-    TraceUtil.exportSpans(
-        BATCH_CREATE_SESSIONS,
-        BATCH_CREATE_SESSIONS_REQUEST,
-        CREATE_SESSION,
-        DELETE_SESSION,
-        BEGIN_TRANSACTION,
-        COMMIT,
-        QUERY,
-        READ);
-  }
-
   private final SpannerRpc gapicRpc;
 
   @GuardedBy("this")

@@ -31,6 +31,7 @@ import com.google.spanner.v1.PartialResultSet;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
+import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -157,7 +158,7 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
 
     resumableStreamIterator.close("closed");
-    verify(span).end();
+    verify(span).end(EndSpanOptions.builder().setSampleToLocalSpanStore(true).build());
   }
 
   @Test
