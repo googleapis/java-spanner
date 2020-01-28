@@ -21,7 +21,6 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.client.util.BackOff;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -151,17 +150,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         return aborted;
       }
-    }
-
-    /** Return the delay in milliseconds between requests to Cloud Spanner. */
-    long getRetryDelayInMillis(BackOff backoff) {
-      long delay = SpannerImpl.nextBackOffMillis(backoff);
-      synchronized (lock) {
-        if (retryDelayInMillis >= 0) {
-          return retryDelayInMillis;
-        }
-      }
-      return delay;
     }
 
     void rollback() {
