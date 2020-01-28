@@ -16,11 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExceptionForCancellation;
-
-import com.google.api.client.util.BackOff;
-import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.BaseService;
 import com.google.cloud.PageImpl;
@@ -32,22 +27,15 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.Context;
-import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -55,9 +43,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
-  private static final int MIN_BACKOFF_MS = 1000;
-  private static final int MAX_BACKOFF_MS = 32000;
-
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
   static final Tracer tracer = Tracing.getTracer();
 
@@ -99,59 +84,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   SpannerImpl(SpannerOptions options) {
     this(options.getSpannerRpcV1(), options);
-  }
-
-  static ExponentialBackOff newBackOff() {
-    return new ExponentialBackOff.Builder()
-        .setInitialIntervalMillis(MIN_BACKOFF_MS)
-        .setMaxIntervalMillis(MAX_BACKOFF_MS)
-        .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
-        .build();
-  }
-
-  static void backoffSleep(Context context, BackOff backoff) throws SpannerException {
-    backoffSleep(context, nextBackOffMillis(backoff));
-  }
-
-  static long nextBackOffMillis(BackOff backoff) throws SpannerException {
-    try {
-      return backoff.nextBackOffMillis();
-    } catch (IOException e) {
-      throw newSpannerException(ErrorCode.INTERNAL, e.getMessage(), e);
-    }
-  }
-
-  static void backoffSleep(Context context, long backoffMillis) throws SpannerException {
-    tracer
-        .getCurrentSpan()
-        .addAnnotation(
-            "Backing off",
-            ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
-    final CountDownLatch latch = new CountDownLatch(1);
-    final Context.CancellationListener listener =
-        new Context.CancellationListener() {
-          @Override
-          public void cancelled(Context context) {
-            // Wakeup on cancellation / DEADLINE_EXCEEDED.
-            latch.countDown();
-          }
-        };
-
-    context.addListener(listener, DirectExecutor.INSTANCE);
-    try {
-      if (backoffMillis == BackOff.STOP) {
-        // Highly unlikely but we handle it just in case.
-        backoffMillis = MAX_BACKOFF_MS;
-      }
-      if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
-        // Woken by context cancellation.
-        throw newSpannerExceptionForCancellation(context, null);
-      }
-    } catch (InterruptedException interruptExcept) {
-      throw newSpannerExceptionForCancellation(context, interruptExcept);
-    } finally {
-      context.removeListener(listener);
-    }
   }
 
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
@@ -285,14 +217,5 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     abstract Paginated<T> getNextPage(@Nullable String nextPageToken);
 
     abstract S fromProto(T proto);
-  }
-
-  private enum DirectExecutor implements Executor {
-    INSTANCE;
-
-    @Override
-    public void execute(Runnable command) {
-      command.run();
-    }
   }
 }
