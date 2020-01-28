@@ -22,7 +22,10 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.spanner.v1.stub.SpannerStub;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Throwables;
+import com.google.spanner.v1.RollbackRequest;
 import io.grpc.Context;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -34,12 +37,19 @@ import org.threeten.bp.Duration;
  * a cap on the number of retries.
  */
 class SpannerRetryHelper {
+
+  /**
+   * Use the same {@link RetrySettings} for retrying an aborted transaction as for retrying a {@link
+   * RollbackRequest}. The {@link RollbackRequest} automatically uses the default retry settings
+   * defined for the {@link SpannerStub}. By referencing these settings, the retry settings for
+   * retrying aborted transactions will also automatically be updated if the default retry settings
+   * are updated.
+   *
+   * <p>These default {@link RetrySettings} are only used if no retry information is returned by the
+   * {@link AbortedException}.
+   */
   private static final RetrySettings txRetrySettings =
-      RetrySettings.newBuilder()
-          .setInitialRetryDelay(Duration.ofMillis(1000L))
-          .setMaxRetryDelay(Duration.ofMillis(32000L))
-          .setTotalTimeout(Duration.ofMillis(Integer.MAX_VALUE))
-          .build();
+      SpannerStubSettings.newBuilder().rollbackSettings().getRetrySettings();
 
   /** Executes the {@link Callable} and retries if it fails with an {@link AbortedException}. */
   static <T> T runTxWithRetriesOnAborted(Callable<T> callable) {
