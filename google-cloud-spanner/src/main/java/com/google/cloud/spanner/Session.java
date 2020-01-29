@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.InternalApi;
+import com.google.protobuf.Empty;
+
 /**
  * A {@code Session} can be used to perform transactions that read and/or modify data in a Cloud
  * Spanner database.
@@ -39,6 +43,7 @@ package com.google.cloud.spanner;
  * require external synchronization; {@code Session} implementations are not required to be
  * thread-safe.
  */
+@InternalApi
 public interface Session extends DatabaseClient, AutoCloseable {
   /** Returns the resource name associated with this session. */
   String getName();
@@ -54,4 +59,10 @@ public interface Session extends DatabaseClient, AutoCloseable {
 
   @Override
   void close();
+
+  /**
+   * Closes the session asynchronously and returns the {@link ApiFuture} that can be used to monitor
+   * the operation progress.
+   */
+  ApiFuture<Empty> asyncClose();
 }

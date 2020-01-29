@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -142,7 +144,7 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       CommitResponse response = spanner.getRpc(sessionName).commit(request, options);
       Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       return t;
     } catch (IllegalArgumentException e) {
       TraceUtil.endSpanWithFailure(span, e);
@@ -203,11 +205,16 @@ class SessionImpl implements Session {
   }
 
   @Override
+  public ApiFuture<Empty> asyncClose() {
+    return spanner.getRpc(sessionName).asyncDeleteSession(name, options);
+  }
+
+  @Override
   public void close() {
     Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       spanner.getRpc(sessionName).deleteSession(name, options);
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -228,7 +235,7 @@ class SessionImpl implements Session {
       if (txn.getId().isEmpty()) {
         throw newSpannerException(ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
       }
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       return txn.getId();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);

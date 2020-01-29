@@ -127,8 +127,8 @@ class SessionClient implements AutoCloseable {
     public void run() {
       List<SessionImpl> sessions = null;
       int remainingSessionsToCreate = sessionCount;
-      try (Scope scope =
-          SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startScopedSpan()) {
+      Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startSpan();
+      try (Scope s = SpannerImpl.tracer.withSpan(span)) {
         SpannerImpl.tracer
             .getCurrentSpan()
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
@@ -145,6 +145,8 @@ class SessionClient implements AutoCloseable {
           }
           remainingSessionsToCreate -= sessions.size();
         }
+      } finally {
+        span.end(TraceUtil.END_SPAN_OPTIONS);
       }
     }
   }
@@ -205,7 +207,7 @@ class SessionClient implements AutoCloseable {
       SpannerRpc spannerRpc = spanner.getRpc(DatabaseName.parse(db.getName()));
       com.google.spanner.v1.Session session =
           spannerRpc.createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
@@ -284,7 +286,7 @@ class SessionClient implements AutoCloseable {
       span.addAnnotation(
           String.format(
               "Request for %d sessions returned %d sessions", sessionCount, sessions.size()));
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
       List<SessionImpl> res = new ArrayList<>(sessionCount);
       for (com.google.spanner.v1.Session session : sessions) {
         res.add(new SessionImpl(spanner, session.getName(), options));

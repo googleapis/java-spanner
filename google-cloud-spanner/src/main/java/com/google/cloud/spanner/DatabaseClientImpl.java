@@ -37,10 +37,6 @@ class DatabaseClientImpl implements DatabaseClient {
     READ_WRITE
   }
 
-  static {
-    TraceUtil.exportSpans(READ_WRITE_TRANSACTION, READ_ONLY_TRANSACTION, PARTITION_DML_TRANSACTION);
-  }
-
   @VisibleForTesting final SessionPool pool;
 
   DatabaseClientImpl(SessionPool pool) {
@@ -73,7 +69,7 @@ class DatabaseClientImpl implements DatabaseClient {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
     } finally {
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 
@@ -93,7 +89,7 @@ class DatabaseClientImpl implements DatabaseClient {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
     } finally {
-      span.end();
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 

@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -35,6 +37,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
@@ -71,10 +74,6 @@ final class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-
-  static {
-    TraceUtil.exportSpans(WAIT_FOR_SESSION);
-  }
 
   /**
    * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
@@ -768,6 +767,12 @@ final class SessionPool {
     }
 
     @Override
+    public ApiFuture<Empty> asyncClose() {
+      close();
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
@@ -854,7 +859,8 @@ final class SessionPool {
     private PooledSession take() throws SpannerException {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
-        try (Scope waitScope = tracer.spanBuilder(WAIT_FOR_SESSION).startScopedSpan()) {
+        Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
+        try (Scope waitScope = tracer.withSpan(span)) {
           SessionOrError s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
@@ -870,6 +876,8 @@ final class SessionPool {
         } catch (Exception e) {
           TraceUtil.endSpanWithFailure(tracer.getCurrentSpan(), e);
           throw e;
+        } finally {
+          span.end(TraceUtil.END_SPAN_OPTIONS);
         }
       }
     }
@@ -999,7 +1007,7 @@ final class SessionPool {
       }
       for (PooledSession sess : sessionsToClose) {
         logger.log(Level.FINE, "Closing session {0}", sess.getName());
-        closeSession(sess);
+        closeSessionAsync(sess);
       }
     }
 
@@ -1612,37 +1620,27 @@ final class SessionPool {
     }
   }
 
-  private void closeSessionAsync(final PooledSession sess) {
-    executor.submit(
+  private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
+    ApiFuture<Empty> res = sess.delegate.asyncClose();
+    res.addListener(
         new Runnable() {
           @Override
           public void run() {
-            closeSession(sess);
+            synchronized (lock) {
+              allSessions.remove(sess);
+              if (isClosed()) {
+                decrementPendingClosures(1);
+                return;
+              }
+              // Create a new session if needed to unblock some waiter.
+              if (numWaiters() > numSessionsBeingCreated) {
+                createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated));
+              }
+            }
           }
-        });
-  }
-
-  private void closeSession(PooledSession sess) {
-    try {
-      sess.delegate.close();
-    } catch (SpannerException e) {
-      // Backend will delete these sessions after a while even if we fail to close them.
-      if (logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "Failed to close session: " + sess.getName(), e);
-      }
-    } finally {
-      synchronized (lock) {
-        allSessions.remove(sess);
-        if (isClosed()) {
-          decrementPendingClosures(1);
-          return;
-        }
-        // Create a new session if needed to unblock some waiter.
-        if (numWaiters() > numSessionsBeingCreated) {
-          createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated));
-        }
-      }
-    }
+        },
+        executor);
+    return res;
   }
 
   private void prepareSession(final PooledSession sess) {
