@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -155,7 +156,18 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
           @Override
           public Paginated<com.google.spanner.admin.database.v1.Database> getNextPage(
               String nextPageToken) {
-            return rpc.listDatabases(instanceName, pageSize, nextPageToken);
+            try {
+              return rpc.listDatabases(instanceName, pageSize, nextPageToken);
+            } catch (SpannerException e) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  e.getErrorCode(),
+                  String.format(
+                      "Failed to list the databases of %s with pageToken %s: %s",
+                      instanceName,
+                      MoreObjects.firstNonNull(nextPageToken, "<null>"),
+                      e.getMessage()),
+                  e);
+            }
           }
 
           @Override

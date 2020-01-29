@@ -43,6 +43,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -168,6 +169,39 @@ public class DatabaseAdminClientImplTest {
     assertThat(dbs.get(0).getId().getName()).isEqualTo(DB_NAME);
     assertThat(dbs.get(1).getId().getName()).isEqualTo(DB_NAME2);
     assertThat(dbs.size()).isEqualTo(2);
+  }
+
+  @Test
+  public void listDatabasesError() {
+    when(rpc.listDatabases(INSTANCE_NAME, 1, null))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    try {
+      client.listDatabases(INSTANCE_ID, Options.pageSize(1));
+      Assert.fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getMessage()).contains(INSTANCE_NAME);
+      // Assert that the call was done without a page token.
+      assertThat(e.getMessage()).contains("with pageToken <null>");
+    }
+  }
+
+  @Test
+  public void listDatabaseErrorWithToken() {
+    String pageToken = "token";
+    when(rpc.listDatabases(INSTANCE_NAME, 1, null))
+        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getDatabaseProto()), pageToken));
+    when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    try {
+      Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
+      Assert.fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getMessage()).contains(INSTANCE_NAME);
+      // Assert that the call was done without a page token.
+      assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
+    }
   }
 
   @Test
