@@ -561,8 +561,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context = newCallContext(options, sessionName);
     return getSpannerStub(SessionName.parse(sessionName))
-            .deleteSessionCallable()
-            .futureCall(request, context);
+        .deleteSessionCallable()
+        .futureCall(request, context);
   }
 
   @Override
