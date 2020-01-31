@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -44,6 +45,9 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
+import com.google.cloud.spanner.v1.MetricRegistryTestUtils.FakeMetricRegistry;
+import com.google.cloud.spanner.v1.MetricRegistryTestUtils.MetricsRecord;
+import com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -53,6 +57,8 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
+import io.opencensus.metrics.LabelValue;
+import io.opencensus.metrics.MetricRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -108,6 +114,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private SessionPool createPool(Clock clock) {
     return SessionPool.createPool(
         options, new TestExecutorFactory(), client.getSessionClient(db), clock);
+  }
+
+  private SessionPool createPool(
+      Clock clock, MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+    return SessionPool.createPool(
+        options,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        clock,
+        metricRegistry,
+        labelValues);
   }
 
   @Before
@@ -1542,6 +1559,34 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool(clock);
     DatabaseClientImpl impl = new DatabaseClientImpl(pool);
     assertThat(impl.executePartitionedUpdate(statement)).isEqualTo(1L);
+  }
+
+  @Test
+  public void testSessionMetrics() {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setMaxIdleSessions(0)
+            .build();
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
+    FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
+    List<LabelValue> labelValues =
+        Arrays.asList(
+            LabelValue.create("database1"),
+            LabelValue.create("instance1"),
+            LabelValue.create("1.0.0"));
+
+    pool = createPool(clock, metricRegistry, labelValues);
+    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+
+    MetricsRecord record = metricRegistry.pollRecord();
+    assertThat(record.metrics).containsEntry(MetricRegistryConstants.ACTIVE_SESSIONS, 0L);
+    assertThat(record.metrics)
+        .containsEntry(
+            MetricRegistryConstants.MAX_SESSIONS, Long.valueOf(options.getMaxSessions()));
+    assertThat(record.labels).containsEntry(SPANNER_LABEL_KEYS, labelValues);
   }
 
   private void mockKeepAlive(Session session) {
