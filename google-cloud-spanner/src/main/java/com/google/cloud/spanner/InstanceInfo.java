@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.api.core.InternalApi;
 import com.google.cloud.FieldSelector;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;

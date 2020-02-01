@@ -17,15 +17,19 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExceptionForCancellation;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.client.util.BackOff;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
@@ -46,6 +50,7 @@ import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -55,7 +60,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -820,8 +828,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @VisibleForTesting
   abstract static class ResumableStreamIterator extends AbstractIterator<PartialResultSet>
       implements CloseableIterator<PartialResultSet> {
+    private static final RetrySettings STREAMING_RETRY_SETTINGS =
+        SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
     private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
-    private final BackOff backOff = SpannerImpl.newBackOff();
+    private final BackOff backOff = newBackOff();
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final Span span;
@@ -839,6 +849,70 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       checkArgument(maxBufferSize >= 0);
       this.maxBufferSize = maxBufferSize;
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent).startSpan();
+    }
+
+    private static ExponentialBackOff newBackOff() {
+      return new ExponentialBackOff.Builder()
+          .setMultiplier(STREAMING_RETRY_SETTINGS.getRetryDelayMultiplier())
+          .setInitialIntervalMillis(
+              (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis())
+          .setMaxIntervalMillis((int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis())
+          .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
+          .build();
+    }
+
+    private static void backoffSleep(Context context, BackOff backoff) throws SpannerException {
+      backoffSleep(context, nextBackOffMillis(backoff));
+    }
+
+    private static long nextBackOffMillis(BackOff backoff) throws SpannerException {
+      try {
+        return backoff.nextBackOffMillis();
+      } catch (IOException e) {
+        throw newSpannerException(ErrorCode.INTERNAL, e.getMessage(), e);
+      }
+    }
+
+    private static void backoffSleep(Context context, long backoffMillis) throws SpannerException {
+      tracer
+          .getCurrentSpan()
+          .addAnnotation(
+              "Backing off",
+              ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
+      final CountDownLatch latch = new CountDownLatch(1);
+      final Context.CancellationListener listener =
+          new Context.CancellationListener() {
+            @Override
+            public void cancelled(Context context) {
+              // Wakeup on cancellation / DEADLINE_EXCEEDED.
+              latch.countDown();
+            }
+          };
+
+      context.addListener(listener, DirectExecutor.INSTANCE);
+      try {
+        if (backoffMillis == BackOff.STOP) {
+          // Highly unlikely but we handle it just in case.
+          backoffMillis = STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis();
+        }
+        if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
+          // Woken by context cancellation.
+          throw newSpannerExceptionForCancellation(context, null);
+        }
+      } catch (InterruptedException interruptExcept) {
+        throw newSpannerExceptionForCancellation(context, interruptExcept);
+      } finally {
+        context.removeListener(listener);
+      }
+    }
+
+    private enum DirectExecutor implements Executor {
+      INSTANCE;
+
+      @Override
+      public void execute(Runnable command) {
+        command.run();
+      }
     }
 
     abstract CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken);
@@ -915,9 +989,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             try (Scope s = tracer.withSpan(span)) {
               long delay = e.getRetryDelayInMillis();
               if (delay != -1) {
-                SpannerImpl.backoffSleep(context, delay);
+                backoffSleep(context, delay);
               } else {
-                SpannerImpl.backoffSleep(context, backOff);
+                backoffSleep(context, backOff);
               }
             }
             continue;
