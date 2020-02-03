@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,16 @@ class InstanceConfigRpcCache {
   private Logger logger = Logger.getLogger(InstanceConfigRpcCache.class.getName());
   private final GapicSpannerRpc projectClient;
 
-  private static final String RBR_ENABLED_FLAG = "GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING";
+  private static final String RBR_ENABLED_FLAG = "GOOGLE_CLOUD_SPANNER_ENABLE_RESOURCE_BASED_ROUTING";
 
   private final boolean rbrEnabled;
+
+  private static final String PERMISSIONS_ERROR_MSG = "The client library attempted to connect to an endpoint closer to your Cloud " +
+  "Spanner data but was unable to do so. The client library will fall back and " +
+  "route requests to the endpoint given in the client options, which may result in " +
+  "increased latency. We recommend including the scope " +
+  "https://www.googleapis.com/auth/spanner.admin so that the client library can " +
+  "get an instance-specific endpoint and efficiently route requests.";
 
   InstanceConfigRpcCache(final GapicSpannerRpc projectClient) {
     this.projectClient = projectClient;
@@ -57,7 +64,7 @@ class InstanceConfigRpcCache {
                     GetInstanceRequest request =
                         GetInstanceRequest.newBuilder()
                             .setName(instanceName.toString())
-                            .setFieldMask(FieldMask.newBuilder().addPaths("endpoint_urls"))
+                            .setFieldMask(FieldMask.newBuilder().addPaths("endpoint_uris"))
                             .build();
                     SpannerOptions.Builder optionsBuilder = projectClient.getOptions().toBuilder();
                     try {
@@ -71,6 +78,9 @@ class InstanceConfigRpcCache {
                       if (e.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
                         // Ignore...
                         // This is backwards compatibility.
+                        return projectClient;
+                      } else if (e.getErrorCode() == ErrorCode.PERMISSION_DENIED) {
+                        logger.log(Level.WARNING, PERMISSIONS_ERROR_MSG);
                         return projectClient;
                       } else {
                         logger.log(

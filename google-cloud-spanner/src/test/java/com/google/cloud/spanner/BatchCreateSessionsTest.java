@@ -117,14 +117,13 @@ public class BatchCreateSessionsTest {
             .setMinSessions(minSessions)
             .setMaxSessions(maxSessions)
             .build();
-    SpannerOptions options =
-        SpannerOptions.newBuilder()
+    return SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setSessionPoolOption(sessionPoolOptions)
             .setCredentials(NoCredentials.getInstance())
-            .build();
-    return options.getService();
+            .build()
+            .getService();
   }
 
   @Test
