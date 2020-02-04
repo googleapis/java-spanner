@@ -16,16 +16,16 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.ACTIVE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.ACTIVE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_IN_USE;
+import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_IN_USE_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.ACTIVE_SESSIONS;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.ACTIVE_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.COUNT;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.MAX_SESSIONS;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.MAX_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SESSIONS_IN_USE;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SESSIONS_IN_USE_DESCRIPTION;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;

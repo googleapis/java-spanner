@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.spanner.v1.stub.metrics;
+package com.google.cloud.spanner;
 
 import com.google.common.collect.ImmutableList;
 import io.opencensus.metrics.LabelKey;

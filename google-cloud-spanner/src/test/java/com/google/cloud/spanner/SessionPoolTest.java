@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
-import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -36,6 +36,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
+import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
@@ -45,9 +47,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
-import com.google.cloud.spanner.v1.MetricRegistryTestUtils.FakeMetricRegistry;
-import com.google.cloud.spanner.v1.MetricRegistryTestUtils.MetricsRecord;
-import com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
