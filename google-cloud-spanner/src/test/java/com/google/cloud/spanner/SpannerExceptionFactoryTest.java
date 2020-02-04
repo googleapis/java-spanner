@@ -72,7 +72,7 @@ public class SpannerExceptionFactoryTest {
 
   private static ResourceNotFoundException newResourceNotFoundException(
       String shortName, String resourceType, String resourceName) {
-    return (SessionNotFoundException)
+    return (ResourceNotFoundException)
         SpannerExceptionFactory.newSpannerException(
             newStatusResourceNotFoundException(shortName, resourceType, resourceName));
   }
@@ -177,6 +177,13 @@ public class SpannerExceptionFactoryTest {
     SessionNotFoundException e =
         newSessionNotFoundException("projects/p/instances/i/databases/d/sessions/s");
     assertThat(e.getResourceName()).isEqualTo("projects/p/instances/i/databases/d/sessions/s");
+  }
+
+  @Test
+  public void databaseNotFound() {
+    DatabaseNotFoundException e =
+        newDatabaseNotFoundException("projects/p/instances/i/databases/d");
+    assertThat(e.getResourceName()).isEqualTo("projects/p/instances/i/databases/d");
   }
 
   @Test
