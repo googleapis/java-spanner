@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.rpc.ResourceInfo;
 import javax.annotation.Nullable;
 
 /**
@@ -23,12 +25,15 @@ import javax.annotation.Nullable;
  * no longer exists. This type of error has its own subclass as it is a condition that should cause
  * the client library to stop trying to send RPCs to the backend until the user has taken action.
  */
-public class DatabaseNotFoundException extends SpannerException {
+public class DatabaseNotFoundException extends ResourceNotFoundException {
   private static final long serialVersionUID = -6395746612598975751L;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   DatabaseNotFoundException(
-      DoNotConstructDirectly token, @Nullable String message, @Nullable Throwable cause) {
-    super(token, ErrorCode.NOT_FOUND, false, message, cause);
+      DoNotConstructDirectly token,
+      @Nullable String message,
+      ResourceInfo resourceInfo,
+      @Nullable Throwable cause) {
+    super(token, message, resourceInfo, cause);
   }
 }

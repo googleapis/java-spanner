@@ -162,8 +162,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                 synchronized (lock) {
                   if (expiredSessions.contains(session.getName())) {
                     return ApiFutures.immediateFailedFuture(
-                        SpannerExceptionFactory.newSpannerException(
-                            ErrorCode.NOT_FOUND, "Session not found"));
+                        SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName()));
                   }
                   if (sessions.remove(session.getName()) == null) {
                     setFailed(closedSessions.get(session.getName()));
@@ -185,8 +184,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               public Void answer(InvocationOnMock invocation) throws Throwable {
                 if (random.nextInt(100) < 10) {
                   expireSession(session);
-                  throw SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.NOT_FOUND, "Session not found");
+                  throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());
                 }
                 synchronized (lock) {
                   if (sessions.put(session.getName(), true)) {
