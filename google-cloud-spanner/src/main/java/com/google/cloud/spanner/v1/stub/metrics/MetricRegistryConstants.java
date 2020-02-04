@@ -44,7 +44,10 @@ public class MetricRegistryConstants {
   // The Metric name and description
   public static final String ACTIVE_SESSIONS = "cloud.google.com/java/spanner/active_sessions";
   public static final String MAX_SESSIONS = "cloud.google.com/java/spanner/max_sessions";
+  public static final String SESSIONS_IN_USE = "cloud.google.com/java/spanner/sessions_in_use";
   public static final String ACTIVE_SESSIONS_DESCRIPTION =
       "Max number of sessions in use during the last 10 minutes";
   public static final String MAX_SESSIONS_DESCRIPTION = "The number of max sessions configured";
+  public static final String SESSIONS_IN_USE_DESCRIPTION =
+      "The number of sessions checked out from the pool";
 }

@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.A
 import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.COUNT;
 import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.MAX_SESSIONS;
 import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.MAX_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SESSIONS_IN_USE;
+import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SESSIONS_IN_USE_DESCRIPTION;
 import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.v1.stub.metrics.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 
@@ -1834,6 +1836,15 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
+    DerivedLongGauge sessionsInUseGauge =
+        metricRegistry.addDerivedLongGauge(
+            SESSIONS_IN_USE,
+            MetricOptions.builder()
+                .setDescription(SESSIONS_IN_USE_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     activeSessionsGauge.createTimeSeries(
@@ -1855,6 +1866,18 @@ final class SessionPool {
           @Override
           public long applyAsLong(SessionPoolOptions options) {
             return options.getMaxSessions();
+          }
+        });
+
+    // The value of a numSessionsInUse is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    sessionsInUseGauge.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsInUse;
           }
         });
   }

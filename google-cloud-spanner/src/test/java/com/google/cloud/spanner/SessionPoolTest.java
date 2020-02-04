@@ -1583,6 +1583,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.metrics).containsEntry(MetricRegistryConstants.ACTIVE_SESSIONS, 0L);
+    assertThat(record.metrics).containsEntry(MetricRegistryConstants.SESSIONS_IN_USE, 0L);
     assertThat(record.metrics)
         .containsEntry(
             MetricRegistryConstants.MAX_SESSIONS, Long.valueOf(options.getMaxSessions()));
