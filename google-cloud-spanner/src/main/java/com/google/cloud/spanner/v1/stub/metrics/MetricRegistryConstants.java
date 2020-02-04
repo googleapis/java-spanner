@@ -45,5 +45,5 @@ public class MetricRegistryConstants {
   public static final String ACTIVE_SESSIONS = "cloud.google.com/java/spanner/active_sessions";
   public static final String MAX_SESSIONS = "cloud.google.com/java/spanner/max_sessions";
   public static final String ACTIVE_SESSIONS_DESCRIPTION = "The number of active sessions";
-  public static final String MAX_SESSIONS_DESCRIPTION = "The number of max sessions";
+  public static final String MAX_SESSIONS_DESCRIPTION = "The number of max sessions configured";
 }

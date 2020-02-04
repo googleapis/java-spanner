@@ -1834,7 +1834,7 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
-    // The value of a numSessionsInUse is observed from a callback function. This function is
+    // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     activeSessionsGauge.createTimeSeries(
         labelValues,
@@ -1842,7 +1842,7 @@ final class SessionPool {
         new ToLongFunction<SessionPool>() {
           @Override
           public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
+            return sessionPool.maxSessionsInUse;
           }
         });
 
