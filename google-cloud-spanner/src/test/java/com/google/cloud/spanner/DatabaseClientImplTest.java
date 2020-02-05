@@ -51,24 +51,12 @@ import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
-  private static final String DATABASE_NOT_FOUND_FORMAT =
-      "Database not found: projects/%s/instances/%s/databases/%s\n"
-          + "resource_type: \"type.googleapis.com/google.spanner.admin.database.v1.Database\"\n"
-          + "resource_name: \"projects/%s/instances/%s/databases/%s\"\n"
-          + "description: \"Database does not exist.\"\n";
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
-  private static final String DATABASE_NOT_FOUND_MSG =
+  private static final String DATABASE_NAME =
       String.format(
-          "com.google.cloud.spanner.SpannerException: NOT_FOUND: io.grpc.StatusRuntimeException: NOT_FOUND: "
-              + DATABASE_NOT_FOUND_FORMAT,
-          TEST_PROJECT,
-          TEST_INSTANCE,
-          TEST_DATABASE,
-          TEST_PROJECT,
-          TEST_INSTANCE,
-          TEST_DATABASE);
+          "projects/%s/instances/%s/databases/%s", TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -283,7 +271,8 @@ public class DatabaseClientImplTest {
   public void testDatabaseDoesNotExistOnPrepareSession() throws Exception {
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofStickyException(
-            Status.NOT_FOUND.withDescription(DATABASE_NOT_FOUND_MSG).asRuntimeException()));
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, TEST_DATABASE)));
     DatabaseClientImpl dbClient =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -323,7 +312,8 @@ public class DatabaseClientImplTest {
   public void testDatabaseDoesNotExistOnInitialization() throws Exception {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
-            Status.NOT_FOUND.withDescription(DATABASE_NOT_FOUND_MSG).asRuntimeException()));
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
     DatabaseClientImpl dbClient =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -342,7 +332,8 @@ public class DatabaseClientImplTest {
   public void testDatabaseDoesNotExistOnCreate() throws Exception {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
-            Status.NOT_FOUND.withDescription(DATABASE_NOT_FOUND_MSG).asRuntimeException()));
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
     // Ensure there are no sessions in the pool by default.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -376,7 +367,8 @@ public class DatabaseClientImplTest {
   public void testDatabaseDoesNotExistOnReplenish() throws Exception {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
-            Status.NOT_FOUND.withDescription(DATABASE_NOT_FOUND_MSG).asRuntimeException()));
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
     DatabaseClientImpl dbClient =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -471,7 +463,8 @@ public class DatabaseClientImplTest {
       // Simulate that the database has been deleted.
       mockSpanner.setStickyGlobalExceptions(true);
       mockSpanner.addException(
-          Status.NOT_FOUND.withDescription(DATABASE_NOT_FOUND_MSG).asRuntimeException());
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME));
 
       // All subsequent calls should fail with a DatabaseNotFoundException.
       try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {

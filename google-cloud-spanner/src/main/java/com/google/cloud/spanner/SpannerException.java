@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.grpc.BaseGrpcServiceException;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.util.Durations;
+import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
 import io.grpc.Metadata;
 import io.grpc.Status;
@@ -27,6 +28,24 @@ import javax.annotation.Nullable;
 
 /** Base exception type for all exceptions produced by the Cloud Spanner service. */
 public class SpannerException extends BaseGrpcServiceException {
+  /** Base exception type for NOT_FOUND exceptions for known resource types. */
+  public abstract static class ResourceNotFoundException extends SpannerException {
+    private final ResourceInfo resourceInfo;
+
+    ResourceNotFoundException(
+        DoNotConstructDirectly token,
+        @Nullable String message,
+        ResourceInfo resourceInfo,
+        @Nullable Throwable cause) {
+      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause);
+      this.resourceInfo = resourceInfo;
+    }
+
+    public String getResourceName() {
+      return resourceInfo.getResourceName();
+    }
+  }
+
   private static final long serialVersionUID = 20150916L;
   private static final Metadata.Key<RetryInfo> KEY_RETRY_INFO =
       ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());

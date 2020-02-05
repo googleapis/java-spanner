@@ -94,6 +94,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
   SessionPoolOptions options;
+  private String sessionName = String.format("%s/sessions/s", db.getName());
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
@@ -818,7 +819,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     SessionImpl mockSession2 = mockSession();
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(mockSession1, mockSession2));
-    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found"))
+    doThrow(SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName))
         .when(mockSession1)
         .prepareReadWriteTransaction();
     doAnswer(
@@ -1029,8 +1030,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     ReadContext closedContext = mock(ReadContext.class);
     ResultSet closedResultSet = mock(ResultSet.class);
     when(closedResultSet.next())
-        .thenThrow(
-            SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found"));
+        .thenThrow(SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName));
     when(closedContext.executeQuery(statement)).thenReturn(closedResultSet);
     when(closedSession.singleUse()).thenReturn(closedContext);
 
@@ -1088,8 +1088,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     Statement statement = Statement.of("SELECT 1");
     final SessionImpl closedSession = mockSession();
     when(closedSession.readOnlyTransaction())
-        .thenThrow(
-            SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found"));
+        .thenThrow(SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName));
 
     final SessionImpl openSession = mockSession();
     ReadOnlyTransaction openTransaction = mock(ReadOnlyTransaction.class);
@@ -1155,7 +1154,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     final Statement queryStatement = Statement.of("SELECT 1");
     final Statement updateStatement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
     final SpannerException sessionNotFound =
-        SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found");
+        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     for (ReadWriteTransactionTestStatementType statementType :
         ReadWriteTransactionTestStatementType.values()) {
       final ReadWriteTransactionTestStatementType executeStatementType = statementType;
@@ -1340,7 +1339,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void testSessionNotFoundOnPrepareTransaction() {
     final SpannerException sessionNotFound =
-        SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found");
+        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     final SessionImpl closedSession = mock(SessionImpl.class);
     when(closedSession.getName())
         .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
@@ -1394,7 +1393,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void testSessionNotFoundWrite() {
     SpannerException sessionNotFound =
-        SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found");
+        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
     when(closedSession.write(mutations)).thenThrow(sessionNotFound);
@@ -1446,7 +1445,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void testSessionNotFoundWriteAtLeastOnce() {
     SpannerException sessionNotFound =
-        SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found");
+        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
     when(closedSession.writeAtLeastOnce(mutations)).thenThrow(sessionNotFound);
@@ -1497,7 +1496,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void testSessionNotFoundPartitionedUpdate() {
     SpannerException sessionNotFound =
-        SpannerExceptionFactory.newSpannerException(ErrorCode.NOT_FOUND, "Session not found");
+        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE 1=1");
     final SessionImpl closedSession = mockSession();
     when(closedSession.executePartitionedUpdate(statement)).thenThrow(sessionNotFound);

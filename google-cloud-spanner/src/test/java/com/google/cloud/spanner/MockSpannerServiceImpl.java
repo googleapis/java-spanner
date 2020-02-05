@@ -31,6 +31,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
+import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
@@ -727,10 +728,21 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   private <T> void setSessionNotFound(String name, StreamObserver<T> responseObserver) {
+    ResourceInfo resourceInfo =
+        ResourceInfo.newBuilder()
+            .setResourceType(SpannerExceptionFactory.SESSION_RESOURCE_TYPE)
+            .setResourceName(name)
+            .build();
+    Metadata.Key<ResourceInfo> key =
+        Metadata.Key.of(
+            resourceInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(resourceInfo));
+    Metadata trailers = new Metadata();
+    trailers.put(key, resourceInfo);
     responseObserver.onError(
         Status.NOT_FOUND
             .withDescription(String.format("Session not found: Session with id %s not found", name))
-            .asRuntimeException());
+            .asRuntimeException(trailers));
   }
 
   @Override
