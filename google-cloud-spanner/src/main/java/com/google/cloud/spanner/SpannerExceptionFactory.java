@@ -42,6 +42,8 @@ public final class SpannerExceptionFactory {
   static final String SESSION_RESOURCE_TYPE = "type.googleapis.com/google.spanner.v1.Session";
   static final String DATABASE_RESOURCE_TYPE =
       "type.googleapis.com/google.spanner.admin.database.v1.Database";
+  static final String INSTANCE_RESOURCE_TYPE =
+      "type.googleapis.com/google.spanner.admin.instance.v1.Instance";
   private static final Metadata.Key<ResourceInfo> KEY_RESOURCE_INFO =
       ProtoUtils.keyForProto(ResourceInfo.getDefaultInstance());
 
@@ -199,6 +201,8 @@ public final class SpannerExceptionFactory {
             return new SessionNotFoundException(token, message, resourceInfo, cause);
           } else if (resourceInfo.getResourceType().equals(DATABASE_RESOURCE_TYPE)) {
             return new DatabaseNotFoundException(token, message, resourceInfo, cause);
+          } else if (resourceInfo.getResourceType().equals(INSTANCE_RESOURCE_TYPE)) {
+            return new InstanceNotFoundException(token, message, resourceInfo, cause);
           }
         }
         // Fall through to the default.

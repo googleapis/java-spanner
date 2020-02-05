@@ -24,8 +24,11 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceNotFoundException;
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ResultSet;
@@ -117,6 +120,22 @@ public class ITDatabaseTest {
       assertThat(rs.next()).isTrue();
       assertThat(rs.getLong(0)).isEqualTo(1L);
       assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void instanceNotFound() {
+    InstanceId testId = env.getTestHelper().getInstanceId();
+    InstanceId nonExistingInstanceId =
+        InstanceId.of(testId.getProject(), testId.getInstance() + "-na");
+    DatabaseClient client =
+        env.getTestHelper()
+            .getClient()
+            .getDatabaseClient(DatabaseId.of(nonExistingInstanceId, "some-db"));
+    try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      fail("missing expected exception");
+    } catch (InstanceNotFoundException e) {
+      assertThat(e.getResourceName()).isEqualTo(nonExistingInstanceId.getName());
     }
   }
 }

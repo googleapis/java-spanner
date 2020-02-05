@@ -36,6 +36,7 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -54,6 +55,8 @@ public class DatabaseClientImplTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
+  private static final String INSTANCE_NAME =
+      String.format("projects/%s/instances/%s", TEST_PROJECT, TEST_INSTANCE);
   private static final String DATABASE_NAME =
       String.format(
           "projects/%s/instances/%s/databases/%s", TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
@@ -268,130 +271,194 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testDatabaseDoesNotExistOnPrepareSession() throws Exception {
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, TEST_DATABASE)));
-    DatabaseClientImpl dbClient =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    // Wait until all sessions have been created.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-      Thread.sleep(1L);
-    }
-    // Ensure that no sessions could be prepared and that the session pool gives up trying to
-    // prepare sessions.
-    watch = watch.reset().start();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
-      Thread.sleep(1L);
-    }
-    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
-    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions(), is(equalTo(0)));
-    int currentNumRequest = mockSpanner.getRequests().size();
-    try {
-      dbClient
-          .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws Exception {
-                  return null;
-                }
-              });
-      fail("missing expected DatabaseNotFoundException");
-    } catch (DatabaseNotFoundException e) {
-    }
-    assertThat(mockSpanner.getRequests()).hasSize(currentNumRequest);
-  }
-
-  @Test
-  public void testDatabaseDoesNotExistOnInitialization() throws Exception {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
-    DatabaseClientImpl dbClient =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    // Wait until session creation has finished.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-      Thread.sleep(1L);
-    }
-    // All session creation should fail and stop trying.
-    assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-    assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
-  }
-
-  @Test
-  public void testDatabaseDoesNotExistOnCreate() throws Exception {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
-    // Ensure there are no sessions in the pool by default.
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
-            .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
-            .build()
-            .getService()) {
-      DatabaseClientImpl dbClient =
-          (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      // The create session failure should propagate to the client and not retry.
-      try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-        // The server should only receive one BatchCreateSessions request.
-        assertThat(mockSpanner.getRequests()).hasSize(1);
-      }
-      try {
-        dbClient.readWriteTransaction();
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-        // No additional requests should have been sent by the client.
-        assertThat(mockSpanner.getRequests()).hasSize(1);
+  public void testDatabaseOrInstanceDoesNotExistOnPrepareSession() throws Exception {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .build()
+              .getService()) {
+        mockSpanner.setBeginTransactionExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+        DatabaseClientImpl dbClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        // Wait until all sessions have been created.
+        Stopwatch watch = Stopwatch.createStarted();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          Thread.sleep(1L);
+        }
+        // Ensure that no sessions could be prepared and that the session pool gives up trying to
+        // prepare sessions.
+        watch = watch.reset().start();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
+          Thread.sleep(1L);
+        }
+        assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions(), is(equalTo(0)));
+        int currentNumRequest = mockSpanner.getRequests().size();
+        try {
+          dbClient
+              .readWriteTransaction()
+              .run(
+                  new TransactionCallable<Void>() {
+                    @Override
+                    public Void run(TransactionContext transaction) throws Exception {
+                      return null;
+                    }
+                  });
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+        }
+        assertThat(mockSpanner.getRequests()).hasSize(currentNumRequest);
+        mockSpanner.reset();
+        mockSpanner.removeAllExecutionTimes();
       }
     }
   }
 
   @Test
-  public void testDatabaseDoesNotExistOnReplenish() throws Exception {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME)));
-    DatabaseClientImpl dbClient =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    // Wait until session creation has finished.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-      Thread.sleep(1L);
+  public void testDatabaseOrInstanceDoesNotExistOnInitialization() throws Exception {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .build()
+              .getService()) {
+        mockSpanner.setBatchCreateSessionsExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+        DatabaseClientImpl dbClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        // Wait until session creation has finished.
+        Stopwatch watch = Stopwatch.createStarted();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          Thread.sleep(1L);
+        }
+        // All session creation should fail and stop trying.
+        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+        mockSpanner.reset();
+        mockSpanner.removeAllExecutionTimes();
+      }
     }
-    // All session creation should fail and stop trying.
-    assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-    assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
-    // Force a maintainer run. This should schedule new session creation.
-    dbClient.pool.poolMaintainer.maintainPool();
-    // Wait until the replenish has finished.
-    watch = watch.reset().start();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-      Thread.sleep(1L);
+  }
+
+  @Test
+  public void testDatabaseOrInstanceDoesNotExistOnCreate() throws Exception {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
+      // Ensure there are no sessions in the pool by default.
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+              .build()
+              .getService()) {
+        DatabaseClientImpl dbClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        // The create session failure should propagate to the client and not retry.
+        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // The server should only receive one BatchCreateSessions request.
+          assertThat(mockSpanner.getRequests()).hasSize(1);
+        }
+        try {
+          dbClient.readWriteTransaction();
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // No additional requests should have been sent by the client.
+          assertThat(mockSpanner.getRequests()).hasSize(1);
+        }
+      }
+      mockSpanner.reset();
+      mockSpanner.removeAllExecutionTimes();
     }
-    // All session creation from replenishPool should fail and stop trying.
-    assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-    assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+  }
+
+  @Test
+  public void testDatabaseOrInstanceDoesNotExistOnReplenish() throws Exception {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .build()
+              .getService()) {
+        mockSpanner.setBatchCreateSessionsExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+        DatabaseClientImpl dbClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        // Wait until session creation has finished.
+        Stopwatch watch = Stopwatch.createStarted();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          Thread.sleep(1L);
+        }
+        // All session creation should fail and stop trying.
+        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+        // Force a maintainer run. This should schedule new session creation.
+        dbClient.pool.poolMaintainer.maintainPool();
+        // Wait until the replenish has finished.
+        watch = watch.reset().start();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          Thread.sleep(1L);
+        }
+        // All session creation from replenishPool should fail and stop trying.
+        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+      }
+      mockSpanner.reset();
+      mockSpanner.removeAllExecutionTimes();
+    }
   }
 
   @Test
@@ -442,86 +509,98 @@ public class DatabaseClientImplTest {
    * a new {@link DatabaseClient} is created.
    */
   @Test
-  public void testDatabaseIsDeletedAndThenRecreated() throws Exception {
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClientImpl dbClient =
-          (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      // Wait until all sessions have been created and prepared.
-      Stopwatch watch = Stopwatch.createStarted();
-      while (watch.elapsed(TimeUnit.SECONDS) < 5
-          && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0
-              || dbClient.pool.getNumberOfSessionsBeingPrepared() > 0)) {
-        Thread.sleep(1L);
-      }
-      // Simulate that the database has been deleted.
-      mockSpanner.setStickyGlobalExceptions(true);
-      mockSpanner.addException(
+  public void testDatabaseOrInstanceIsDeletedAndThenRecreated() throws Exception {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
           SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME));
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .build()
+              .getService()) {
+        DatabaseClientImpl dbClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        // Wait until all sessions have been created and prepared.
+        Stopwatch watch = Stopwatch.createStarted();
+        while (watch.elapsed(TimeUnit.SECONDS) < 5
+            && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0
+                || dbClient.pool.getNumberOfSessionsBeingPrepared() > 0)) {
+          Thread.sleep(1L);
+        }
+        // Simulate that the database or instance has been deleted.
+        mockSpanner.setStickyGlobalExceptions(true);
+        mockSpanner.addException(exception);
 
-      // All subsequent calls should fail with a DatabaseNotFoundException.
-      try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-        while (rs.next()) {}
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-      }
-      try {
-        dbClient
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    return null;
-                  }
-                });
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-      }
+        // All subsequent calls should fail with a DatabaseNotFoundException.
+        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+          while (rs.next()) {}
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+        }
+        try {
+          dbClient
+              .readWriteTransaction()
+              .run(
+                  new TransactionCallable<Void>() {
+                    @Override
+                    public Void run(TransactionContext transaction) throws Exception {
+                      return null;
+                    }
+                  });
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+        }
 
-      // Now simulate that the database has been re-created. The database client should still throw
-      // DatabaseNotFoundExceptions, as it is not the same database. The server should not receive
-      // any new requests.
+        // Now simulate that the database has been re-created. The database client should still
+        // throw
+        // DatabaseNotFoundExceptions, as it is not the same database. The server should not receive
+        // any new requests.
+        mockSpanner.reset();
+        // All subsequent calls should fail with a DatabaseNotFoundException.
+        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+          while (rs.next()) {}
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+        }
+        try {
+          dbClient
+              .readWriteTransaction()
+              .run(
+                  new TransactionCallable<Void>() {
+                    @Override
+                    public Void run(TransactionContext transaction) throws Exception {
+                      return null;
+                    }
+                  });
+          fail("missing expected exception");
+        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+        }
+        assertThat(mockSpanner.getRequests()).isEmpty();
+        // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
+        // return the same instance, but not when the instance has been invalidated by a
+        // DatabaseNotFoundException.
+        DatabaseClientImpl newClient =
+            (DatabaseClientImpl)
+                spanner.getDatabaseClient(
+                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+        assertThat(newClient).isNotSameInstanceAs(dbClient);
+        // Executing a query should now work without problems.
+        try (ResultSet rs = newClient.singleUse().executeQuery(SELECT1)) {
+          while (rs.next()) {}
+        }
+        assertThat(mockSpanner.getRequests()).isNotEmpty();
+      }
       mockSpanner.reset();
-      // All subsequent calls should fail with a DatabaseNotFoundException.
-      try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-        while (rs.next()) {}
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-      }
-      try {
-        dbClient
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    return null;
-                  }
-                });
-        fail("missing expected exception");
-      } catch (DatabaseNotFoundException e) {
-      }
-      assertThat(mockSpanner.getRequests()).isEmpty();
-      // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
-      // return the same instance, but not when the instance has been invalidated by a
-      // DatabaseNotFoundException.
-      DatabaseClientImpl newClient =
-          (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(newClient).isNotSameInstanceAs(dbClient);
-      // Executing a query should now work without problems.
-      try (ResultSet rs = newClient.singleUse().executeQuery(SELECT1)) {
-        while (rs.next()) {}
-      }
-      assertThat(mockSpanner.getRequests()).isNotEmpty();
+      mockSpanner.removeAllExecutionTimes();
     }
   }
 

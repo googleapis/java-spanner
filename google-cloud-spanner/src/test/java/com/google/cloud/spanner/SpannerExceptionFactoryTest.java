@@ -52,6 +52,12 @@ public class SpannerExceptionFactoryTest {
             "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, name);
   }
 
+  static InstanceNotFoundException newInstanceNotFoundException(String name) {
+    return (InstanceNotFoundException)
+        newResourceNotFoundException(
+            "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, name);
+  }
+
   static StatusRuntimeException newStatusResourceNotFoundException(
       String shortName, String resourceType, String resourceName) {
     ResourceInfo resourceInfo =
@@ -184,6 +190,12 @@ public class SpannerExceptionFactoryTest {
     DatabaseNotFoundException e =
         newDatabaseNotFoundException("projects/p/instances/i/databases/d");
     assertThat(e.getResourceName()).isEqualTo("projects/p/instances/i/databases/d");
+  }
+
+  @Test
+  public void instanceNotFound() {
+    InstanceNotFoundException e = newInstanceNotFoundException("projects/p/instances/i");
+    assertThat(e.getResourceName()).isEqualTo("projects/p/instances/i");
   }
 
   @Test
