@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MetricRegistryConstants.ACTIVE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.ACTIVE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_IN_USE;
-import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_IN_USE_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
@@ -1818,36 +1818,36 @@ final class SessionPool {
    * allows users to monitor client behavior.
    */
   private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
-    DerivedLongGauge activeSessionsGauge =
+    DerivedLongGauge maxInUseSessionsMetric =
         metricRegistry.addDerivedLongGauge(
-            ACTIVE_SESSIONS,
+            MAX_IN_USE_SESSIONS,
             MetricOptions.builder()
-                .setDescription(ACTIVE_SESSIONS_DESCRIPTION)
+                .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
-    DerivedLongGauge maxSessionsGauge =
+    DerivedLongGauge maxAllowedSessionsMetric =
         metricRegistry.addDerivedLongGauge(
-            MAX_SESSIONS,
+            MAX_ALLOWED_SESSIONS,
             MetricOptions.builder()
-                .setDescription(MAX_SESSIONS_DESCRIPTION)
+                .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
-    DerivedLongGauge sessionsInUseGauge =
+    DerivedLongGauge numInUseSessionsMetric =
         metricRegistry.addDerivedLongGauge(
-            SESSIONS_IN_USE,
+            IN_USE_SESSIONS,
             MetricOptions.builder()
-                .setDescription(SESSIONS_IN_USE_DESCRIPTION)
+                .setDescription(IN_USE_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
-    activeSessionsGauge.createTimeSeries(
+    maxInUseSessionsMetric.createTimeSeries(
         labelValues,
         this,
         new ToLongFunction<SessionPool>() {
@@ -1859,7 +1859,7 @@ final class SessionPool {
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
-    maxSessionsGauge.createTimeSeries(
+    maxAllowedSessionsMetric.createTimeSeries(
         labelValues,
         options,
         new ToLongFunction<SessionPoolOptions>() {
@@ -1871,7 +1871,7 @@ final class SessionPool {
 
     // The value of a numSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
-    sessionsInUseGauge.createTimeSeries(
+    numInUseSessionsMetric.createTimeSeries(
         labelValues,
         this,
         new ToLongFunction<SessionPool>() {

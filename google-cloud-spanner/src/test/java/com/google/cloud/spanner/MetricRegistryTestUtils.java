@@ -32,11 +32,11 @@ import io.opencensus.metrics.MetricRegistry;
 import java.util.List;
 import java.util.Map;
 
-public class MetricRegistryTestUtils {
+class MetricRegistryTestUtils {
 
-  public static class MetricsRecord {
-    public final Map<String, Number> metrics;
-    public final Map<List<LabelKey>, List<LabelValue>> labels;
+  static class MetricsRecord {
+    final Map<String, Number> metrics;
+    final Map<List<LabelKey>, List<LabelValue>> labels;
 
     private MetricsRecord() {
       this.metrics = Maps.newHashMap();
@@ -78,11 +78,11 @@ public class MetricRegistryTestUtils {
 
     private MetricsRecord record;
 
-    public FakeMetricRegistry() {
+    FakeMetricRegistry() {
       record = new MetricsRecord();
     }
 
-    public MetricsRecord pollRecord() {
+    MetricsRecord pollRecord() {
       return record;
     }
 

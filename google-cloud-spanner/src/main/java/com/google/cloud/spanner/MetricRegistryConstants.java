@@ -20,7 +20,7 @@ import io.opencensus.metrics.LabelKey;
 import io.opencensus.metrics.LabelValue;
 
 /** A helper class that holds OpenCensus's related constants. */
-public class MetricRegistryConstants {
+class MetricRegistryConstants {
 
   // The label keys are used to uniquely identify timeseries.
   private static final LabelKey DATABASE = LabelKey.create("database", "Target database");
@@ -32,22 +32,22 @@ public class MetricRegistryConstants {
   /** The label value is used to represent missing value. */
   private static final LabelValue UNSET_LABEL = LabelValue.create(null);
 
-  public static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =
+  static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =
       ImmutableList.of(DATABASE, INSTANCE_ID, LIBRARY_VERSION);
 
-  public static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
+  static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
       ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
 
   /** Unit to represent counts. */
-  public static final String COUNT = "1";
+  static final String COUNT = "1";
 
   // The Metric name and description
-  public static final String ACTIVE_SESSIONS = "cloud.google.com/java/spanner/active_sessions";
-  public static final String MAX_SESSIONS = "cloud.google.com/java/spanner/max_sessions";
-  public static final String SESSIONS_IN_USE = "cloud.google.com/java/spanner/sessions_in_use";
-  public static final String ACTIVE_SESSIONS_DESCRIPTION =
-      "Max number of sessions in use during the last 10 minutes";
-  public static final String MAX_SESSIONS_DESCRIPTION = "The number of max sessions configured";
-  public static final String SESSIONS_IN_USE_DESCRIPTION =
-      "The number of sessions checked out from the pool";
+  static final String MAX_IN_USE_SESSIONS = "cloud.google.com/java/spanner/max_in_use_session";
+  static final String MAX_ALLOWED_SESSIONS = "cloud.google.com/java/spanner/max_allowed_sessions";
+  static final String IN_USE_SESSIONS = "cloud.google.com/java/spanner/in_use_sessions";
+  static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
+      "The max number of sessions in use during the last 10 minutes interval";
+  static final String MAX_ALLOWED_SESSIONS_DESCRIPTION =
+      "The Maximum number of sessions allowed. Configurable by the user.";
+  static final String IN_USE_SESSIONS_DESCRIPTION = "The number of sessions currently in use";
 }

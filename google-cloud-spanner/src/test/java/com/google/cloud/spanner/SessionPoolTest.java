@@ -1581,11 +1581,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
 
     MetricsRecord record = metricRegistry.pollRecord();
-    assertThat(record.metrics).containsEntry(MetricRegistryConstants.ACTIVE_SESSIONS, 0L);
-    assertThat(record.metrics).containsEntry(MetricRegistryConstants.SESSIONS_IN_USE, 0L);
+    assertThat(record.metrics).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 0L);
+    assertThat(record.metrics).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.metrics)
         .containsEntry(
-            MetricRegistryConstants.MAX_SESSIONS, Long.valueOf(options.getMaxSessions()));
+            MetricRegistryConstants.MAX_ALLOWED_SESSIONS, Long.valueOf(options.getMaxSessions()));
     assertThat(record.labels).containsEntry(SPANNER_LABEL_KEYS, labelValues);
   }
 
