@@ -34,13 +34,39 @@ import java.util.Map;
 
 class MetricRegistryTestUtils {
 
+  static class PointWithFunction<T> {
+    private final T ref;
+    private final ToLongFunction<T> function;
+
+    PointWithFunction(T obj, ToLongFunction<T> function) {
+      this.ref = obj;
+      this.function = function;
+    }
+
+    long get() {
+      return function.applyAsLong(ref);
+    }
+  }
+
   static class MetricsRecord {
-    final Map<String, Number> metrics;
-    final Map<List<LabelKey>, List<LabelValue>> labels;
+    private final Map<String, PointWithFunction> metrics;
+    private final Map<List<LabelKey>, List<LabelValue>> labels;
 
     private MetricsRecord() {
       this.metrics = Maps.newHashMap();
       this.labels = Maps.newHashMap();
+    }
+
+    Map<String, Number> getMetrics() {
+      Map<String, Number> copy = Maps.newHashMap();
+      for (Map.Entry<String, PointWithFunction> entry : metrics.entrySet()) {
+        copy.put(entry.getKey(), entry.getValue().get());
+      }
+      return copy;
+    }
+
+    Map<List<LabelKey>, List<LabelValue>> getLabels() {
+      return this.labels;
     }
   }
 
@@ -59,7 +85,7 @@ class MetricRegistryTestUtils {
     @Override
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
-      this.record.metrics.put(this.name, toLongFunction.applyAsLong(t));
+      this.record.metrics.put(this.name, new PointWithFunction(t, toLongFunction));
       this.record.labels.put(this.labelKeys, labelValues);
     }
 

@@ -1577,16 +1577,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             LabelValue.create("instance1"),
             LabelValue.create("1.0.0"));
 
+    setupMockSessionCreation();
     pool = createPool(clock, metricRegistry, labelValues);
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    Session session1 = pool.getReadSession();
+    Session session2 = pool.getReadSession();
 
     MetricsRecord record = metricRegistry.pollRecord();
-    assertThat(record.metrics).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 0L);
-    assertThat(record.metrics).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
-    assertThat(record.metrics)
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 2L);
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
+    assertThat(record.getMetrics())
         .containsEntry(
-            MetricRegistryConstants.MAX_ALLOWED_SESSIONS, Long.valueOf(options.getMaxSessions()));
-    assertThat(record.labels).containsEntry(SPANNER_LABEL_KEYS, labelValues);
+            MetricRegistryConstants.MAX_ALLOWED_SESSIONS, (long) options.getMaxSessions());
+    assertThat(record.getLabels()).containsEntry(SPANNER_LABEL_KEYS, labelValues);
+
+    session2.close();
+    session1.close();
+
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }
 
   private void mockKeepAlive(Session session) {
