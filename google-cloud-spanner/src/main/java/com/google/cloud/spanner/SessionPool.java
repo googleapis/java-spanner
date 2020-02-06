@@ -26,6 +26,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -781,13 +782,14 @@ final class SessionPool {
       if (lastException != null && isSessionNotFound(lastException)) {
         invalidateSession(this);
       } else {
-        if (lastException != null && isDatabaseNotFound(lastException)) {
+        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
           // Mark this session pool as no longer valid and then release the session into the pool as
           // there is nothing we can do with it anyways.
           synchronized (lock) {
-            SessionPool.this.databaseNotFound =
+            SessionPool.this.resourceNotFoundException =
                 MoreObjects.firstNonNull(
-                    SessionPool.this.databaseNotFound, (DatabaseNotFoundException) lastException);
+                    SessionPool.this.resourceNotFoundException,
+                    (ResourceNotFoundException) lastException);
           }
         }
         lastException = null;
@@ -1075,7 +1077,7 @@ final class SessionPool {
   private SettableFuture<Void> closureFuture;
 
   @GuardedBy("lock")
-  private DatabaseNotFoundException databaseNotFound;
+  private ResourceNotFoundException resourceNotFoundException;
 
   @GuardedBy("lock")
   private final LinkedList<PooledSession> readSessions = new LinkedList<>();
@@ -1213,8 +1215,8 @@ final class SessionPool {
     return e.getErrorCode() == ErrorCode.NOT_FOUND && e.getMessage().contains("Session not found");
   }
 
-  private boolean isDatabaseNotFound(SpannerException e) {
-    return e instanceof DatabaseNotFoundException;
+  private boolean isDatabaseOrInstanceNotFound(SpannerException e) {
+    return e instanceof DatabaseNotFoundException || e instanceof InstanceNotFoundException;
   }
 
   private boolean isPermissionDenied(SpannerException e) {
@@ -1249,7 +1251,7 @@ final class SessionPool {
   /** @return true if this {@link SessionPool} is still valid. */
   boolean isValid() {
     synchronized (lock) {
-      return closureFuture == null && databaseNotFound == null;
+      return closureFuture == null && resourceNotFoundException == null;
     }
   }
 
@@ -1279,14 +1281,14 @@ final class SessionPool {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
-      if (databaseNotFound != null) {
+      if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.NOT_FOUND,
             String.format(
                 "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                databaseNotFound.getMessage()),
-            databaseNotFound);
+                resourceNotFoundException.getMessage()),
+            resourceNotFoundException);
       }
       sess = readSessions.poll();
       if (sess == null) {
@@ -1344,14 +1346,14 @@ final class SessionPool {
         span.addAnnotation("Pool has been closed");
         throw new IllegalStateException("Pool has been closed");
       }
-      if (databaseNotFound != null) {
+      if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.NOT_FOUND,
             String.format(
                 "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                databaseNotFound.getMessage()),
-            databaseNotFound);
+                resourceNotFoundException.getMessage()),
+            resourceNotFoundException);
       }
       sess = writePreparedSessions.poll();
       if (sess == null) {
@@ -1495,9 +1497,10 @@ final class SessionPool {
           break;
         }
       }
-      this.databaseNotFound =
+      this.resourceNotFoundException =
           MoreObjects.firstNonNull(
-              this.databaseNotFound, isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
+              this.resourceNotFoundException,
+              isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
     }
   }
 
@@ -1505,7 +1508,7 @@ final class SessionPool {
     synchronized (lock) {
       if (isSessionNotFound(e)) {
         invalidateSession(session);
-      } else if (isDatabaseNotFound(e) || isPermissionDenied(e)) {
+      } else if (isDatabaseOrInstanceNotFound(e) || isPermissionDenied(e)) {
         // Database has been deleted or the user has no permission to write to this database. We
         // should stop trying to prepare any transactions. Also propagate the error to all waiters,
         // as any further waiting is pointless.
@@ -1520,10 +1523,10 @@ final class SessionPool {
         if (isClosed()) {
           decrementPendingClosures(1);
         }
-        this.databaseNotFound =
+        this.resourceNotFoundException =
             MoreObjects.firstNonNull(
-                this.databaseNotFound,
-                isDatabaseNotFound(e) ? (DatabaseNotFoundException) e : null);
+                this.resourceNotFoundException,
+                isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
       } else if (readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);
