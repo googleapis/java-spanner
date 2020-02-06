@@ -16,6 +16,15 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
+import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
@@ -40,6 +49,12 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
+import io.opencensus.common.ToLongFunction;
+import io.opencensus.metrics.DerivedLongGauge;
+import io.opencensus.metrics.LabelValue;
+import io.opencensus.metrics.MetricOptions;
+import io.opencensus.metrics.MetricRegistry;
+import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
@@ -49,6 +64,7 @@ import io.opencensus.trace.Tracing;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -1116,11 +1132,15 @@ final class SessionPool {
    * Return pool is immediately ready for use, though getting a session might block for sessions to
    * be created.
    */
-  static SessionPool createPool(SpannerOptions spannerOptions, SessionClient sessionClient) {
+  static SessionPool createPool(
+      SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
     return createPool(
         spannerOptions.getSessionPoolOptions(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
-        sessionClient);
+        sessionClient,
+        new Clock(),
+        Metrics.getMetricRegistry(),
+        labelValues);
   }
 
   static SessionPool createPool(
@@ -1135,8 +1155,31 @@ final class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock) {
+    return createPool(
+        poolOptions,
+        executorFactory,
+        sessionClient,
+        clock,
+        Metrics.getMetricRegistry(),
+        SPANNER_DEFAULT_LABEL_VALUES);
+  }
+
+  static SessionPool createPool(
+      SessionPoolOptions poolOptions,
+      ExecutorFactory<ScheduledExecutorService> executorFactory,
+      SessionClient sessionClient,
+      Clock clock,
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues) {
     SessionPool pool =
-        new SessionPool(poolOptions, executorFactory, executorFactory.get(), sessionClient, clock);
+        new SessionPool(
+            poolOptions,
+            executorFactory,
+            executorFactory.get(),
+            sessionClient,
+            clock,
+            metricRegistry,
+            labelValues);
     pool.initPool();
     return pool;
   }
@@ -1146,13 +1189,16 @@ final class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       ScheduledExecutorService executor,
       SessionClient sessionClient,
-      Clock clock) {
+      Clock clock,
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues) {
     this.options = options;
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
+    this.initMetricsCollection(metricRegistry, labelValues);
   }
 
   @VisibleForTesting
@@ -1765,5 +1811,74 @@ final class SessionPool {
         handleCreateSessionsFailure(newSpannerException(t), createFailureForSessionCount);
       }
     }
+  }
+
+  /**
+   * Initializes and creates Spanner session relevant metrics. When coupled with an exporter, it
+   * allows users to monitor client behavior.
+   */
+  private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+    DerivedLongGauge maxInUseSessionsMetric =
+        metricRegistry.addDerivedLongGauge(
+            MAX_IN_USE_SESSIONS,
+            MetricOptions.builder()
+                .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
+    DerivedLongGauge maxAllowedSessionsMetric =
+        metricRegistry.addDerivedLongGauge(
+            MAX_ALLOWED_SESSIONS,
+            MetricOptions.builder()
+                .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
+    DerivedLongGauge numInUseSessionsMetric =
+        metricRegistry.addDerivedLongGauge(
+            IN_USE_SESSIONS,
+            MetricOptions.builder()
+                .setDescription(IN_USE_SESSIONS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
+    // The value of a maxSessionsInUse is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    maxInUseSessionsMetric.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.maxSessionsInUse;
+          }
+        });
+
+    // The value of a maxSessions is observed from a callback function. This function is invoked
+    // whenever metrics are collected.
+    maxAllowedSessionsMetric.createTimeSeries(
+        labelValues,
+        options,
+        new ToLongFunction<SessionPoolOptions>() {
+          @Override
+          public long applyAsLong(SessionPoolOptions options) {
+            return options.getMaxSessions();
+          }
+        });
+
+    // The value of a numSessionsInUse is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    numInUseSessionsMetric.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsInUse;
+          }
+        });
   }
 }
