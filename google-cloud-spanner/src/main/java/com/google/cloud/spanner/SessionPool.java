@@ -1814,7 +1814,7 @@ final class SessionPool {
   }
 
   /**
-   * Initializes and Creates Spanner session relevant metrics. When coupled with an exporter, it
+   * Initializes and creates Spanner session relevant metrics. When coupled with an exporter, it
    * allows users to monitor client behavior.
    */
   private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
