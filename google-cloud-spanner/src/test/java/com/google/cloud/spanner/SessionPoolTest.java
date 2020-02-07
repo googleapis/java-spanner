@@ -1595,15 +1595,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getLabels()).containsEntry(SPANNER_LABEL_KEYS, labelValues);
 
     final CountDownLatch latch = new CountDownLatch(1);
-    // Then try asynchronously to take another session. This attempt should time out.
+    // Try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
         executor.submit(
             new Callable<Void>() {
               @Override
-              public Void call() throws Exception {
-                Session session;
+              public Void call() {
                 latch.countDown();
-                session = pool.getReadSession();
+                Session session = pool.getReadSession();
                 session.close();
                 return null;
               }
