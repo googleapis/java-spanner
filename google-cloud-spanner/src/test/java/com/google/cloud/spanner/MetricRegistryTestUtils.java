@@ -96,6 +96,32 @@ class MetricRegistryTestUtils {
     public void clear() {}
   }
 
+  public static final class FakeDerivedLongCumulative extends DerivedLongCumulative {
+    private final MetricsRecord record;
+    private final String name;
+    private final List<LabelKey> labelKeys;
+
+    private FakeDerivedLongCumulative(
+        FakeMetricRegistry metricRegistry, String name, List<LabelKey> labelKeys) {
+      this.record = metricRegistry.record;
+      this.labelKeys = labelKeys;
+      this.name = name;
+    }
+
+    @Override
+    public <T> void createTimeSeries(
+        List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
+      this.record.metrics.put(this.name, new PointWithFunction(t, toLongFunction));
+      this.record.labels.put(this.labelKeys, labelValues);
+    }
+
+    @Override
+    public void removeTimeSeries(List<LabelValue> list) {}
+
+    @Override
+    public void clear() {}
+  }
+
   /**
    * A {@link MetricRegistry} implementation that saves metrics records to be accessible from {@link
    * #pollRecord()}.
@@ -144,7 +170,7 @@ class MetricRegistryTestUtils {
 
     @Override
     public DerivedLongCumulative addDerivedLongCumulative(String s, MetricOptions metricOptions) {
-      throw new UnsupportedOperationException();
+      return new FakeDerivedLongCumulative(this, s, metricOptions.getLabelKeys());
     }
 
     @Override
