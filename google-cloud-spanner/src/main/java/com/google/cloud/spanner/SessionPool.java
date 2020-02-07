@@ -17,13 +17,13 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
+import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUT;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUT;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUT_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
@@ -1850,7 +1850,7 @@ final class SessionPool {
 
     DerivedLongCumulative sessionsTimeouts =
         metricRegistry.addDerivedLongCumulative(
-            SESSIONS_TIMEOUT,
+            GET_SESSION_TIMEOUT,
             MetricOptions.builder()
                 .setDescription(SESSIONS_TIMEOUT_DESCRIPTION)
                 .setUnit(COUNT)
