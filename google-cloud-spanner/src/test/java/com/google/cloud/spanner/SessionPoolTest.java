@@ -1623,7 +1623,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     executor.shutdown();
 
     session1.close();
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUT, 1L);
+    assertThat(record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUT).longValue()).isAtLeast(1L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }
