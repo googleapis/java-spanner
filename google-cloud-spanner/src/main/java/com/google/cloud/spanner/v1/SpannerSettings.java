@@ -78,8 +78,12 @@ import javax.annotation.Generated;
  * <code>
  * SpannerSettings.Builder spannerSettingsBuilder =
  *     SpannerSettings.newBuilder();
- * spannerSettingsBuilder.createSessionSettings().getRetrySettings().toBuilder()
- *     .setTotalTimeout(Duration.ofSeconds(30));
+ * spannerSettingsBuilder
+ *     .createSessionSettings()
+ *     .setRetrySettings(
+ *         spannerSettingsBuilder.createSessionSettings().getRetrySettings().toBuilder()
+ *             .setTotalTimeout(Duration.ofSeconds(30))
+ *             .build());
  * SpannerSettings spannerSettings = spannerSettingsBuilder.build();
  * </code>
  * </pre>

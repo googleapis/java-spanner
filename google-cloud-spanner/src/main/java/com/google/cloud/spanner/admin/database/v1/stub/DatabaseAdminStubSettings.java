@@ -91,8 +91,12 @@ import org.threeten.bp.Duration;
  * <code>
  * DatabaseAdminStubSettings.Builder databaseAdminSettingsBuilder =
  *     DatabaseAdminStubSettings.newBuilder();
- * databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
- *     .setTotalTimeout(Duration.ofSeconds(30));
+ * databaseAdminSettingsBuilder
+ *     .getDatabaseSettings()
+ *     .setRetrySettings(
+ *         databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
+ *             .setTotalTimeout(Duration.ofSeconds(30))
+ *             .build());
  * DatabaseAdminStubSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();
  * </code>
  * </pre>

@@ -39,6 +39,8 @@ import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.KeySet;
@@ -46,12 +48,17 @@ import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.PartitionQueryRequest;
+import com.google.spanner.v1.PartitionReadRequest;
+import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.io.IOException;
@@ -311,6 +318,51 @@ public class SpannerClientTest {
 
   @Test
   @SuppressWarnings("all")
+  public void executeSqlTest() {
+    ResultSet expectedResponse = ResultSet.newBuilder().build();
+    mockSpanner.addResponse(expectedResponse);
+
+    SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+    String sql = "sql114126";
+    ExecuteSqlRequest request =
+        ExecuteSqlRequest.newBuilder().setSession(session.toString()).setSql(sql).build();
+
+    ResultSet actualResponse = client.executeSql(request);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ExecuteSqlRequest actualRequest = (ExecuteSqlRequest) actualRequests.get(0);
+
+    Assert.assertEquals(session, SessionName.parse(actualRequest.getSession()));
+    Assert.assertEquals(sql, actualRequest.getSql());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void executeSqlExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+
+    try {
+      SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+      String sql = "sql114126";
+      ExecuteSqlRequest request =
+          ExecuteSqlRequest.newBuilder().setSession(session.toString()).setSql(sql).build();
+
+      client.executeSql(request);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
   public void executeStreamingSqlTest() throws Exception {
     boolean chunkedValue = true;
     ByteString resumeToken = ByteString.copyFromUtf8("103");
@@ -359,6 +411,128 @@ public class SpannerClientTest {
       Assert.assertTrue(e.getCause() instanceof InvalidArgumentException);
       InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
       Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void executeBatchDmlTest() {
+    ExecuteBatchDmlResponse expectedResponse = ExecuteBatchDmlResponse.newBuilder().build();
+    mockSpanner.addResponse(expectedResponse);
+
+    SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+    TransactionSelector transaction = TransactionSelector.newBuilder().build();
+    List<ExecuteBatchDmlRequest.Statement> statements = new ArrayList<>();
+    long seqno = 109325920L;
+    ExecuteBatchDmlRequest request =
+        ExecuteBatchDmlRequest.newBuilder()
+            .setSession(session.toString())
+            .setTransaction(transaction)
+            .addAllStatements(statements)
+            .setSeqno(seqno)
+            .build();
+
+    ExecuteBatchDmlResponse actualResponse = client.executeBatchDml(request);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ExecuteBatchDmlRequest actualRequest = (ExecuteBatchDmlRequest) actualRequests.get(0);
+
+    Assert.assertEquals(session, SessionName.parse(actualRequest.getSession()));
+    Assert.assertEquals(transaction, actualRequest.getTransaction());
+    Assert.assertEquals(statements, actualRequest.getStatementsList());
+    Assert.assertEquals(seqno, actualRequest.getSeqno());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void executeBatchDmlExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+
+    try {
+      SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+      TransactionSelector transaction = TransactionSelector.newBuilder().build();
+      List<ExecuteBatchDmlRequest.Statement> statements = new ArrayList<>();
+      long seqno = 109325920L;
+      ExecuteBatchDmlRequest request =
+          ExecuteBatchDmlRequest.newBuilder()
+              .setSession(session.toString())
+              .setTransaction(transaction)
+              .addAllStatements(statements)
+              .setSeqno(seqno)
+              .build();
+
+      client.executeBatchDml(request);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void readTest() {
+    ResultSet expectedResponse = ResultSet.newBuilder().build();
+    mockSpanner.addResponse(expectedResponse);
+
+    SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+    String table = "table110115790";
+    List<String> columns = new ArrayList<>();
+    KeySet keySet = KeySet.newBuilder().build();
+    ReadRequest request =
+        ReadRequest.newBuilder()
+            .setSession(session.toString())
+            .setTable(table)
+            .addAllColumns(columns)
+            .setKeySet(keySet)
+            .build();
+
+    ResultSet actualResponse = client.read(request);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ReadRequest actualRequest = (ReadRequest) actualRequests.get(0);
+
+    Assert.assertEquals(session, SessionName.parse(actualRequest.getSession()));
+    Assert.assertEquals(table, actualRequest.getTable());
+    Assert.assertEquals(columns, actualRequest.getColumnsList());
+    Assert.assertEquals(keySet, actualRequest.getKeySet());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void readExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+
+    try {
+      SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+      String table = "table110115790";
+      List<String> columns = new ArrayList<>();
+      KeySet keySet = KeySet.newBuilder().build();
+      ReadRequest request =
+          ReadRequest.newBuilder()
+              .setSession(session.toString())
+              .setTable(table)
+              .addAllColumns(columns)
+              .setKeySet(keySet)
+              .build();
+
+      client.read(request);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
     }
   }
 
@@ -593,6 +767,107 @@ public class SpannerClientTest {
       ByteString transactionId = ByteString.copyFromUtf8("28");
 
       client.rollback(session, transactionId);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void partitionQueryTest() {
+    PartitionResponse expectedResponse = PartitionResponse.newBuilder().build();
+    mockSpanner.addResponse(expectedResponse);
+
+    SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+    String sql = "sql114126";
+    PartitionQueryRequest request =
+        PartitionQueryRequest.newBuilder().setSession(session.toString()).setSql(sql).build();
+
+    PartitionResponse actualResponse = client.partitionQuery(request);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    PartitionQueryRequest actualRequest = (PartitionQueryRequest) actualRequests.get(0);
+
+    Assert.assertEquals(session, SessionName.parse(actualRequest.getSession()));
+    Assert.assertEquals(sql, actualRequest.getSql());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void partitionQueryExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+
+    try {
+      SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+      String sql = "sql114126";
+      PartitionQueryRequest request =
+          PartitionQueryRequest.newBuilder().setSession(session.toString()).setSql(sql).build();
+
+      client.partitionQuery(request);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void partitionReadTest() {
+    PartitionResponse expectedResponse = PartitionResponse.newBuilder().build();
+    mockSpanner.addResponse(expectedResponse);
+
+    SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+    String table = "table110115790";
+    KeySet keySet = KeySet.newBuilder().build();
+    PartitionReadRequest request =
+        PartitionReadRequest.newBuilder()
+            .setSession(session.toString())
+            .setTable(table)
+            .setKeySet(keySet)
+            .build();
+
+    PartitionResponse actualResponse = client.partitionRead(request);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    PartitionReadRequest actualRequest = (PartitionReadRequest) actualRequests.get(0);
+
+    Assert.assertEquals(session, SessionName.parse(actualRequest.getSession()));
+    Assert.assertEquals(table, actualRequest.getTable());
+    Assert.assertEquals(keySet, actualRequest.getKeySet());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void partitionReadExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+
+    try {
+      SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+      String table = "table110115790";
+      KeySet keySet = KeySet.newBuilder().build();
+      PartitionReadRequest request =
+          PartitionReadRequest.newBuilder()
+              .setSession(session.toString())
+              .setTable(table)
+              .setKeySet(keySet)
+              .build();
+
+      client.partitionRead(request);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception
