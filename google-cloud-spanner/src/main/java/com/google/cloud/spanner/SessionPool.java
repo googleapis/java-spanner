@@ -25,6 +25,10 @@ import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSI
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
@@ -795,6 +799,7 @@ final class SessionPool {
     @Override
     public void close() {
       synchronized (lock) {
+        numSessionsReleased++;
         numSessionsInUse--;
       }
       leakedException = null;
@@ -1025,6 +1030,7 @@ final class SessionPool {
           }
           numSessionsToClose -= sessionsToClose.size();
         }
+        numSessionsReleased += sessionsToClose.size();
       }
       for (PooledSession sess : sessionsToClose) {
         logger.log(Level.FINE, "Closing session {0}", sess.getName());
@@ -1121,6 +1127,12 @@ final class SessionPool {
 
   @GuardedBy("lock")
   private int maxSessionsInUse = 0;
+
+  @GuardedBy("lock")
+  private long numSessionsAcquired = 0;
+
+  @GuardedBy("lock")
+  private long numSessionsReleased = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
@@ -1349,9 +1361,11 @@ final class SessionPool {
           readWaiters.add(waiter);
         } else {
           span.addAnnotation("Acquired read write session");
+          numSessionsAcquired++;
         }
       } else {
         span.addAnnotation("Acquired read only session");
+        numSessionsAcquired++;
       }
     }
     if (waiter != null) {
@@ -1409,6 +1423,7 @@ final class SessionPool {
         if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
           PooledSession readSession = readSessions.poll();
           if (readSession != null) {
+            numSessionsAcquired++;
             span.addAnnotation("Acquired read only session. Preparing for read write transaction");
             prepareSession(readSession);
           } else {
@@ -1419,6 +1434,7 @@ final class SessionPool {
         waiter = new Waiter();
         readWriteWaiters.add(waiter);
       } else {
+        numSessionsAcquired++;
         span.addAnnotation("Acquired read write session");
       }
     }
@@ -1857,6 +1873,25 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
+    DerivedLongCumulative numAcquiredSessionsMetric =
+      metricRegistry.addDerivedLongCumulative(
+        NUM_ACQUIRED_SESSIONS,
+        MetricOptions.builder()
+          .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
+          .setUnit(COUNT)
+          .setLabelKeys(SPANNER_LABEL_KEYS)
+          .build());
+
+    DerivedLongCumulative numReleasedSessionsMetric =
+      metricRegistry.addDerivedLongCumulative(
+        NUM_RELEASED_SESSIONS,
+        MetricOptions.builder()
+          .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
+          .setUnit(COUNT)
+          .setLabelKeys(SPANNER_LABEL_KEYS)
+          .build());
+
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.createTimeSeries(
@@ -1896,13 +1931,33 @@ final class SessionPool {
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     sessionsTimeouts.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.getNumWaiterTimeouts();
-          }
-        });
+      labelValues,
+      this,
+      new ToLongFunction<SessionPool>() {
+        @Override
+        public long applyAsLong(SessionPool sessionPool) {
+          return sessionPool.getNumWaiterTimeouts();
+        }
+      });
+
+    numAcquiredSessionsMetric.createTimeSeries(
+      labelValues,
+      this,
+      new ToLongFunction<SessionPool>() {
+        @Override
+        public long applyAsLong(SessionPool sessionPool) {
+          return sessionPool.numSessionsAcquired;
+        }
+      });
+
+    numReleasedSessionsMetric.createTimeSeries(
+      labelValues,
+      this,
+      new ToLongFunction<SessionPool>() {
+        @Override
+        public long applyAsLong(SessionPool sessionPool) {
+          return sessionPool.numSessionsReleased;
+        }
+      });
   }
 }
