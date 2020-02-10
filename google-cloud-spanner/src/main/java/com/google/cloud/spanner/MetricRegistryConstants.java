@@ -57,7 +57,7 @@ class MetricRegistryConstants {
   static final String SESSIONS_TIMEOUTS_DESCRIPTION =
       "The number of get sessions timeouts due to pool exhaustion";
   static final String NUM_ACQUIRED_SESSIONS_DESCRIPTION =
-      "The number of sessions acquired from the session pool";
+      "The number of sessions acquired from the session pool.";
   static final String NUM_RELEASED_SESSIONS_DESCRIPTION =
-      "The number of sessions released from the session pool";
+      "The number of sessions released by the user and pool maintainer.";
 }
