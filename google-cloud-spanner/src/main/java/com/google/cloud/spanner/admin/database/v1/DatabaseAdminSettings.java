@@ -73,8 +73,12 @@ import javax.annotation.Generated;
  * <code>
  * DatabaseAdminSettings.Builder databaseAdminSettingsBuilder =
  *     DatabaseAdminSettings.newBuilder();
- * databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
- *     .setTotalTimeout(Duration.ofSeconds(30));
+ * databaseAdminSettingsBuilder
+ *     .getDatabaseSettings()
+ *     .setRetrySettings(
+ *         databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
+ *             .setTotalTimeout(Duration.ofSeconds(30))
+ *             .build());
  * DatabaseAdminSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();
  * </code>
  * </pre>
