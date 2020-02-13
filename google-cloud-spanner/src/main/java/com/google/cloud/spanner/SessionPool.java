@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
-import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSIONS_TIMEOUTS;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
@@ -1850,7 +1850,7 @@ final class SessionPool {
 
     DerivedLongCumulative sessionsTimeouts =
         metricRegistry.addDerivedLongCumulative(
-            GET_SESSION_TIMEOUTS,
+            GET_SESSIONS_TIMEOUTS,
             MetricOptions.builder()
                 .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
                 .setUnit(COUNT)
