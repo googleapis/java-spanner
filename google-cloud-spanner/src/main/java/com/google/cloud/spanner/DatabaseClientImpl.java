@@ -66,7 +66,7 @@ class DatabaseClientImpl implements DatabaseClient {
             }
           });
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
@@ -86,7 +86,7 @@ class DatabaseClientImpl implements DatabaseClient {
             }
           });
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);

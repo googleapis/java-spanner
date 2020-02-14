@@ -140,14 +140,15 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       CommitResponse response = spanner.getRpc().commit(request, options);
       Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      span.end(TraceUtil.END_SPAN_OPTIONS);
       return t;
     } catch (IllegalArgumentException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit timestamp", e);
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 
@@ -208,10 +209,11 @@ class SessionImpl implements Session {
     Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       spanner.getRpc().deleteSession(name, options);
-      span.end(TraceUtil.END_SPAN_OPTIONS);
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 

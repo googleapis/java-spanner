@@ -54,6 +54,16 @@ class TraceUtil {
         "Status", AttributeValue.stringAttributeValue(e.getErrorCode().toString()));
   }
 
+  static void setWithFailure(Span span, Throwable e) {
+    if (e instanceof SpannerException) {
+      span.setStatus(
+        StatusConverter.fromGrpcStatus(((SpannerException) e).getErrorCode().getGrpcStatus())
+          .withDescription(e.getMessage()));
+    } else {
+      span.setStatus(Status.INTERNAL.withDescription(e.getMessage()));
+    }
+  }
+
   static void endSpanWithFailure(Span span, Throwable e) {
     if (e instanceof SpannerException) {
       endSpanWithFailure(span, (SpannerException) e);
