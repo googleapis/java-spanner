@@ -997,11 +997,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.endSpanWithFailure(span, e);
+          //TraceUtil.endSpanWithFailure(span, e);
           throw e;
         } catch (RuntimeException e) {
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.endSpanWithFailure(span, e);
+          //TraceUtil.endSpanWithFailure(span, e);
           throw e;
         }
       }

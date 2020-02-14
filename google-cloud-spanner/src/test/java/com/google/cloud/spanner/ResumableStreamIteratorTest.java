@@ -242,6 +242,28 @@ public class ResumableStreamIteratorTest {
   }
 
   @Test
+  public void closedSpanOnNonRetryableError() {
+    Span span = mock(Span.class);
+    Whitebox.setInternalState(this.resumableStreamIterator, "span", span);
+
+    ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
+    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(s1.next())
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
+        .thenReturn(resultSet(null, "X"))
+        .thenReturn(resultSet(null, "X"))
+        .thenThrow(new NonRetryableException(ErrorCode.FAILED_PRECONDITION, "failed by test"));
+    Iterator<String> strings = stringIterator(resumableStreamIterator);
+    assertThat(strings.next()).isEqualTo("a");
+    assertThat(strings.next()).isEqualTo("b");
+    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
+    assertThat(strings.next()).isNotEqualTo("X");
+
+    verify(span).end(EndSpanOptions.builder().setSampleToLocalSpanStore(true).build());
+  }
+
+  @Test
   public void bufferLimitSimple() {
     initWithLimit(1);
 
