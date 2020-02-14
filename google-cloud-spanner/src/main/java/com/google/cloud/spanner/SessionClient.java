@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Status;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -135,7 +136,7 @@ class SessionClient implements AutoCloseable {
           try {
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
           } catch (Throwable t) {
-            TraceUtil.endSpanWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
+            TraceUtil.setWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
             break;
           }
@@ -270,32 +271,7 @@ class SessionClient implements AutoCloseable {
    */
   private List<SessionImpl> internalBatchCreateSessions(
       final int sessionCount, final long channelHint) throws SpannerException {
-    final Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
-    Span parent = SpannerImpl.tracer.getCurrentSpan();
-    Span span =
-        SpannerImpl.tracer
-            .spanBuilderWithExplicitParent(SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent)
-            .startSpan();
-    span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
-    try (Scope s = SpannerImpl.tracer.withSpan(span)) {
-      List<com.google.spanner.v1.Session> sessions =
-          spanner
-              .getRpc()
-              .batchCreateSessions(
-                  db.getName(), sessionCount, spanner.getOptions().getSessionLabels(), options);
-      span.addAnnotation(
-          String.format(
-              "Request for %d sessions returned %d sessions", sessionCount, sessions.size()));
-      span.end(TraceUtil.END_SPAN_OPTIONS);
-      List<SessionImpl> res = new ArrayList<>(sessionCount);
-      for (com.google.spanner.v1.Session session : sessions) {
-        res.add(new SessionImpl(spanner, session.getName(), options));
-      }
-      return res;
-    } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
-      throw e;
-    }
+    throw new RuntimeException("");
   }
 
   /** Returns a {@link SessionImpl} that references the existing session with the given name. */

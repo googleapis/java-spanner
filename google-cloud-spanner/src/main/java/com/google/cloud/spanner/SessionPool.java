@@ -892,7 +892,7 @@ final class SessionPool {
             return s.session;
           }
         } catch (Exception e) {
-          TraceUtil.endSpanWithFailure(tracer.getCurrentSpan(), e);
+          TraceUtil.setWithFailure(span, e);
           throw e;
         } finally {
           span.end(TraceUtil.END_SPAN_OPTIONS);
