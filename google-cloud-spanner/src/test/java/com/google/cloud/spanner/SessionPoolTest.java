@@ -1561,12 +1561,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testSessionMetrics() {
+  public void testSessionMetrics() throws Exception {
+    // Create a session pool with max 2 session and a low timeout for waiting for a session.
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
-            .setMaxSessions(3)
+            .setMaxSessions(2)
             .setMaxIdleSessions(0)
+            .setInitialWaitForSessionTimeoutMillis(20L)
             .build();
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
@@ -1583,16 +1585,46 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     Session session2 = pool.getReadSession();
 
     MetricsRecord record = metricRegistry.pollRecord();
+    assertThat(record.getMetrics().size()).isEqualTo(4);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
     assertThat(record.getMetrics())
         .containsEntry(
             MetricRegistryConstants.MAX_ALLOWED_SESSIONS, (long) options.getMaxSessions());
     assertThat(record.getLabels()).containsEntry(SPANNER_LABEL_KEYS, labelValues);
 
+    final CountDownLatch latch = new CountDownLatch(1);
+    // Try asynchronously to take another session. This attempt should time out.
+    Future<Void> fut =
+        executor.submit(
+            new Callable<Void>() {
+              @Override
+              public Void call() {
+                latch.countDown();
+                Session session = pool.getReadSession();
+                session.close();
+                return null;
+              }
+            });
+    // Wait until the background thread is actually waiting for a session.
+    latch.await();
+    // Wait until the request has timed out.
+    int waitCount = 0;
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+      Thread.sleep(5L);
+      waitCount++;
+    }
+    // Return the checked out session to the pool so the async request will get a session and
+    // finish.
     session2.close();
-    session1.close();
+    // Verify that the async request also succeeds.
+    fut.get(10L, TimeUnit.SECONDS);
+    executor.shutdown();
 
+    session1.close();
+    assertThat(record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS).longValue())
+        .isAtLeast(1L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }

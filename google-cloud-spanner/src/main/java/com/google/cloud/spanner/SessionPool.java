@@ -17,12 +17,14 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
+import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
@@ -50,6 +52,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
 import io.opencensus.common.ToLongFunction;
+import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricOptions;
@@ -1845,6 +1848,15 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
+    DerivedLongCumulative sessionsTimeouts =
+        metricRegistry.addDerivedLongCumulative(
+            GET_SESSION_TIMEOUTS,
+            MetricOptions.builder()
+                .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.createTimeSeries(
@@ -1878,6 +1890,18 @@ final class SessionPool {
           @Override
           public long applyAsLong(SessionPool sessionPool) {
             return sessionPool.numSessionsInUse;
+          }
+        });
+
+    // The value of a numWaiterTimeouts is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    sessionsTimeouts.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.getNumWaiterTimeouts();
           }
         });
   }
