@@ -57,8 +57,8 @@ class TraceUtil {
   static void setWithFailure(Span span, Throwable e) {
     if (e instanceof SpannerException) {
       span.setStatus(
-        StatusConverter.fromGrpcStatus(((SpannerException) e).getErrorCode().getGrpcStatus())
-          .withDescription(e.getMessage()));
+          StatusConverter.fromGrpcStatus(((SpannerException) e).getErrorCode().getGrpcStatus())
+              .withDescription(e.getMessage()));
     } else {
       span.setStatus(Status.INTERNAL.withDescription(e.getMessage()));
     }
