@@ -16,14 +16,15 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.connection.Connection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Exception thrown by a {@link CloudSpannerJdbcConnection} when a database operation detects that a
- * transaction has aborted and an internal retry failed because of a concurrent modification. This
- * type of error has its own subclass since it is often necessary to handle this specific kind of
- * aborted exceptions differently to other types of errors.
+ * Exception thrown by a {@link Connection} when a database operation detects that a transaction has
+ * aborted and an internal retry failed because of a concurrent modification. This type of error has
+ * its own subclass since it is often necessary to handle this specific kind of aborted exceptions
+ * differently to other types of errors.
  */
 public class AbortedDueToConcurrentModificationException extends AbortedException {
   private static final long serialVersionUID = 7600146169922053323L;

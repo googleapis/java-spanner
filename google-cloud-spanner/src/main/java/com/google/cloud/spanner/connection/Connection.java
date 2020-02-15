@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
