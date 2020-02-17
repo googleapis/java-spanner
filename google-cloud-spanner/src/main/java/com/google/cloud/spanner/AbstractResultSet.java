@@ -922,6 +922,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       if (stream != null) {
         stream.close(message);
         span.end(TraceUtil.END_SPAN_OPTIONS);
+        stream = null;
       }
     }
 

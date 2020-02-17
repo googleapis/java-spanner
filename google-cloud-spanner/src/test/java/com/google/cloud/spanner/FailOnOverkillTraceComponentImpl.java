@@ -87,7 +87,7 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     public void end(EndSpanOptions options) {
       synchronized (this) {
         if (ended) {
-          throw new IllegalStateException("already ended");
+          throw new IllegalStateException(this.spanName + " already ended");
         }
         spans.put(this.spanName, true);
         ended = true;

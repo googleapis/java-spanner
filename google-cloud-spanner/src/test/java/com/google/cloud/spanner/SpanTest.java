@@ -194,7 +194,7 @@ public class SpanTest {
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans.size()).isEqualTo(6);
-    assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", false);
+    assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
@@ -216,7 +216,6 @@ public class SpanTest {
           });
       fail("missing expected exception");
     } catch (SpannerException e) {
-      System.out.println("herhe");
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     }
 
