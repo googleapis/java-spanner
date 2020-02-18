@@ -70,6 +70,14 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
   DatabaseClient getDatabaseClient(DatabaseId db);
 
   /**
+   * A simplified wrapper on top of getDatabaseClient
+   *
+   * @param db
+   * @return
+   */
+  SimpleClient getSimpleDatabaseClient(DatabaseId db);
+
+  /**
    * Returns a {@code BatchClient} to do batch operations on Cloud Spanner databases. Batch client
    * is useful when one wants to read/query a large amount of data from Cloud Spanner across
    * multiple processes, even across different machines. It allows to create partitions of Cloud

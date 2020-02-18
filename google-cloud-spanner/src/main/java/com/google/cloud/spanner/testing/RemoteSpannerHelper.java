@@ -21,6 +21,7 @@ import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.SimpleClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -63,6 +64,10 @@ public class RemoteSpannerHelper {
 
   public DatabaseClient getDatabaseClient(Database db) {
     return getClient().getDatabaseClient(db.getId());
+  }
+
+  public SimpleClient getSimpleClient(Database db) {
+    return getClient().getSimpleDatabaseClient(db.getId());
   }
 
   public BatchClient getBatchClient(Database db) {

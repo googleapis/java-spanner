@@ -160,6 +160,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     }
   }
 
+  @Override
+  public SimpleClient getSimpleDatabaseClient(DatabaseId db) {
+    return new SimpleClientImpl(getDatabaseClient(db));
+  }
+
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(SessionPool pool) {
     return new DatabaseClientImpl(pool);
