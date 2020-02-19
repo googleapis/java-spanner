@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 public class SimpleClientImpl implements SimpleClient {
 
@@ -37,7 +38,7 @@ public class SimpleClientImpl implements SimpleClient {
 
   @Override
   public ResultSet executeSnapshotSqlQuery(String query) {
-    return executeSqlQuery(query, TimestampBound.ofExactStaleness(5L, TimeUnit.SECONDS));
+    return executeSqlQuery(query, TimestampBound.ofExactStaleness(30L, TimeUnit.SECONDS));
   }
 
   @Override
@@ -70,43 +71,50 @@ public class SimpleClientImpl implements SimpleClient {
 
   @Override
   public ResultSet executeSnapshotSqlQuery(String query, Map<String, Value> args) {
-    return executeSqlQuery(query, args, TimestampBound.ofExactStaleness(5L, TimeUnit.SECONDS));
+    return executeSqlQuery(query, args, TimestampBound.ofExactStaleness(30L, TimeUnit.SECONDS));
   }
 
   @Override
   public long executeSqlWrite(String sql, Map<String, Value> args) {
-    Statement.Builder builder = Statement.newBuilder(sql);
+    final Statement.Builder builder = Statement.newBuilder(sql);
     if (args != null && !args.isEmpty()) {
       for (Map.Entry<String, Value> entry : args.entrySet()) {
         builder.bind(entry.getKey()).to(entry.getValue());
       }
     }
-    return client.executePartitionedUpdate(builder.build());
+    return client
+        .readWriteTransaction()
+        .run(
+            new TransactionRunner.TransactionCallable<Long>() {
+              @Nullable
+              @Override
+              public Long run(TransactionContext transaction) throws Exception {
+                return transaction.executeUpdate(builder.build());
+              }
+            });
   }
 
   @Override
   public boolean runTransaction(final List<Statement> statements) {
     try {
-      boolean status =
-          client
-              .readWriteTransaction()
-              .run(
-                  new TransactionRunner.TransactionCallable<Boolean>() {
-                    @Override
-                    public Boolean run(TransactionContext transaction) {
-                      try {
-                        transaction.batchUpdate(statements);
-                        return true;
-                      } catch (Exception e) {
-                        logger.log(Level.WARNING, "Failed to complete transaction", e);
-                      }
-                      return false;
-                    }
-                  });
+      return client
+          .readWriteTransaction()
+          .run(
+              new TransactionRunner.TransactionCallable<Boolean>() {
+                @Override
+                public Boolean run(TransactionContext transaction) {
+                  try {
+                    transaction.batchUpdate(statements);
+                    return true;
+                  } catch (Exception e) {
+                    logger.log(Level.WARNING, "Failed to complete transaction", e);
+                  }
+                  return false;
+                }
+              });
     } catch (Exception e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
-    return true;
   }
 
   @Override

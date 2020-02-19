@@ -29,7 +29,7 @@ public interface SimpleClient {
   ResultSet executeSqlQuery(String query);
 
   /**
-   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 5 seconds.
+   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 30 seconds.
    *
    * @param query
    * @return
@@ -66,7 +66,7 @@ public interface SimpleClient {
   ResultSet executeSqlQuery(String query, Map<String, Value> args);
 
   /**
-   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 5 sec. Accept
+   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 30 sec.
    * Map<String, Value> as named parameters.
    *
    * @param query
