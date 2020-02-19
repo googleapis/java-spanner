@@ -123,7 +123,7 @@ public class ITSimpleClient {
     int count = 0;
     try (ResultSet res =
         simpleClient.executeSqlQuery(
-            "SELECT Key, Data, Fingerprint, Size from TestTable LIMIT 10")) {
+            "SELECT Key, Data, Fingerprint, Size from  TestTable LIMIT 10")) {
       while (res.next()) {
         count++;
       }
