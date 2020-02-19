@@ -145,7 +145,7 @@ public class ITSimpleClient {
     assertEquals(30, count);
 
     try {
-      Thread.sleep(TimeUnit.SECONDS.toMillis(5L));
+      Thread.sleep(TimeUnit.SECONDS.toMillis(30L));
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
