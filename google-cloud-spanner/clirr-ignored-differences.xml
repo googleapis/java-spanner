@@ -11,4 +11,9 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>* asyncDeleteSession(*)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>* getSimpleDatabaseClient(*)</method>
+  </difference>
 </differences>
