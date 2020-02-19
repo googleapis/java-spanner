@@ -1628,7 +1628,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getMetrics())
         .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 0L);
     assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 3L);
+        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 5L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }

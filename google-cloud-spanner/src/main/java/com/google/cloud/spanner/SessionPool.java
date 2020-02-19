@@ -799,7 +799,6 @@ final class SessionPool {
     @Override
     public void close() {
       synchronized (lock) {
-        numSessionsReleased++;
         numSessionsInUse--;
       }
       leakedException = null;
@@ -1030,7 +1029,6 @@ final class SessionPool {
           }
           numSessionsToClose -= sessionsToClose.size();
         }
-        numSessionsReleased += sessionsToClose.size();
       }
       for (PooledSession sess : sessionsToClose) {
         logger.log(Level.FINE, "Closing session {0}", sess.getName());
@@ -1525,6 +1523,7 @@ final class SessionPool {
       if (closureFuture != null) {
         return;
       }
+      numSessionsReleased++;
       if (readWaiters.size() == 0 && numSessionsBeingPrepared >= readWriteWaiters.size()) {
         // No pending waiters
         if (shouldPrepareSession()) {
