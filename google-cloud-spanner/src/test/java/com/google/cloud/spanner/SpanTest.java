@@ -41,10 +41,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(TracerTest.class)
 public class SpanTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
