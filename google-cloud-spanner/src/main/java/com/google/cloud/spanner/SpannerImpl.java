@@ -22,6 +22,7 @@ import com.google.cloud.BaseService;
 import com.google.cloud.PageImpl;
 import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -123,6 +125,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /** Returns the default query options that should be used for the specified database. */
   QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
     return getOptions().getDefaultQueryOptions(databaseId);
+  }
+
+  ExecutorFactory<ScheduledExecutorService> getExecutorFactory() {
+    return ((GrpcTransportOptions) getOptions().getTransportOptions()).getExecutorFactory();
   }
 
   SessionImpl sessionWithId(String name) {

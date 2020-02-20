@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -51,12 +51,12 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @VisibleForTesting
-  PooledSession getReadSession() {
+  PooledSessionFuture getReadSession() {
     return pool.getReadSession();
   }
 
   @VisibleForTesting
-  PooledSession getReadWriteSession() {
+  PooledSessionFuture getReadWriteSession() {
     return pool.getReadWriteSession();
   }
 
@@ -211,7 +211,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   private <T> T runWithSessionRetry(SessionMode mode, Function<Session, T> callable) {
-    PooledSession session =
+    PooledSessionFuture session =
         mode == SessionMode.READ_WRITE ? getReadWriteSession() : getReadSession();
     while (true) {
       try {

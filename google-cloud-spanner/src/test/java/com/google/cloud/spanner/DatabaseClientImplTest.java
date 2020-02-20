@@ -25,6 +25,8 @@ import static org.junit.Assert.fail;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -45,6 +47,11 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -143,6 +150,136 @@ public class DatabaseClientImplTest {
     spanner.close();
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+  }
+
+  @Test
+  public void write() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.write(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+  }
+
+  @Test
+  public void writeAtLeastOnce() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnce(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+  }
+
+  @Test
+  public void singleUse() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUseReadOnlyTransaction().executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseTransactionBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUseReadOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void readOnlyTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readOnlyTransactionBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readWriteTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.executeUpdate(UPDATE_STATEMENT);
+            return null;
+          }
+        });
+  }
+
+  @Test
+  public void transactionManager() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager txManager = client.transactionManager()) {
+      while (true) {
+        TransactionContext tx = txManager.begin();
+        try {
+          tx.executeUpdate(UPDATE_STATEMENT);
+          txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
   }
 
   /**
@@ -824,5 +961,44 @@ public class DatabaseClientImplTest {
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
     }
+  }
+
+  public void testAsyncQuery() throws InterruptedException {
+    final int EXPECTED_ROW_COUNT = 10;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(EXPECTED_ROW_COUNT);
+    com.google.spanner.v1.ResultSet resultSet = generator.generate();
+    mockSpanner.putStatementResult(
+        StatementResult.query(Statement.of("SELECT * FROM RANDOM"), resultSet));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    final CountDownLatch finished = new CountDownLatch(1);
+    final List<Struct> receivedResults = new ArrayList<>();
+    try (AsyncResultSet rs =
+        client.singleUse().executeQueryAsync(Statement.of("SELECT * FROM RANDOM"))) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              while (true) {
+                switch (rs.tryNext()) {
+                  case DONE:
+                    finished.countDown();
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    receivedResults.add(resultSet.getCurrentRowAsStruct());
+                    break;
+                  default:
+                    throw new IllegalStateException("Unknown cursor state");
+                }
+              }
+            }
+          });
+    }
+    finished.await();
+    assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);
   }
 }

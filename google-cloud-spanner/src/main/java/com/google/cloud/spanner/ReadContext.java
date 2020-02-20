@@ -160,6 +160,8 @@ public interface ReadContext extends AutoCloseable {
    */
   ResultSet executeQuery(Statement statement, QueryOption... options);
 
+  AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options);
+
   /**
    * Analyzes a query and returns query plan and/or query execution statistics information.
    *

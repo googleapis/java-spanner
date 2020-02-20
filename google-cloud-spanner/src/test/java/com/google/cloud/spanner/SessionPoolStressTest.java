@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
@@ -97,12 +98,12 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(mockSpanner.getOptions()).thenReturn(spannerOptions);
     when(sessionClient.createSession())
         .thenAnswer(
-            new Answer<Session>() {
+            new Answer<SessionImpl>() {
 
               @Override
-              public Session answer(InvocationOnMock invocation) throws Throwable {
+              public SessionImpl answer(InvocationOnMock invocation) throws Throwable {
                 synchronized (lock) {
-                  Session session = mockSession();
+                  SessionImpl session = mockSession();
                   setupSession(session);
 
                   sessions.put(session.getName(), false);
@@ -139,7 +140,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.anyInt(), Mockito.any(SessionConsumer.class));
   }
 
-  private void setupSession(final Session session) {
+  private void setupSession(final SessionImpl session) {
     ReadContext mockContext = mock(ReadContext.class);
     final ResultSet mockResult = mock(ResultSet.class);
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
@@ -266,12 +267,14 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                   Uninterruptibles.awaitUninterruptibly(releaseThreads);
                   for (int j = 0; j < numOperationsPerThread; j++) {
                     try {
-                      Session session = null;
+                      PooledSessionFuture session = null;
                       if (random.nextInt(10) < writeOperationFraction) {
                         session = pool.getReadWriteSession();
+                        session.get();
                         assertWritePrepared(session);
                       } else {
                         session = pool.getReadSession();
+                        session.get();
                       }
                       Uninterruptibles.sleepUninterruptibly(
                           random.nextInt(5), TimeUnit.MILLISECONDS);
