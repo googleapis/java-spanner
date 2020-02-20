@@ -19,8 +19,12 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
@@ -30,9 +34,9 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.opencensus.trace.Tracing;
-import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -40,10 +44,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 @Category(TracerTest.class)
@@ -84,8 +91,35 @@ public class SpanTest {
           .build();
   private Spanner spanner;
   private DatabaseClient client;
+  private Spanner spannerWithTimeout;
+  private DatabaseClient clientWithTimeout;
   private static FailOnOverkillTraceComponentImpl failOnOverkillTraceComponent =
       new FailOnOverkillTraceComponentImpl();
+
+  private static final SimulatedExecutionTime ONE_SECOND =
+      SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0);
+  private static final Statement SELECT1AND2 =
+      Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
+  private static final ResultSetMetadata SELECT1AND2_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("COL1")
+                          .setType(
+                              com.google.spanner.v1.Type.newBuilder()
+                                  .setCode(TypeCode.INT64)
+                                  .build())
+                          .build())
+                  .build())
+          .build();
+  private static final StatusRuntimeException FAILED_PRECONDITION =
+      io.grpc.Status.FAILED_PRECONDITION
+          .withDescription("Non-retryable test exception.")
+          .asRuntimeException();
+
+  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
@@ -126,25 +160,91 @@ public class SpanTest {
   }
 
   @Before
-  public void setUp() throws IOException {
-    spanner =
+  public void setUp() throws Exception {
+    SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
-            .build()
-            .getService();
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+
+    spanner = builder.build().getService();
+
     client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    final RetrySettings retrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1L))
+            .setMaxRetryDelay(Duration.ofMillis(1L))
+            .setInitialRpcTimeout(Duration.ofMillis(75L))
+            .setMaxRpcTimeout(Duration.ofMillis(75L))
+            .setMaxAttempts(3)
+            .setTotalTimeout(Duration.ofMillis(200L))
+            .build();
+    RetrySettings commitRetrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1L))
+            .setMaxRetryDelay(Duration.ofMillis(1L))
+            .setInitialRpcTimeout(Duration.ofMillis(5000L))
+            .setMaxRpcTimeout(Duration.ofMillis(10000L))
+            .setMaxAttempts(1)
+            .setTotalTimeout(Duration.ofMillis(20000L))
+            .build();
+    builder
+        .getSpannerStubSettingsBuilder()
+        .applyToAllUnaryMethods(
+            new ApiFunction<Builder<?, ?>, Void>() {
+              @Override
+              public Void apply(Builder<?, ?> input) {
+                input.setRetrySettings(retrySettings);
+                return null;
+              }
+            });
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeStreamingSqlSettings()
+        .setRetrySettings(retrySettings);
+    builder.getSpannerStubSettingsBuilder().commitSettings().setRetrySettings(commitRetrySettings);
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeStreamingSqlSettings()
+        .setRetrySettings(retrySettings);
+    builder.getSpannerStubSettingsBuilder().streamingReadSettings().setRetrySettings(retrySettings);
+    spannerWithTimeout = builder.build().getService();
+    clientWithTimeout =
+        spannerWithTimeout.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
     failOnOverkillTraceComponent.clearSpans();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+  }
+
+  @Test
+  public void singleUseNonRetryableErrorOnNext() {
+    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.FAILED_PRECONDITION));
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
+      mockSpanner.addException(FAILED_PRECONDITION);
+      while (rs.next()) {
+        // Just consume the result set.
+      }
+    }
+  }
+
+  @Test
+  public void singleUseExecuteStreamingSqlTimeout() {
+    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
+    try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
+      mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
+      while (rs.next()) {
+        // Just consume the result set.
+      }
+    }
   }
 
   @Test
@@ -193,7 +293,6 @@ public class SpanTest {
             return null;
           }
         });
-
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans.size()).isEqualTo(6);
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);

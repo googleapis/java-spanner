@@ -165,8 +165,10 @@ class DatabaseClientImpl implements DatabaseClient {
     try (Scope s = tracer.withSpan(span)) {
       return getReadWriteSession().readWriteTransaction();
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 

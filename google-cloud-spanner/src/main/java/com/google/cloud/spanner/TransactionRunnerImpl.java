@@ -301,7 +301,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // We also do this unconditionally in case a user has modified the flag when the transaction
       // was running.
       SessionImpl.hasPendingTransaction.remove();
-      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 
