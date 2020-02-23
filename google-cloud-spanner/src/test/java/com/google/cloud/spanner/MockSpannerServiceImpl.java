@@ -90,11 +90,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.threeten.bp.Instant;
 
 /**
@@ -420,19 +419,15 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private void simulateExecutionTime(
         Queue<Exception> globalExceptions,
         boolean stickyGlobalExceptions,
-        ReadWriteLock freezeLock) {
-      try {
-        freezeLock.readLock().lock();
-        checkException(globalExceptions, stickyGlobalExceptions);
-        checkException(this.exceptions, stickyException);
-        if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
-          Uninterruptibles.sleepUninterruptibly(
-              (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
-                  + minimumExecutionTime,
-              TimeUnit.MILLISECONDS);
-        }
-      } finally {
-        freezeLock.readLock().unlock();
+        CountDownLatch freezeLock) {
+      Uninterruptibles.awaitUninterruptibly(freezeLock);
+      checkException(globalExceptions, stickyGlobalExceptions);
+      checkException(this.exceptions, stickyException);
+      if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
+        Uninterruptibles.sleepUninterruptibly(
+            (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
+                + minimumExecutionTime,
+            TimeUnit.MILLISECONDS);
       }
     }
 
@@ -451,7 +446,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private double abortProbability = 0.0010D;
 
   private final Queue<AbstractMessage> requests = new ConcurrentLinkedQueue<>();
-  private final ReadWriteLock freezeLock = new ReentrantReadWriteLock();
+  private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
   private final ConcurrentMap<Statement, StatementResult> statementResults =
@@ -591,11 +586,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   public void freeze() {
-    freezeLock.writeLock().lock();
+    freezeLock = new CountDownLatch(1);
   }
 
   public void unfreeze() {
-    freezeLock.writeLock().unlock();
+    freezeLock.countDown();
   }
 
   public void setMaxSessionsInOneBatch(int max) {
@@ -1638,6 +1633,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     exceptions.add(exception);
   }
 
+  public void clearExceptions() {
+    exceptions.clear();
+  }
+
   public void setStickyGlobalExceptions(boolean sticky) {
     this.stickyGlobalExceptions = sticky;
   }
@@ -1661,6 +1660,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     transactionLastUsed.clear();
     exceptions.clear();
     stickyGlobalExceptions = false;
+    freezeLock.countDown();
   }
 
   public void removeAllExecutionTimes() {

@@ -35,8 +35,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
 import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;

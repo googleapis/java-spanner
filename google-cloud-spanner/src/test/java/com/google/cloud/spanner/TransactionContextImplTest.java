@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;

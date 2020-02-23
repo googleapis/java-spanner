@@ -35,9 +35,11 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.DatabaseClient.AsyncWork;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
@@ -87,6 +89,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -123,6 +126,24 @@ final class SessionPool {
     }
   }
 
+  private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+    private ResultSet cached;
+
+    abstract ResultSet load();
+
+    ResultSet reload() {
+      return cached = load();
+    }
+
+    @Override
+    public ResultSet get() {
+      if (cached == null) {
+        cached = load();
+      }
+      return cached;
+    }
+  }
+
   /**
    * Wrapper around {@code ReadContext} that releases the session to the pool once the call is
    * finished, if it is a single use context.
@@ -145,31 +166,33 @@ final class SessionPool {
       this.sessionPool = sessionPool;
       this.session = session;
       this.isSingleUse = isSingleUse;
-      while (true) {
-        try {
-          this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
-          break;
-        } catch (SessionNotFoundException e) {
-          replaceSessionIfPossible(e);
-        }
-      }
     }
 
     T getReadContextDelegate() {
+      if (readContextDelegate == null) {
+        while (true) {
+          try {
+            this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
+            break;
+          } catch (SessionNotFoundException e) {
+            replaceSessionIfPossible(e);
+          }
+        }
+      }
       return readContextDelegate;
     }
 
-    private ResultSet wrap(final Supplier<ResultSet> resultSetSupplier) {
-      ResultSet res;
-      while (true) {
-        try {
-          res = resultSetSupplier.get();
-          break;
-        } catch (SessionNotFoundException e) {
-          replaceSessionIfPossible(e);
-        }
-      }
-      return new ForwardingResultSet(res) {
+    private ResultSet wrap(final CachedResultSetSupplier resultSetSupplier) {
+      //      ResultSet res;
+      //      while (true) {
+      //        try {
+      //          res = resultSetSupplier.get();
+      //          break;
+      //        } catch (SessionNotFoundException e) {
+      //          replaceSessionIfPossible(e);
+      //        }
+      //      }
+      return new ForwardingResultSet(resultSetSupplier) {
         private boolean beforeFirst = true;
 
         @Override
@@ -178,8 +201,18 @@ final class SessionPool {
             try {
               return internalNext();
             } catch (SessionNotFoundException e) {
-              replaceSessionIfPossible(e);
-              replaceDelegate(resultSetSupplier.get());
+              while (true) {
+                // Keep the replace-if-possible outside the try-block to let the exception bubble up
+                // if it's too late to replace the session.
+                replaceSessionIfPossible(e);
+                try {
+                  replaceDelegate(resultSetSupplier.reload());
+                  break;
+                } catch (SessionNotFoundException snfe) {
+                  e = snfe;
+                  // retry on yet another session.
+                }
+              }
             }
           }
         }
@@ -235,10 +268,10 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.read(table, keys, columns, options);
+            ResultSet load() {
+              return getReadContextDelegate().read(table, keys, columns, options);
             }
           });
     }
@@ -251,10 +284,10 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.readUsingIndex(table, index, keys, columns, options);
+            ResultSet load() {
+              return getReadContextDelegate().readUsingIndex(table, index, keys, columns, options);
             }
           });
     }
@@ -266,7 +299,7 @@ final class SessionPool {
         while (true) {
           try {
             session.get().markUsed();
-            return readContextDelegate.readRow(table, key, columns);
+            return getReadContextDelegate().readRow(table, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
@@ -286,7 +319,7 @@ final class SessionPool {
         while (true) {
           try {
             session.get().markUsed();
-            return readContextDelegate.readRowUsingIndex(table, index, key, columns);
+            return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
@@ -302,10 +335,10 @@ final class SessionPool {
     @Override
     public ResultSet executeQuery(final Statement statement, final QueryOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.executeQuery(statement, options);
+            ResultSet load() {
+              return getReadContextDelegate().executeQuery(statement, options);
             }
           });
     }
@@ -314,12 +347,12 @@ final class SessionPool {
     public AsyncResultSet executeQueryAsync(
         final Statement statement, final QueryOption... options) {
       return new AsyncResultSetImpl(
-          sessionPool.executorFactory,
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
-              new Supplier<ResultSet>() {
+              new CachedResultSetSupplier() {
                 @Override
-                public ResultSet get() {
-                  return readContextDelegate.executeQuery(statement, options);
+                ResultSet load() {
+                  return getReadContextDelegate().executeQuery(statement, options);
                 }
               }));
     }
@@ -327,10 +360,10 @@ final class SessionPool {
     @Override
     public ResultSet analyzeQuery(final Statement statement, final QueryAnalyzeMode queryMode) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.analyzeQuery(statement, queryMode);
+            ResultSet load() {
+              return getReadContextDelegate().analyzeQuery(statement, queryMode);
             }
           });
     }
@@ -341,7 +374,9 @@ final class SessionPool {
         return;
       }
       closed = true;
-      readContextDelegate.close();
+      if (readContextDelegate != null) {
+        readContextDelegate.close();
+      }
       session.close();
     }
   }
@@ -602,7 +637,7 @@ final class SessionPool {
 
     private TransactionRunner getRunner() {
       if (this.runner == null) {
-        this.runner = session.get().delegate.readWriteTransaction();
+        this.runner = session.get().readWriteTransaction();
       }
       return runner;
     }
@@ -642,9 +677,66 @@ final class SessionPool {
     }
   }
 
+  private static class SessionPoolAsyncRunner<R> {
+    private final SessionPool sessionPool;
+    private volatile PooledSessionFuture session;
+    private final AsyncWork<R> work;
+    private final Executor executor;
+
+    private SessionPoolAsyncRunner(
+        SessionPool sessionPool,
+        PooledSessionFuture session,
+        AsyncWork<R> work,
+        Executor executor) {
+      this.sessionPool = sessionPool;
+      this.session = session;
+      this.work = work;
+      this.executor = executor;
+    }
+
+    private ApiFuture<R> runAsync() {
+      final SettableApiFuture<R> res = SettableApiFuture.create();
+      executor.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              SpannerException se = null;
+              R r = null;
+              while (true) {
+                try {
+                  r = session.get().runAsync(work, MoreExecutors.directExecutor()).get();
+                  break;
+                } catch (ExecutionException e) {
+                  se = SpannerExceptionFactory.newSpannerException(e.getCause());
+                } catch (InterruptedException e) {
+                  se = SpannerExceptionFactory.propagateInterrupt(e);
+                } catch (Throwable t) {
+                  se = SpannerExceptionFactory.newSpannerException(t);
+                } finally {
+                  if (se != null && se instanceof SessionNotFoundException) {
+                    session =
+                        sessionPool.replaceReadWriteSession((SessionNotFoundException) se, session);
+                  } else {
+                    break;
+                  }
+                }
+              }
+              session.get().markUsed();
+              session.close();
+              if (se != null) {
+                res.setException(se);
+              } else {
+                res.set(r);
+              }
+            }
+          });
+      return res;
+    }
+  }
+
   // Exception class used just to track the stack trace at the point when a session was handed out
   // from the pool.
-  private final class LeakedSessionException extends RuntimeException {
+  final class LeakedSessionException extends RuntimeException {
     private static final long serialVersionUID = 1451131180314064914L;
 
     private LeakedSessionException() {
@@ -813,6 +905,11 @@ final class SessionPool {
     }
 
     @Override
+    public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
+      return new SessionPoolAsyncRunner<>(SessionPool.this, this, work, executor).runAsync();
+    }
+
+    @Override
     public long executePartitionedUpdate(Statement stmt) {
       try {
         return get().executePartitionedUpdate(stmt);
@@ -960,6 +1057,11 @@ final class SessionPool {
     @Override
     public TransactionRunner readWriteTransaction() {
       return delegate.readWriteTransaction();
+    }
+
+    @Override
+    public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
+      return delegate.runAsync(work, executor);
     }
 
     @Override
@@ -1872,7 +1974,11 @@ final class SessionPool {
           });
       for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
-          logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          if (options.isFailOnSessionLeak()) {
+            throw session.leakedException;
+          } else {
+            logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          }
         }
       }
       for (final PooledSession session : ImmutableList.copyOf(allSessions)) {

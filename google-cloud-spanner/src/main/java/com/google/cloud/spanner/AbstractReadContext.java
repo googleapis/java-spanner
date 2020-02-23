@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.AbstractResultSet.GrpcResultSet;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
@@ -46,7 +46,6 @@ import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -352,7 +351,7 @@ abstract class AbstractReadContext
   final Object lock = new Object();
   final SessionImpl session;
   final SpannerRpc rpc;
-  final ExecutorFactory<ScheduledExecutorService> executorFactory;
+  final ExecutorProvider executorProvider;
   final Span span;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
@@ -421,7 +420,7 @@ abstract class AbstractReadContext
   @Override
   public final AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
     return new AsyncResultSetImpl(
-        executorFactory,
+        executorProvider,
         executeQueryInternal(
             statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL, options));
   }

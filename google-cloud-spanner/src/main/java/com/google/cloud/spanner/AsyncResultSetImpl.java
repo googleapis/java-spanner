@@ -18,11 +18,12 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +38,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   /** State of an {@link AsyncResultSetImpl}. */
   private enum State {
     INITIALIZED,
+    /** SYNC indicates that the {@link ResultSet} is used in sync pattern. */
+    SYNC,
     CONSUMING,
     RUNNING,
     PAUSED,
@@ -60,13 +63,15 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
 
   private final Object monitor = new Object();
   private boolean closed;
+
   /**
-   * {@link ExecutorFactory} produces executors that are used to fetch data from the backend and put
-   * these into the buffer for further consumpation by the callback.
+   * {@link ExecutorProvider} provides executor services that are used to fetch data from the
+   * backend and put these into the buffer for further consumption by the callback.
    */
-  private final ExecutorFactory<ScheduledExecutorService> executorFactory;
+  private final ExecutorProvider executorProvider;
 
   private final ScheduledExecutorService service;
+
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
   /** The underlying synchronous {@link ResultSet} that is producing the rows. */
@@ -93,7 +98,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
    */
   private volatile boolean finished;
 
-  private final Future<Void> result;
+  private volatile Future<Void> result;
 
   /**
    * {@link #cursorReturnedDoneOrException} indicates whether {@link #tryNext()} has returned {@link
@@ -117,22 +122,16 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
    */
   private volatile CountDownLatch consumingLatch = new CountDownLatch(0);
 
-  AsyncResultSetImpl(
-      ExecutorFactory<ScheduledExecutorService> executorFactory, ResultSet delegate) {
-    this(executorFactory, delegate, DEFAULT_BUFFER_SIZE);
+  AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate) {
+    this(executorProvider, delegate, DEFAULT_BUFFER_SIZE);
   }
 
-  AsyncResultSetImpl(
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
-      ResultSet delegate,
-      int bufferSize) {
+  AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate, int bufferSize) {
     super(delegate);
     this.buffer = new LinkedBlockingDeque<>(bufferSize);
-    this.executorFactory = executorFactory;
-    this.service = executorFactory.get();
+    this.executorProvider = executorProvider;
+    this.service = executorProvider.getExecutor();
     this.delegateResultSet = delegate;
-    // Eagerly start to fetch data and buffer these.
-    this.result = this.service.submit(new ProduceRowsCallable());
   }
 
   /**
@@ -148,12 +147,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
       if (this.closed) {
         return;
       }
+      if (state == State.INITIALIZED || state == State.SYNC) {
+        delegateResultSet.close();
+      }
       this.closed = true;
     }
-  }
-
-  public Struct getCurrentRowAsStruct() {
-    return currentRow;
   }
 
   /**
@@ -347,7 +345,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
         }
       } finally {
         delegateResultSet.close();
-        executorFactory.release(service);
+        if (executorProvider.shouldAutoClose()) {
+          service.shutdown();
+        }
         synchronized (monitor) {
           if (executionException != null) {
             throw executionException;
@@ -393,6 +393,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
       Preconditions.checkState(!closed, "This AsyncResultSet has been closed");
       Preconditions.checkState(
           this.state == State.INITIALIZED, "callback may not be set multiple times");
+
+      // Start to fetch data and buffer these.
+      this.result = this.service.submit(new ProduceRowsCallable());
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
       this.state = State.RUNNING;
@@ -408,7 +411,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   public void cancel() {
     synchronized (monitor) {
       Preconditions.checkState(
-          state != State.INITIALIZED, "cannot cancel a result set without a callback");
+          state != State.INITIALIZED && state != State.SYNC,
+          "cannot cancel a result set without a callback");
       state = State.CANCELLED;
       pausedLatch.countDown();
     }
@@ -418,7 +422,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   public void resume() {
     synchronized (monitor) {
       Preconditions.checkState(
-          state != State.INITIALIZED, "cannot resume a result set without a callback");
+          state != State.INITIALIZED && state != State.SYNC,
+          "cannot resume a result set without a callback");
       if (state == State.PAUSED) {
         state = State.RUNNING;
         pausedLatch.countDown();
@@ -481,5 +486,39 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
     } catch (Throwable e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
+  }
+
+  @Override
+  public boolean next() throws SpannerException {
+    synchronized (monitor) {
+      Preconditions.checkState(
+          this.state == State.INITIALIZED || this.state == State.SYNC,
+          "Cannot call next() on a result set with a callback.");
+      this.state = State.SYNC;
+    }
+    boolean res = delegateResultSet.next();
+    currentRow = delegateResultSet.getCurrentRowAsStruct();
+    return res;
+  }
+
+  @Override
+  public ResultSetStats getStats() {
+    return delegateResultSet.getStats();
+  }
+
+  @Override
+  protected void checkValidState() {
+    synchronized (monitor) {
+      Preconditions.checkState(
+          state == State.SYNC || state == State.CONSUMING || state == State.CANCELLED,
+          "only allowed after a next() call or from within a ReadyCallback#cursorReady callback");
+      Preconditions.checkState(state != State.SYNC || !closed, "ResultSet is closed");
+    }
+  }
+
+  @Override
+  public Struct getCurrentRowAsStruct() {
+    checkValidState();
+    return currentRow;
   }
 }

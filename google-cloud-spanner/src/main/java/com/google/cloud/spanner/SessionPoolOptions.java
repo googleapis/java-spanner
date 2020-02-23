@@ -32,6 +32,7 @@ public class SessionPoolOptions {
   private final ActionOnExhaustion actionOnExhaustion;
   private final int keepAliveIntervalMinutes;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
+  private final ActionOnSessionLeak actionOnSessionLeak;
   private final long initialWaitForSessionTimeoutMillis;
 
   private SessionPoolOptions(Builder builder) {
@@ -44,6 +45,7 @@ public class SessionPoolOptions {
     this.writeSessionsFraction = builder.writeSessionsFraction;
     this.actionOnExhaustion = builder.actionOnExhaustion;
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
+    this.actionOnSessionLeak = builder.actionOnSessionLeak;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
   }
@@ -86,6 +88,11 @@ public class SessionPoolOptions {
     return actionOnSessionNotFound == ActionOnSessionNotFound.FAIL;
   }
 
+  @VisibleForTesting
+  boolean isFailOnSessionLeak() {
+    return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -100,6 +107,11 @@ public class SessionPoolOptions {
     FAIL;
   }
 
+  private static enum ActionOnSessionLeak {
+    WARN,
+    FAIL;
+  }
+
   /** Builder for creating SessionPoolOptions. */
   public static class Builder {
     private boolean minSessionsSet = false;
@@ -110,6 +122,7 @@ public class SessionPoolOptions {
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
+    private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
     private int keepAliveIntervalMinutes = 30;
 
     /**
@@ -194,6 +207,12 @@ public class SessionPoolOptions {
     @VisibleForTesting
     Builder setFailIfSessionNotFound() {
       this.actionOnSessionNotFound = ActionOnSessionNotFound.FAIL;
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setFailOnSessionLeak() {
+      this.actionOnSessionLeak = ActionOnSessionLeak.FAIL;
       return this;
     }
 

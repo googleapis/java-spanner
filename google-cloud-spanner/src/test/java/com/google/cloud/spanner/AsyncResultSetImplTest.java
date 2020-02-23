@@ -22,8 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.CursorState;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
@@ -48,32 +47,20 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AsyncResultSetImplTest {
-  private ExecutorFactory<ScheduledExecutorService> mockedFactory;
-  private ExecutorFactory<ScheduledExecutorService> simpleFactory;
+  private ExecutorProvider mockedProvider;
+  private ExecutorProvider simpleProvider;
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setup() {
-    mockedFactory = mock(ExecutorFactory.class);
-    when(mockedFactory.get()).thenReturn(mock(ScheduledExecutorService.class));
-    simpleFactory =
-        new GrpcTransportOptions.ExecutorFactory<ScheduledExecutorService>() {
-          @Override
-          public ScheduledExecutorService get() {
-            return Executors.newScheduledThreadPool(1);
-          }
-
-          @Override
-          public void release(ScheduledExecutorService executor) {
-            executor.shutdown();
-          }
-        };
+    mockedProvider = mock(ExecutorProvider.class);
+    when(mockedProvider.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+    simpleProvider = SpannerOptions.createAsyncExecutorProvider(1, 1L, TimeUnit.SECONDS);
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void close() {
-    AsyncResultSetImpl rs = new AsyncResultSetImpl(mockedFactory, mock(ResultSet.class));
+    AsyncResultSetImpl rs = new AsyncResultSetImpl(mockedProvider, mock(ResultSet.class));
     rs.close();
     // Closing a second time should be a no-op.
     rs.close();
@@ -96,7 +83,7 @@ public class AsyncResultSetImplTest {
     }
 
     // The following methods are allowed on a closed result set.
-    AsyncResultSetImpl rs2 = new AsyncResultSetImpl(mockedFactory, mock(ResultSet.class));
+    AsyncResultSetImpl rs2 = new AsyncResultSetImpl(mockedProvider, mock(ResultSet.class));
     rs2.setCallback(mock(Executor.class), mock(ReadyCallback.class));
     rs2.close();
     rs2.cancel();
@@ -105,7 +92,7 @@ public class AsyncResultSetImplTest {
 
   @Test
   public void tryNextNotAllowed() {
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(mockedFactory, mock(ResultSet.class))) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(mockedProvider, mock(ResultSet.class))) {
       rs.setCallback(mock(Executor.class), mock(ReadyCallback.class));
       try {
         rs.tryNext();
@@ -122,7 +109,7 @@ public class AsyncResultSetImplTest {
     ResultSet delegate = mock(ResultSet.class);
     when(delegate.next()).thenReturn(true, true, true, false);
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       ImmutableList<Object> list =
           rs.toList(
               new Function<StructReader, Object>() {
@@ -142,7 +129,7 @@ public class AsyncResultSetImplTest {
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.toList(
           new Function<StructReader, Object>() {
             @Override
@@ -163,7 +150,7 @@ public class AsyncResultSetImplTest {
     ResultSet delegate = mock(ResultSet.class);
     when(delegate.next()).thenReturn(true, true, true, false);
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       ApiFuture<ImmutableList<Object>> future =
           rs.toListAsync(
               new Function<StructReader, Object>() {
@@ -186,7 +173,7 @@ public class AsyncResultSetImplTest {
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.toListAsync(
               new Function<StructReader, Object>() {
                 @Override
@@ -215,7 +202,7 @@ public class AsyncResultSetImplTest {
     final AtomicInteger callbackCounter = new AtomicInteger();
     final AtomicInteger rowCounter = new AtomicInteger();
     final CountDownLatch finishedLatch = new CountDownLatch(1);
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {
@@ -249,7 +236,7 @@ public class AsyncResultSetImplTest {
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
     final BlockingDeque<Exception> receivedErr = new LinkedBlockingDeque<>(1);
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {
@@ -284,7 +271,7 @@ public class AsyncResultSetImplTest {
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     final AtomicInteger rowCount = new AtomicInteger();
     final BlockingDeque<Exception> receivedErr = new LinkedBlockingDeque<>(1);
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {
@@ -319,7 +306,7 @@ public class AsyncResultSetImplTest {
     final AtomicInteger callbackCounter = new AtomicInteger();
     final BlockingDeque<Object> queue = new LinkedBlockingDeque<>(1);
     final AtomicBoolean finished = new AtomicBoolean(false);
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {
@@ -363,7 +350,7 @@ public class AsyncResultSetImplTest {
     final AtomicInteger callbackCounter = new AtomicInteger();
     final BlockingDeque<Object> queue = new LinkedBlockingDeque<>(1);
     final AtomicBoolean finished = new AtomicBoolean(false);
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {
@@ -417,7 +404,7 @@ public class AsyncResultSetImplTest {
     when(delegate.next()).thenReturn(true, true, true, false);
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     final AtomicInteger callbackCounter = new AtomicInteger();
-    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleFactory, delegate)) {
+    try (AsyncResultSetImpl rs = new AsyncResultSetImpl(simpleProvider, delegate)) {
       rs.setCallback(
           executor,
           new ReadyCallback() {

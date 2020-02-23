@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.BaseService;
 import com.google.cloud.PageImpl;
 import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -127,8 +127,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getOptions().getDefaultQueryOptions(databaseId);
   }
 
-  ExecutorFactory<ScheduledExecutorService> getExecutorFactory() {
-    return ((GrpcTransportOptions) getOptions().getTransportOptions()).getExecutorFactory();
+  /**
+   * Returns the {@link ExecutorProvider} to use for async methods that need a background executor.
+   */
+  ExecutorProvider getAsyncExecutorProvider() {
+    return getOptions().getAsyncExecutorProvider();
   }
 
   SessionImpl sessionWithId(String name) {

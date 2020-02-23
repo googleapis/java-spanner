@@ -21,8 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
-import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.CursorState;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
@@ -167,12 +166,11 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void toList() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSetImpl impl =
-            new AsyncResultSetImpl(executorFactory, createResultSet(), bufferSize)) {
+            new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
           ImmutableList<Row> list =
               impl.toList(
                   new Function<StructReader, Row>() {
@@ -189,13 +187,12 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void toListWithErrors() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSetImpl impl =
             new AsyncResultSetImpl(
-                executorFactory, createResultSetWithErrors(1.0 / resultSetSize), bufferSize)) {
+                executorProvider, createResultSetWithErrors(1.0 / resultSetSize), bufferSize)) {
           ImmutableList<Row> list =
               impl.toList(
                   new Function<StructReader, Row>() {
@@ -215,14 +212,13 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void asyncToList() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
       List<ApiFuture<ImmutableList<Row>>> futures = new ArrayList<>(TEST_RUNS);
       ExecutorService executor = createExecService(32);
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSet impl =
-            new AsyncResultSetImpl(executorFactory, createResultSet(), bufferSize)) {
+            new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
           futures.add(
               impl.toListAsync(
                   new Function<StructReader, Row>() {
@@ -244,8 +240,7 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void consume() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     final Random random = new Random();
     for (Executor executor :
         new Executor[] {
@@ -255,7 +250,7 @@ public class AsyncResultSetImplStressTest {
         for (int i = 0; i < TEST_RUNS; i++) {
           final SettableApiFuture<ImmutableList<Row>> future = SettableApiFuture.create();
           try (AsyncResultSetImpl impl =
-              new AsyncResultSetImpl(executorFactory, createResultSet(), bufferSize)) {
+              new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(
                 executor,
@@ -286,8 +281,7 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void pauseResume() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     final Random random = new Random();
     List<ApiFuture<ImmutableList<Row>>> futures = new ArrayList<>();
     for (Executor executor :
@@ -301,7 +295,7 @@ public class AsyncResultSetImplStressTest {
           final SettableApiFuture<ImmutableList<Row>> future = SettableApiFuture.create();
           futures.add(future);
           try (AsyncResultSetImpl impl =
-              new AsyncResultSetImpl(executorFactory, createResultSet(), bufferSize)) {
+              new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
             resultSets.add(impl);
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(
@@ -352,8 +346,7 @@ public class AsyncResultSetImplStressTest {
 
   @Test
   public void cancel() throws Exception {
-    ExecutorFactory<ScheduledExecutorService> executorFactory =
-        new GrpcTransportOptions.DefaultExecutorFactory();
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     final Random random = new Random();
     for (Executor executor :
         new Executor[] {
@@ -368,7 +361,7 @@ public class AsyncResultSetImplStressTest {
           final SettableApiFuture<ImmutableList<Row>> future = SettableApiFuture.create();
           futures.add(future);
           try (AsyncResultSetImpl impl =
-              new AsyncResultSetImpl(executorFactory, createResultSet(), bufferSize)) {
+              new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
             resultSets.add(impl);
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(

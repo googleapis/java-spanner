@@ -21,10 +21,17 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import java.util.concurrent.Executor;
 
-public interface AsyncResultSet extends AutoCloseable, StructReader {
+/** Interface for result sets returned by async query methods. */
+public interface AsyncResultSet extends ResultSet {
+
+  /**
+   * Interface for receiving asynchronous callbacks when new data is ready. See {@link
+   * AsyncResultSet#setCallback(Executor, ReadyCallback)}.
+   */
   public static interface ReadyCallback {
     CallbackResponse cursorReady(AsyncResultSet resultSet);
   }
+
   /** Response code from {@code tryNext()}. */
   public enum CursorState {
     /** Cursor has been moved to a new row. */
@@ -34,16 +41,6 @@ public interface AsyncResultSet extends AutoCloseable, StructReader {
     /** No further information known at this time, thus current row not available. */
     NOT_READY
   }
-
-  @Override
-  void close();
-
-  /**
-   * Creates an immutable version of the row that the result set is positioned over. This may
-   * involve copying internal data structures, and so converting all rows to {@code Struct} objects
-   * is generally more expensive than processing the {@code ResultSet} directly.
-   */
-  Struct getCurrentRowAsStruct();
 
   /**
    * Non-blocking call that attempts to step the cursor to the next position in the stream. The
@@ -87,13 +84,9 @@ public interface AsyncResultSet extends AutoCloseable, StructReader {
    *       </ol>
    *   <li>Callback may possibly be invoked after a call to {@link ResultSet#cancel()} call, but the
    *       subsequent call to {@link #tryNext()} will yield a SpannerException.
-   *   <li>Spurious callbacks are possible where cursors is not actually ready. Typically callback
+   *   <li>Spurious callbacks are possible where cursors are not actually ready. Typically callback
    *       should return {@link CallbackResponse#CONTINUE} any time it sees {@link
-   *       CursorState#NOT_READY}. This is similar to pthreads "Spurious Wakeups",
-   *       http://en.wikipedia.org/wiki/Spurious_wakeup TODO: consider squelching spurious wakeups
-   *       by adding a "lookahead & store result" buffer of at most 1 item. Reasons to is to
-   *       simplify this explanation, but user code is unlikely to change either way... its just
-   *       weird.
+   *       CursorState#NOT_READY}.
    * </ul>
    *
    * <h3>Flow Control</h3>
@@ -132,11 +125,6 @@ public interface AsyncResultSet extends AutoCloseable, StructReader {
    *       the Cursor. Once in this state cursor waits until resume() is called before calling
    *       callback again.
    * </ul>
-   *
-   * Note that it would have been equivalent to have the app be responsible for draining the cursor
-   * instead of calling {@code resume()} (which has basically the same effect, namely running the
-   * application callback.) The explicit pause and resume was chosen to make the flow control
-   * behavior more explicit in application code.
    *
    * @param exec executor on which to run all callbacks. Typically use a threadpool. If the executor
    *     is one that runs the work on the submitting thread, you must be very careful not to throw

@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import java.util.concurrent.Executor;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -277,6 +279,37 @@ public interface DatabaseClient {
    * }</pre>
    */
   TransactionManager transactionManager();
+
+  public static interface AsyncWork<R> {
+    /**
+     * Performs a single transaction attempt. All reads/writes should be performed using {@code
+     * txn}.
+     *
+     * <p>Implementations of this method should not attempt to commit the transaction directly:
+     * returning normally will result in the runner attempting to commit the transaction once the
+     * returned future completes, retrying on abort.
+     *
+     * <p>In most cases, the implementation will not need to catch {@code SpannerException}s from
+     * Spanner operations, instead letting these propagate to the framework. The transaction runner
+     *
+     * <p>will take appropriate action based on the type of exception. In particular,
+     * implementations should never catch an exception of type {@link SpannerErrors#isAborted}:
+     * these indicate that some reads may have returned inconsistent data and the transaction
+     * attempt must be aborted.
+     *
+     * <p>If any exception is thrown, the runner will validate the reads performed in the current
+     * transaction attempt using {@link Transaction#commitReadsOnly}: if validation succeeds, the
+     * exception is propagated to the caller; if validation aborts, the exception is thrown away and
+     * the work is retried; if the commit fails for some other reason, the corresponding {@code
+     * SpannerException} is returned to the caller. Any buffered mutations will be ignored.
+     *
+     * @param txn the transaction
+     * @return future over the result of the work
+     */
+    ApiFuture<R> doWorkAsync(TransactionContext txn);
+  }
+
+  <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor);
 
   /**
    * Returns the lower bound of rows modified by this DML statement.
