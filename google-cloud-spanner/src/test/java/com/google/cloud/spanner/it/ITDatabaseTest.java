@@ -133,6 +133,7 @@ public class ITDatabaseTest {
             .getClient()
             .getDatabaseClient(DatabaseId.of(nonExistingInstanceId, "some-db"));
     try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      rs.next();
       fail("missing expected exception");
     } catch (InstanceNotFoundException e) {
       assertThat(e.getResourceName()).isEqualTo(nonExistingInstanceId.getName());
