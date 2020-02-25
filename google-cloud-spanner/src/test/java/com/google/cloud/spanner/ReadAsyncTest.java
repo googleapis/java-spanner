@@ -61,34 +61,6 @@ public class ReadAsyncTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
-  private static final Statement UPDATE_STATEMENT =
-      Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
-  private static final Statement INVALID_UPDATE_STATEMENT =
-      Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
-  private static final long UPDATE_COUNT = 1L;
-  private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
-  private static final ResultSetMetadata SELECT1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-  private static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
-                  .build())
-          .setMetadata(SELECT1_METADATA)
-          .build();
 
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;

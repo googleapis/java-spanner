@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -23,13 +24,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
-import com.google.api.core.SettableApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.DatabaseClient.AsyncWork;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -88,29 +89,6 @@ public class DatabaseClientImplTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
-  private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
-  private static final ResultSetMetadata SELECT1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-  private static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
-                  .build())
-          .setMetadata(SELECT1_METADATA)
-          .build();
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
 
@@ -121,7 +99,8 @@ public class DatabaseClientImplTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-    mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT1, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
@@ -406,14 +385,13 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
-        client.runAsync(
+        runner.runAsync(
             new AsyncWork<Long>() {
               @Override
               public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                SettableApiFuture<Long> res = SettableApiFuture.create();
-                res.set(txn.executeUpdate(UPDATE_STATEMENT));
-                return res;
+                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
               }
             },
             executor);
@@ -428,14 +406,13 @@ public class DatabaseClientImplTest {
         spannerWithEmptySessionPool.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
-        client.runAsync(
+        runner.runAsync(
             new AsyncWork<Long>() {
               @Override
               public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                SettableApiFuture<Long> res = SettableApiFuture.create();
-                res.set(txn.executeUpdate(UPDATE_STATEMENT));
-                return res;
+                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
               }
             },
             executor);
@@ -449,14 +426,13 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
-        client.runAsync(
+        runner.runAsync(
             new AsyncWork<Long>() {
               @Override
               public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                SettableApiFuture<Long> res = SettableApiFuture.create();
-                res.set(txn.executeUpdate(INVALID_UPDATE_STATEMENT));
-                return res;
+                return ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT));
               }
             },
             executor);

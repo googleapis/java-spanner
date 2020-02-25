@@ -40,7 +40,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.AbstractReadContext.ConsumeSingleRowCallback;
-import com.google.cloud.spanner.DatabaseClient.AsyncWork;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
@@ -772,24 +771,18 @@ final class SessionPool {
     }
   }
 
-  private static class SessionPoolAsyncRunner<R> {
+  private static class SessionPoolAsyncRunner implements AsyncRunner {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
-    private final AsyncWork<R> work;
-    private final Executor executor;
+    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
 
-    private SessionPoolAsyncRunner(
-        SessionPool sessionPool,
-        PooledSessionFuture session,
-        AsyncWork<R> work,
-        Executor executor) {
+    private SessionPoolAsyncRunner(SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
       this.session = session;
-      this.work = work;
-      this.executor = executor;
     }
 
-    private ApiFuture<R> runAsync() {
+    @Override
+    public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
           new Runnable() {
@@ -797,9 +790,11 @@ final class SessionPool {
             public void run() {
               SpannerException se = null;
               R r = null;
+              AsyncRunner runner = null;
               while (true) {
                 try {
-                  r = session.get().runAsync(work, MoreExecutors.directExecutor()).get();
+                  runner = session.get().runAsync();
+                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
                   break;
                 } catch (ExecutionException e) {
                   se = SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -818,6 +813,7 @@ final class SessionPool {
               }
               session.get().markUsed();
               session.close();
+              setCommitTimestamp(runner);
               if (se != null) {
                 res.setException(se);
               } else {
@@ -826,6 +822,19 @@ final class SessionPool {
             }
           });
       return res;
+    }
+
+    private void setCommitTimestamp(AsyncRunner delegate) {
+      try {
+        commitTimestamp.set(delegate.getCommitTimestamp().get());
+      } catch (Throwable t) {
+        commitTimestamp.setException(t);
+      }
+    }
+
+    @Override
+    public ApiFuture<Timestamp> getCommitTimestamp() {
+      return commitTimestamp;
     }
   }
 
@@ -1000,8 +1009,8 @@ final class SessionPool {
     }
 
     @Override
-    public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
-      return new SessionPoolAsyncRunner<>(SessionPool.this, this, work, executor).runAsync();
+    public AsyncRunner runAsync() {
+      return new SessionPoolAsyncRunner(SessionPool.this, this);
     }
 
     @Override
@@ -1155,8 +1164,8 @@ final class SessionPool {
     }
 
     @Override
-    public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
-      return delegate.runAsync(work, executor);
+    public AsyncRunner runAsync() {
+      return delegate.runAsync();
     }
 
     @Override

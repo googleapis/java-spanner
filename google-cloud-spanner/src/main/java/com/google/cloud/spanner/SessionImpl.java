@@ -20,16 +20,12 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
-import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
-<<<<<<< HEAD
 import com.google.cloud.spanner.SessionClient.SessionId;
-=======
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
->>>>>>> feat: session pool is non-blocking
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
@@ -48,8 +44,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 
 /**
@@ -220,37 +214,10 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
-    final SettableApiFuture<R> res = SettableApiFuture.create();
-    final TransactionRunner runner =
+  public AsyncRunner runAsync() {
+    return new AsyncRunnerImpl(
         setActive(
-            new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
-    executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              R r =
-                  runner.run(
-                      new TransactionCallable<R>() {
-                        @Override
-                        public R run(TransactionContext transaction) throws Exception {
-                          try {
-                            return work.doWorkAsync(transaction).get();
-                          } catch (ExecutionException e) {
-                            throw SpannerExceptionFactory.newSpannerException(e.getCause());
-                          } catch (InterruptedException e) {
-                            throw SpannerExceptionFactory.propagateInterrupt(e);
-                          }
-                        }
-                      });
-              res.set(r);
-            } catch (Throwable t) {
-              res.setException(t);
-            }
-          }
-        });
-    return res;
+            new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks())));
   }
 
   @Override

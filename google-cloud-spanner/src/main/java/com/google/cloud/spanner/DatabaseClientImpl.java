@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.common.annotations.VisibleForTesting;
@@ -26,7 +25,6 @@ import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
-import java.util.concurrent.Executor;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
@@ -193,10 +191,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor) {
+  public AsyncRunner runAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadWriteSession().runAsync(work, executor);
+      return getReadWriteSession().runAsync();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;

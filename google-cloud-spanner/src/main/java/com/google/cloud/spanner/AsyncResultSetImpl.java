@@ -245,8 +245,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
                 case CONTINUE:
                   if (buffer.isEmpty()) {
                     // Call the callback once more if the entire result set has been processed but
-                    // the
-                    // callback has not yet received a CursorState.DONE or a CANCELLED error.
+                    // the callback has not yet received a CursorState.DONE or a CANCELLED error.
                     if (finished && !cursorReturnedDoneOrException) {
                       break;
                     }
@@ -327,6 +326,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
             }
           }
         }
+        // We don't need any more data from the underlying result set, so we close it as soon as
+        // possible. Any error that might occur during this will be ignored.
+        try {
+          delegateResultSet.close();
+        } catch (Throwable t) {
+        }
+
         // Ensure that the callback has been called at least once, even if the result set was
         // cancelled.
         synchronized (monitor) {
@@ -344,7 +350,6 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
           consumingLatch.await();
         }
       } finally {
-        delegateResultSet.close();
         if (executorProvider.shouldAutoClose()) {
           service.shutdown();
         }
