@@ -29,7 +29,7 @@ public interface SimpleClient {
   ResultSet executeSqlQuery(String query);
 
   /**
-   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 30 seconds.
+   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 15 seconds.
    *
    * @param query
    * @return
@@ -66,7 +66,7 @@ public interface SimpleClient {
   ResultSet executeSqlQuery(String query, Map<String, Value> args);
 
   /**
-   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 30 sec.
+   * Execute Snapshot SQL Query. Query would run using a snapshot with staleness of 15 sec.
    * Map<String, Value> as named parameters.
    *
    * @param query
@@ -88,9 +88,8 @@ public interface SimpleClient {
    * Run a sequence of Statements in a single Read/Write Query.
    *
    * @param statements
-   * @return success of transaction.
    */
-  boolean runTransaction(List<Statement> statements);
+  void runTransaction(List<Statement> statements);
 
   /**
    * Run a query in a read/write transaction, with the handler invoked as the readStatement
@@ -98,7 +97,6 @@ public interface SimpleClient {
    *
    * @param readStatement
    * @param handler handler contains List<Statement> to apply.
-   * @return success of transaction.
    */
   void runTransaction(Statement readStatement, OnReadHandler handler);
 }

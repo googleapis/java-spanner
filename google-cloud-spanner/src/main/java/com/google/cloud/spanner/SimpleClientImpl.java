@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -38,7 +37,7 @@ public class SimpleClientImpl implements SimpleClient {
 
   @Override
   public ResultSet executeSnapshotSqlQuery(String query) {
-    return executeSqlQuery(query, TimestampBound.ofExactStaleness(30L, TimeUnit.SECONDS));
+    return executeSqlQuery(query, TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS));
   }
 
   @Override
@@ -71,7 +70,7 @@ public class SimpleClientImpl implements SimpleClient {
 
   @Override
   public ResultSet executeSnapshotSqlQuery(String query, Map<String, Value> args) {
-    return executeSqlQuery(query, args, TimestampBound.ofExactStaleness(30L, TimeUnit.SECONDS));
+    return executeSqlQuery(query, args, TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS));
   }
 
   @Override
@@ -95,26 +94,17 @@ public class SimpleClientImpl implements SimpleClient {
   }
 
   @Override
-  public boolean runTransaction(final List<Statement> statements) {
-    try {
-      return client
-          .readWriteTransaction()
-          .run(
-              new TransactionRunner.TransactionCallable<Boolean>() {
-                @Override
-                public Boolean run(TransactionContext transaction) {
-                  try {
-                    transaction.batchUpdate(statements);
-                    return true;
-                  } catch (Exception e) {
-                    logger.log(Level.WARNING, "Failed to complete transaction", e);
-                  }
-                  return false;
-                }
-              });
-    } catch (Exception e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
-    }
+  public void runTransaction(final List<Statement> statements) {
+    client
+        .readWriteTransaction()
+        .run(
+            new TransactionRunner.TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) {
+                transaction.batchUpdate(statements);
+                return null;
+              }
+            });
   }
 
   @Override
@@ -122,17 +112,12 @@ public class SimpleClientImpl implements SimpleClient {
     client
         .readWriteTransaction()
         .run(
-            new TransactionRunner.TransactionCallable<Boolean>() {
+            new TransactionRunner.TransactionCallable<Void>() {
               @Override
-              public Boolean run(TransactionContext transaction) throws Exception {
-                try {
-                  ResultSet resultSet = transaction.executeQuery(readStatement);
-                  handler.handle(resultSet, transaction);
-                  return true;
-                } catch (Exception e) {
-                  logger.log(Level.WARNING, "Failed to complete transaction", e);
-                }
-                return false;
+              public Void run(TransactionContext transaction) throws Exception {
+                ResultSet resultSet = transaction.executeQuery(readStatement);
+                handler.handle(resultSet, transaction);
+                return null;
               }
             });
   }

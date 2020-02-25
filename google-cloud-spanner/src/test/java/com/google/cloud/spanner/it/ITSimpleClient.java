@@ -145,7 +145,7 @@ public class ITSimpleClient {
     assertEquals(30, count);
 
     try {
-      Thread.sleep(TimeUnit.SECONDS.toMillis(30L));
+      Thread.sleep(TimeUnit.SECONDS.toMillis(15L));
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -188,7 +188,7 @@ public class ITSimpleClient {
             builder.bind("KEY_V").to(5000).build(),
             builder.bind("KEY_V").to(5001).build(),
             builder.bind("KEY_V").to(5002).build());
-    assertTrue(simpleClient.runTransaction(statements));
+    simpleClient.runTransaction(statements);
 
     final long originalSize = data.length;
 
