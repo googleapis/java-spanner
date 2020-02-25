@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
+
 /**
  * Context for a single attempt of a locking read-write transaction. This type of transaction is the
  * only way to write data into Cloud Spanner; {@link Session#write(Iterable)} and {@link
@@ -101,6 +103,8 @@ public interface TransactionContext extends ReadContext {
    * visible to subsequent operations in the transaction.
    */
   long executeUpdate(Statement statement);
+
+  ApiFuture<Long> executeUpdateAsync(Statement statement);
 
   /**
    * Executes a list of DML statements in a single request. The statements will be executed in order

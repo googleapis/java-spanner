@@ -89,7 +89,6 @@ public class DatabaseClientImplTest {
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
   private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
-  private static final Statement READ1_STATEMENT = Statement.of("SELECT COL1 FROM FOO WHERE ID=1");
   private static final ResultSetMetadata SELECT1_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -123,7 +122,6 @@ public class DatabaseClientImplTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
-    mockSpanner.putStatementResult(StatementResult.query(READ1_STATEMENT, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,

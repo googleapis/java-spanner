@@ -21,12 +21,16 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.ApiFunction;
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
@@ -34,6 +38,7 @@ import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.common.Scope;
@@ -44,6 +49,7 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -251,6 +257,49 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         onError(e);
         throw e;
       }
+    }
+
+    @Override
+    public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+      beforeReadOrQuery();
+      final ExecuteSqlRequest.Builder builder =
+          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
+      ApiFuture<com.google.spanner.v1.ResultSet> resultSet =
+          rpc.executeQueryAsync(builder.build(), session.getOptions());
+      final ApiFuture<Long> updateCount =
+          ApiFutures.transform(
+              resultSet,
+              new ApiFunction<com.google.spanner.v1.ResultSet, Long>() {
+                @Override
+                public Long apply(ResultSet input) {
+                  if (!input.hasStats()) {
+                    SpannerException e =
+                        SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.INVALID_ARGUMENT,
+                            "DML response missing stats possibly due to non-DML statement as input");
+                    onError(e);
+                    throw e;
+                  }
+                  // For standard DML, using the exact row count.
+                  return input.getStats().getRowCountExact();
+                }
+              },
+              MoreExecutors.directExecutor());
+      updateCount.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                updateCount.get();
+              } catch (ExecutionException e) {
+                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
+              } catch (InterruptedException e) {
+                onError(SpannerExceptionFactory.propagateInterrupt(e));
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+      return updateCount;
     }
 
     @Override

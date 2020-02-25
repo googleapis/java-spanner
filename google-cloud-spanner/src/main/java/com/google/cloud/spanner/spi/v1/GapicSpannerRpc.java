@@ -729,8 +729,14 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    return get(executeQueryAsync(request, options));
+  }
+
+  @Override
+  public ApiFuture<ResultSet> executeQueryAsync(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.executeSqlCallable().futureCall(request, context));
+    return spannerStub.executeSqlCallable().futureCall(request, context);
   }
 
   @Override

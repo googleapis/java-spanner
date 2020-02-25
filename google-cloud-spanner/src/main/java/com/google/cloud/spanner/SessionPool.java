@@ -569,6 +569,15 @@ final class SessionPool {
       }
 
       @Override
+      public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+        try {
+          return delegate.executeUpdateAsync(statement);
+        } catch (SessionNotFoundException e) {
+          throw handleSessionNotFound(e);
+        }
+      }
+
+      @Override
       public long[] batchUpdate(Iterable<Statement> statements) {
         try {
           return delegate.batchUpdate(statements);
