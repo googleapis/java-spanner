@@ -135,7 +135,7 @@ class SessionClient implements AutoCloseable {
           try {
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
           } catch (Throwable t) {
-            TraceUtil.endSpanWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
+            TraceUtil.setWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
             break;
           }
@@ -207,11 +207,12 @@ class SessionClient implements AutoCloseable {
           spanner
               .getRpc()
               .createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
-      span.end(TraceUtil.END_SPAN_OPTIONS);
       return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 

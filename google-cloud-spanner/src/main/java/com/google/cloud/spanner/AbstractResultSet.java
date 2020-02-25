@@ -922,6 +922,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       if (stream != null) {
         stream.close(message);
         span.end(TraceUtil.END_SPAN_OPTIONS);
+        stream = null;
       }
     }
 
@@ -997,11 +998,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.endSpanWithFailure(span, e);
+          TraceUtil.setWithFailure(span, e);
           throw e;
         } catch (RuntimeException e) {
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.endSpanWithFailure(span, e);
+          TraceUtil.setWithFailure(span, e);
           throw e;
         }
       }

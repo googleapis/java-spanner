@@ -294,7 +294,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
       return runInternal(callable);
     } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
+      TraceUtil.setWithFailure(span, e);
       throw e;
     } finally {
       // Remove threadLocal rather than set to FALSE to avoid a possible memory leak.
