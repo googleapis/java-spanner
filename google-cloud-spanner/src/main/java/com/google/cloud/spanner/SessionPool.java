@@ -800,6 +800,7 @@ final class SessionPool {
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
+        numSessionsReleased++;
       }
       leakedException = null;
       if (lastException != null && isSessionNotFound(lastException)) {
@@ -1462,6 +1463,7 @@ final class SessionPool {
     if (!options.isFailIfSessionNotFound() && session.allowReplacing) {
       synchronized (lock) {
         numSessionsInUse--;
+        numSessionsReleased++;
       }
       session.leakedException = null;
       invalidateSession(session);
@@ -1482,6 +1484,7 @@ final class SessionPool {
       if (maxSessionsInUse < ++numSessionsInUse) {
         maxSessionsInUse = numSessionsInUse;
       }
+      numSessionsAcquired++;
     }
   }
 
@@ -1523,7 +1526,6 @@ final class SessionPool {
       if (closureFuture != null) {
         return;
       }
-      numSessionsReleased++;
       if (readWaiters.size() == 0 && numSessionsBeingPrepared >= readWriteWaiters.size()) {
         // No pending waiters
         if (shouldPrepareSession()) {

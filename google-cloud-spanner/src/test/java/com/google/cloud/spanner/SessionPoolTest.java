@@ -1590,6 +1590,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
     assertThat(record.getMetrics())
+        .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 2L);
+    assertThat(record.getMetrics())
+        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 0L);
+    assertThat(record.getMetrics())
         .containsEntry(
             MetricRegistryConstants.MAX_ALLOWED_SESSIONS, (long) options.getMaxSessions());
     assertThat(record.getLabels()).containsEntry(SPANNER_LABEL_KEYS, labelValues);
@@ -1626,9 +1630,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS).longValue())
         .isAtLeast(1L);
     assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 0L);
+        .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 3L);
     assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 5L);
+        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 3L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }
