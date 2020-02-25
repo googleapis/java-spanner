@@ -36,6 +36,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.AbstractMessage;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -88,6 +89,7 @@ public class DatabaseClientImplTest {
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
   private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
+  private static final Statement READ1_STATEMENT = Statement.of("SELECT COL1 FROM FOO WHERE ID=1");
   private static final ResultSetMetadata SELECT1_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -121,6 +123,7 @@ public class DatabaseClientImplTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.query(READ1_STATEMENT, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
@@ -1193,7 +1196,8 @@ public class DatabaseClientImplTest {
     }
   }
 
-  public void testAsyncQuery() throws InterruptedException {
+  @Test
+  public void testAsyncQuery() throws Exception {
     final int EXPECTED_ROW_COUNT = 10;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(EXPECTED_ROW_COUNT);
     com.google.spanner.v1.ResultSet resultSet = generator.generate();
@@ -1202,7 +1206,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    final CountDownLatch finished = new CountDownLatch(1);
+    final SettableFuture<Boolean> finished = SettableFuture.create();
     final List<Struct> receivedResults = new ArrayList<>();
     try (AsyncResultSet rs =
         client.singleUse().executeQueryAsync(Statement.of("SELECT * FROM RANDOM"))) {
@@ -1211,24 +1215,29 @@ public class DatabaseClientImplTest {
           new ReadyCallback() {
             @Override
             public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              while (true) {
-                switch (rs.tryNext()) {
-                  case DONE:
-                    finished.countDown();
-                    return CallbackResponse.DONE;
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  case OK:
-                    receivedResults.add(resultSet.getCurrentRowAsStruct());
-                    break;
-                  default:
-                    throw new IllegalStateException("Unknown cursor state");
+              try {
+                while (true) {
+                  switch (rs.tryNext()) {
+                    case DONE:
+                      finished.set(true);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      receivedResults.add(resultSet.getCurrentRowAsStruct());
+                      break;
+                    default:
+                      throw new IllegalStateException("Unknown cursor state");
+                  }
                 }
+              } catch (Throwable t) {
+                finished.setException(t);
+                return CallbackResponse.DONE;
               }
             }
           });
     }
-    finished.await();
+    assertThat(finished.get()).isTrue();
     assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);
   }
 }

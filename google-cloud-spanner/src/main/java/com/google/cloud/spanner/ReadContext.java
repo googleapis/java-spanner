@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import javax.annotation.Nullable;
@@ -65,6 +66,9 @@ public interface ReadContext extends AutoCloseable {
    */
   ResultSet read(String table, KeySet keys, Iterable<String> columns, ReadOption... options);
 
+  AsyncResultSet readAsync(
+      String table, KeySet keys, Iterable<String> columns, ReadOption... options);
+
   /**
    * Reads zero or more rows from a database using an index.
    *
@@ -93,6 +97,9 @@ public interface ReadContext extends AutoCloseable {
   ResultSet readUsingIndex(
       String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options);
 
+  AsyncResultSet readUsingIndexAsync(
+      String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options);
+
   /**
    * Reads a single row from a database, returning {@code null} if the row does not exist.
    * <!--SNIPPET read_context_read_row-->
@@ -111,6 +118,8 @@ public interface ReadContext extends AutoCloseable {
    */
   @Nullable
   Struct readRow(String table, Key key, Iterable<String> columns);
+
+  ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns);
 
   /**
    * Reads a single row from a database using an index, returning {@code null} if the row does not
@@ -133,6 +142,9 @@ public interface ReadContext extends AutoCloseable {
    */
   @Nullable
   Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns);
+
+  ApiFuture<Struct> readRowUsingIndexAsync(
+      String table, String index, Key key, Iterable<String> columns);
 
   /**
    * Executes a query against the database.

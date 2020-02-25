@@ -39,6 +39,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.AbstractReadContext.ConsumeSingleRowCallback;
 import com.google.cloud.spanner.DatabaseClient.AsyncWork;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
@@ -183,15 +184,6 @@ final class SessionPool {
     }
 
     private ResultSet wrap(final CachedResultSetSupplier resultSetSupplier) {
-      //      ResultSet res;
-      //      while (true) {
-      //        try {
-      //          res = resultSetSupplier.get();
-      //          break;
-      //        } catch (SessionNotFoundException e) {
-      //          replaceSessionIfPossible(e);
-      //        }
-      //      }
       return new ForwardingResultSet(resultSetSupplier) {
         private boolean beforeFirst = true;
 
@@ -277,6 +269,23 @@ final class SessionPool {
     }
 
     @Override
+    public AsyncResultSet readAsync(
+        final String table,
+        final KeySet keys,
+        final Iterable<String> columns,
+        final ReadOption... options) {
+      return new AsyncResultSetImpl(
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
+          wrap(
+              new CachedResultSetSupplier() {
+                @Override
+                ResultSet load() {
+                  return getReadContextDelegate().read(table, keys, columns, options);
+                }
+              }));
+    }
+
+    @Override
     public ResultSet readUsingIndex(
         final String table,
         final String index,
@@ -290,6 +299,25 @@ final class SessionPool {
               return getReadContextDelegate().readUsingIndex(table, index, keys, columns, options);
             }
           });
+    }
+
+    @Override
+    public AsyncResultSet readUsingIndexAsync(
+        final String table,
+        final String index,
+        final KeySet keys,
+        final Iterable<String> columns,
+        final ReadOption... options) {
+      return new AsyncResultSetImpl(
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
+          wrap(
+              new CachedResultSetSupplier() {
+                @Override
+                ResultSet load() {
+                  return getReadContextDelegate()
+                      .readUsingIndex(table, index, keys, columns, options);
+                }
+              }));
     }
 
     @Override
@@ -313,6 +341,15 @@ final class SessionPool {
     }
 
     @Override
+    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+      SettableApiFuture<Struct> result = SettableApiFuture.create();
+      try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+        rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+      }
+      return result;
+    }
+
+    @Override
     @Nullable
     public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
       try {
@@ -330,6 +367,16 @@ final class SessionPool {
           close();
         }
       }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowUsingIndexAsync(
+        String table, String index, Key key, Iterable<String> columns) {
+      SettableApiFuture<Struct> result = SettableApiFuture.create();
+      try (AsyncResultSet rs = readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+        rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+      }
+      return result;
     }
 
     @Override
@@ -435,6 +482,13 @@ final class SessionPool {
       }
 
       @Override
+      public AsyncResultSet readAsync(
+          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, "not yet implemented");
+      }
+
+      @Override
       public ResultSet readUsingIndex(
           String table,
           String index,
@@ -446,12 +500,32 @@ final class SessionPool {
       }
 
       @Override
+      public AsyncResultSet readUsingIndexAsync(
+          String table,
+          String index,
+          KeySet keys,
+          Iterable<String> columns,
+          ReadOption... options) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, "not yet implemented");
+      }
+
+      @Override
       public Struct readRow(String table, Key key, Iterable<String> columns) {
         try {
           return delegate.readRow(table, key, columns);
         } catch (SessionNotFoundException e) {
           throw handleSessionNotFound(e);
         }
+      }
+
+      @Override
+      public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+        SettableApiFuture<Struct> result = SettableApiFuture.create();
+        try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+          rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+        }
+        return result;
       }
 
       @Override
@@ -467,6 +541,17 @@ final class SessionPool {
         } catch (SessionNotFoundException e) {
           throw handleSessionNotFound(e);
         }
+      }
+
+      @Override
+      public ApiFuture<Struct> readRowUsingIndexAsync(
+          String table, String index, Key key, Iterable<String> columns) {
+        SettableApiFuture<Struct> result = SettableApiFuture.create();
+        try (AsyncResultSet rs =
+            readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+          rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+        }
+        return result;
       }
 
       @Override
@@ -499,7 +584,8 @@ final class SessionPool {
 
       @Override
       public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-        return null;
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, "not yet implemented");
       }
 
       @Override

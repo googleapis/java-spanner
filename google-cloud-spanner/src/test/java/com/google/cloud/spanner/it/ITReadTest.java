@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -345,6 +346,7 @@ public class ITReadTest {
 
     try {
       work.run();
+      fail("missing expected exception");
     } catch (SpannerException e) {
       MatcherAssert.assertThat(e, isSpannerException(ErrorCode.CANCELLED));
     }
@@ -368,6 +370,7 @@ public class ITReadTest {
 
     try {
       work.run();
+      fail("missing expected exception");
     } catch (SpannerException e) {
       MatcherAssert.assertThat(e, isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
     } finally {

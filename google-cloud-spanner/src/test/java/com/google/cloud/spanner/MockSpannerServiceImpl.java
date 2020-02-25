@@ -273,6 +273,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           builder.append(", ");
         }
         builder.append(col);
+        first = false;
       }
       builder.append(" FROM ").append(table);
       if (keySet.isAll()) {
@@ -390,6 +391,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
       return new SimulatedExecutionTime(0, 0, Arrays.asList(exception), true);
+    }
+
+    public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {
+      return ofStickyException(
+          SpannerExceptionFactoryTest.newStatusDatabaseNotFoundException(name));
     }
 
     public static SimulatedExecutionTime ofExceptions(Collection<Exception> exceptions) {
@@ -1227,12 +1233,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               return request.getColumnsList().iterator();
             }
           };
-      StatementResult res =
-          statementResults.get(
-              StatementResult.createReadStatement(
-                  request.getTable(),
-                  request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
-                  cols));
+      Statement statement =
+          StatementResult.createReadStatement(
+              request.getTable(),
+              request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
+              cols);
+      StatementResult res = statementResults.get(statement);
+      if (res == null) {
+        throw Status.NOT_FOUND
+            .withDescription("No result found for " + statement.toString())
+            .asRuntimeException();
+      }
       returnPartialResultSet(
           res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
     } catch (StatusRuntimeException e) {
