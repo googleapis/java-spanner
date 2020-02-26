@@ -37,6 +37,7 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Transaction;
+import io.opencensus.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +79,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session);
+    manager = new TransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test

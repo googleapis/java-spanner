@@ -335,7 +335,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
-  private final Span span;
+  private Span span;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -347,8 +347,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   TransactionRunnerImpl(SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks) {
     this.session = session;
-    this.span = Tracing.getTracer().getCurrentSpan();
     this.txn = session.newTransaction();
+  }
+
+  @Override
+  public void setSpan(Span span) {
+    this.span = span;
   }
 
   @Nullable

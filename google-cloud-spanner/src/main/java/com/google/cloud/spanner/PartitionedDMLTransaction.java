@@ -27,6 +27,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
+import io.opencensus.trace.Span;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import org.threeten.bp.Duration;
@@ -101,4 +102,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
   public void invalidate() {
     isValid = false;
   }
+
+  @Override
+  public void setSpan(Span span) {}
 }

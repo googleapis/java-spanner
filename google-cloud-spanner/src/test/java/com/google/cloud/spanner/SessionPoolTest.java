@@ -60,6 +60,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
+import io.opencensus.trace.Span;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1219,6 +1220,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.beginTransaction()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
             new TransactionRunnerImpl(closedSession, rpc, 10);
+        closedTransactionRunner.setSpan(mock(Span.class));
         when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
         final SessionImpl openSession = mock(SessionImpl.class);
@@ -1231,6 +1233,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(openSession.beginTransaction()).thenReturn(ByteString.copyFromUtf8("open-txn"));
         TransactionRunnerImpl openTransactionRunner =
             new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+        openTransactionRunner.setSpan(mock(Span.class));
         when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
         ResultSet openResultSet = mock(ResultSet.class);

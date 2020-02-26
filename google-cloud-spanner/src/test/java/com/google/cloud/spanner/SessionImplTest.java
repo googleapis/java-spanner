@@ -40,6 +40,7 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import io.opencensus.trace.Span;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -111,6 +112,7 @@ public class SessionImplTest {
     Mockito.when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.any(Map.class)))
         .thenReturn(commitResponse);
     session = spanner.getSessionClient(db).createSession();
+    ((SessionImpl) session).setCurrentSpan(mock(Span.class));
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

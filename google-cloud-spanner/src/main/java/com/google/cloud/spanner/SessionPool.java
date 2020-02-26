@@ -1125,7 +1125,7 @@ final class SessionPool {
         try {
           PooledSession res = super.get();
           synchronized (lock) {
-            res.markBusy();
+            res.markBusy(span);
             span.addAnnotation(sessionAnnotation(res));
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
@@ -1291,7 +1291,8 @@ final class SessionPool {
       }
     }
 
-    private void markBusy() {
+    private void markBusy(Span span) {
+      this.delegate.setCurrentSpan(span);
       this.state = SessionState.BUSY;
     }
 

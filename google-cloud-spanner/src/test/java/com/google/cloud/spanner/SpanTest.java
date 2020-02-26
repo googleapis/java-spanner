@@ -302,26 +302,29 @@ public class SpanTest {
 
   @Test
   public void transactionRunnerWithError() {
-    TransactionRunner runner = client.readWriteTransaction();
-    try {
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) throws Exception {
-              transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-              return null;
-            }
-          });
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-    }
+    for (int i = 0; i < 1000; i++) {
+      TransactionRunner runner = client.readWriteTransaction();
+      try {
+        runner.run(
+            new TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                return null;
+              }
+            });
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
 
-    Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
+      Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
+      assertThat(spans.size()).isEqualTo(5);
+      assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
+      assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
+      assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
+      assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
+      assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
+    }
   }
 }

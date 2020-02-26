@@ -27,6 +27,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
+import io.opencensus.trace.Span;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -51,6 +51,7 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
+import io.opencensus.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,6 +97,7 @@ public class TransactionRunnerImplTest {
     firstRun = true;
     when(session.newTransaction()).thenReturn(txn);
     transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
+    transactionRunner.setSpan(mock(Span.class));
   }
 
   @SuppressWarnings("unchecked")
@@ -278,6 +280,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(ByteString.copyFromUtf8(UUID.randomUUID().toString()));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()
             .addResultSets(

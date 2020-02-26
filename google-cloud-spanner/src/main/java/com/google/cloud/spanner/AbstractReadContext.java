@@ -49,7 +49,6 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracing;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -357,7 +356,7 @@ abstract class AbstractReadContext
   final SessionImpl session;
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
-  final Span span;
+  Span span;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -381,6 +380,11 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
+  }
+
+  @Override
+  public void setSpan(Span span) {
+    this.span = span;
   }
 
   long getSeqNo() {

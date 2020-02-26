@@ -77,6 +77,8 @@ class SessionImpl implements Session {
   static interface SessionTransaction {
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
+    /** Registers the current span on the transaction. */
+    void setSpan(Span span);
   }
 
   private final SpannerImpl spanner;
@@ -85,6 +87,7 @@ class SessionImpl implements Session {
   private SessionTransaction activeTransaction;
   private ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
+  private Span currentSpan;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
@@ -100,6 +103,10 @@ class SessionImpl implements Session {
 
   Map<SpannerRpc.Option, ?> getOptions() {
     return options;
+  }
+
+  void setCurrentSpan(Span span) {
+    currentSpan = span;
   }
 
   @Override
@@ -273,6 +280,7 @@ class SessionImpl implements Session {
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+        .setSpan(currentSpan)
         .build();
   }
 
@@ -284,11 +292,14 @@ class SessionImpl implements Session {
     }
     activeTransaction = ctx;
     readyTransactionId = null;
+    if (activeTransaction != null) {
+      activeTransaction.setSpan(currentSpan);
+    }
     return ctx;
   }
 
   @Override
   public TransactionManager transactionManager() {
-    return new TransactionManagerImpl(this);
+    return new TransactionManagerImpl(this, currentSpan);
   }
 }

@@ -93,7 +93,6 @@
     <className>com/google/cloud/spanner/DatabaseAdminClient</className>
     <method>com.google.cloud.spanner.Backup updateBackup(java.lang.String, java.lang.String, com.google.cloud.Timestamp)</method>
   </difference>
-
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
@@ -145,6 +144,43 @@
     <className>com/google/cloud/spanner/Instance</className>
     <!-- Added varargs (ListOption... options) -->
     <method>com.google.api.gax.paging.Page listDatabases()</method>
+  </difference>
+  
+  <!-- Add Async API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>* runAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ReadContext</className>
+    <method>* executeQueryAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ReadContext</className>
+    <method>* readAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ReadContext</className>
+    <method>* readRowAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ReadContext</className>
+    <method>* readUsingIndexAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ReadContext</className>
+    <method>* readRowUsingIndexAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>* executeUpdateAsync(*)</method>
   </difference>
   
 </differences>

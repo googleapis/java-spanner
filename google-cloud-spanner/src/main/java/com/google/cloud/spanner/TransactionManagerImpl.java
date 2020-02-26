@@ -29,14 +29,19 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private static final Tracer tracer = Tracing.getTracer();
 
   private final SessionImpl session;
-  private final Span span;
+  private Span span;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session) {
+  TransactionManagerImpl(SessionImpl session, Span span) {
     this.session = session;
-    this.span = Tracing.getTracer().getCurrentSpan();
+    this.span = span;
+  }
+
+  @Override
+  public void setSpan(Span span) {
+    this.span = span;
   }
 
   @Override
