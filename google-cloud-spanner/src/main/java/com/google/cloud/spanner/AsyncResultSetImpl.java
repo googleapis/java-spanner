@@ -155,6 +155,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   }
 
   /**
+   * Called when no more rows will be read from the underlying {@link ResultSet}, either because all
+   * rows have been read, or because {@link ReadyCallback#cursorReady(AsyncResultSet)} returned
+   * {@link CallbackResponse#DONE}.
+   */
+  void onFinished() {}
+
+  /**
    * Tries to advance this {@link AsyncResultSet} to the next row. This method may only be called
    * from within a {@link ReadyCallback}.
    */
@@ -331,6 +338,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
         try {
           delegateResultSet.close();
         } catch (Throwable t) {
+        } finally {
+          onFinished();
         }
 
         // Ensure that the callback has been called at least once, even if the result set was

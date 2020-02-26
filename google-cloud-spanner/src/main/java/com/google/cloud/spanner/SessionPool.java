@@ -36,6 +36,7 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -96,6 +97,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -149,13 +151,50 @@ final class SessionPool {
    * finished, if it is a single use context.
    */
   private static class AutoClosingReadContext<T extends ReadContext> implements ReadContext {
+    private class AutoClosingReadContextAsyncResultSetImpl extends AsyncResultSetImpl {
+      private AutoClosingReadContextAsyncResultSetImpl(
+          ExecutorProvider executorProvider, ResultSet delegate, int bufferRows) {
+        super(executorProvider, delegate, bufferRows);
+      }
+
+      @Override
+      public void setCallback(Executor exec, ReadyCallback cb) {
+        asyncOperationsCount.incrementAndGet();
+        super.setCallback(exec, cb);
+      }
+
+      @Override
+      void onFinished() {
+        synchronized (lock) {
+          if (asyncOperationsCount.decrementAndGet() == 0) {
+            if (closed) {
+              // All async operations for this read context have finished.
+              AutoClosingReadContext.this.close();
+            }
+          }
+        }
+      }
+    }
+
     private final Function<PooledSessionFuture, T> readContextDelegateSupplier;
     private T readContextDelegate;
     private final SessionPool sessionPool;
-    private PooledSessionFuture session;
     private final boolean isSingleUse;
-    private boolean closed;
+    private final AtomicInteger asyncOperationsCount = new AtomicInteger();
+
+    private Object lock = new Object();
+
+    @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
+
+    @GuardedBy("lock")
+    private PooledSessionFuture session;
+
+    @GuardedBy("lock")
+    private boolean closed;
+
+    @GuardedBy("lock")
+    private boolean delegateClosed;
 
     private AutoClosingReadContext(
         Function<PooledSessionFuture, T> delegateSupplier,
@@ -170,12 +209,14 @@ final class SessionPool {
 
     T getReadContextDelegate() {
       if (readContextDelegate == null) {
-        while (true) {
-          try {
-            this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
-            break;
-          } catch (SessionNotFoundException e) {
-            replaceSessionIfPossible(e);
+        synchronized (lock) {
+          while (true) {
+            try {
+              this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
+              break;
+            } catch (SessionNotFoundException e) {
+              replaceSessionIfPossible(e);
+            }
           }
         }
       }
@@ -212,9 +253,11 @@ final class SessionPool {
           try {
             boolean ret = super.next();
             if (beforeFirst) {
-              session.get().markUsed();
-              beforeFirst = false;
-              sessionUsedForQuery = true;
+              synchronized (lock) {
+                session.get().markUsed();
+                beforeFirst = false;
+                sessionUsedForQuery = true;
+              }
             }
             if (!ret && isSingleUse) {
               close();
@@ -223,9 +266,11 @@ final class SessionPool {
           } catch (SessionNotFoundException e) {
             throw e;
           } catch (SpannerException e) {
-            if (!closed && isSingleUse) {
-              session.get().lastException = e;
-              AutoClosingReadContext.this.close();
+            synchronized (lock) {
+              if (!closed && isSingleUse) {
+                session.get().lastException = e;
+                AutoClosingReadContext.this.close();
+              }
             }
             throw e;
           }
@@ -242,13 +287,15 @@ final class SessionPool {
     }
 
     private void replaceSessionIfPossible(SessionNotFoundException notFound) {
-      if (isSingleUse || !sessionUsedForQuery) {
-        // This class is only used by read-only transactions, so we know that we only need a
-        // read-only session.
-        session = sessionPool.replaceReadSession(notFound, session);
-        readContextDelegate = readContextDelegateSupplier.apply(session);
-      } else {
-        throw notFound;
+      synchronized (lock) {
+        if (isSingleUse || !sessionUsedForQuery) {
+          // This class is only used by read-only transactions, so we know that we only need a
+          // read-only session.
+          session = sessionPool.replaceReadSession(notFound, session);
+          readContextDelegate = readContextDelegateSupplier.apply(session);
+        } else {
+          throw notFound;
+        }
       }
     }
 
@@ -273,7 +320,9 @@ final class SessionPool {
         final KeySet keys,
         final Iterable<String> columns,
         final ReadOption... options) {
-      return new AsyncResultSetImpl(
+      Options readOptions = Options.fromReadOptions(options);
+      final int bufferRows = readOptions.hasBufferRows() ? readOptions.bufferRows() : 10;
+      return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
               new CachedResultSetSupplier() {
@@ -281,7 +330,8 @@ final class SessionPool {
                 ResultSet load() {
                   return getReadContextDelegate().read(table, keys, columns, options);
                 }
-              }));
+              }),
+          bufferRows);
     }
 
     @Override
@@ -307,7 +357,9 @@ final class SessionPool {
         final KeySet keys,
         final Iterable<String> columns,
         final ReadOption... options) {
-      return new AsyncResultSetImpl(
+      Options readOptions = Options.fromReadOptions(options);
+      final int bufferRows = readOptions.hasBufferRows() ? readOptions.bufferRows() : 10;
+      return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
               new CachedResultSetSupplier() {
@@ -316,7 +368,8 @@ final class SessionPool {
                   return getReadContextDelegate()
                       .readUsingIndex(table, index, keys, columns, options);
                 }
-              }));
+              }),
+          bufferRows);
     }
 
     @Override
@@ -325,14 +378,18 @@ final class SessionPool {
       try {
         while (true) {
           try {
-            session.get().markUsed();
+            synchronized (lock) {
+              session.get().markUsed();
+            }
             return getReadContextDelegate().readRow(table, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
         }
       } finally {
-        sessionUsedForQuery = true;
+        synchronized (lock) {
+          sessionUsedForQuery = true;
+        }
         if (isSingleUse) {
           close();
         }
@@ -354,14 +411,18 @@ final class SessionPool {
       try {
         while (true) {
           try {
-            session.get().markUsed();
+            synchronized (lock) {
+              session.get().markUsed();
+            }
             return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
         }
       } finally {
-        sessionUsedForQuery = true;
+        synchronized (lock) {
+          sessionUsedForQuery = true;
+        }
         if (isSingleUse) {
           close();
         }
@@ -392,7 +453,9 @@ final class SessionPool {
     @Override
     public AsyncResultSet executeQueryAsync(
         final Statement statement, final QueryOption... options) {
-      return new AsyncResultSetImpl(
+      Options queryOptions = Options.fromQueryOptions(options);
+      final int bufferRows = queryOptions.hasBufferRows() ? queryOptions.bufferRows() : 10;
+      return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
               new CachedResultSetSupplier() {
@@ -400,7 +463,8 @@ final class SessionPool {
                 ResultSet load() {
                   return getReadContextDelegate().executeQuery(statement, options);
                 }
-              }));
+              }),
+          bufferRows);
     }
 
     @Override
@@ -416,14 +480,19 @@ final class SessionPool {
 
     @Override
     public void close() {
-      if (closed) {
-        return;
+      synchronized (lock) {
+        if (closed && delegateClosed) {
+          return;
+        }
+        closed = true;
+        if (asyncOperationsCount.get() == 0) {
+          if (readContextDelegate != null) {
+            readContextDelegate.close();
+          }
+          session.close();
+          delegateClosed = true;
+        }
       }
-      closed = true;
-      if (readContextDelegate != null) {
-        readContextDelegate.close();
-      }
-      session.close();
     }
   }
 
@@ -1628,6 +1697,13 @@ final class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+  }
+
+  @VisibleForTesting
+  int getNumberOfSessionsInUse() {
+    synchronized (lock) {
+      return numSessionsInUse;
+    }
   }
 
   @VisibleForTesting

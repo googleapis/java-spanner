@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
@@ -31,10 +32,15 @@ import com.google.common.util.concurrent.SettableFuture;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.SynchronousQueue;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -56,8 +62,13 @@ public class ReadAsyncTest {
   @BeforeClass
   public static void setup() throws Exception {
     mockSpanner = new MockSpannerServiceImpl();
-    mockSpanner.putStatementResult(StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
-    mockSpanner.putStatementResult(StatementResult.query(READ_ONE_EMPTY_KEY_VALUE_STATEMENT, EMPTY_KEY_VALUE_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(READ_ONE_EMPTY_KEY_VALUE_STATEMENT, EMPTY_KEY_VALUE_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            READ_MULTIPLE_KEY_VALUE_STATEMENT, READ_MULTIPLE_KEY_VALUE_RESULTSET));
 
     String uniqueName = InProcessServerBuilder.generateName();
     server =
@@ -188,5 +199,72 @@ public class ReadAsyncTest {
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       assertThat(se.getMessage()).contains("BadTableName");
     }
+  }
+
+  /**
+   * Ending a read-only transaction before an asynchronous query that was executed on that
+   * transaction has finished fetching all rows should keep the session checked out of the pool
+   * until all the rows have been returned. The session is then automatically returned to the
+   * session.
+   */
+  @Test
+  public void closeTransactionBeforeEndOfAsyncQuery() throws Exception {
+    final BlockingQueue<String> results = new SynchronousQueue<>();
+    final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
+    DatabaseClientImpl clientImpl = (DatabaseClientImpl) client;
+
+    // There should currently not be any sessions checked out of the pool.
+    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+
+    final CountDownLatch dataReceived = new CountDownLatch(1);
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (AsyncResultSet rs =
+          tx.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
+        rs.setCallback(
+            executor,
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        finished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        dataReceived.countDown();
+                        results.put(resultSet.getString(0));
+                    }
+                  }
+                } catch (Throwable t) {
+                  finished.setException(t);
+                  return CallbackResponse.DONE;
+                }
+              }
+            });
+      }
+      // Wait until at least one row has been fetched. At that moment there should be one session
+      // checked out.
+      dataReceived.await();
+      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    }
+    // The read-only transaction is now closed, but the ready callback will continue to receive
+    // data. As it tries to put the data into a synchronous queue and the underlying buffer can also
+    // only hold 1 row, the async result set has not yet finished. The read-only transaction will
+    // release the session back into the pool when all async statements have finished. The number of
+    // sessions in use is therefore still 1.
+    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    List<String> resultList = new ArrayList<>();
+    do {
+      results.drainTo(resultList);
+    } while (!finished.isDone() || results.size() > 0);
+    assertThat(finished.get()).isTrue();
+    assertThat(resultList).containsExactly("k1", "k2", "k3");
+    // The session will be released back into the pool by the asynchronous result set when it has
+    // returned all rows. As this is done in the background, it could take a couple of milliseconds.
+    Thread.sleep(10L);
+    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
   }
 }

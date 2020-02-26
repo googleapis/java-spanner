@@ -92,8 +92,7 @@ public class MockSpannerTestUtil {
                   .build())
           .build();
   static final Type READ_TABLE_TYPE =
-      Type.struct(
-          StructField.of("Key", Type.string()), StructField.of("Value", Type.string()));
+      Type.struct(StructField.of("Key", Type.string()), StructField.of("Value", Type.string()));
   static final com.google.spanner.v1.ResultSet EMPTY_KEY_VALUE_RESULTSET =
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(ListValue.newBuilder().build())
