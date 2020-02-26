@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.Type.StructField;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -64,8 +65,10 @@ public class MockSpannerTestUtil {
       Statement.of("SELECT Key, Value FROM TestTable WHERE ID=1");
   static final Statement READ_MULTIPLE_KEY_VALUE_STATEMENT =
       Statement.of("SELECT Key, Value FROM TestTable WHERE 1=1");
-  static final Statement READ_EMPTY_KEY_VALUE_STATEMENT =
-      Statement.of("SELECT Key, Value From EmptyTestTable");
+  static final Statement READ_ONE_EMPTY_KEY_VALUE_STATEMENT =
+      Statement.of("SELECT Key, Value FROM EmptyTestTable WHERE ID=1");
+  static final Statement READ_ALL_EMPTY_KEY_VALUE_STATEMENT =
+      Statement.of("SELECT Key, Value FROM EmptyTestTable WHERE 1=1");
   static final ResultSetMetadata READ_KEY_VALUE_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -88,6 +91,9 @@ public class MockSpannerTestUtil {
                           .build())
                   .build())
           .build();
+  static final Type READ_TABLE_TYPE =
+      Type.struct(
+          StructField.of("Key", Type.string()), StructField.of("Value", Type.string()));
   static final com.google.spanner.v1.ResultSet EMPTY_KEY_VALUE_RESULTSET =
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(ListValue.newBuilder().build())

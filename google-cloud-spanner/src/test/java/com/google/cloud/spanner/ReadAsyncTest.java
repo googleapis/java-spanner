@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -26,18 +27,10 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.Type.StructField;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.protobuf.ListValue;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
-import com.google.spanner.v1.StructType.Field;
-import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,59 +45,9 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ReadAsyncTest {
-  private static final String EMPTY_TABLE_NAME = "EmptyTestTable";
-  private static final String TABLE_NAME = "TestTable";
-  private static final List<String> ALL_COLUMNS = Arrays.asList("Key", "StringValue");
-  private static final Type TABLE_TYPE =
-      Type.struct(
-          StructField.of("Key", Type.string()), StructField.of("StringValue", Type.string()));
-  private static final String TEST_PROJECT = "my-project";
-  private static final String TEST_INSTANCE = "my-instance";
-  private static final String TEST_DATABASE = "my-database";
-
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
-  private static final Statement EMPTY_READ_STATEMENT =
-      Statement.of("SELECT Key, StringValue FROM EmptyTestTable WHERE ID=1");
-  private static final Statement READ1_STATEMENT =
-      Statement.of("SELECT Key, StringValue FROM TestTable WHERE ID=1");
-  private static final ResultSetMetadata READ1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("Key")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.STRING)
-                                  .build())
-                          .build())
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("StringValue")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.STRING)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-  private static final com.google.spanner.v1.ResultSet EMPTY_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(ListValue.newBuilder().build())
-          .setMetadata(READ1_METADATA)
-          .build();
-  private static final com.google.spanner.v1.ResultSet READ1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k1").build())
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("v1").build())
-                  .build())
-          .setMetadata(READ1_METADATA)
-          .build();
 
   private static ExecutorService executor;
   private Spanner spanner;
@@ -113,8 +56,8 @@ public class ReadAsyncTest {
   @BeforeClass
   public static void setup() throws Exception {
     mockSpanner = new MockSpannerServiceImpl();
-    mockSpanner.putStatementResult(StatementResult.query(READ1_STATEMENT, READ1_RESULTSET));
-    mockSpanner.putStatementResult(StatementResult.query(EMPTY_READ_STATEMENT, EMPTY_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.query(READ_ONE_EMPTY_KEY_VALUE_STATEMENT, EMPTY_KEY_VALUE_RESULTSET));
 
     String uniqueName = InProcessServerBuilder.generateName();
     server =
@@ -159,7 +102,7 @@ public class ReadAsyncTest {
     AsyncResultSet resultSet =
         client
             .singleUse(TimestampBound.strong())
-            .readAsync(EMPTY_TABLE_NAME, KeySet.singleKey(Key.of("k99")), ALL_COLUMNS);
+            .readAsync(EMPTY_READ_TABLE_NAME, KeySet.singleKey(Key.of("k99")), READ_COLUMN_NAMES);
     resultSet.setCallback(
         executor,
         new ReadyCallback() {
@@ -173,7 +116,7 @@ public class ReadAsyncTest {
                   case NOT_READY:
                     return CallbackResponse.CONTINUE;
                   case DONE:
-                    assertThat(resultSet.getType()).isEqualTo(TABLE_TYPE);
+                    assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
                     result.set(true);
                     return CallbackResponse.DONE;
                 }
@@ -192,12 +135,10 @@ public class ReadAsyncTest {
     ApiFuture<Struct> row =
         client
             .singleUse(TimestampBound.strong())
-            .readRowAsync(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
+            .readRowAsync(READ_TABLE_NAME, Key.of("k1"), READ_COLUMN_NAMES);
     assertThat(row.get()).isNotNull();
     assertThat(row.get().getString(0)).isEqualTo("k1");
     assertThat(row.get().getString(1)).isEqualTo("v1");
-    assertThat(row.get())
-        .isEqualTo(Struct.newBuilder().set("Key").to("k1").set("StringValue").to("v1").build());
   }
 
   @Test
@@ -205,7 +146,7 @@ public class ReadAsyncTest {
     ApiFuture<Struct> row =
         client
             .singleUse(TimestampBound.strong())
-            .readRowAsync(EMPTY_TABLE_NAME, Key.of("k999"), ALL_COLUMNS);
+            .readRowAsync(EMPTY_READ_TABLE_NAME, Key.of("k999"), READ_COLUMN_NAMES);
     assertThat(row.get()).isNull();
   }
 
@@ -218,7 +159,7 @@ public class ReadAsyncTest {
     ApiFuture<Struct> row =
         invalidClient
             .singleUse(TimestampBound.strong())
-            .readRowAsync(TABLE_NAME, Key.of("k99"), ALL_COLUMNS);
+            .readRowAsync(READ_TABLE_NAME, Key.of("k99"), READ_COLUMN_NAMES);
     try {
       row.get();
       fail("missing expected exception");
@@ -237,7 +178,7 @@ public class ReadAsyncTest {
     ApiFuture<Struct> row =
         client
             .singleUse(TimestampBound.strong())
-            .readRowAsync("BadTableName", Key.of("k1"), ALL_COLUMNS);
+            .readRowAsync("BadTableName", Key.of("k1"), READ_COLUMN_NAMES);
     try {
       row.get();
       fail("missing expected exception");

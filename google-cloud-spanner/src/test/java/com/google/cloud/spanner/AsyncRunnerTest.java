@@ -66,7 +66,7 @@ public class AsyncRunnerTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D);
     mockSpanner.putStatementResult(
-        StatementResult.query(READ_EMPTY_KEY_VALUE_STATEMENT, EMPTY_KEY_VALUE_RESULTSET));
+        StatementResult.query(READ_ONE_EMPTY_KEY_VALUE_STATEMENT, EMPTY_KEY_VALUE_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
     mockSpanner.putStatementResult(
