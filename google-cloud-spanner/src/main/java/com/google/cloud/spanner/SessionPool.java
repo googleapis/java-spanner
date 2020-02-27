@@ -1634,12 +1634,27 @@ final class SessionPool {
       closureFuture = SettableFuture.create();
       retFuture = closureFuture;
       pendingClosure =
-          totalSessions() + numSessionsBeingCreated + 1 /* For pool maintenance thread */;
+          totalSessions()
+              + numSessionsBeingCreated
+              + 2 /* For pool maintenance thread + prepareExecutor */;
 
       poolMaintainer.close();
       readSessions.clear();
       writePreparedSessions.clear();
       prepareExecutor.shutdown();
+      executor.submit(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                prepareExecutor.awaitTermination(5L, TimeUnit.SECONDS);
+              } catch (Throwable t) {
+              }
+              synchronized (lock) {
+                decrementPendingClosures(1);
+              }
+            }
+          });
       for (final PooledSession session : ImmutableList.copyOf(allSessions)) {
         if (session.leakedException != null) {
           logger.log(Level.WARNING, "Leaked session", session.leakedException);
