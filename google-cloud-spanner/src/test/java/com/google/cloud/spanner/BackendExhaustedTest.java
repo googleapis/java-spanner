@@ -115,6 +115,7 @@ public class BackendExhaustedTest {
   public static void stopServer() throws InterruptedException {
     // Force a shutdown as there are still requests stuck in the server.
     server.shutdownNow();
+    server.awaitTermination();
   }
 
   @Before
@@ -153,10 +154,15 @@ public class BackendExhaustedTest {
 
   @After
   public void tearDown() throws Exception {
-    // This test case does not close the Spanner instance as it would wait forever on the
-    // BatchCreateSessions requests that are 'stuck'.
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+    // This test case force-closes the Spanner instance as it would otherwise wait
+    // forever on the BatchCreateSessions requests that are 'stuck'.
+    try {
+      ((SpannerImpl) spanner).close(100L, TimeUnit.MILLISECONDS);
+    } catch (SpannerException e) {
+      // ignore any errors during close as they are expected.
+    }
   }
 
   @Test
@@ -176,8 +182,8 @@ public class BackendExhaustedTest {
     for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMinSessions() * 2; i++) {
       executor.submit(new ReadRunnable());
     }
-    // Now schedule as many write requests as there are executor threads in the pool.
-    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMinSessions(); i++) {
+    // Now schedule as many write requests as there can be sessions in the pool.
+    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMaxSessions(); i++) {
       executor.submit(new WriteRunnable());
     }
     // Now unfreeze the server and verify that all requests can be served using the sessions that

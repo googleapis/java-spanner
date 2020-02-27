@@ -1204,7 +1204,7 @@ final class SessionPool {
     this.executor = executor;
     int prepareThreads;
     if (executor instanceof ThreadPoolExecutor) {
-      prepareThreads = ((ThreadPoolExecutor) executor).getCorePoolSize();
+      prepareThreads = Math.max(((ThreadPoolExecutor) executor).getCorePoolSize(), 1);
     } else {
       prepareThreads = 8;
     }
@@ -1639,6 +1639,7 @@ final class SessionPool {
       poolMaintainer.close();
       readSessions.clear();
       writePreparedSessions.clear();
+      prepareExecutor.shutdown();
       for (final PooledSession session : ImmutableList.copyOf(allSessions)) {
         if (session.leakedException != null) {
           logger.log(Level.WARNING, "Leaked session", session.leakedException);
@@ -1652,7 +1653,6 @@ final class SessionPool {
         new Runnable() {
           @Override
           public void run() {
-            prepareExecutor.shutdown();
             executorFactory.release(executor);
           }
         },
