@@ -1360,11 +1360,9 @@ final class SessionPool {
           readWaiters.add(waiter);
         } else {
           span.addAnnotation("Acquired read write session");
-          numSessionsAcquired++;
         }
       } else {
         span.addAnnotation("Acquired read only session");
-        numSessionsAcquired++;
       }
     }
     if (waiter != null) {
@@ -1422,7 +1420,6 @@ final class SessionPool {
         if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
           PooledSession readSession = readSessions.poll();
           if (readSession != null) {
-            numSessionsAcquired++;
             span.addAnnotation("Acquired read only session. Preparing for read write transaction");
             prepareSession(readSession);
           } else {
@@ -1433,7 +1430,6 @@ final class SessionPool {
         waiter = new Waiter();
         readWriteWaiters.add(waiter);
       } else {
-        numSessionsAcquired++;
         span.addAnnotation("Acquired read write session");
       }
     }
