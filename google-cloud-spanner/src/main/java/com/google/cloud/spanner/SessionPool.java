@@ -24,6 +24,10 @@ import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSI
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
@@ -796,6 +800,7 @@ final class SessionPool {
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
+        numSessionsReleased++;
       }
       leakedException = null;
       if (lastException != null && isSessionNotFound(lastException)) {
@@ -1121,6 +1126,12 @@ final class SessionPool {
 
   @GuardedBy("lock")
   private int maxSessionsInUse = 0;
+
+  @GuardedBy("lock")
+  private long numSessionsAcquired = 0;
+
+  @GuardedBy("lock")
+  private long numSessionsReleased = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
@@ -1448,6 +1459,7 @@ final class SessionPool {
     if (!options.isFailIfSessionNotFound() && session.allowReplacing) {
       synchronized (lock) {
         numSessionsInUse--;
+        numSessionsReleased++;
       }
       session.leakedException = null;
       invalidateSession(session);
@@ -1468,6 +1480,7 @@ final class SessionPool {
       if (maxSessionsInUse < ++numSessionsInUse) {
         maxSessionsInUse = numSessionsInUse;
       }
+      numSessionsAcquired++;
     }
   }
 
@@ -1857,6 +1870,24 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
+    DerivedLongCumulative numAcquiredSessionsMetric =
+        metricRegistry.addDerivedLongCumulative(
+            NUM_ACQUIRED_SESSIONS,
+            MetricOptions.builder()
+                .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
+    DerivedLongCumulative numReleasedSessionsMetric =
+        metricRegistry.addDerivedLongCumulative(
+            NUM_RELEASED_SESSIONS,
+            MetricOptions.builder()
+                .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.createTimeSeries(
@@ -1902,6 +1933,26 @@ final class SessionPool {
           @Override
           public long applyAsLong(SessionPool sessionPool) {
             return sessionPool.getNumWaiterTimeouts();
+          }
+        });
+
+    numAcquiredSessionsMetric.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsAcquired;
+          }
+        });
+
+    numReleasedSessionsMetric.createTimeSeries(
+        labelValues,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsReleased;
           }
         });
   }
