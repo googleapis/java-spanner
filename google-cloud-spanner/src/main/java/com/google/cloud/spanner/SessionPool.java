@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
@@ -71,9 +72,11 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -1084,6 +1087,7 @@ final class SessionPool {
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
+  private final ScheduledExecutorService prepareExecutor;
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
   private final Object lock = new Object();
@@ -1198,6 +1202,19 @@ final class SessionPool {
     this.options = options;
     this.executorFactory = executorFactory;
     this.executor = executor;
+    int prepareThreads;
+    if (executor instanceof ThreadPoolExecutor) {
+      prepareThreads = ((ThreadPoolExecutor) executor).getCorePoolSize();
+    } else {
+      prepareThreads = 8;
+    }
+    this.prepareExecutor =
+        Executors.newScheduledThreadPool(
+            prepareThreads,
+            new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("session-pool-prepare-%d")
+                .build());
     this.sessionClient = sessionClient;
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
@@ -1635,6 +1652,7 @@ final class SessionPool {
         new Runnable() {
           @Override
           public void run() {
+            prepareExecutor.shutdown();
             executorFactory.release(executor);
           }
         },
@@ -1699,7 +1717,7 @@ final class SessionPool {
     synchronized (lock) {
       numSessionsBeingPrepared++;
     }
-    executor.submit(
+    prepareExecutor.submit(
         new Runnable() {
           @Override
           public void run() {
