@@ -22,8 +22,7 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The response for
- * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+ * The response for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.BatchCreateSessionsResponse}
@@ -348,8 +347,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * The response for
-   * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+   * The response for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.BatchCreateSessionsResponse}

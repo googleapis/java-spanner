@@ -208,8 +208,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-   * from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *
@@ -233,8 +232,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-   * from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *
@@ -852,8 +850,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-     * from a previous
+     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
      * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
      * </pre>
      *
@@ -877,8 +874,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-     * from a previous
+     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
      * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
      * </pre>
      *
@@ -902,8 +898,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-     * from a previous
+     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
      * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
      * </pre>
      *
@@ -926,8 +921,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-     * from a previous
+     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
      * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
      * </pre>
      *
@@ -946,8 +940,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
-     * from a previous
+     * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
      * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
      * </pre>
      *

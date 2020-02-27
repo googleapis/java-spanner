@@ -22,8 +22,7 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The request for
- * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+ * The request for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.BatchCreateSessionsRequest}
@@ -238,8 +237,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    * The API may return fewer than the requested number of sessions. If a
    * specific number of sessions are desired, the client can make additional
    * calls to BatchCreateSessions (adjusting
-   * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
-   * as necessary).
+   * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
    * </pre>
    *
    * <code>int32 session_count = 3 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -436,8 +434,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    *
    * <pre>
-   * The request for
-   * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+   * The request for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.BatchCreateSessionsRequest}
@@ -921,8 +918,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * The API may return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
      * calls to BatchCreateSessions (adjusting
-     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
-     * as necessary).
+     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
      * </pre>
      *
      * <code>int32 session_count = 3 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -940,8 +936,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * The API may return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
      * calls to BatchCreateSessions (adjusting
-     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
-     * as necessary).
+     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
      * </pre>
      *
      * <code>int32 session_count = 3 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -963,8 +958,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * The API may return fewer than the requested number of sessions. If a
      * specific number of sessions are desired, the client can make additional
      * calls to BatchCreateSessions (adjusting
-     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
-     * as necessary).
+     * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
      * </pre>
      *
      * <code>int32 session_count = 3 [(.google.api.field_behavior) = REQUIRED];</code>
