@@ -48,10 +48,6 @@ public interface AsyncRunner {
      *
      * @param txn the transaction
      * @return future over the result of the work
-     *     <p>TODO(loite): It's probably better to let this method return `R` instead of
-     *     `ApiFuture<R>`, as we need to wait until the result of the work has actually finished
-     *     before we can commit the transaction. Returning an ApiFuture<R> here just means that the
-     *     underlying framework code still has to call {@link ApiFuture#get()} before committing.
      */
     ApiFuture<R> doWorkAsync(TransactionContext txn);
   }
