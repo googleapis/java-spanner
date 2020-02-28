@@ -108,22 +108,17 @@ public class MockSpannerTestUtil {
           .setMetadata(READ_KEY_VALUE_METADATA)
           .build();
   static final com.google.spanner.v1.ResultSet READ_MULTIPLE_KEY_VALUE_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k1").build())
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("v1").build())
-                  .build())
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k2").build())
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("v2").build())
-                  .build())
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k3").build())
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("v3").build())
-                  .build())
-          .setMetadata(READ_KEY_VALUE_METADATA)
-          .build();
+      generateKeyValueResultSet(1, 3);
+
+  static com.google.spanner.v1.ResultSet generateKeyValueResultSet(int beginRow, int endRow) {
+    com.google.spanner.v1.ResultSet.Builder builder = com.google.spanner.v1.ResultSet.newBuilder();
+    for (int row = beginRow; row <= endRow; row++) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k" + row).build())
+              .addValues(com.google.protobuf.Value.newBuilder().setStringValue("v" + row).build())
+              .build());
+    }
+    return builder.setMetadata(READ_KEY_VALUE_METADATA).build();
+  }
 }

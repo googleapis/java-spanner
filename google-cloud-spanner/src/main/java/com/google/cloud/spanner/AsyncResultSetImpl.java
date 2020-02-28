@@ -476,20 +476,23 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
     @Override
     public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-      CursorState state;
       try {
-        while ((state = resultSet.tryNext()) == CursorState.OK) {
-          builder.add(transformer.apply(resultSet));
+        while (true) {
+          switch (resultSet.tryNext()) {
+            case DONE:
+              future.set(builder.build());
+              return CallbackResponse.DONE;
+            case NOT_READY:
+              return CallbackResponse.CONTINUE;
+            case OK:
+              builder.add(transformer.apply(resultSet));
+              break;
+          }
         }
-      } catch (SpannerException e) {
-        future.setException(e);
+      } catch (Throwable t) {
+        future.setException(t);
         return CallbackResponse.DONE;
       }
-      if (state == CursorState.DONE) {
-        future.set(builder.build());
-        return CallbackResponse.DONE;
-      }
-      return CallbackResponse.CONTINUE;
     }
   }
 

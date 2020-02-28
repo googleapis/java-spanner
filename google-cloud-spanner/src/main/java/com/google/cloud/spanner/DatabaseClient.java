@@ -278,6 +278,37 @@ public interface DatabaseClient {
    */
   TransactionManager transactionManager();
 
+  /**
+   * Returns an asynchronous transaction runner for executing a single logical transaction with
+   * retries. The returned runner can only be used once.
+   *
+   * <p>Example of a read write transaction.
+   *
+   * <pre> <code>
+   * Executor executor = Executors.newSingleThreadExecutor();
+   * final long singerId = my_singer_id;
+   * AsyncRunner runner = client.runAsync();
+   * ApiFuture<Long> rowCount =
+   *     runner.runAsync(
+   *         new AsyncWork<Long>() {
+   *           @Override
+   *           public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+   *             String column = "FirstName";
+   *             Struct row =
+   *                 txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
+   *             String name = row.getString("Name");
+   *             return txn.executeUpdateAsync(
+   *                 Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
+   *                     .bind("id")
+   *                     .to(singerId)
+   *                     .bind("name")
+   *                     .to(name.toUpperCase())
+   *                     .build());
+   *           }
+   *         },
+   *         executor);
+   * </code></pre>
+   */
   AsyncRunner runAsync();
 
   /**

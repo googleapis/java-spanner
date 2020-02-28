@@ -20,7 +20,9 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -28,11 +30,16 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.SettableFuture;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -95,7 +102,8 @@ public class ReadAsyncTest {
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setFailOnSessionLeak().setMinSessions(0).build())
             .build()
             .getService();
     client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -266,5 +274,63 @@ public class ReadAsyncTest {
     // returned all rows. As this is done in the background, it could take a couple of milliseconds.
     Thread.sleep(10L);
     assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+  }
+
+  @Test
+  public void readOnlyTransaction() throws Exception {
+    Statement statement1 =
+        Statement.of("SELECT * FROM TestTable WHERE Key IN ('k10', 'k11', 'k12')");
+    Statement statement2 = Statement.of("SELECT * FROM TestTable WHERE Key IN ('k1', 'k2', 'k3");
+    mockSpanner.putStatementResult(
+        StatementResult.query(statement1, generateKeyValueResultSet(10, 12)));
+    mockSpanner.putStatementResult(
+        StatementResult.query(statement2, generateKeyValueResultSet(1, 3)));
+
+    ApiFuture<ImmutableList<String>> values1;
+    ApiFuture<ImmutableList<String>> values2;
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (AsyncResultSet rs = tx.executeQueryAsync(statement1)) {
+        values1 =
+            rs.toListAsync(
+                new Function<StructReader, String>() {
+                  @Override
+                  public String apply(StructReader input) {
+                    return input.getString("Value");
+                  }
+                },
+                executor);
+      }
+      try (AsyncResultSet rs = tx.executeQueryAsync(statement2)) {
+        values2 =
+            rs.toListAsync(
+                new Function<StructReader, String>() {
+                  @Override
+                  public String apply(StructReader input) {
+                    return input.getString("Value");
+                  }
+                },
+                executor);
+      }
+    }
+    ApiFuture<Iterable<String>> allValues =
+        ApiFutures.transform(
+            ApiFutures.allAsList(Arrays.asList(values1, values2)),
+            new ApiFunction<List<ImmutableList<String>>, Iterable<String>>() {
+              @Override
+              public Iterable<String> apply(List<ImmutableList<String>> input) {
+                return Iterables.mergeSorted(
+                    input,
+                    new Comparator<String>() {
+                      @Override
+                      public int compare(String o1, String o2) {
+                        // Return in numerical order (i.e. without the preceding 'v').
+                        return Integer.valueOf(o1.substring(1))
+                            .compareTo(Integer.valueOf(o2.substring(1)));
+                      }
+                    });
+              }
+            },
+            executor);
+    assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }
 }

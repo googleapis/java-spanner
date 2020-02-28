@@ -1,0 +1,331 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.cloud.spanner.it;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import com.google.api.core.ApiFunction;
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
+import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.AsyncRunner;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ReadOnlyTransaction;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.StructReader;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+/** Integration tests for asynchronous APIs. */
+@Category(IntegrationTest.class)
+@RunWith(JUnit4.class)
+public class ITAsyncExamplesTest {
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  private static final String TABLE_NAME = "TestTable";
+  private static final String INDEX_NAME = "TestTableByValue";
+  private static final List<String> ALL_COLUMNS = Arrays.asList("Key", "StringValue");
+  private static final ImmutableList<String> ALL_VALUES_IN_PK_ORDER =
+      ImmutableList.of(
+          "v0", "v1", "v10", "v11", "v12", "v13", "v14", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
+          "v9");
+
+  private static Database db;
+  private static DatabaseClient client;
+  private static ExecutorService executor;
+
+  @BeforeClass
+  public static void setUpDatabase() {
+    db =
+        env.getTestHelper()
+            .createTestDatabase(
+                "CREATE TABLE TestTable ("
+                    + "  Key                STRING(MAX) NOT NULL,"
+                    + "  StringValue        STRING(MAX),"
+                    + ") PRIMARY KEY (Key)",
+                "CREATE INDEX TestTableByValue ON TestTable(StringValue)",
+                "CREATE INDEX TestTableByValueDesc ON TestTable(StringValue DESC)");
+    client = env.getTestHelper().getDatabaseClient(db);
+
+    // Includes k0..k14.  Note that strings k{10,14} sort between k1 and k2.
+    List<Mutation> mutations = new ArrayList<>();
+    for (int i = 0; i < 15; ++i) {
+      mutations.add(
+          Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+              .set("Key")
+              .to("k" + i)
+              .set("StringValue")
+              .to("v" + i)
+              .build());
+    }
+    client.write(mutations);
+    executor = Executors.newScheduledThreadPool(8);
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    executor.shutdown();
+  }
+
+  @Test
+  public void readAsync() throws Exception {
+    final SettableApiFuture<List<String>> future = SettableApiFuture.create();
+    try (AsyncResultSet rs = client.singleUse().readAsync(TABLE_NAME, KeySet.all(), ALL_COLUMNS)) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            final List<String> values = new LinkedList<>();
+
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      future.set(values);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      values.add(resultSet.getString("StringValue"));
+                      break;
+                  }
+                }
+              } catch (Throwable t) {
+                future.setException(t);
+                return CallbackResponse.DONE;
+              }
+            }
+          });
+    }
+    assertThat(future.get()).containsExactlyElementsIn(ALL_VALUES_IN_PK_ORDER);
+  }
+
+  @Test
+  public void readUsingIndexAsync() throws Exception {
+    final SettableApiFuture<List<String>> future = SettableApiFuture.create();
+    try (AsyncResultSet rs =
+        client.singleUse().readUsingIndexAsync(TABLE_NAME, INDEX_NAME, KeySet.all(), ALL_COLUMNS)) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            final List<String> values = new LinkedList<>();
+
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      future.set(values);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      values.add(resultSet.getString("StringValue"));
+                      break;
+                  }
+                }
+              } catch (Throwable t) {
+                future.setException(t);
+                return CallbackResponse.DONE;
+              }
+            }
+          });
+    }
+    assertThat(future.get()).containsExactlyElementsIn(ALL_VALUES_IN_PK_ORDER);
+  }
+
+  @Test
+  public void readRowAsync() throws Exception {
+    ApiFuture<Struct> row = client.singleUse().readRowAsync(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
+    assertThat(row.get().getString("StringValue")).isEqualTo("v1");
+  }
+
+  @Test
+  public void readRowUsingIndexAsync() throws Exception {
+    ApiFuture<Struct> row =
+        client
+            .singleUse()
+            .readRowUsingIndexAsync(TABLE_NAME, INDEX_NAME, Key.of("v2"), ALL_COLUMNS);
+    assertThat(row.get().getString("Key")).isEqualTo("k2");
+  }
+
+  @Test
+  public void executeQueryAsync() throws Exception {
+    final ImmutableList<String> keys = ImmutableList.of("k3", "k4");
+    final SettableApiFuture<List<String>> future = SettableApiFuture.create();
+    try (AsyncResultSet rs =
+        client
+            .singleUse()
+            .executeQueryAsync(
+                Statement.newBuilder("SELECT StringValue FROM TestTable WHERE Key IN UNNEST(@keys)")
+                    .bind("keys")
+                    .toStringArray(keys)
+                    .build())) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            final List<String> values = new LinkedList<>();
+
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      future.set(values);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      values.add(resultSet.getString("StringValue"));
+                      break;
+                  }
+                }
+              } catch (Throwable t) {
+                future.setException(t);
+                return CallbackResponse.DONE;
+              }
+            }
+          });
+    }
+    assertThat(future.get()).containsExactly("v3", "v4");
+  }
+
+  @Test
+  public void runAsync() throws Exception {
+    AsyncRunner runner = client.runAsync();
+    ApiFuture<Long> deleteCount =
+        runner.runAsync(
+            new AsyncWork<Long>() {
+              @Override
+              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                // Even though this is a shoot-and-forget asynchronous DML statement, it is
+                // guaranteed to be executed within the transaction before the commit is executed.
+                txn.executeUpdateAsync(
+                    Statement.newBuilder(
+                            "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
+                        .bind("key")
+                        .to("k999")
+                        .bind("value")
+                        .to("v999")
+                        .build());
+                // Note that even though both DML statements are executed asynchronously, they are
+                // guaranteed to be executed in the order they are submitted to the transaction, as
+                // they receive a monotonically increasing sequence number at the moment that they
+                // are submitted. If they arrive out of order on the backend, the backend may abort
+                // the transaction and the transaction will be retried.
+                return txn.executeUpdateAsync(
+                    Statement.newBuilder("DELETE FROM TestTable WHERE Key=@key")
+                        .bind("key")
+                        .to("k999")
+                        .build());
+              }
+            },
+            executor);
+    assertThat(deleteCount.get()).isEqualTo(1L);
+  }
+
+  @Test
+  public void readOnlyTransaction() throws Exception {
+    ImmutableList<String> keys1 = ImmutableList.of("k10", "k11", "k12");
+    ImmutableList<String> keys2 = ImmutableList.of("k1", "k2", "k3");
+    ApiFuture<ImmutableList<String>> values1;
+    ApiFuture<ImmutableList<String>> values2;
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (AsyncResultSet rs =
+          tx.executeQueryAsync(
+              Statement.newBuilder("SELECT * FROM TestTable WHERE Key IN UNNEST(@keys)")
+                  .bind("keys")
+                  .toStringArray(keys1)
+                  .build())) {
+        values1 =
+            rs.toListAsync(
+                new Function<StructReader, String>() {
+                  @Override
+                  public String apply(StructReader input) {
+                    return input.getString("StringValue");
+                  }
+                },
+                executor);
+      }
+      try (AsyncResultSet rs =
+          tx.executeQueryAsync(
+              Statement.newBuilder("SELECT * FROM TestTable WHERE Key IN UNNEST(@keys)")
+                  .bind("keys")
+                  .toStringArray(keys2)
+                  .build())) {
+        values2 =
+            rs.toListAsync(
+                new Function<StructReader, String>() {
+                  @Override
+                  public String apply(StructReader input) {
+                    return input.getString("StringValue");
+                  }
+                },
+                executor);
+      }
+    }
+    ApiFuture<Iterable<String>> allValues =
+        ApiFutures.transform(
+            ApiFutures.allAsList(Arrays.asList(values1, values2)),
+            new ApiFunction<List<ImmutableList<String>>, Iterable<String>>() {
+              @Override
+              public Iterable<String> apply(List<ImmutableList<String>> input) {
+                return Iterables.mergeSorted(
+                    input,
+                    new Comparator<String>() {
+                      @Override
+                      public int compare(String o1, String o2) {
+                        // Compare based on numerical order (i.e. without the preceding 'v').
+                        return Integer.valueOf(o1.substring(1))
+                            .compareTo(Integer.valueOf(o2.substring(1)));
+                      }
+                    });
+              }
+            },
+            executor);
+    assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
+  }
+}

@@ -219,8 +219,8 @@ final class SessionPool {
     }
 
     T getReadContextDelegate() {
-      if (readContextDelegate == null) {
-        synchronized (lock) {
+      synchronized (lock) {
+        if (readContextDelegate == null) {
           while (true) {
             try {
               this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
