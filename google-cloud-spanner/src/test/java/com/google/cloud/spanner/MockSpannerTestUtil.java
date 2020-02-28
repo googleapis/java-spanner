@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.Type.StructField;
+import com.google.common.collect.ContiguousSet;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -108,11 +109,11 @@ public class MockSpannerTestUtil {
           .setMetadata(READ_KEY_VALUE_METADATA)
           .build();
   static final com.google.spanner.v1.ResultSet READ_MULTIPLE_KEY_VALUE_RESULTSET =
-      generateKeyValueResultSet(1, 3);
+      generateKeyValueResultSet(ContiguousSet.closed(1, 3));
 
-  static com.google.spanner.v1.ResultSet generateKeyValueResultSet(int beginRow, int endRow) {
+  static com.google.spanner.v1.ResultSet generateKeyValueResultSet(Iterable<Integer> rows) {
     com.google.spanner.v1.ResultSet.Builder builder = com.google.spanner.v1.ResultSet.newBuilder();
-    for (int row = beginRow; row <= endRow; row++) {
+    for (Integer row : rows) {
       builder.addRows(
           ListValue.newBuilder()
               .addValues(com.google.protobuf.Value.newBuilder().setStringValue("k" + row).build())

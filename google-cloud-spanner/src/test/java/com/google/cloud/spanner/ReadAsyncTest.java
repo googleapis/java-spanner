@@ -31,7 +31,9 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Function;
+import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.SettableFuture;
 import io.grpc.Server;
@@ -40,6 +42,7 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -282,9 +285,9 @@ public class ReadAsyncTest {
         Statement.of("SELECT * FROM TestTable WHERE Key IN ('k10', 'k11', 'k12')");
     Statement statement2 = Statement.of("SELECT * FROM TestTable WHERE Key IN ('k1', 'k2', 'k3");
     mockSpanner.putStatementResult(
-        StatementResult.query(statement1, generateKeyValueResultSet(10, 12)));
+        StatementResult.query(statement1, generateKeyValueResultSet(ContiguousSet.closed(10, 12))));
     mockSpanner.putStatementResult(
-        StatementResult.query(statement2, generateKeyValueResultSet(1, 3)));
+        StatementResult.query(statement2, generateKeyValueResultSet(ContiguousSet.closed(1, 3))));
 
     ApiFuture<ImmutableList<String>> values1;
     ApiFuture<ImmutableList<String>> values2;
@@ -332,5 +335,141 @@ public class ReadAsyncTest {
             },
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
+  }
+
+  @Test
+  public void pauseResume() throws Exception {
+    Statement unevenStatement =
+        Statement.of("SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 1");
+    Statement evenStatement =
+        Statement.of("SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 0");
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            unevenStatement, generateKeyValueResultSet(ImmutableSet.of(1, 3, 5, 7, 9))));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            evenStatement, generateKeyValueResultSet(ImmutableSet.of(2, 4, 6, 8, 10))));
+
+    final SettableApiFuture<Boolean> evenFinished = SettableApiFuture.create();
+    final SettableApiFuture<Boolean> unevenFinished = SettableApiFuture.create();
+    final List<String> allValues = new LinkedList<>();
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (AsyncResultSet evenRs = tx.executeQueryAsync(evenStatement);
+          AsyncResultSet unevenRs = tx.executeQueryAsync(unevenStatement)) {
+        evenRs.setCallback(
+            executor,
+            new ReadyCallback() {
+              private boolean firstRow = true;
+
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                if (firstRow) {
+                  // Make sure the uneven result set returns the first result.
+                  firstRow = false;
+                  return CallbackResponse.PAUSE;
+                }
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        evenFinished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        allValues.add(resultSet.getString("Value"));
+                        return CallbackResponse.PAUSE;
+                    }
+                  }
+                } catch (Throwable t) {
+                  evenFinished.setException(t);
+                  return CallbackResponse.DONE;
+                } finally {
+                  unevenRs.resume();
+                }
+              }
+            });
+
+        unevenRs.setCallback(
+            executor,
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        unevenFinished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        allValues.add(resultSet.getString("Value"));
+                        return CallbackResponse.PAUSE;
+                    }
+                  }
+                } catch (Throwable t) {
+                  unevenFinished.setException(t);
+                  return CallbackResponse.DONE;
+                } finally {
+                  evenRs.resume();
+                }
+              }
+            });
+      }
+    }
+    assertThat(ApiFutures.allAsList(Arrays.asList(evenFinished, unevenFinished)).get())
+        .containsExactly(Boolean.TRUE, Boolean.TRUE);
+    assertThat(allValues)
+        .containsExactly("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10");
+  }
+
+  @Test
+  public void cancel() throws Exception {
+    final List<String> values = new LinkedList<>();
+    final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
+    final CountDownLatch receivedFirstRow = new CountDownLatch(1);
+    final CountDownLatch cancelled = new CountDownLatch(1);
+    try (AsyncResultSet rs =
+        client.singleUse().readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      finished.set(true);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      values.add(resultSet.getString("Value"));
+                      receivedFirstRow.countDown();
+                      cancelled.await();
+                      break;
+                  }
+                }
+              } catch (Throwable t) {
+                finished.setException(t);
+                return CallbackResponse.DONE;
+              }
+            }
+          });
+      receivedFirstRow.await();
+      rs.cancel();
+    }
+    cancelled.countDown();
+    try {
+      finished.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+      assertThat(values).containsExactly("v1");
+    }
   }
 }
