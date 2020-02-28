@@ -1634,6 +1634,24 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return new ArrayList<>(this.requests);
   }
 
+  public Iterable<Class<? extends AbstractMessage>> getRequestTypes() {
+    List<Class<? extends AbstractMessage>> res = new LinkedList<>();
+    for (AbstractMessage m : this.requests) {
+      res.add(m.getClass());
+    }
+    return res;
+  }
+
+  public int countRequestsOfType(Class<? extends AbstractMessage> type) {
+    int c = 0;
+    for (AbstractMessage m : this.requests) {
+      if (m.getClass().equals(type)) {
+        c++;
+      }
+    }
+    return c;
+  }
+
   @Override
   public void addResponse(AbstractMessage response) {
     throw new UnsupportedOperationException();

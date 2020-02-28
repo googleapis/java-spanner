@@ -104,6 +104,17 @@ abstract class AbstractReadContext
   }
 
   /**
+   * {@link AsyncResultSet} that supports adding listeners that are called when all rows from the
+   * underlying result stream have been fetched.
+   */
+  interface ListenableAsyncResultSet extends AsyncResultSet {
+    /** Adds a listener to this {@link AsyncResultSet}. */
+    void addListener(Runnable listener);
+
+    void removeListener(Runnable listener);
+  }
+
+  /**
    * A {@code ReadContext} for standalone reads. This can only be used for a single operation, since
    * each standalone read may see a different timestamp of Cloud Spanner data.
    */
@@ -398,10 +409,15 @@ abstract class AbstractReadContext
   }
 
   @Override
-  public final AsyncResultSet readAsync(
+  public ListenableAsyncResultSet readAsync(
       String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+    Options readOptions = Options.fromReadOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
     return new AsyncResultSetImpl(
-        executorProvider, readInternal(table, null, keys, columns, options));
+        executorProvider, readInternal(table, null, keys, columns, options), bufferRows);
   }
 
   @Override
@@ -411,10 +427,17 @@ abstract class AbstractReadContext
   }
 
   @Override
-  public final AsyncResultSet readUsingIndexAsync(
+  public ListenableAsyncResultSet readUsingIndexAsync(
       String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+    Options readOptions = Options.fromReadOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
     return new AsyncResultSetImpl(
-        executorProvider, readInternal(table, checkNotNull(index), keys, columns, options));
+        executorProvider,
+        readInternal(table, checkNotNull(index), keys, columns, options),
+        bufferRows);
   }
 
   @Nullable
@@ -457,11 +480,17 @@ abstract class AbstractReadContext
   }
 
   @Override
-  public final AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+  public ListenableAsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
     return new AsyncResultSetImpl(
         executorProvider,
         executeQueryInternal(
-            statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL, options));
+            statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL, options),
+        bufferRows);
   }
 
   @Override

@@ -23,6 +23,8 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.AsyncRunner;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -34,8 +36,10 @@ import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
@@ -269,6 +273,33 @@ public class ITAsyncAPITest {
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       assertThat(se.getMessage()).contains("BadColumnName");
+    }
+  }
+
+  @Test
+  public void asyncRunnerFireAndForgetInvalidUpdate() throws Exception {
+    try {
+      assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<Long> res =
+          runner.runAsync(
+              new AsyncWork<Long>() {
+                @Override
+                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                  // The error returned by this update statement will not bubble up and fail the
+                  // transaction.
+                  txn.executeUpdateAsync(Statement.of("UPDATE BadTableName SET FOO=1 WHERE ID=2"));
+                  return txn.executeUpdateAsync(
+                      Statement.of(
+                          "INSERT INTO TestTable (Key, StringValue) VALUES ('k999', 'v999')"));
+                }
+              },
+              executor);
+      assertThat(res.get()).isEqualTo(1L);
+      assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNotNull();
+    } finally {
+      client.writeAtLeastOnce(Arrays.asList(Mutation.delete("TestTable", Key.of("k999"))));
+      assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
     }
   }
 }

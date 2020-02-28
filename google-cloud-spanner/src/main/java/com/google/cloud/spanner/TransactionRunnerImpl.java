@@ -26,6 +26,8 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
@@ -49,7 +51,9 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,6 +87,54 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return new Builder();
     }
 
+    /**
+     * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
+     * running for this {@link TransactionContext} and that should finish before the {@link
+     * TransactionContext} can commit and release its session back into the pool.
+     */
+    private class TransactionContextAsyncResultSetImpl extends ForwardingAsyncResultSet
+        implements ListenableAsyncResultSet {
+      private TransactionContextAsyncResultSetImpl(ListenableAsyncResultSet delegate) {
+        super(delegate);
+      }
+
+      @Override
+      public void setCallback(Executor exec, ReadyCallback cb) {
+        Runnable listener =
+            new Runnable() {
+              @Override
+              public void run() {
+                finishedAsyncOperations.countDown();
+              }
+            };
+        try {
+          increaseAsynOperations();
+          addListener(listener);
+          super.setCallback(exec, cb);
+        } catch (Throwable t) {
+          removeListener(listener);
+          finishedAsyncOperations.countDown();
+          throw t;
+        }
+      }
+
+      @Override
+      public void addListener(Runnable listener) {
+        ((ListenableAsyncResultSet) this.delegate).addListener(listener);
+      }
+
+      @Override
+      public void removeListener(Runnable listener) {
+        ((ListenableAsyncResultSet) this.delegate).removeListener(listener);
+      }
+    }
+
+    @GuardedBy("lock")
+    private volatile boolean committing;
+
+    @GuardedBy("lock")
+    private volatile CountDownLatch finishedAsyncOperations = new CountDownLatch(0);
+
     @GuardedBy("lock")
     private List<Mutation> mutations = new ArrayList<>();
 
@@ -99,6 +151,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
+    }
+
+    private void increaseAsynOperations() {
+      synchronized (lock) {
+        finishedAsyncOperations = new CountDownLatch((int) finishedAsyncOperations.getCount() + 1);
+      }
     }
 
     void ensureTxn() {
@@ -131,6 +189,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     void commit() {
+      CountDownLatch latch;
+      synchronized (lock) {
+        latch = finishedAsyncOperations;
+      }
+      try {
+        latch.await();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
       span.addAnnotation("Starting Commit");
       CommitRequest.Builder builder =
           CommitRequest.newBuilder().setSession(session.getName()).setTransactionId(transactionId);
@@ -264,8 +331,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
-      ApiFuture<com.google.spanner.v1.ResultSet> resultSet =
-          rpc.executeQueryAsync(builder.build(), session.getOptions());
+      ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
+      try {
+        // Register the update as an async operation that must finish before the transaction may
+        // commit.
+        increaseAsynOperations();
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions());
+      } catch (Throwable t) {
+        finishedAsyncOperations.countDown();
+        throw t;
+      }
       final ApiFuture<Long> updateCount =
           ApiFutures.transform(
               resultSet,
@@ -295,6 +370,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
               } catch (InterruptedException e) {
                 onError(SpannerExceptionFactory.propagateInterrupt(e));
+              } finally {
+                finishedAsyncOperations.countDown();
               }
             }
           },
@@ -330,6 +407,28 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         onError(e);
         throw e;
       }
+    }
+
+    private ListenableAsyncResultSet wrap(ListenableAsyncResultSet delegate) {
+      return new TransactionContextAsyncResultSetImpl(delegate);
+    }
+
+    @Override
+    public ListenableAsyncResultSet readAsync(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return wrap(super.readAsync(table, keys, columns, options));
+    }
+
+    @Override
+    public ListenableAsyncResultSet readUsingIndexAsync(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return wrap(super.readUsingIndexAsync(table, index, keys, columns, options));
+    }
+
+    @Override
+    public ListenableAsyncResultSet executeQueryAsync(
+        final Statement statement, final QueryOption... options) {
+      return wrap(super.executeQueryAsync(statement, options));
     }
   }
 

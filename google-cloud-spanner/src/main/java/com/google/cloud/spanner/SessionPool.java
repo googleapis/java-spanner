@@ -81,20 +81,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,6 +148,11 @@ final class SessionPool {
    * finished, if it is a single use context.
    */
   private static class AutoClosingReadContext<T extends ReadContext> implements ReadContext {
+    /**
+     * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
+     * running for this {@link ReadContext} and that should finish before the {@link ReadContext}
+     * releases its session back into the pool.
+     */
     private class AutoClosingReadContextAsyncResultSetImpl extends AsyncResultSetImpl {
       private AutoClosingReadContextAsyncResultSetImpl(
           ExecutorProvider executorProvider, ResultSet delegate, int bufferRows) {
@@ -159,19 +161,28 @@ final class SessionPool {
 
       @Override
       public void setCallback(Executor exec, ReadyCallback cb) {
-        asyncOperationsCount.incrementAndGet();
-        super.setCallback(exec, cb);
-      }
-
-      @Override
-      void onFinished() {
-        synchronized (lock) {
-          if (asyncOperationsCount.decrementAndGet() == 0) {
-            if (closed) {
-              // All async operations for this read context have finished.
-              AutoClosingReadContext.this.close();
-            }
-          }
+        Runnable listener =
+            new Runnable() {
+              @Override
+              public void run() {
+                synchronized (lock) {
+                  if (asyncOperationsCount.decrementAndGet() == 0) {
+                    if (closed) {
+                      // All async operations for this read context have finished.
+                      AutoClosingReadContext.this.close();
+                    }
+                  }
+                }
+              }
+            };
+        try {
+          asyncOperationsCount.incrementAndGet();
+          addListener(listener);
+          super.setCallback(exec, cb);
+        } catch (Throwable t) {
+          removeListener(listener);
+          asyncOperationsCount.decrementAndGet();
+          throw t;
         }
       }
     }
@@ -321,7 +332,10 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       Options readOptions = Options.fromReadOptions(options);
-      final int bufferRows = readOptions.hasBufferRows() ? readOptions.bufferRows() : 10;
+      final int bufferRows =
+          readOptions.hasBufferRows()
+              ? readOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
       return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
@@ -358,7 +372,10 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       Options readOptions = Options.fromReadOptions(options);
-      final int bufferRows = readOptions.hasBufferRows() ? readOptions.bufferRows() : 10;
+      final int bufferRows =
+          readOptions.hasBufferRows()
+              ? readOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
       return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
@@ -454,7 +471,10 @@ final class SessionPool {
     public AsyncResultSet executeQueryAsync(
         final Statement statement, final QueryOption... options) {
       Options queryOptions = Options.fromQueryOptions(options);
-      final int bufferRows = queryOptions.hasBufferRows() ? queryOptions.bufferRows() : 10;
+      final int bufferRows =
+          queryOptions.hasBufferRows()
+              ? queryOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
       return new AutoClosingReadContextAsyncResultSetImpl(
           sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
           wrap(
@@ -1546,6 +1566,9 @@ final class SessionPool {
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService prepareExecutor;
+
+  // TODO(loite): Refactor Waiter to use a SettableFuture that can be set when a session is released
+  // into the pool, instead of using a thread waiting on a synchronous queue.
   private final ScheduledExecutorService readWaiterExecutor =
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder()
@@ -1558,6 +1581,7 @@ final class SessionPool {
               .setDaemon(true)
               .setNameFormat("session-pool-write-waiter-%d")
               .build());
+
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
   private final Object lock = new Object();

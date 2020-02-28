@@ -35,6 +35,10 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -66,8 +70,6 @@ public class AsyncRunnerTest {
 
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
-  private DatabaseClient client;
-  private DatabaseClient clientWithEmptySessionPool;
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -113,7 +115,6 @@ public class AsyncRunnerTest {
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
             .build()
             .getService();
-    client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     spannerWithEmptySessionPool =
         spanner
             .getOptions()
@@ -122,9 +123,15 @@ public class AsyncRunnerTest {
                 SessionPoolOptions.newBuilder().setFailOnSessionLeak().setMinSessions(0).build())
             .build()
             .getService();
-    clientWithEmptySessionPool =
-        spannerWithEmptySessionPool.getDatabaseClient(
-            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+  }
+
+  private DatabaseClient client() {
+    return spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+  }
+
+  private DatabaseClient clientWithEmptySessionPool() {
+    return spannerWithEmptySessionPool.getDatabaseClient(
+        DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
   }
 
   @After
@@ -132,11 +139,12 @@ public class AsyncRunnerTest {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.removeAllExecutionTimes();
+    mockSpanner.reset();
   }
 
   @Test
   public void asyncRunnerUpdate() throws Exception {
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Long> updateCount =
         runner.runAsync(
             new AsyncWork<Long>() {
@@ -152,12 +160,13 @@ public class AsyncRunnerTest {
   @Test
   public void asyncRunnerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool.runAsync();
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
     ApiFuture<Void> res =
         runner.runAsync(
             new AsyncWork<Void>() {
               @Override
               public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.executeUpdateAsync(UPDATE_STATEMENT);
                 return ApiFutures.immediateFuture(null);
               }
             },
@@ -170,7 +179,7 @@ public class AsyncRunnerTest {
 
   @Test
   public void asyncRunnerInvalidUpdate() throws Exception {
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Long> updateCount =
         runner.runAsync(
             new AsyncWork<Long>() {
@@ -192,12 +201,28 @@ public class AsyncRunnerTest {
   }
 
   @Test
+  public void asyncRunnerFireAndForgetInvalidUpdate() throws Exception {
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<Long> res =
+        runner.runAsync(
+            new AsyncWork<Long>() {
+              @Override
+              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                return txn.executeUpdateAsync(UPDATE_STATEMENT);
+              }
+            },
+            executor);
+    assertThat(res.get()).isEqualTo(UPDATE_COUNT);
+  }
+
+  @Test
   public void asyncRunnerUpdateAborted() throws Exception {
     try {
       // Temporarily set the result of the update to 2 rows.
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
       final AtomicInteger attempt = new AtomicInteger();
-      AsyncRunner runner = client.runAsync();
+      AsyncRunner runner = client().runAsync();
       ApiFuture<Long> updateCount =
           runner.runAsync(
               new AsyncWork<Long>() {
@@ -227,7 +252,7 @@ public class AsyncRunnerTest {
       // Temporarily set the result of the update to 2 rows.
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
       final AtomicInteger attempt = new AtomicInteger();
-      AsyncRunner runner = client.runAsync();
+      AsyncRunner runner = client().runAsync();
       ApiFuture<Long> updateCount =
           runner.runAsync(
               new AsyncWork<Long>() {
@@ -255,7 +280,7 @@ public class AsyncRunnerTest {
   @Test
   public void asyncRunnerUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
     ApiFuture<Void> result =
         runner.runAsync(
             new AsyncWork<Void>() {
@@ -277,6 +302,15 @@ public class AsyncRunnerTest {
             executor);
     assertThat(result.get()).isNull();
     assertThat(attempt.get()).isEqualTo(2);
+    assertThat(mockSpanner.getRequestTypes())
+        .containsExactly(
+            BatchCreateSessionsRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteSqlRequest.class,
+            CommitRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteSqlRequest.class,
+            CommitRequest.class);
   }
 
   @Test
@@ -286,7 +320,7 @@ public class AsyncRunnerTest {
             Status.RESOURCE_EXHAUSTED
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<Long> updateCount =
         runner.runAsync(
             new AsyncWork<Long>() {
@@ -311,65 +345,76 @@ public class AsyncRunnerTest {
   }
 
   @Test
-  public void asyncRunnerWaitsUntilAsyncUpdateHasFinished() {
-    AsyncRunner runner = client.runAsync();
-    runner.runAsync(
-        new AsyncWork<Void>() {
-          @Override
-          public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-            txn.executeUpdateAsync(UPDATE_STATEMENT);
-            return ApiFutures.immediateFuture(null);
-          }
-        },
-        executor);
+  public void asyncRunnerWaitsUntilAsyncUpdateHasFinished() throws Exception {
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    ApiFuture<Void> res =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.executeUpdateAsync(UPDATE_STATEMENT);
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor);
+    res.get();
+    assertThat(mockSpanner.getRequestTypes())
+        .containsExactly(
+            BatchCreateSessionsRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteSqlRequest.class,
+            CommitRequest.class);
   }
+
   @Test
   public void closeTransactionBeforeEndOfAsyncQuery() throws Exception {
     final BlockingQueue<String> results = new SynchronousQueue<>();
     final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
-    DatabaseClientImpl clientImpl = (DatabaseClientImpl) client;
+    DatabaseClientImpl clientImpl = (DatabaseClientImpl) client();
 
     // There should currently not be any sessions checked out of the pool.
     assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
 
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = clientImpl.runAsync();
     final CountDownLatch dataReceived = new CountDownLatch(1);
-    ApiFuture<Void> res = runner.runAsync(
-        new AsyncWork<Void>() {
-          @Override
-          public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-            try (AsyncResultSet rs =
-                txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
-              rs.setCallback(
-                  Executors.newSingleThreadExecutor(),
-                  new ReadyCallback() {
-                    @Override
-                    public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                      try {
-                        while (true) {
-                          switch (resultSet.tryNext()) {
-                            case DONE:
-                              finished.set(true);
-                              return CallbackResponse.DONE;
-                            case NOT_READY:
-                              return CallbackResponse.CONTINUE;
-                            case OK:
-                              dataReceived.countDown();
-                              results.put(resultSet.getString(0));
+    ApiFuture<Void> res =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                try (AsyncResultSet rs =
+                    txn.readAsync(
+                        READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
+                  rs.setCallback(
+                      Executors.newSingleThreadExecutor(),
+                      new ReadyCallback() {
+                        @Override
+                        public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                          try {
+                            while (true) {
+                              switch (resultSet.tryNext()) {
+                                case DONE:
+                                  finished.set(true);
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
+                                case OK:
+                                  dataReceived.countDown();
+                                  results.put(resultSet.getString(0));
+                              }
+                            }
+                          } catch (Throwable t) {
+                            finished.setException(t);
+                            dataReceived.countDown();
+                            return CallbackResponse.DONE;
                           }
                         }
-                      } catch (Throwable t) {
-                        finished.setException(t);
-                        dataReceived.countDown();
-                        return CallbackResponse.DONE;
-                      }
-                    }
-                  });
-            }
-            return ApiFutures.immediateFuture(null);
-          }
-        },
-        executor);
+                      });
+                }
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor);
     // Wait until at least one row has been fetched. At that moment there should be one session
     // checked out.
     dataReceived.await();
@@ -388,7 +433,7 @@ public class AsyncRunnerTest {
 
   @Test
   public void asyncRunnerReadRow() throws Exception {
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<String> val =
         runner.runAsync(
             new AsyncWork<String>() {
@@ -411,7 +456,7 @@ public class AsyncRunnerTest {
 
   @Test
   public void asyncRunnerRead() throws Exception {
-    AsyncRunner runner = client.runAsync();
+    AsyncRunner runner = client().runAsync();
     ApiFuture<ImmutableList<String>> val =
         runner.runAsync(
             new AsyncWork<ImmutableList<String>>() {

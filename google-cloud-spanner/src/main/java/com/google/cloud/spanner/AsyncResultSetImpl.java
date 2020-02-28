@@ -19,11 +19,14 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ResultSetStats;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -34,7 +37,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 
 /** Default implementation for {@link AsyncResultSet}. */
-class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSet {
+class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsyncResultSet {
+
   /** State of an {@link AsyncResultSetImpl}. */
   private enum State {
     INITIALIZED,
@@ -58,7 +62,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
     }
   }
 
-  private static final int DEFAULT_BUFFER_SIZE = 10;
+  static final int DEFAULT_BUFFER_SIZE = 10;
   private static final int MAX_WAIT_FOR_BUFFER_CONSUMPTION = 10;
 
   private final Object monitor = new Object();
@@ -89,6 +93,12 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   private Executor executor;
 
   private ReadyCallback callback;
+
+  /**
+   * Listeners that will be called when the {@link AsyncResultSetImpl} has finished fetching all
+   * rows and any underlying transaction or session can be closed.
+   */
+  private Collection<Runnable> listeners = new LinkedList<>();
 
   private State state = State.INITIALIZED;
 
@@ -122,10 +132,6 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
    */
   private volatile CountDownLatch consumingLatch = new CountDownLatch(0);
 
-  AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate) {
-    this(executorProvider, delegate, DEFAULT_BUFFER_SIZE);
-  }
-
   AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate, int bufferSize) {
     super(delegate);
     this.buffer = new LinkedBlockingDeque<>(bufferSize);
@@ -155,11 +161,21 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
   }
 
   /**
-   * Called when no more rows will be read from the underlying {@link ResultSet}, either because all
-   * rows have been read, or because {@link ReadyCallback#cursorReady(AsyncResultSet)} returned
-   * {@link CallbackResponse#DONE}.
+   * Adds a listener that will be called when no more rows will be read from the underlying {@link
+   * ResultSet}, either because all rows have been read, or because {@link
+   * ReadyCallback#cursorReady(AsyncResultSet)} returned {@link CallbackResponse#DONE}.
    */
-  void onFinished() {}
+  @Override
+  public void addListener(Runnable listener) {
+    Preconditions.checkState(state == State.INITIALIZED);
+    listeners.add(listener);
+  }
+
+  @Override
+  public void removeListener(Runnable listener) {
+    Preconditions.checkState(state == State.INITIALIZED);
+    listeners.remove(listener);
+  }
 
   /**
    * Tries to advance this {@link AsyncResultSet} to the next row. This method may only be called
@@ -339,7 +355,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements AsyncResultSe
           delegateResultSet.close();
         } catch (Throwable t) {
         } finally {
-          onFinished();
+          for (Runnable listener : listeners) {
+            listener.run();
+          }
         }
 
         // Ensure that the callback has been called at least once, even if the result set was
