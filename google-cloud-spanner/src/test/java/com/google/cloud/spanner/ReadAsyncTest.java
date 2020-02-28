@@ -42,9 +42,11 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -88,7 +90,7 @@ public class ReadAsyncTest {
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
-    executor = Executors.newSingleThreadExecutor();
+    executor = Executors.newScheduledThreadPool(8);
   }
 
   @AfterClass
@@ -350,46 +352,14 @@ public class ReadAsyncTest {
         StatementResult.query(
             evenStatement, generateKeyValueResultSet(ImmutableSet.of(2, 4, 6, 8, 10))));
 
+    final Object lock = new Object();
     final SettableApiFuture<Boolean> evenFinished = SettableApiFuture.create();
     final SettableApiFuture<Boolean> unevenFinished = SettableApiFuture.create();
-    final List<String> allValues = new LinkedList<>();
+    final CountDownLatch unevenReturnedFirstRow = new CountDownLatch(1);
+    final Deque<String> allValues = new ConcurrentLinkedDeque<>();
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet evenRs = tx.executeQueryAsync(evenStatement);
           AsyncResultSet unevenRs = tx.executeQueryAsync(unevenStatement)) {
-        evenRs.setCallback(
-            executor,
-            new ReadyCallback() {
-              private boolean firstRow = true;
-
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                if (firstRow) {
-                  // Make sure the uneven result set returns the first result.
-                  firstRow = false;
-                  return CallbackResponse.PAUSE;
-                }
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        evenFinished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        allValues.add(resultSet.getString("Value"));
-                        return CallbackResponse.PAUSE;
-                    }
-                  }
-                } catch (Throwable t) {
-                  evenFinished.setException(t);
-                  return CallbackResponse.DONE;
-                } finally {
-                  unevenRs.resume();
-                }
-              }
-            });
-
         unevenRs.setCallback(
             executor,
             new ReadyCallback() {
@@ -404,18 +374,63 @@ public class ReadAsyncTest {
                       case NOT_READY:
                         return CallbackResponse.CONTINUE;
                       case OK:
-                        allValues.add(resultSet.getString("Value"));
+                        synchronized (lock) {
+                          allValues.add(resultSet.getString("Value"));
+                        }
+                        unevenReturnedFirstRow.countDown();
                         return CallbackResponse.PAUSE;
                     }
                   }
                 } catch (Throwable t) {
                   unevenFinished.setException(t);
                   return CallbackResponse.DONE;
-                } finally {
-                  evenRs.resume();
                 }
               }
             });
+        evenRs.setCallback(
+            executor,
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                try {
+                  // Make sure the uneven result set has returned the first before we start the even
+                  // results.
+                  unevenReturnedFirstRow.await();
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        evenFinished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        synchronized (lock) {
+                          allValues.add(resultSet.getString("Value"));
+                        }
+                        return CallbackResponse.PAUSE;
+                    }
+                  }
+                } catch (Throwable t) {
+                  evenFinished.setException(t);
+                  return CallbackResponse.DONE;
+                }
+              }
+            });
+        while (!(evenFinished.isDone() && unevenFinished.isDone())) {
+          synchronized (lock) {
+            if (allValues.peekLast() != null) {
+              if (Integer.valueOf(allValues.peekLast().substring(1)) % 2 == 1) {
+                evenRs.resume();
+              } else {
+                unevenRs.resume();
+              }
+            }
+            if (allValues.size() == 10) {
+              unevenRs.resume();
+              evenRs.resume();
+            }
+          }
+        }
       }
     }
     assertThat(ApiFutures.allAsList(Arrays.asList(evenFinished, unevenFinished)).get())

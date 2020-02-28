@@ -258,13 +258,14 @@ public class AsyncRunnerTest {
               new AsyncWork<Long>() {
                 @Override
                 public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                  ApiFuture<Long> updateCount = txn.executeUpdateAsync(UPDATE_STATEMENT);
-                  if (attempt.incrementAndGet() == 1) {
-                    mockSpanner.abortTransaction(txn);
-                  } else {
+                  if (attempt.get() > 0) {
                     // Set the result of the update statement back to 1 row.
                     mockSpanner.putStatementResult(
                         StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                  }
+                  ApiFuture<Long> updateCount = txn.executeUpdateAsync(UPDATE_STATEMENT);
+                  if (attempt.incrementAndGet() == 1) {
+                    mockSpanner.abortTransaction(txn);
                   }
                   return updateCount;
                 }

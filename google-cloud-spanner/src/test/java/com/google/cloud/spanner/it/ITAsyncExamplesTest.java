@@ -48,6 +48,7 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -343,9 +344,11 @@ public class ITAsyncExamplesTest {
         Statement.of(
             "SELECT * FROM TestTable WHERE MOD(CAST(SUBSTR(Key, 2) AS INT64), 2) = 0 ORDER BY CAST(SUBSTR(Key, 2) AS INT64)");
 
+    final Object lock = new Object();
     final SettableApiFuture<Boolean> evenFinished = SettableApiFuture.create();
     final SettableApiFuture<Boolean> unevenFinished = SettableApiFuture.create();
-    final List<String> allValues = new LinkedList<>();
+    final CountDownLatch evenReturnedFirstRow = new CountDownLatch(1);
+    final Deque<String> allValues = new LinkedList<>();
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet evenRs = tx.executeQueryAsync(evenStatement);
           AsyncResultSet unevenRs = tx.executeQueryAsync(unevenStatement)) {
@@ -363,15 +366,16 @@ public class ITAsyncExamplesTest {
                       case NOT_READY:
                         return CallbackResponse.CONTINUE;
                       case OK:
-                        allValues.add(resultSet.getString("StringValue"));
+                        synchronized (lock) {
+                          allValues.add(resultSet.getString("StringValue"));
+                        }
+                        evenReturnedFirstRow.countDown();
                         return CallbackResponse.PAUSE;
                     }
                   }
                 } catch (Throwable t) {
                   evenFinished.setException(t);
                   return CallbackResponse.DONE;
-                } finally {
-                  unevenRs.resume();
                 }
               }
             });
@@ -379,16 +383,12 @@ public class ITAsyncExamplesTest {
         unevenRs.setCallback(
             executor,
             new ReadyCallback() {
-              private boolean firstRow = true;
-
               @Override
               public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                if (firstRow) {
-                  // Make sure the even result set returns the first result.
-                  firstRow = false;
-                  return CallbackResponse.PAUSE;
-                }
                 try {
+                  // Make sure the even result set has returned the first before we start the uneven
+                  // results.
+                  evenReturnedFirstRow.await();
                   while (true) {
                     switch (resultSet.tryNext()) {
                       case DONE:
@@ -397,18 +397,33 @@ public class ITAsyncExamplesTest {
                       case NOT_READY:
                         return CallbackResponse.CONTINUE;
                       case OK:
-                        allValues.add(resultSet.getString("StringValue"));
+                        synchronized (lock) {
+                          allValues.add(resultSet.getString("StringValue"));
+                        }
                         return CallbackResponse.PAUSE;
                     }
                   }
                 } catch (Throwable t) {
                   unevenFinished.setException(t);
                   return CallbackResponse.DONE;
-                } finally {
-                  evenRs.resume();
                 }
               }
             });
+        while (!(evenFinished.isDone() && unevenFinished.isDone())) {
+          synchronized (lock) {
+            if (allValues.peekLast() != null) {
+              if (Integer.valueOf(allValues.peekLast().substring(1)) % 2 == 1) {
+                evenRs.resume();
+              } else {
+                unevenRs.resume();
+              }
+            }
+            if (allValues.size() == 15) {
+              unevenRs.resume();
+              evenRs.resume();
+            }
+          }
+        }
       }
     }
     assertThat(ApiFutures.allAsList(Arrays.asList(evenFinished, unevenFinished)).get())
