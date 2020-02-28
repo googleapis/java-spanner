@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -172,6 +174,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public void close() {
+    close(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+  }
+
+  void close(long timeout, TimeUnit unit) {
     List<ListenableFuture<Void>> closureFutures = null;
     synchronized (this) {
       Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
@@ -184,18 +190,19 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       dbClients.clear();
     }
     try {
-      Futures.successfulAsList(closureFutures).get();
-    } catch (InterruptedException | ExecutionException e) {
+      Futures.successfulAsList(closureFutures).get(timeout, unit);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
-    }
-    for (SessionClient sessionClient : sessionClients.values()) {
-      sessionClient.close();
-    }
-    sessionClients.clear();
-    try {
-      gapicRpc.shutdown();
-    } catch (RuntimeException e) {
-      logger.log(Level.WARNING, "Failed to close channels", e);
+    } finally {
+      for (SessionClient sessionClient : sessionClients.values()) {
+        sessionClient.close();
+      }
+      sessionClients.clear();
+      try {
+        gapicRpc.shutdown();
+      } catch (RuntimeException e) {
+        logger.log(Level.WARNING, "Failed to close channels", e);
+      }
     }
   }
 
