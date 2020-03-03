@@ -31,6 +31,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -99,6 +100,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /** Returns the default setting for prefetchChunks of this {@link SpannerImpl} instance. */
   int getDefaultPrefetchChunks() {
     return getOptions().getPrefetchChunks();
+  }
+
+  /** Returns the default query options that should be used for the specified database. */
+  QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
+    return getOptions().getDefaultQueryOptions(databaseId);
   }
 
   SessionImpl sessionWithId(String name) {

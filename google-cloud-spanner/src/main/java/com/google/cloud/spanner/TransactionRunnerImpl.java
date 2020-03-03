@@ -56,6 +56,26 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
+    static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
+      private ByteString transactionId;
+
+      private Builder() {}
+
+      Builder setTransactionId(ByteString transactionId) {
+        this.transactionId = transactionId;
+        return self();
+      }
+
+      @Override
+      TransactionContextImpl build() {
+        return new TransactionContextImpl(this);
+      }
+    }
+
+    static Builder newBuilder() {
+      return new Builder();
+    }
+
     @GuardedBy("lock")
     private List<Mutation> mutations = new ArrayList<>();
 
@@ -69,13 +89,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private ByteString transactionId;
     private Timestamp commitTimestamp;
 
-    TransactionContextImpl(
-        SessionImpl session,
-        @Nullable ByteString transactionId,
-        SpannerRpc rpc,
-        int defaultPrefetchChunks) {
-      super(session, rpc, defaultPrefetchChunks);
-      this.transactionId = transactionId;
+    private TransactionContextImpl(Builder builder) {
+      super(builder);
+      this.transactionId = builder.transactionId;
     }
 
     void ensureTxn() {
@@ -220,7 +236,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public long executeUpdate(Statement statement) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
-          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
+          getExecuteSqlRequestBuilder(
+              statement, QueryMode.NORMAL, Options.fromQueryOptions(Options.none()));
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());

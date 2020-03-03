@@ -45,7 +45,14 @@ public class BatchClientImpl implements BatchClient {
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
     SessionImpl session = sessionClient.createSession();
     return new BatchReadOnlyTransactionImpl(
-        sessionClient.getSpanner(), session, checkNotNull(bound));
+        MultiUseReadOnlyTransaction.newBuilder()
+            .setSession(session)
+            .setRpc(sessionClient.getSpanner().getRpc())
+            .setTimestampBound(bound)
+            .setDefaultQueryOptions(
+                sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
+        checkNotNull(bound));
   }
 
   @Override
@@ -53,7 +60,15 @@ public class BatchClientImpl implements BatchClient {
     SessionImpl session =
         sessionClient.sessionWithId(checkNotNull(batchTransactionId).getSessionId());
     return new BatchReadOnlyTransactionImpl(
-        sessionClient.getSpanner(), session, batchTransactionId);
+        MultiUseReadOnlyTransaction.newBuilder()
+            .setSession(session)
+            .setRpc(sessionClient.getSpanner().getRpc())
+            .setTransactionId(batchTransactionId.getTransactionId())
+            .setTimestamp(batchTransactionId.getTimestamp())
+            .setDefaultQueryOptions(
+                sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
+        batchTransactionId);
   }
 
   private static class BatchReadOnlyTransactionImpl extends MultiUseReadOnlyTransaction
@@ -61,25 +76,17 @@ public class BatchClientImpl implements BatchClient {
     private final String sessionName;
     private final Map<SpannerRpc.Option, ?> options;
 
-    BatchReadOnlyTransactionImpl(SpannerImpl spanner, SessionImpl session, TimestampBound bound) {
-      super(
-          checkNotNull(session),
-          checkNotNull(bound),
-          checkNotNull(spanner).getOptions().getSpannerRpcV1(),
-          spanner.getOptions().getPrefetchChunks());
+    BatchReadOnlyTransactionImpl(
+        MultiUseReadOnlyTransaction.Builder builder, TimestampBound bound) {
+      super(builder.setTimestampBound(bound));
       this.sessionName = session.getName();
       this.options = session.getOptions();
       initTransaction();
     }
 
     BatchReadOnlyTransactionImpl(
-        SpannerImpl spanner, SessionImpl session, BatchTransactionId batchTransactionId) {
-      super(
-          checkNotNull(session),
-          checkNotNull(batchTransactionId).getTransactionId(),
-          batchTransactionId.getTimestamp(),
-          checkNotNull(spanner).getOptions().getSpannerRpcV1(),
-          spanner.getOptions().getPrefetchChunks());
+        MultiUseReadOnlyTransaction.Builder builder, BatchTransactionId batchTransactionId) {
+      super(builder.setTransactionId(batchTransactionId.getTransactionId()));
       this.sessionName = session.getName();
       this.options = session.getOptions();
     }

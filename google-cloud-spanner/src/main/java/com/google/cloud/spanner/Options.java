@@ -16,7 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.Options.MergeableQueryOption;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -33,8 +36,25 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
 
+  /**
+   * Interface for query options that can be merged with each other to form a new combined {@link
+   * QueryOption}.
+   */
+  public interface MergeableQueryOption extends QueryOption {
+    /**
+     * Merge two {@link QueryOption}s together. The values of <code>other</code> will take
+     * precedence over the values of this {@link QueryOption}.
+     */
+    MergeableQueryOption merge(MergeableQueryOption other);
+  }
+
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
+
+  /** Helper method used by internal query methods that do not want to specify any options. */
+  static ReadAndQueryOption none() {
+    return NoOptions.INSTANCE;
+  }
 
   /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
@@ -101,6 +121,16 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  /**
+   * Specify {@link QueryOptions} that will be used by Cloud Spanner to execute this query. These
+   * {@link QueryOptions} will take precedence over any default values specified using {@link
+   * SpannerOptions.Builder#setDefaultQueryOptions(DatabaseId, QueryOptions)} or in environment
+   * variables.
+   */
+  public static MergeableQueryOption queryOptions(QueryOptions queryOptions) {
+    return new BackendQueryOption(queryOptions);
+  }
+
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
     final int prefetchChunks;
@@ -120,6 +150,7 @@ public final class Options implements Serializable {
   private Integer pageSize;
   private String pageToken;
   private String filter;
+  private QueryOptions backendQueryOptions;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -164,6 +195,14 @@ public final class Options implements Serializable {
     return filter;
   }
 
+  boolean hasBackendQueryOptions() {
+    return backendQueryOptions != null;
+  }
+
+  QueryOptions backendQueryOptions() {
+    return backendQueryOptions;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -181,6 +220,9 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       b.append("filter: ").append(filter).append(' ');
+    }
+    if (backendQueryOptions != null) {
+      b.append("backendQueryOptions: ").append(backendQueryOptions).append(' ');
     }
     return b.toString();
   }
@@ -206,7 +248,8 @@ public final class Options implements Serializable {
         && (!hasPageSize() && !that.hasPageSize()
             || hasPageSize() && that.hasPageSize() && Objects.equals(pageSize(), that.pageSize()))
         && Objects.equals(pageToken(), that.pageToken())
-        && Objects.equals(filter(), that.filter());
+        && Objects.equals(filter(), that.filter())
+        && Objects.equals(backendQueryOptions(), that.backendQueryOptions());
   }
 
   @Override
@@ -226,6 +269,9 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       result = 31 * result + filter.hashCode();
+    }
+    if (backendQueryOptions != null) {
+      result = 31 * result + backendQueryOptions.hashCode();
     }
     return result;
   }
@@ -262,6 +308,13 @@ public final class Options implements Serializable {
 
   private abstract static class InternalOption {
     abstract void appendToOptions(Options options);
+  }
+
+  private static class NoOptions extends InternalOption implements ReadAndQueryOption {
+    private static final NoOptions INSTANCE = new NoOptions();
+
+    @Override
+    void appendToOptions(Options options) {}
   }
 
   static class LimitOption extends InternalOption implements ReadOption {
@@ -313,6 +366,47 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.filter = filter;
+    }
+  }
+
+  static class BackendQueryOption extends InternalOption implements MergeableQueryOption {
+    private final QueryOptions backendQueryOptions;
+
+    BackendQueryOption(QueryOptions backendQueryOptions) {
+      this.backendQueryOptions = Preconditions.checkNotNull(backendQueryOptions);
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.backendQueryOptions = backendQueryOptions;
+    }
+
+    @Override
+    public BackendQueryOption merge(MergeableQueryOption other) {
+      if (other instanceof BackendQueryOption) {
+        BackendQueryOption mergeWith = (BackendQueryOption) other;
+        return new BackendQueryOption(
+            this.backendQueryOptions.toBuilder().mergeFrom(mergeWith.backendQueryOptions).build());
+      }
+      return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof BackendQueryOption)) {
+        return false;
+      }
+      return Objects.equals(this.backendQueryOptions, ((BackendQueryOption) o).backendQueryOptions);
+    }
+
+    @Override
+    public int hashCode() {
+      return backendQueryOptions.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return "BackendQueryOption: " + this.backendQueryOptions.toString();
     }
   }
 }

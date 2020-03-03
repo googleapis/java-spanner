@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Options.BackendQueryOption;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -203,5 +205,24 @@ public class OptionsTest {
 
     o3 = Options.fromReadOptions(Options.prefetchChunks(2));
     assertThat(o2.equals(o3)).isFalse();
+  }
+
+  @Test
+  public void mergeBackendOptionsTest() {
+    BackendQueryOption b1 =
+        new BackendQueryOption(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+    BackendQueryOption b2 = new BackendQueryOption(QueryOptions.newBuilder().build());
+    BackendQueryOption merged = b1.merge(b2);
+    assertThat(merged)
+        .isEqualTo(
+            new BackendQueryOption(QueryOptions.newBuilder().setOptimizerVersion("1").build()));
+
+    // b2 should have precedence above b1.
+    b1 = new BackendQueryOption(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+    b2 = new BackendQueryOption(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+    merged = b1.merge(b2);
+    assertThat(merged)
+        .isEqualTo(
+            new BackendQueryOption(QueryOptions.newBuilder().setOptimizerVersion("2").build()));
   }
 }
