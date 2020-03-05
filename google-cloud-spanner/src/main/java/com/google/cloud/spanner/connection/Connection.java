@@ -34,7 +34,10 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A connection to a Cloud Spanner database. Connections are not designed to be thread-safe. The
+ * Internal connection API for Google Cloud Spanner. This interface may introduce breaking changes
+ * without prior notice.
+ *
+ * <p>A connection to a Cloud Spanner database. Connections are not designed to be thread-safe. The
  * only exception is the {@link Connection#cancel()} method that may be called by any other thread
  * to stop the execution of the current statement on the connection.
  *
@@ -121,6 +124,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>Use {@link ConnectionOptions} to create a {@link Connection}.
  */
+@InternalApi
 public interface Connection extends AutoCloseable {
   /** Closes this connection. This is a no-op if the {@link Connection} has alread been closed. */
   @Override

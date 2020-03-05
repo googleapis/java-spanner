@@ -44,12 +44,12 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Pool for keeping track of {@link Spanner} instances needed by JDBC connections.
+ * Pool for keeping track of {@link Spanner} instances needed for connections.
  *
- * <p>When a JDBC connection is opened for a Google Cloud Spanner database, a {@link Spanner} object
- * can be opened in the background. The {@link SpannerPool} keeps track of which {@link Spanner}
- * objects have been opened by connections during the lifetime of the JVM, which connections are
- * still opened and closed, and which {@link Spanner} objects could be closed.
+ * <p>When a connection is opened for a Google Cloud Spanner database, a {@link Spanner} object can
+ * be opened in the background. The {@link SpannerPool} keeps track of which {@link Spanner} objects
+ * have been opened by connections during the lifetime of the JVM, which connections are still
+ * opened and closed, and which {@link Spanner} objects could be closed.
  *
  * <p>Call the method {@link SpannerPool#closeSpannerPool()} at the end of your application to
  * gracefully shutdown all instances in the pool.

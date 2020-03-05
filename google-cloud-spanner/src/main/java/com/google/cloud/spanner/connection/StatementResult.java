@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.ResultSet;
 
 /**
@@ -23,6 +24,7 @@ import com.google.cloud.spanner.ResultSet;
  * Connection#execute(com.google.cloud.spanner.Statement)} method could have different types of
  * return values. These are wrapped in a {@link StatementResult}.
  */
+@InternalApi
 public interface StatementResult {
 
   /**

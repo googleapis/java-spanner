@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -35,6 +36,7 @@ import java.util.Set;
  * ClientSideStatement}s. This means that an invalid DML statement could be accepted by the {@link
  * StatementParser} and sent to Spanner, and Spanner will then reject it with some error message.
  */
+@InternalApi
 public class StatementParser {
   /** Singleton instance of {@link StatementParser}. */
   public static final StatementParser INSTANCE = new StatementParser();

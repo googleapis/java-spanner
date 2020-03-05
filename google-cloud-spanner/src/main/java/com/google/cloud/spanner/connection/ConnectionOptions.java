@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.InternalApi;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -42,7 +43,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Options for creating a {@link Connection} to a Google Cloud Spanner database.
+ * Internal connection API for Google Cloud Spanner. This class may introduce breaking changes
+ * without prior notice.
+ *
+ * <p>Options for creating a {@link Connection} to a Google Cloud Spanner database.
  *
  * <p>Usage:
  *
@@ -64,6 +68,7 @@ import java.util.regex.Pattern;
  * <!--SNIPPET {@link ConnectionOptions} usage-->
  * </pre>
  */
+@InternalApi
 public class ConnectionOptions {
   /** Supported connection properties that can be included in the connection URI. */
   public static class ConnectionProperty {

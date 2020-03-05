@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.DateTime.SecondsAndNanos;
+import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  * to parse client side statements and values for read only staleness for read-only transactions on
  * Cloud Spanner.
  */
+@InternalApi
 public class ReadOnlyStalenessUtil {
   /**
    * Parses an RFC3339 date/time value with nanosecond precision and returns this as a {@link

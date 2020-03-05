@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
@@ -33,8 +34,10 @@ import com.google.cloud.spanner.AbortedException;
  * Connection} can be added using {@link
  * Connection#addTransactionRetryListener(TransactionRetryListener)}.
  */
+@InternalApi
 public interface TransactionRetryListener {
   /** The result of a retry. */
+  @InternalApi
   public enum RetryResult {
     /** The retry executed successfully and the transaction will continue. */
     RETRY_SUCCESSFUL,
