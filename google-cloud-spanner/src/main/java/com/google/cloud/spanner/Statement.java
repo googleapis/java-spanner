@@ -68,14 +68,22 @@ public final class Statement implements Serializable {
 
   /** Builder for {@code Statement}. */
   public static final class Builder {
-    final Map<String, Value> parameters = new HashMap<>();
+    final Map<String, Value> parameters;
     private final StringBuilder sqlBuffer;
     private String currentBinding;
     private final ValueBinder<Builder> binder = new Binder();
     private QueryOptions queryOptions;
 
     private Builder(String sql) {
+      parameters = new HashMap<>();
       sqlBuffer = new StringBuilder(sql);
+    }
+
+    private Builder(Statement statement) {
+      sqlBuffer = new StringBuilder(statement.sql);
+      parameters = new HashMap<>(statement.parameters);
+      queryOptions =
+          statement.queryOptions == null ? null : statement.queryOptions.toBuilder().build();
     }
 
     /** Appends {@code sqlFragment} to the statement. */
@@ -169,6 +177,10 @@ public final class Statement implements Serializable {
   /** Returns the parameters bound to this {@code Statement}. */
   public Map<String, Value> getParameters() {
     return parameters;
+  }
+
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 
   @Override
