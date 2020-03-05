@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.50.1](https://www.github.com/googleapis/java-spanner/compare/v1.50.0...v1.50.1) (2020-03-05)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-core-bom to v1.93.1 ([#91](https://www.github.com/googleapis/java-spanner/issues/91)) ([29d8db8](https://www.github.com/googleapis/java-spanner/commit/29d8db8cfc9d12824b9264d0fb870049a58a9a03))
+
 ## [1.50.0](https://www.github.com/googleapis/java-spanner/compare/v1.49.2...v1.50.0) (2020-02-28)
 
 
