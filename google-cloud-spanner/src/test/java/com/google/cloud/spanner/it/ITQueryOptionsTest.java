@@ -24,7 +24,6 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -61,8 +60,9 @@ public class ITQueryOptionsTest {
         client
             .singleUse()
             .executeQuery(
-                Statement.of("SELECT 1"),
-                Options.queryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build()))) {
+                Statement.newBuilder("SELECT 1")
+                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .build())) {
       while (rs.next()) {
         assertThat(rs.getLong(0)).isEqualTo(1L);
       }
@@ -72,9 +72,10 @@ public class ITQueryOptionsTest {
         client
             .singleUse()
             .executeQuery(
-                Statement.of("SELECT 1"),
-                Options.queryOptions(
-                    QueryOptions.newBuilder().setOptimizerVersion("latest").build()))) {
+                Statement.newBuilder("SELECT 1")
+                    .withQueryOptions(
+                        QueryOptions.newBuilder().setOptimizerVersion("latest").build())
+                    .build())) {
       while (rs.next()) {
         assertThat(rs.getLong(0)).isEqualTo(1L);
       }
@@ -84,9 +85,10 @@ public class ITQueryOptionsTest {
         client
             .singleUse()
             .executeQuery(
-                Statement.of("SELECT 1"),
-                Options.queryOptions(
-                    QueryOptions.newBuilder().setOptimizerVersion("100000").build()))) {
+                Statement.newBuilder("SELECT 1")
+                    .withQueryOptions(
+                        QueryOptions.newBuilder().setOptimizerVersion("100000").build())
+                    .build())) {
       while (rs.next()) {
         fail("should not get any results");
       }

@@ -27,11 +27,13 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -728,9 +730,9 @@ public class DatabaseClientImplTest {
           client
               .singleUse()
               .executeQuery(
-                  SELECT1,
-                  Options.queryOptions(
-                      QueryOptions.newBuilder().setOptimizerVersion("1").build()))) {
+                  Statement.newBuilder(SELECT1.getSql())
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .build())) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
@@ -742,6 +744,47 @@ public class DatabaseClientImplTest {
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+    }
+  }
+
+  @Test
+  public void testBackendQueryOptionsWithAnalyzeQuery() {
+    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setWriteSessionsFraction(0.0f)
+                    .build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+        try (ResultSet rs =
+            tx.analyzeQuery(
+                Statement.newBuilder(SELECT1.getSql())
+                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .build(),
+                QueryAnalyzeMode.PROFILE)) {
+          // Just iterate over the results to execute the query.
+          while (rs.next()) {}
+        }
+      }
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assertThat(requests).isNotEmpty();
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
+      assertThat(request.getQueryOptions()).isNotNull();
+      assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryMode()).isEqualTo(QueryMode.PROFILE);
     }
   }
 
@@ -768,8 +811,9 @@ public class DatabaseClientImplTest {
       List<Partition> partitions =
           transaction.partitionQuery(
               PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
-              SELECT1,
-              Options.queryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build()));
+              Statement.newBuilder(SELECT1.getSql())
+                  .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                  .build());
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}

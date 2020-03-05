@@ -450,31 +450,23 @@ abstract class AbstractReadContext
    *   <li>The default {@link SpannerOptions#getDefaultQueryOptions()} specified for the database
    *       where the query is executed.
    * </ol>
-   *
-   * It is possible that the source of each query option in the total set of query options used for
-   * the query is different, for example that the value for {@link
-   * QueryOptions#getOptimizerVersion()} was specified in the list of query options for this query,
-   * while the value for {@link QueryOptions#getOptimizerStatisticsPackage()} was read from an
-   * environment variable because no value for that option was specified for the query.
    */
   @VisibleForTesting
-  QueryOptions buildQueryOptions(Options requestOptions) {
+  QueryOptions buildQueryOptions(QueryOptions requestOptions) {
     // Shortcut for the most common return value.
-    if (defaultQueryOptions.equals(QueryOptions.getDefaultInstance())
-        && !requestOptions.hasBackendQueryOptions()) {
+    if (defaultQueryOptions.equals(QueryOptions.getDefaultInstance()) && requestOptions == null) {
       return QueryOptions.getDefaultInstance();
     }
     // Create a builder based on the default query options.
     QueryOptions.Builder builder = defaultQueryOptions.toBuilder();
     // Then overwrite with specific options for this query.
-    if (requestOptions.hasBackendQueryOptions()) {
-      builder.mergeFrom(requestOptions.backendQueryOptions());
+    if (requestOptions != null) {
+      builder.mergeFrom(requestOptions);
     }
     return builder.build();
   }
 
-  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
-      Statement statement, QueryMode queryMode, Options options) {
+  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(Statement statement, QueryMode queryMode) {
     ExecuteSqlRequest.Builder builder =
         ExecuteSqlRequest.newBuilder()
             .setSql(statement.getSql())
@@ -493,7 +485,7 @@ abstract class AbstractReadContext
       builder.setTransaction(selector);
     }
     builder.setSeqno(getSeqNo());
-    builder.setQueryOptions(buildQueryOptions(options));
+    builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     return builder;
   }
 
@@ -532,8 +524,7 @@ abstract class AbstractReadContext
       Options options,
       ByteString partitionToken) {
     beforeReadOrQuery();
-    final ExecuteSqlRequest.Builder request =
-        getExecuteSqlRequestBuilder(statement, queryMode, options);
+    final ExecuteSqlRequest.Builder request = getExecuteSqlRequestBuilder(statement, queryMode);
     if (partitionToken != null) {
       request.setPartitionToken(partitionToken);
     }

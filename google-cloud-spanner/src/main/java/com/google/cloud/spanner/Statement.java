@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,10 +58,12 @@ public final class Statement implements Serializable {
 
   private final ImmutableMap<String, Value> parameters;
   private final String sql;
+  private final QueryOptions queryOptions;
 
-  private Statement(String sql, ImmutableMap<String, Value> parameters) {
+  private Statement(String sql, ImmutableMap<String, Value> parameters, QueryOptions queryOptions) {
     this.sql = sql;
     this.parameters = parameters;
+    this.queryOptions = queryOptions;
   }
 
   /** Builder for {@code Statement}. */
@@ -69,6 +72,7 @@ public final class Statement implements Serializable {
     private final StringBuilder sqlBuffer;
     private String currentBinding;
     private final ValueBinder<Builder> binder = new Binder();
+    private QueryOptions queryOptions;
 
     private Builder(String sql) {
       sqlBuffer = new StringBuilder(sql);
@@ -77,6 +81,12 @@ public final class Statement implements Serializable {
     /** Appends {@code sqlFragment} to the statement. */
     public Builder append(String sqlFragment) {
       sqlBuffer.append(checkNotNull(sqlFragment));
+      return this;
+    }
+
+    /** Sets the {@link QueryOptions} to use when executing this {@link Statement}. */
+    public Builder withQueryOptions(QueryOptions queryOptions) {
+      this.queryOptions = queryOptions;
       return this;
     }
 
@@ -94,7 +104,7 @@ public final class Statement implements Serializable {
     public Statement build() {
       checkState(
           currentBinding == null, "Binding for parameter '%s' is incomplete.", currentBinding);
-      return new Statement(sqlBuffer.toString(), ImmutableMap.copyOf(parameters));
+      return new Statement(sqlBuffer.toString(), ImmutableMap.copyOf(parameters), queryOptions);
     }
 
     private class Binder extends ValueBinder<Builder> {
@@ -151,6 +161,11 @@ public final class Statement implements Serializable {
     return sql;
   }
 
+  /** Returns the {@link QueryOptions} that will be used with this {@link Statement}. */
+  public QueryOptions getQueryOptions() {
+    return queryOptions;
+  }
+
   /** Returns the parameters bound to this {@code Statement}. */
   public Map<String, Value> getParameters() {
     return parameters;
@@ -171,12 +186,14 @@ public final class Statement implements Serializable {
     }
 
     Statement that = (Statement) o;
-    return Objects.equals(sql, that.sql) && Objects.equals(parameters, that.parameters);
+    return Objects.equals(sql, that.sql)
+        && Objects.equals(parameters, that.parameters)
+        && Objects.equals(queryOptions, that.queryOptions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sql, parameters);
+    return Objects.hash(sql, parameters, queryOptions);
   }
 
   StringBuilder toString(StringBuilder b) {
@@ -192,6 +209,9 @@ public final class Statement implements Serializable {
         parameter.getValue().toString(b);
       }
       b.append("}");
+    }
+    if (queryOptions != null) {
+      b.append(",queryOptions=").append(queryOptions.toString());
     }
     return b;
   }

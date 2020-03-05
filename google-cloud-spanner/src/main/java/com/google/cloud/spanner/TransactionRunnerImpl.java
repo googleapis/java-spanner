@@ -236,8 +236,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public long executeUpdate(Statement statement) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
-          getExecuteSqlRequestBuilder(
-              statement, QueryMode.NORMAL, Options.fromQueryOptions(Options.none()));
+          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
