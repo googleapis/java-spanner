@@ -437,11 +437,6 @@ public class SpannerOptionsTest {
           public String getOptimizerVersion() {
             return "";
           }
-
-          @Override
-          public String getOptimizerStatisticsPackage() {
-            return "";
-          }
         });
     SpannerOptions options =
         SpannerOptions.newBuilder()
@@ -460,11 +455,6 @@ public class SpannerOptionsTest {
           @Override
           public String getOptimizerVersion() {
             return "2";
-          }
-
-          @Override
-          public String getOptimizerStatisticsPackage() {
-            return "";
           }
         });
     // Create options with '1' as the default query optimizer version. This should be overridden by

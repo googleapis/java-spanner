@@ -117,7 +117,7 @@ public class SpannerImplTest {
         }.build();
 
     try (SpannerImpl implWithQueryOptions = new SpannerImpl(rpc, optionsWithQueryOptions);
-        SpannerImpl implWithouQueryOptions = new SpannerImpl(rpc, optionsWithoutQueryOptions)) {
+        SpannerImpl implWithoutQueryOptions = new SpannerImpl(rpc, optionsWithoutQueryOptions)) {
 
       // Default query options are on a per-database basis, so we should only get the custom options
       // for 'db' and not for 'otherDb'.
@@ -125,8 +125,8 @@ public class SpannerImplTest {
       assertThat(implWithQueryOptions.getDefaultQueryOptions(otherDb)).isEqualTo(defaultOptions);
 
       // The other Spanner instance should return default options for both databases.
-      assertThat(implWithouQueryOptions.getDefaultQueryOptions(db)).isEqualTo(defaultOptions);
-      assertThat(implWithouQueryOptions.getDefaultQueryOptions(otherDb)).isEqualTo(defaultOptions);
+      assertThat(implWithoutQueryOptions.getDefaultQueryOptions(db)).isEqualTo(defaultOptions);
+      assertThat(implWithoutQueryOptions.getDefaultQueryOptions(otherDb)).isEqualTo(defaultOptions);
     }
   }
 

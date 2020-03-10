@@ -736,8 +736,7 @@ public class DatabaseClientImplTest {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version and statistics
-      // package.
+      // Check that the last query was executed using a custom optimizer version.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
@@ -776,8 +775,7 @@ public class DatabaseClientImplTest {
           while (rs.next()) {}
         }
       }
-      // Check that the last query was executed using a custom optimizer version and statistics
-      // package.
+      // Check that the last query was executed using a custom optimizer version.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
@@ -818,8 +816,7 @@ public class DatabaseClientImplTest {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version and statistics
-      // package.
+      // Check that the last query was executed using a custom optimizer version.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);

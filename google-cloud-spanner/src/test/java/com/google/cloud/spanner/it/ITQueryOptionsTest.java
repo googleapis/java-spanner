@@ -28,6 +28,8 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -49,7 +51,9 @@ public class ITQueryOptionsTest {
   @BeforeClass
   public static void setUpDatabase() {
     // Empty database.
-    db = env.getTestHelper().createTestDatabase();
+    db =
+        env.getTestHelper()
+            .createTestDatabase("CREATE TABLE TEST (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)");
     client = env.getTestHelper().getDatabaseClient(db);
   }
 
@@ -96,6 +100,82 @@ public class ITQueryOptionsTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Query optimizer version: 100000 is not supported");
     }
+  }
+
+  @Test
+  public void executeUpdate() {
+    // Query optimizer version is ignored for DML statements by the backend, but setting it does not
+    // cause an error.
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        return transaction.executeUpdate(
+                            Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
+                                .bind("id")
+                                .to(1L)
+                                .bind("name")
+                                .to("One")
+                                .withQueryOptions(
+                                    QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                                .build());
+                      }
+                    }))
+        .isEqualTo(1L);
+
+    // Version 'latest' should also work.
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        return transaction.executeUpdate(
+                            Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
+                                .bind("id")
+                                .to(2L)
+                                .bind("name")
+                                .to("Two")
+                                .withQueryOptions(
+                                    QueryOptions.newBuilder().setOptimizerVersion("latest").build())
+                                .build());
+                      }
+                    }))
+        .isEqualTo(1L);
+
+    // Version '100000' is an invalid value, but is ignored by the backend.
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        return transaction.executeUpdate(
+                            Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
+                                .bind("id")
+                                .to(3L)
+                                .bind("name")
+                                .to("Three")
+                                .withQueryOptions(
+                                    QueryOptions.newBuilder().setOptimizerVersion("10000").build())
+                                .build());
+                      }
+                    }))
+        .isEqualTo(1L);
+
+    // Verify that query options are ignored with Partitioned DML as well, and that all the above
+    // DML INSERT statements succeeded.
+    assertThat(
+            client.executePartitionedUpdate(
+                Statement.newBuilder("UPDATE TEST SET NAME='updated' WHERE 1=1")
+                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .build()))
+        .isEqualTo(3L);
   }
 
   @Test
