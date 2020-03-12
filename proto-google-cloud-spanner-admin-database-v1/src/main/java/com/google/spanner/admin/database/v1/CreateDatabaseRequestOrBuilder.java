@@ -91,13 +91,13 @@ public interface CreateDatabaseRequestOrBuilder
    *
    *
    * <pre>
-   * An optional list of DDL statements to run inside the newly created
+   * Optional. A list of DDL statements to run inside the newly created
    * database. Statements can create tables, indexes, etc. These
    * statements execute atomically with the creation of the database:
    * if there is an error in any statement, the database is not created.
    * </pre>
    *
-   * <code>repeated string extra_statements = 3;</code>
+   * <code>repeated string extra_statements = 3 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return A list containing the extraStatements.
    */
@@ -106,13 +106,13 @@ public interface CreateDatabaseRequestOrBuilder
    *
    *
    * <pre>
-   * An optional list of DDL statements to run inside the newly created
+   * Optional. A list of DDL statements to run inside the newly created
    * database. Statements can create tables, indexes, etc. These
    * statements execute atomically with the creation of the database:
    * if there is an error in any statement, the database is not created.
    * </pre>
    *
-   * <code>repeated string extra_statements = 3;</code>
+   * <code>repeated string extra_statements = 3 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @return The count of extraStatements.
    */
@@ -121,13 +121,13 @@ public interface CreateDatabaseRequestOrBuilder
    *
    *
    * <pre>
-   * An optional list of DDL statements to run inside the newly created
+   * Optional. A list of DDL statements to run inside the newly created
    * database. Statements can create tables, indexes, etc. These
    * statements execute atomically with the creation of the database:
    * if there is an error in any statement, the database is not created.
    * </pre>
    *
-   * <code>repeated string extra_statements = 3;</code>
+   * <code>repeated string extra_statements = 3 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @param index The index of the element to return.
    * @return The extraStatements at the given index.
@@ -137,13 +137,13 @@ public interface CreateDatabaseRequestOrBuilder
    *
    *
    * <pre>
-   * An optional list of DDL statements to run inside the newly created
+   * Optional. A list of DDL statements to run inside the newly created
    * database. Statements can create tables, indexes, etc. These
    * statements execute atomically with the creation of the database:
    * if there is an error in any statement, the database is not created.
    * </pre>
    *
-   * <code>repeated string extra_statements = 3;</code>
+   * <code>repeated string extra_statements = 3 [(.google.api.field_behavior) = OPTIONAL];</code>
    *
    * @param index The index of the value to return.
    * @return The bytes of the extraStatements at the given index.

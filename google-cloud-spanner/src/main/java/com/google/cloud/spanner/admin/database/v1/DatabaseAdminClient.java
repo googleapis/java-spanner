@@ -39,17 +39,33 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsClient;
 import com.google.protobuf.Empty;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupsRequest;
+import com.google.spanner.admin.database.v1.ListBackupsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.io.IOException;
@@ -62,7 +78,8 @@ import javax.annotation.Generated;
  * Service Description: Cloud Spanner Database Admin API
  *
  * <p>The Cloud Spanner Database Admin API can be used to create, drop, and list databases. It also
- * enables updating the schema of pre-existing databases.
+ * enables updating the schema of pre-existing databases. It can be also used to create, delete and
+ * list backups for a database and to restore from an existing backup.
  *
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -631,7 +648,8 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Drops (aka deletes) a Cloud Spanner database.
+   * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
+   * retained according to their `expire_time`.
    *
    * <p>Sample code:
    *
@@ -655,7 +673,8 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Drops (aka deletes) a Cloud Spanner database.
+   * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
+   * retained according to their `expire_time`.
    *
    * <p>Sample code:
    *
@@ -676,7 +695,8 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Drops (aka deletes) a Cloud Spanner database.
+   * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
+   * retained according to their `expire_time`.
    *
    * <p>Sample code:
    *
@@ -699,7 +719,8 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Drops (aka deletes) a Cloud Spanner database.
+   * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
+   * retained according to their `expire_time`.
    *
    * <p>Sample code:
    *
@@ -821,16 +842,18 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Sets the access control policy on a database resource. Replaces any existing policy.
+   * Sets the access control policy on a database or backup resource. Replaces any existing policy.
    *
    * <p>Authorization requires `spanner.databases.setIamPolicy` permission on
+   * [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -854,16 +877,18 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Sets the access control policy on a database resource. Replaces any existing policy.
+   * Sets the access control policy on a database or backup resource. Replaces any existing policy.
    *
    * <p>Authorization requires `spanner.databases.setIamPolicy` permission on
+   * [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource.toString(), policy);
    * }
@@ -884,16 +909,18 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Sets the access control policy on a database resource. Replaces any existing policy.
+   * Sets the access control policy on a database or backup resource. Replaces any existing policy.
    *
    * <p>Authorization requires `spanner.databases.setIamPolicy` permission on
+   * [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   SetIamPolicyRequest request = SetIamPolicyRequest.newBuilder()
    *     .setResource(resource.toString())
@@ -912,16 +939,18 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Sets the access control policy on a database resource. Replaces any existing policy.
+   * Sets the access control policy on a database or backup resource. Replaces any existing policy.
    *
    * <p>Authorization requires `spanner.databases.setIamPolicy` permission on
+   * [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   SetIamPolicyRequest request = SetIamPolicyRequest.newBuilder()
    *     .setResource(resource.toString())
@@ -939,17 +968,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Gets the access control policy for a database resource. Returns an empty policy if a database
-   * exists but does not have a policy set.
+   * Gets the access control policy for a database or backup resource. Returns an empty policy if a
+   * database or backup exists but does not have a policy set.
    *
    * <p>Authorization requires `spanner.databases.getIamPolicy` permission on
+   * [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * </code></pre>
@@ -968,17 +999,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Gets the access control policy for a database resource. Returns an empty policy if a database
-   * exists but does not have a policy set.
+   * Gets the access control policy for a database or backup resource. Returns an empty policy if a
+   * database or backup exists but does not have a policy set.
    *
    * <p>Authorization requires `spanner.databases.getIamPolicy` permission on
+   * [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource.toString());
    * }
    * </code></pre>
@@ -994,17 +1027,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Gets the access control policy for a database resource. Returns an empty policy if a database
-   * exists but does not have a policy set.
+   * Gets the access control policy for a database or backup resource. Returns an empty policy if a
+   * database or backup exists but does not have a policy set.
    *
    * <p>Authorization requires `spanner.databases.getIamPolicy` permission on
+   * [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder()
    *     .setResource(resource.toString())
    *     .build();
@@ -1021,17 +1056,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Gets the access control policy for a database resource. Returns an empty policy if a database
-   * exists but does not have a policy set.
+   * Gets the access control policy for a database or backup resource. Returns an empty policy if a
+   * database or backup exists but does not have a policy set.
    *
    * <p>Authorization requires `spanner.databases.getIamPolicy` permission on
+   * [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires
+   * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder()
    *     .setResource(resource.toString())
    *     .build();
@@ -1047,17 +1084,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Returns permissions that the caller has on the specified database resource.
+   * Returns permissions that the caller has on the specified database or backup resource.
    *
    * <p>Attempting this RPC on a non-existent Cloud Spanner database will result in a NOT_FOUND
    * error if the user has `spanner.databases.list` permission on the containing Cloud Spanner
-   * instance. Otherwise returns an empty set of permissions.
+   * instance. Otherwise returns an empty set of permissions. Calling this method on a backup that
+   * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
+   * permission on the containing instance.
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
    *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(resource, permissions);
    * }
@@ -1082,17 +1121,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Returns permissions that the caller has on the specified database resource.
+   * Returns permissions that the caller has on the specified database or backup resource.
    *
    * <p>Attempting this RPC on a non-existent Cloud Spanner database will result in a NOT_FOUND
    * error if the user has `spanner.databases.list` permission on the containing Cloud Spanner
-   * instance. Otherwise returns an empty set of permissions.
+   * instance. Otherwise returns an empty set of permissions. Calling this method on a backup that
+   * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
+   * permission on the containing instance.
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
    *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(resource.toString(), permissions);
    * }
@@ -1117,17 +1158,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Returns permissions that the caller has on the specified database resource.
+   * Returns permissions that the caller has on the specified database or backup resource.
    *
    * <p>Attempting this RPC on a non-existent Cloud Spanner database will result in a NOT_FOUND
    * error if the user has `spanner.databases.list` permission on the containing Cloud Spanner
-   * instance. Otherwise returns an empty set of permissions.
+   * instance. Otherwise returns an empty set of permissions. Calling this method on a backup that
+   * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
+   * permission on the containing instance.
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
    *   TestIamPermissionsRequest request = TestIamPermissionsRequest.newBuilder()
    *     .setResource(resource.toString())
@@ -1146,17 +1189,19 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Returns permissions that the caller has on the specified database resource.
+   * Returns permissions that the caller has on the specified database or backup resource.
    *
    * <p>Attempting this RPC on a non-existent Cloud Spanner database will result in a NOT_FOUND
    * error if the user has `spanner.databases.list` permission on the containing Cloud Spanner
-   * instance. Otherwise returns an empty set of permissions.
+   * instance. Otherwise returns an empty set of permissions. Calling this method on a backup that
+   * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
+   * permission on the containing instance.
    *
    * <p>Sample code:
    *
    * <pre><code>
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
    *   TestIamPermissionsRequest request = TestIamPermissionsRequest.newBuilder()
    *     .setResource(resource.toString())
@@ -1171,6 +1216,1159 @@ public class DatabaseAdminClient implements BackgroundResource {
   public final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
     return stub.testIamPermissionsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Starts creating a new Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track creation of the backup. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the creation and delete the backup. There can be only one pending backup
+   * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Backup backup = Backup.newBuilder().build();
+   *   String backupId = "";
+   *   Backup response = databaseAdminClient.createBackupAsync(parent, backup, backupId).get();
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the instance in which the backup will be created. This must
+   *     be the same instance that contains the database the backup will be created from. The backup
+   *     will be stored in the location(s) specified in the instance configuration of this instance.
+   *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backup Required. The backup to create.
+   * @param backupId Required. The id of the backup to be created. The `backup_id` appended to
+   *     `parent` forms the full backup name of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup_id&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Backup, CreateBackupMetadata> createBackupAsync(
+      InstanceName parent, Backup backup, String backupId) {
+    CreateBackupRequest request =
+        CreateBackupRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setBackup(backup)
+            .setBackupId(backupId)
+            .build();
+    return createBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Starts creating a new Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track creation of the backup. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the creation and delete the backup. There can be only one pending backup
+   * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Backup backup = Backup.newBuilder().build();
+   *   String backupId = "";
+   *   Backup response = databaseAdminClient.createBackupAsync(parent.toString(), backup, backupId).get();
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the instance in which the backup will be created. This must
+   *     be the same instance that contains the database the backup will be created from. The backup
+   *     will be stored in the location(s) specified in the instance configuration of this instance.
+   *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backup Required. The backup to create.
+   * @param backupId Required. The id of the backup to be created. The `backup_id` appended to
+   *     `parent` forms the full backup name of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup_id&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Backup, CreateBackupMetadata> createBackupAsync(
+      String parent, Backup backup, String backupId) {
+    CreateBackupRequest request =
+        CreateBackupRequest.newBuilder()
+            .setParent(parent)
+            .setBackup(backup)
+            .setBackupId(backupId)
+            .build();
+    return createBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Starts creating a new Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track creation of the backup. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the creation and delete the backup. There can be only one pending backup
+   * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String backupId = "";
+   *   Backup backup = Backup.newBuilder().build();
+   *   CreateBackupRequest request = CreateBackupRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setBackupId(backupId)
+   *     .setBackup(backup)
+   *     .build();
+   *   Backup response = databaseAdminClient.createBackupAsync(request).get();
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Backup, CreateBackupMetadata> createBackupAsync(
+      CreateBackupRequest request) {
+    return createBackupOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Starts creating a new Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track creation of the backup. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the creation and delete the backup. There can be only one pending backup
+   * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String backupId = "";
+   *   Backup backup = Backup.newBuilder().build();
+   *   CreateBackupRequest request = CreateBackupRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setBackupId(backupId)
+   *     .setBackup(backup)
+   *     .build();
+   *   OperationFuture&lt;Backup, CreateBackupMetadata&gt; future = databaseAdminClient.createBackupOperationCallable().futureCall(request);
+   *   // Do something
+   *   Backup response = future.get();
+   * }
+   * </code></pre>
+   */
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public final OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationCallable() {
+    return stub.createBackupOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Starts creating a new Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track creation of the backup. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the creation and delete the backup. There can be only one pending backup
+   * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String backupId = "";
+   *   Backup backup = Backup.newBuilder().build();
+   *   CreateBackupRequest request = CreateBackupRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setBackupId(backupId)
+   *     .setBackup(backup)
+   *     .build();
+   *   ApiFuture&lt;Operation&gt; future = databaseAdminClient.createBackupCallable().futureCall(request);
+   *   // Do something
+   *   Operation response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
+    return stub.createBackupCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Backup response = databaseAdminClient.getBackup(name);
+   * }
+   * </code></pre>
+   *
+   * @param name Required. Name of the backup. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Backup getBackup(BackupName name) {
+    GetBackupRequest request =
+        GetBackupRequest.newBuilder().setName(name == null ? null : name.toString()).build();
+    return getBackup(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Backup response = databaseAdminClient.getBackup(name.toString());
+   * }
+   * </code></pre>
+   *
+   * @param name Required. Name of the backup. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Backup getBackup(String name) {
+    GetBackupRequest request = GetBackupRequest.newBuilder().setName(name).build();
+    return getBackup(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   GetBackupRequest request = GetBackupRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   Backup response = databaseAdminClient.getBackup(request);
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Backup getBackup(GetBackupRequest request) {
+    return getBackupCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   GetBackupRequest request = GetBackupRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   ApiFuture&lt;Backup&gt; future = databaseAdminClient.getBackupCallable().futureCall(request);
+   *   // Do something
+   *   Backup response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {
+    return stub.getBackupCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Backup backup = Backup.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   Backup response = databaseAdminClient.updateBackup(backup, updateMask);
+   * }
+   * </code></pre>
+   *
+   * @param backup Required. The backup to update. `backup.name`, and the fields to be updated as
+   *     specified by `update_mask` are required. Other fields are ignored. Update is only supported
+   *     for the following fields: &#42; `backup.expire_time`.
+   * @param updateMask Required. A mask specifying which fields (e.g. `expire_time`) in the Backup
+   *     resource should be updated. This mask is relative to the Backup resource, not to the
+   *     request message. The field mask must always be specified; this prevents any future fields
+   *     from being erased accidentally by clients that do not know about them.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Backup updateBackup(Backup backup, FieldMask updateMask) {
+    UpdateBackupRequest request =
+        UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
+    return updateBackup(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Backup backup = Backup.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   UpdateBackupRequest request = UpdateBackupRequest.newBuilder()
+   *     .setBackup(backup)
+   *     .setUpdateMask(updateMask)
+   *     .build();
+   *   Backup response = databaseAdminClient.updateBackup(request);
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Backup updateBackup(UpdateBackupRequest request) {
+    return updateBackupCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Backup backup = Backup.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   UpdateBackupRequest request = UpdateBackupRequest.newBuilder()
+   *     .setBackup(backup)
+   *     .setUpdateMask(updateMask)
+   *     .build();
+   *   ApiFuture&lt;Backup&gt; future = databaseAdminClient.updateBackupCallable().futureCall(request);
+   *   // Do something
+   *   Backup response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<UpdateBackupRequest, Backup> updateBackupCallable() {
+    return stub.updateBackupCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   databaseAdminClient.deleteBackup(name);
+   * }
+   * </code></pre>
+   *
+   * @param name Required. Name of the backup to delete. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteBackup(BackupName name) {
+    DeleteBackupRequest request =
+        DeleteBackupRequest.newBuilder().setName(name == null ? null : name.toString()).build();
+    deleteBackup(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   databaseAdminClient.deleteBackup(name.toString());
+   * }
+   * </code></pre>
+   *
+   * @param name Required. Name of the backup to delete. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteBackup(String name) {
+    DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(name).build();
+    deleteBackup(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   DeleteBackupRequest request = DeleteBackupRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   databaseAdminClient.deleteBackup(request);
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteBackup(DeleteBackupRequest request) {
+    deleteBackupCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   DeleteBackupRequest request = DeleteBackupRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   ApiFuture&lt;Void&gt; future = databaseAdminClient.deleteBackupCallable().futureCall(request);
+   *   // Do something
+   *   future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<DeleteBackupRequest, Empty> deleteBackupCallable() {
+    return stub.deleteBackupCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists completed and pending backups. Backups returned are ordered by `create_time` in
+   * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance to list backups from. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupsPagedResponse listBackups(InstanceName parent) {
+    ListBackupsRequest request =
+        ListBackupsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listBackups(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists completed and pending backups. Backups returned are ordered by `create_time` in
+   * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Backup element : databaseAdminClient.listBackups(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance to list backups from. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupsPagedResponse listBackups(String parent) {
+    ListBackupsRequest request = ListBackupsRequest.newBuilder().setParent(parent).build();
+    return listBackups(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists completed and pending backups. Backups returned are ordered by `create_time` in
+   * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupsRequest request = ListBackupsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (Backup element : databaseAdminClient.listBackups(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupsPagedResponse listBackups(ListBackupsRequest request) {
+    return listBackupsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists completed and pending backups. Backups returned are ordered by `create_time` in
+   * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupsRequest request = ListBackupsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListBackupsPagedResponse&gt; future = databaseAdminClient.listBackupsPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (Backup element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse>
+      listBackupsPagedCallable() {
+    return stub.listBackupsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists completed and pending backups. Backups returned are ordered by `create_time` in
+   * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupsRequest request = ListBackupsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListBackupsResponse response = databaseAdminClient.listBackupsCallable().call(request);
+   *     for (Backup element : response.getBackupsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable() {
+    return stub.listBackupsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Create a new database by restoring from a completed backup. The new database must be in the
+   * same project and in an instance with the same instance configuration as the instance containing
+   * the backup. The returned database [long-running operation][google.longrunning.Operation] has a
+   * name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+   * and can be used to track the progress of the operation, and to cancel it. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned
+   * operation will stop the restore and delete the database. There can be only one database being
+   * restored into an instance at a time. Once the restore operation completes, a new restore
+   * operation can be initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "";
+   *   BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Database response = databaseAdminClient.restoreDatabaseAsync(parent, databaseId, backup).get();
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the instance in which to create the restored database. This
+   *     instance must be in the same project and have the same instance configuration as the
+   *     instance containing the source backup. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
+   * @param backup Name of the backup from which to restore. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseAsync(
+      InstanceName parent, String databaseId, BackupName backup) {
+    RestoreDatabaseRequest request =
+        RestoreDatabaseRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setDatabaseId(databaseId)
+            .setBackup(backup == null ? null : backup.toString())
+            .build();
+    return restoreDatabaseAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Create a new database by restoring from a completed backup. The new database must be in the
+   * same project and in an instance with the same instance configuration as the instance containing
+   * the backup. The returned database [long-running operation][google.longrunning.Operation] has a
+   * name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+   * and can be used to track the progress of the operation, and to cancel it. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned
+   * operation will stop the restore and delete the database. There can be only one database being
+   * restored into an instance at a time. Once the restore operation completes, a new restore
+   * operation can be initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "";
+   *   BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Database response = databaseAdminClient.restoreDatabaseAsync(parent.toString(), databaseId, backup.toString()).get();
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the instance in which to create the restored database. This
+   *     instance must be in the same project and have the same instance configuration as the
+   *     instance containing the source backup. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
+   * @param backup Name of the backup from which to restore. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseAsync(
+      String parent, String databaseId, String backup) {
+    RestoreDatabaseRequest request =
+        RestoreDatabaseRequest.newBuilder()
+            .setParent(parent)
+            .setDatabaseId(databaseId)
+            .setBackup(backup)
+            .build();
+    return restoreDatabaseAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Create a new database by restoring from a completed backup. The new database must be in the
+   * same project and in an instance with the same instance configuration as the instance containing
+   * the backup. The returned database [long-running operation][google.longrunning.Operation] has a
+   * name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+   * and can be used to track the progress of the operation, and to cancel it. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned
+   * operation will stop the restore and delete the database. There can be only one database being
+   * restored into an instance at a time. Once the restore operation completes, a new restore
+   * operation can be initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "";
+   *   RestoreDatabaseRequest request = RestoreDatabaseRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setDatabaseId(databaseId)
+   *     .build();
+   *   Database response = databaseAdminClient.restoreDatabaseAsync(request).get();
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseAsync(
+      RestoreDatabaseRequest request) {
+    return restoreDatabaseOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Create a new database by restoring from a completed backup. The new database must be in the
+   * same project and in an instance with the same instance configuration as the instance containing
+   * the backup. The returned database [long-running operation][google.longrunning.Operation] has a
+   * name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+   * and can be used to track the progress of the operation, and to cancel it. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned
+   * operation will stop the restore and delete the database. There can be only one database being
+   * restored into an instance at a time. Once the restore operation completes, a new restore
+   * operation can be initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "";
+   *   RestoreDatabaseRequest request = RestoreDatabaseRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setDatabaseId(databaseId)
+   *     .build();
+   *   OperationFuture&lt;Database, RestoreDatabaseMetadata&gt; future = databaseAdminClient.restoreDatabaseOperationCallable().futureCall(request);
+   *   // Do something
+   *   Database response = future.get();
+   * }
+   * </code></pre>
+   */
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public final OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationCallable() {
+    return stub.restoreDatabaseOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Create a new database by restoring from a completed backup. The new database must be in the
+   * same project and in an instance with the same instance configuration as the instance containing
+   * the backup. The returned database [long-running operation][google.longrunning.Operation] has a
+   * name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+   * and can be used to track the progress of the operation, and to cancel it. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned
+   * operation will stop the restore and delete the database. There can be only one database being
+   * restored into an instance at a time. Once the restore operation completes, a new restore
+   * operation can be initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "";
+   *   RestoreDatabaseRequest request = RestoreDatabaseRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .setDatabaseId(databaseId)
+   *     .build();
+   *   ApiFuture&lt;Operation&gt; future = databaseAdminClient.restoreDatabaseCallable().futureCall(request);
+   *   // Do something
+   *   Operation response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
+    return stub.restoreDatabaseCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has
+   * a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance of the database operations. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseOperationsPagedResponse listDatabaseOperations(InstanceName parent) {
+    ListDatabaseOperationsRequest request =
+        ListDatabaseOperationsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listDatabaseOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has
+   * a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance of the database operations. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseOperationsPagedResponse listDatabaseOperations(String parent) {
+    ListDatabaseOperationsRequest request =
+        ListDatabaseOperationsRequest.newBuilder().setParent(parent).build();
+    return listDatabaseOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has
+   * a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabaseOperationsRequest request = ListDatabaseOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseOperationsPagedResponse listDatabaseOperations(
+      ListDatabaseOperationsRequest request) {
+    return listDatabaseOperationsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has
+   * a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabaseOperationsRequest request = ListDatabaseOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListDatabaseOperationsPagedResponse&gt; future = databaseAdminClient.listDatabaseOperationsPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
+      listDatabaseOperationsPagedCallable() {
+    return stub.listDatabaseOperationsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has
+   * a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabaseOperationsRequest request = ListDatabaseOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListDatabaseOperationsResponse response = databaseAdminClient.listDatabaseOperationsCallable().call(request);
+   *     for (Operation element : response.getOperationsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
+      listDatabaseOperationsCallable() {
+    return stub.listDatabaseOperationsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the backup [long-running operations][google.longrunning.Operation] in the given instance.
+   * A backup operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
+   * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance of the backup operations. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupOperationsPagedResponse listBackupOperations(InstanceName parent) {
+    ListBackupOperationsRequest request =
+        ListBackupOperationsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listBackupOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the backup [long-running operations][google.longrunning.Operation] in the given instance.
+   * A backup operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
+   * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listBackupOperations(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance of the backup operations. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupOperationsPagedResponse listBackupOperations(String parent) {
+    ListBackupOperationsRequest request =
+        ListBackupOperationsRequest.newBuilder().setParent(parent).build();
+    return listBackupOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the backup [long-running operations][google.longrunning.Operation] in the given instance.
+   * A backup operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
+   * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupOperationsRequest request = ListBackupOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (Operation element : databaseAdminClient.listBackupOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListBackupOperationsPagedResponse listBackupOperations(
+      ListBackupOperationsRequest request) {
+    return listBackupOperationsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the backup [long-running operations][google.longrunning.Operation] in the given instance.
+   * A backup operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
+   * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupOperationsRequest request = ListBackupOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListBackupOperationsPagedResponse&gt; future = databaseAdminClient.listBackupOperationsPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
+      listBackupOperationsPagedCallable() {
+    return stub.listBackupOperationsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the backup [long-running operations][google.longrunning.Operation] in the given instance.
+   * A backup operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
+   * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListBackupOperationsRequest request = ListBackupOperationsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListBackupOperationsResponse response = databaseAdminClient.listBackupOperationsCallable().call(request);
+   *     for (Operation element : response.getOperationsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
+      listBackupOperationsCallable() {
+    return stub.listBackupOperationsCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
@@ -1333,6 +2531,260 @@ public class DatabaseAdminClient implements BackgroundResource {
   @Override
   public boolean awaitTermination(long duration, TimeUnit unit) throws InterruptedException {
     return stub.awaitTermination(duration, unit);
+  }
+
+  public static class ListBackupsPagedResponse
+      extends AbstractPagedListResponse<
+          ListBackupsRequest,
+          ListBackupsResponse,
+          Backup,
+          ListBackupsPage,
+          ListBackupsFixedSizeCollection> {
+
+    public static ApiFuture<ListBackupsPagedResponse> createAsync(
+        PageContext<ListBackupsRequest, ListBackupsResponse, Backup> context,
+        ApiFuture<ListBackupsResponse> futureResponse) {
+      ApiFuture<ListBackupsPage> futurePage =
+          ListBackupsPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          new ApiFunction<ListBackupsPage, ListBackupsPagedResponse>() {
+            @Override
+            public ListBackupsPagedResponse apply(ListBackupsPage input) {
+              return new ListBackupsPagedResponse(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    private ListBackupsPagedResponse(ListBackupsPage page) {
+      super(page, ListBackupsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListBackupsPage
+      extends AbstractPage<ListBackupsRequest, ListBackupsResponse, Backup, ListBackupsPage> {
+
+    private ListBackupsPage(
+        PageContext<ListBackupsRequest, ListBackupsResponse, Backup> context,
+        ListBackupsResponse response) {
+      super(context, response);
+    }
+
+    private static ListBackupsPage createEmptyPage() {
+      return new ListBackupsPage(null, null);
+    }
+
+    @Override
+    protected ListBackupsPage createPage(
+        PageContext<ListBackupsRequest, ListBackupsResponse, Backup> context,
+        ListBackupsResponse response) {
+      return new ListBackupsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListBackupsPage> createPageAsync(
+        PageContext<ListBackupsRequest, ListBackupsResponse, Backup> context,
+        ApiFuture<ListBackupsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListBackupsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListBackupsRequest,
+          ListBackupsResponse,
+          Backup,
+          ListBackupsPage,
+          ListBackupsFixedSizeCollection> {
+
+    private ListBackupsFixedSizeCollection(List<ListBackupsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListBackupsFixedSizeCollection createEmptyCollection() {
+      return new ListBackupsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListBackupsFixedSizeCollection createCollection(
+        List<ListBackupsPage> pages, int collectionSize) {
+      return new ListBackupsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListDatabaseOperationsPagedResponse
+      extends AbstractPagedListResponse<
+          ListDatabaseOperationsRequest,
+          ListDatabaseOperationsResponse,
+          Operation,
+          ListDatabaseOperationsPage,
+          ListDatabaseOperationsFixedSizeCollection> {
+
+    public static ApiFuture<ListDatabaseOperationsPagedResponse> createAsync(
+        PageContext<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse, Operation>
+            context,
+        ApiFuture<ListDatabaseOperationsResponse> futureResponse) {
+      ApiFuture<ListDatabaseOperationsPage> futurePage =
+          ListDatabaseOperationsPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          new ApiFunction<ListDatabaseOperationsPage, ListDatabaseOperationsPagedResponse>() {
+            @Override
+            public ListDatabaseOperationsPagedResponse apply(ListDatabaseOperationsPage input) {
+              return new ListDatabaseOperationsPagedResponse(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    private ListDatabaseOperationsPagedResponse(ListDatabaseOperationsPage page) {
+      super(page, ListDatabaseOperationsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListDatabaseOperationsPage
+      extends AbstractPage<
+          ListDatabaseOperationsRequest,
+          ListDatabaseOperationsResponse,
+          Operation,
+          ListDatabaseOperationsPage> {
+
+    private ListDatabaseOperationsPage(
+        PageContext<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse, Operation>
+            context,
+        ListDatabaseOperationsResponse response) {
+      super(context, response);
+    }
+
+    private static ListDatabaseOperationsPage createEmptyPage() {
+      return new ListDatabaseOperationsPage(null, null);
+    }
+
+    @Override
+    protected ListDatabaseOperationsPage createPage(
+        PageContext<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse, Operation>
+            context,
+        ListDatabaseOperationsResponse response) {
+      return new ListDatabaseOperationsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListDatabaseOperationsPage> createPageAsync(
+        PageContext<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse, Operation>
+            context,
+        ApiFuture<ListDatabaseOperationsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListDatabaseOperationsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListDatabaseOperationsRequest,
+          ListDatabaseOperationsResponse,
+          Operation,
+          ListDatabaseOperationsPage,
+          ListDatabaseOperationsFixedSizeCollection> {
+
+    private ListDatabaseOperationsFixedSizeCollection(
+        List<ListDatabaseOperationsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListDatabaseOperationsFixedSizeCollection createEmptyCollection() {
+      return new ListDatabaseOperationsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListDatabaseOperationsFixedSizeCollection createCollection(
+        List<ListDatabaseOperationsPage> pages, int collectionSize) {
+      return new ListDatabaseOperationsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListBackupOperationsPagedResponse
+      extends AbstractPagedListResponse<
+          ListBackupOperationsRequest,
+          ListBackupOperationsResponse,
+          Operation,
+          ListBackupOperationsPage,
+          ListBackupOperationsFixedSizeCollection> {
+
+    public static ApiFuture<ListBackupOperationsPagedResponse> createAsync(
+        PageContext<ListBackupOperationsRequest, ListBackupOperationsResponse, Operation> context,
+        ApiFuture<ListBackupOperationsResponse> futureResponse) {
+      ApiFuture<ListBackupOperationsPage> futurePage =
+          ListBackupOperationsPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          new ApiFunction<ListBackupOperationsPage, ListBackupOperationsPagedResponse>() {
+            @Override
+            public ListBackupOperationsPagedResponse apply(ListBackupOperationsPage input) {
+              return new ListBackupOperationsPagedResponse(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    private ListBackupOperationsPagedResponse(ListBackupOperationsPage page) {
+      super(page, ListBackupOperationsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListBackupOperationsPage
+      extends AbstractPage<
+          ListBackupOperationsRequest,
+          ListBackupOperationsResponse,
+          Operation,
+          ListBackupOperationsPage> {
+
+    private ListBackupOperationsPage(
+        PageContext<ListBackupOperationsRequest, ListBackupOperationsResponse, Operation> context,
+        ListBackupOperationsResponse response) {
+      super(context, response);
+    }
+
+    private static ListBackupOperationsPage createEmptyPage() {
+      return new ListBackupOperationsPage(null, null);
+    }
+
+    @Override
+    protected ListBackupOperationsPage createPage(
+        PageContext<ListBackupOperationsRequest, ListBackupOperationsResponse, Operation> context,
+        ListBackupOperationsResponse response) {
+      return new ListBackupOperationsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListBackupOperationsPage> createPageAsync(
+        PageContext<ListBackupOperationsRequest, ListBackupOperationsResponse, Operation> context,
+        ApiFuture<ListBackupOperationsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListBackupOperationsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListBackupOperationsRequest,
+          ListBackupOperationsResponse,
+          Operation,
+          ListBackupOperationsPage,
+          ListBackupOperationsFixedSizeCollection> {
+
+    private ListBackupOperationsFixedSizeCollection(
+        List<ListBackupOperationsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListBackupOperationsFixedSizeCollection createEmptyCollection() {
+      return new ListBackupOperationsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListBackupOperationsFixedSizeCollection createCollection(
+        List<ListBackupOperationsPage> pages, int collectionSize) {
+      return new ListBackupOperationsFixedSizeCollection(pages, collectionSize);
+    }
   }
 
   public static class ListDatabasesPagedResponse
