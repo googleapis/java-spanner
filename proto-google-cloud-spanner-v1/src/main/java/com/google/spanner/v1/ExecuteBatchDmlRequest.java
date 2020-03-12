@@ -243,9 +243,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -261,9 +259,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -282,9 +278,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -300,9 +294,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -319,9 +311,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -613,9 +603,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -641,9 +629,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -661,9 +647,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -687,9 +671,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in
-     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-     * JSON strings.
+     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -1488,9 +1470,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1516,9 +1496,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1536,9 +1514,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1562,9 +1538,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1595,9 +1569,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1624,9 +1596,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1651,9 +1621,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in
-       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
-       * JSON strings.
+       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1837,10 +1805,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are
-   * executed serially, such that the effects of statement `i` are visible to
-   * statement `i+1`. Each statement must be a DML statement. Execution stops at
-   * the first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are executed
+   * serially, such that the effects of statement `i` are visible to statement
+   * `i+1`. Each statement must be a DML statement. Execution stops at the
+   * first failed statement; the remaining statements are not executed.
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1856,10 +1824,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are
-   * executed serially, such that the effects of statement `i` are visible to
-   * statement `i+1`. Each statement must be a DML statement. Execution stops at
-   * the first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are executed
+   * serially, such that the effects of statement `i` are visible to statement
+   * `i+1`. Each statement must be a DML statement. Execution stops at the
+   * first failed statement; the remaining statements are not executed.
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1875,10 +1843,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are
-   * executed serially, such that the effects of statement `i` are visible to
-   * statement `i+1`. Each statement must be a DML statement. Execution stops at
-   * the first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are executed
+   * serially, such that the effects of statement `i` are visible to statement
+   * `i+1`. Each statement must be a DML statement. Execution stops at the
+   * first failed statement; the remaining statements are not executed.
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1893,10 +1861,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are
-   * executed serially, such that the effects of statement `i` are visible to
-   * statement `i+1`. Each statement must be a DML statement. Execution stops at
-   * the first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are executed
+   * serially, such that the effects of statement `i` are visible to statement
+   * `i+1`. Each statement must be a DML statement. Execution stops at the
+   * first failed statement; the remaining statements are not executed.
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1911,10 +1879,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are
-   * executed serially, such that the effects of statement `i` are visible to
-   * statement `i+1`. Each statement must be a DML statement. Execution stops at
-   * the first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are executed
+   * serially, such that the effects of statement `i` are visible to statement
+   * `i+1`. Each statement must be a DML statement. Execution stops at the
+   * first failed statement; the remaining statements are not executed.
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1933,9 +1901,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. A per-transaction sequence number used to identify this request.
-   * This field makes each request idempotent such that if the request is
-   * received multiple times, at most one will succeed.
+   * Required. A per-transaction sequence number used to identify this request. This field
+   * makes each request idempotent such that if the request is received multiple
+   * times, at most one will succeed.
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously
@@ -2736,10 +2704,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2759,10 +2727,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2781,10 +2749,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2803,10 +2771,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2832,10 +2800,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2858,10 +2826,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2886,10 +2854,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2915,10 +2883,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2941,10 +2909,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2967,10 +2935,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2994,10 +2962,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3019,10 +2987,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3044,10 +3012,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3063,10 +3031,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3086,10 +3054,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3109,10 +3077,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3128,10 +3096,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3149,10 +3117,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are
-     * executed serially, such that the effects of statement `i` are visible to
-     * statement `i+1`. Each statement must be a DML statement. Execution stops at
-     * the first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are executed
+     * serially, such that the effects of statement `i` are visible to statement
+     * `i+1`. Each statement must be a DML statement. Execution stops at the
+     * first failed statement; the remaining statements are not executed.
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3187,9 +3155,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request.
-     * This field makes each request idempotent such that if the request is
-     * received multiple times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request. This field
+     * makes each request idempotent such that if the request is received multiple
+     * times, at most one will succeed.
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3207,9 +3175,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request.
-     * This field makes each request idempotent such that if the request is
-     * received multiple times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request. This field
+     * makes each request idempotent such that if the request is received multiple
+     * times, at most one will succeed.
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3231,9 +3199,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request.
-     * This field makes each request idempotent such that if the request is
-     * received multiple times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request. This field
+     * makes each request idempotent such that if the request is received multiple
+     * times, at most one will succeed.
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously

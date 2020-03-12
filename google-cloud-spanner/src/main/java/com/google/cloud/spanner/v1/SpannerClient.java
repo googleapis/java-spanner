@@ -193,7 +193,7 @@ public class SpannerClient implements BackgroundResource {
    * queries use a transaction internally, and count toward the one transaction limit.
    *
    * <p>Active sessions use additional server resources, so it is a good idea to delete idle and
-   * unneeded sessions. Aside from explicit deletes, Cloud Spanner can delete sessions for which no
+   * unneeded sessions. Aside from explicit deletes, Cloud Spanner may delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted, requests to it return
    * `NOT_FOUND`.
    *
@@ -231,7 +231,7 @@ public class SpannerClient implements BackgroundResource {
    * queries use a transaction internally, and count toward the one transaction limit.
    *
    * <p>Active sessions use additional server resources, so it is a good idea to delete idle and
-   * unneeded sessions. Aside from explicit deletes, Cloud Spanner can delete sessions for which no
+   * unneeded sessions. Aside from explicit deletes, Cloud Spanner may delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted, requests to it return
    * `NOT_FOUND`.
    *
@@ -266,7 +266,7 @@ public class SpannerClient implements BackgroundResource {
    * queries use a transaction internally, and count toward the one transaction limit.
    *
    * <p>Active sessions use additional server resources, so it is a good idea to delete idle and
-   * unneeded sessions. Aside from explicit deletes, Cloud Spanner can delete sessions for which no
+   * unneeded sessions. Aside from explicit deletes, Cloud Spanner may delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted, requests to it return
    * `NOT_FOUND`.
    *
@@ -303,7 +303,7 @@ public class SpannerClient implements BackgroundResource {
    * queries use a transaction internally, and count toward the one transaction limit.
    *
    * <p>Active sessions use additional server resources, so it is a good idea to delete idle and
-   * unneeded sessions. Aside from explicit deletes, Cloud Spanner can delete sessions for which no
+   * unneeded sessions. Aside from explicit deletes, Cloud Spanner may delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted, requests to it return
    * `NOT_FOUND`.
    *
