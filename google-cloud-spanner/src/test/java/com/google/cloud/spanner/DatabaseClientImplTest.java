@@ -27,9 +27,14 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
@@ -39,6 +44,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -700,5 +706,123 @@ public class DatabaseClientImplTest {
     // All sessions should now be checked back in to the pools.
     assertThat(client1.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
     assertThat(client2.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+  }
+
+  @Test
+  public void testBackendQueryOptions() {
+    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setWriteSessionsFraction(0.0f)
+                    .build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      try (ResultSet rs =
+          client
+              .singleUse()
+              .executeQuery(
+                  Statement.newBuilder(SELECT1.getSql())
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .build())) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      }
+      // Check that the last query was executed using a custom optimizer version.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assertThat(requests).isNotEmpty();
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
+      assertThat(request.getQueryOptions()).isNotNull();
+      assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+    }
+  }
+
+  @Test
+  public void testBackendQueryOptionsWithAnalyzeQuery() {
+    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setWriteSessionsFraction(0.0f)
+                    .build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+        try (ResultSet rs =
+            tx.analyzeQuery(
+                Statement.newBuilder(SELECT1.getSql())
+                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .build(),
+                QueryAnalyzeMode.PROFILE)) {
+          // Just iterate over the results to execute the query.
+          while (rs.next()) {}
+        }
+      }
+      // Check that the last query was executed using a custom optimizer version.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assertThat(requests).isNotEmpty();
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
+      assertThat(request.getQueryOptions()).isNotNull();
+      assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryMode()).isEqualTo(QueryMode.PROFILE);
+    }
+  }
+
+  @Test
+  public void testBackendPartitionQueryOptions() {
+    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setWriteSessionsFraction(0.0f)
+                    .build())
+            .build()
+            .getService()) {
+      BatchClient client =
+          spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong());
+      List<Partition> partitions =
+          transaction.partitionQuery(
+              PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
+              Statement.newBuilder(SELECT1.getSql())
+                  .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                  .build());
+      try (ResultSet rs = transaction.execute(partitions.get(0))) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      }
+      // Check that the last query was executed using a custom optimizer version.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assertThat(requests).isNotEmpty();
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
+      assertThat(request.getQueryOptions()).isNotNull();
+      assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+    }
   }
 }

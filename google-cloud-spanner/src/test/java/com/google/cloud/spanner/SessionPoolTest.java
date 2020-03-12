@@ -1196,7 +1196,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         ByteString preparedTransactionId =
             hasPreparedTransaction ? ByteString.copyFromUtf8("test-txn") : null;
         final TransactionContextImpl closedTransactionContext =
-            new TransactionContextImpl(closedSession, preparedTransactionId, rpc, 10);
+            TransactionContextImpl.newBuilder()
+                .setSession(closedSession)
+                .setTransactionId(preparedTransactionId)
+                .setRpc(rpc)
+                .build();
         when(closedSession.asyncClose())
             .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);

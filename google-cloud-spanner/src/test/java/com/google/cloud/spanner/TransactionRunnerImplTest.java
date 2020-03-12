@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -120,7 +121,7 @@ public class TransactionRunnerImplTest {
                   throws Throwable {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0])
+                        .setName((String) invocation.getArguments()[0] + "/sessions/1")
                         .setCreateTime(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build());
@@ -266,12 +267,15 @@ public class TransactionRunnerImplTest {
   private long[] batchDmlException(int status) {
     Preconditions.checkArgument(status != Code.OK_VALUE);
     TransactionContextImpl transaction =
-        new TransactionContextImpl(
-            session, ByteString.copyFromUtf8(UUID.randomUUID().toString()), rpc, 10);
+        TransactionContextImpl.newBuilder()
+            .setSession(session)
+            .setTransactionId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+            .setRpc(rpc)
+            .build();
     when(session.newTransaction()).thenReturn(transaction);
     when(session.beginTransaction())
         .thenReturn(ByteString.copyFromUtf8(UUID.randomUUID().toString()));
-    when(session.getName()).thenReturn("test");
+    when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

@@ -29,6 +29,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -426,5 +427,47 @@ public class SpannerOptionsTest {
             .build();
     assertThat(options.getHost()).isEqualTo("http://localhost:1234");
     assertThat(options.getEndpoint()).isEqualTo("localhost:1234");
+  }
+
+  @Test
+  public void testDefaultQueryOptions() {
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public String getOptimizerVersion() {
+            return "";
+          }
+        });
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setDefaultQueryOptions(
+                DatabaseId.of("p", "i", "d"),
+                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .build();
+    assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
+        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+    assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
+        .isEqualTo(QueryOptions.getDefaultInstance());
+
+    // Now simulate that the user has set an environment variable for the query optimizer version.
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public String getOptimizerVersion() {
+            return "2";
+          }
+        });
+    // Create options with '1' as the default query optimizer version. This should be overridden by
+    // the environment variable.
+    options =
+        SpannerOptions.newBuilder()
+            .setDefaultQueryOptions(
+                DatabaseId.of("p", "i", "d"),
+                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .build();
+    assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
+        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+    assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
+        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
   }
 }

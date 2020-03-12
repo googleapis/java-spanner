@@ -25,6 +25,7 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -34,21 +35,27 @@ import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final long serialVersionUID = 2789571558532701170L;
+  private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
@@ -73,6 +80,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
+  /**
+   * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
+   */
+  private final Map<DatabaseId, QueryOptions> defaultQueryOptions;
+  /** These are the default {@link QueryOptions} defined in environment variables on this system. */
+  private final QueryOptions envQueryOptions;
+  /**
+   * These are the merged query options of the {@link QueryOptions} set on this {@link
+   * SpannerOptions} and the {@link QueryOptions} in the environment variables. Options specified in
+   * environment variables take precedence above options specified in the {@link SpannerOptions}
+   * instance.
+   */
+  private final Map<DatabaseId, QueryOptions> mergedQueryOptions;
+
   private final CallCredentialsProvider callCredentialsProvider;
 
   /**
@@ -130,13 +151,55 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
+    defaultQueryOptions = builder.defaultQueryOptions;
+    envQueryOptions = builder.getEnvironmentQueryOptions();
+    if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
+      this.mergedQueryOptions = ImmutableMap.copyOf(builder.defaultQueryOptions);
+    } else {
+      // Merge all specific database options with the environment options.
+      Map<DatabaseId, QueryOptions> merged = new HashMap<>(builder.defaultQueryOptions);
+      for (Entry<DatabaseId, QueryOptions> entry : builder.defaultQueryOptions.entrySet()) {
+        merged.put(entry.getKey(), entry.getValue().toBuilder().mergeFrom(envQueryOptions).build());
+      }
+      this.mergedQueryOptions = ImmutableMap.copyOf(merged);
+    }
     callCredentialsProvider = builder.callCredentialsProvider;
+  }
+
+  /**
+   * The environment to read configuration values from. The default implementation uses environment
+   * variables.
+   */
+  public static interface SpannerEnvironment {
+    /**
+     * The optimizer version to use. Must return an empty string to indicate that no value has been
+     * set.
+     */
+    @Nonnull
+    String getOptimizerVersion();
+  }
+
+  /**
+   * Default implementation of {@link SpannerEnvironment}. Reads all configuration from environment
+   * variables.
+   */
+  private static class SpannerEnvironmentImpl implements SpannerEnvironment {
+    private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
+    private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
+
+    private SpannerEnvironmentImpl() {}
+
+    @Override
+    public String getOptimizerVersion() {
+      return MoreObjects.firstNonNull(System.getenv(SPANNER_OPTIMIZER_VERSION_ENV_VAR), "");
+    }
   }
 
   /** Builder for {@link SpannerOptions} instances. */
   public static class Builder
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
-    private static final int DEFAULT_PREFETCH_CHUNKS = 4;
+    static final int DEFAULT_PREFETCH_CHUNKS = 4;
+    static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
@@ -162,6 +225,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
@@ -177,6 +241,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
+      this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
@@ -370,6 +435,37 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the default {@link QueryOptions} that will be used for all queries on the specified
+     * database. Query options can also be specified on a per-query basis and as environment
+     * variables. The precedence of these settings are:
+     *
+     * <ol>
+     *   <li>Query options for a specific query
+     *   <li>Environment variables
+     *   <li>These default query options
+     * </ol>
+     *
+     * Each {@link QueryOption} value that is used for a query is determined individually based on
+     * the above precedence. If for example a value for {@link QueryOptions#getOptimizerVersion()}
+     * is specified in an environment variable and a value for {@link
+     * QueryOptions#getOptimizerStatisticsPackage()} is specified for a specific query, both values
+     * will be used for the specific query. Environment variables are only read during the
+     * initialization of a {@link SpannerOptions} instance. Changing an environment variable after
+     * initializing a {@link SpannerOptions} instance will not have any effect on that instance.
+     */
+    public Builder setDefaultQueryOptions(DatabaseId database, QueryOptions defaultQueryOptions) {
+      this.defaultQueryOptions.put(database, defaultQueryOptions);
+      return this;
+    }
+
+    /** Gets the {@link QueryOptions} specified in the {@link SpannerEnvironment}. */
+    QueryOptions getEnvironmentQueryOptions() {
+      return QueryOptions.newBuilder()
+          .setOptimizerVersion(environment.getOptimizerVersion())
+          .build();
+    }
+
+    /**
      * Sets a {@link CallCredentialsProvider} that can deliver {@link CallCredentials} to use on a
      * per-gRPC basis. Any credentials returned by this {@link CallCredentialsProvider} will have
      * preference above any {@link Credentials} that may have been set on the {@link SpannerOptions}
@@ -436,6 +532,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return new Builder();
   }
 
+  /**
+   * Sets the environment to use to read configuration. The default will read configuration from
+   * environment variables.
+   */
+  public static void useEnvironment(SpannerEnvironment environment) {
+    SpannerOptions.environment = environment;
+  }
+
+  /**
+   * Sets the environment to use to read configuration to the default environment. This will read
+   * configuration from environment variables.
+   */
+  public static void useDefaultEnvironment() {
+    SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
   public TransportChannelProvider getChannelProvider() {
     return channelProvider;
   }
@@ -479,6 +591,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public CallCredentialsProvider getCallCredentialsProvider() {
     return callCredentialsProvider;
+  }
+
+  /** Returns the default query options to use for the specific database. */
+  public QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
+    // Use the specific query options for the database if any have been specified. These have
+    // already been merged with the query options specified in the environment variables.
+    QueryOptions options = this.mergedQueryOptions.get(databaseId);
+    if (options == null) {
+      // Use the generic environment query options. These are initialized as a default instance of
+      // query options and appended with any options specified in the environment variables.
+      options = this.envQueryOptions;
+    }
+    return options;
   }
 
   public int getPrefetchChunks() {

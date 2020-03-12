@@ -24,6 +24,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
+import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
@@ -79,6 +80,7 @@ class SessionImpl implements Session {
 
   private final SpannerImpl spanner;
   private final String name;
+  private final DatabaseId databaseId;
   private SessionTransaction activeTransaction;
   private ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
@@ -87,6 +89,7 @@ class SessionImpl implements Session {
     this.spanner = spanner;
     this.options = options;
     this.name = checkNotNull(name);
+    this.databaseId = SessionId.of(name).getDatabaseId();
   }
 
   @Override
@@ -160,7 +163,13 @@ class SessionImpl implements Session {
   @Override
   public ReadContext singleUse(TimestampBound bound) {
     return setActive(
-        new SingleReadContext(this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+        SingleReadContext.newBuilder()
+            .setSession(this)
+            .setTimestampBound(bound)
+            .setRpc(spanner.getRpc())
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .build());
   }
 
   @Override
@@ -171,8 +180,13 @@ class SessionImpl implements Session {
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
     return setActive(
-        new SingleUseReadOnlyTransaction(
-            this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+        SingleUseReadOnlyTransaction.newBuilder()
+            .setSession(this)
+            .setTimestampBound(bound)
+            .setRpc(spanner.getRpc())
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .buildSingleUseReadOnlyTransaction());
   }
 
   @Override
@@ -183,8 +197,13 @@ class SessionImpl implements Session {
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
     return setActive(
-        new MultiUseReadOnlyTransaction(
-            this, bound, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+        MultiUseReadOnlyTransaction.newBuilder()
+            .setSession(this)
+            .setTimestampBound(bound)
+            .setRpc(spanner.getRpc())
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .build());
   }
 
   @Override
@@ -240,10 +259,13 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction() {
-    TransactionContextImpl txn =
-        new TransactionContextImpl(
-            this, readyTransactionId, spanner.getRpc(), spanner.getDefaultPrefetchChunks());
-    return txn;
+    return TransactionContextImpl.newBuilder()
+        .setSession(this)
+        .setTransactionId(readyTransactionId)
+        .setRpc(spanner.getRpc())
+        .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+        .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+        .build();
   }
 
   <T extends SessionTransaction> T setActive(@Nullable T ctx) {

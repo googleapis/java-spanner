@@ -28,6 +28,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +87,47 @@ public class SpannerImplTest {
     DatabaseClient databaseClient1 = impl.getDatabaseClient(db);
 
     assertThat(databaseClient1).isSameInstanceAs(databaseClient);
+  }
+
+  @Test
+  public void queryOptions() {
+    QueryOptions queryOptions = QueryOptions.newBuilder().setOptimizerVersion("2").build();
+    QueryOptions defaultOptions = QueryOptions.getDefaultInstance();
+    DatabaseId db = DatabaseId.of("p", "i", "d");
+    DatabaseId otherDb = DatabaseId.of("p", "i", "other");
+
+    // Create a SpannerOptions with and without default query options.
+    SpannerOptions optionsWithQueryOptions =
+        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+          @Override
+          QueryOptions getEnvironmentQueryOptions() {
+            // Override and return default instance to prevent environment variables from
+            // interfering with the test case.
+            return QueryOptions.getDefaultInstance();
+          }
+        }.setDefaultQueryOptions(db, queryOptions).build();
+    SpannerOptions optionsWithoutQueryOptions =
+        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+          @Override
+          QueryOptions getEnvironmentQueryOptions() {
+            // Override and return default instance to prevent environment variables from
+            // interfering with the test case.
+            return QueryOptions.getDefaultInstance();
+          }
+        }.build();
+
+    try (SpannerImpl implWithQueryOptions = new SpannerImpl(rpc, optionsWithQueryOptions);
+        SpannerImpl implWithoutQueryOptions = new SpannerImpl(rpc, optionsWithoutQueryOptions)) {
+
+      // Default query options are on a per-database basis, so we should only get the custom options
+      // for 'db' and not for 'otherDb'.
+      assertThat(implWithQueryOptions.getDefaultQueryOptions(db)).isEqualTo(queryOptions);
+      assertThat(implWithQueryOptions.getDefaultQueryOptions(otherDb)).isEqualTo(defaultOptions);
+
+      // The other Spanner instance should return default options for both databases.
+      assertThat(implWithoutQueryOptions.getDefaultQueryOptions(db)).isEqualTo(defaultOptions);
+      assertThat(implWithoutQueryOptions.getDefaultQueryOptions(otherDb)).isEqualTo(defaultOptions);
+    }
   }
 
   @Test

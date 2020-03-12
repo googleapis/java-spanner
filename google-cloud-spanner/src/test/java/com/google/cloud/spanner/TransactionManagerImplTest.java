@@ -211,7 +211,7 @@ public class TransactionManagerImplTest {
                   throws Throwable {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0])
+                        .setName((String) invocation.getArguments()[0] + "/sessions/1")
                         .setCreateTime(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))

@@ -59,7 +59,11 @@ public class TransactionContextImplTest {
     when(rpc.executeBatchDml(Mockito.any(ExecuteBatchDmlRequest.class), Mockito.anyMap()))
         .thenReturn(response);
     try (TransactionContextImpl impl =
-        new TransactionContextImpl(session, ByteString.copyFromUtf8("test"), rpc, 10)) {
+        TransactionContextImpl.newBuilder()
+            .setSession(session)
+            .setRpc(rpc)
+            .setTransactionId(ByteString.copyFromUtf8("test"))
+            .build()) {
       impl.batchUpdate(Arrays.asList(statement));
     }
   }

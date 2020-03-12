@@ -193,6 +193,10 @@ class SessionClient implements AutoCloseable {
     return spanner;
   }
 
+  DatabaseId getDatabaseId() {
+    return db;
+  }
+
   /** Create a single session. */
   SessionImpl createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
