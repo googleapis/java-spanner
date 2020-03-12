@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.cloud.spanner.Options.MergeableQueryOption;
-import com.google.cloud.spanner.Options.QueryOption;
 import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.Objects;
@@ -34,18 +32,6 @@ public final class Options implements Serializable {
 
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
-
-  /**
-   * Interface for query options that can be merged with each other to form a new combined {@link
-   * QueryOption}.
-   */
-  public interface MergeableQueryOption extends QueryOption {
-    /**
-     * Merge two {@link QueryOption}s together. The values of <code>other</code> will take
-     * precedence over the values of this {@link QueryOption}.
-     */
-    MergeableQueryOption merge(MergeableQueryOption other);
-  }
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
@@ -276,13 +262,6 @@ public final class Options implements Serializable {
 
   private abstract static class InternalOption {
     abstract void appendToOptions(Options options);
-  }
-
-  private static class NoOptions extends InternalOption implements ReadAndQueryOption {
-    private static final NoOptions INSTANCE = new NoOptions();
-
-    @Override
-    void appendToOptions(Options options) {}
   }
 
   static class LimitOption extends InternalOption implements ReadOption {
