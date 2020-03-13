@@ -20,6 +20,7 @@ import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
@@ -518,6 +519,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                 return builder.usePlaintext();
               }
             });
+        // As we are using plain text, we should never send any credentials.
+        this.setCredentials(NoCredentials.getInstance());
       }
       return new SpannerOptions(this);
     }
