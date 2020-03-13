@@ -85,6 +85,37 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
               state_ = rawValue;
               break;
             }
+          case 26:
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (createTime_ != null) {
+                subBuilder = createTime_.toBuilder();
+              }
+              createTime_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(createTime_);
+                createTime_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 34:
+            {
+              com.google.spanner.admin.database.v1.RestoreInfo.Builder subBuilder = null;
+              if (restoreInfo_ != null) {
+                subBuilder = restoreInfo_.toBuilder();
+              }
+              restoreInfo_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.RestoreInfo.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(restoreInfo_);
+                restoreInfo_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -160,6 +191,22 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <code>READY = 2;</code>
      */
     READY(2),
+    /**
+     *
+     *
+     * <pre>
+     * The database is fully created and ready for use, but is still
+     * being optimized for performance and cannot handle full load.
+     * In this state, the database still references the backup
+     * it was restore from, preventing the backup
+     * from being deleted. When optimizations are complete, the full performance
+     * of the database will be restored, and the database will transition to
+     * `READY` state.
+     * </pre>
+     *
+     * <code>READY_OPTIMIZING = 3;</code>
+     */
+    READY_OPTIMIZING(3),
     UNRECOGNIZED(-1),
     ;
 
@@ -194,6 +241,22 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <code>READY = 2;</code>
      */
     public static final int READY_VALUE = 2;
+    /**
+     *
+     *
+     * <pre>
+     * The database is fully created and ready for use, but is still
+     * being optimized for performance and cannot handle full load.
+     * In this state, the database still references the backup
+     * it was restore from, preventing the backup
+     * from being deleted. When optimizations are complete, the full performance
+     * of the database will be restored, and the database will transition to
+     * `READY` state.
+     * </pre>
+     *
+     * <code>READY_OPTIMIZING = 3;</code>
+     */
+    public static final int READY_OPTIMIZING_VALUE = 3;
 
     public final int getNumber() {
       if (this == UNRECOGNIZED) {
@@ -225,6 +288,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           return CREATING;
         case 2:
           return READY;
+        case 3:
+          return READY_OPTIMIZING;
         default:
           return null;
       }
@@ -287,7 +352,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * identify the database.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The name.
    */
@@ -313,7 +378,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * identify the database.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for name.
    */
@@ -338,7 +403,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The current database state.
    * </pre>
    *
-   * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+   * <code>
+   * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The enum numeric value on the wire for state.
    */
@@ -352,7 +419,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The current database state.
    * </pre>
    *
-   * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+   * <code>
+   * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The state.
    */
@@ -363,6 +432,106 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return result == null
         ? com.google.spanner.admin.database.v1.Database.State.UNRECOGNIZED
         : result;
+  }
+
+  public static final int CREATE_TIME_FIELD_NUMBER = 3;
+  private com.google.protobuf.Timestamp createTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the createTime field is set.
+   */
+  public boolean hasCreateTime() {
+    return createTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The createTime.
+   */
+  public com.google.protobuf.Timestamp getCreateTime() {
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+    return getCreateTime();
+  }
+
+  public static final int RESTORE_INFO_FIELD_NUMBER = 4;
+  private com.google.spanner.admin.database.v1.RestoreInfo restoreInfo_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the restoreInfo field is set.
+   */
+  public boolean hasRestoreInfo() {
+    return restoreInfo_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The restoreInfo.
+   */
+  public com.google.spanner.admin.database.v1.RestoreInfo getRestoreInfo() {
+    return restoreInfo_ == null
+        ? com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()
+        : restoreInfo_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  public com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder() {
+    return getRestoreInfo();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -386,6 +555,12 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.admin.database.v1.Database.State.STATE_UNSPECIFIED.getNumber()) {
       output.writeEnum(2, state_);
     }
+    if (createTime_ != null) {
+      output.writeMessage(3, getCreateTime());
+    }
+    if (restoreInfo_ != null) {
+      output.writeMessage(4, getRestoreInfo());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -401,6 +576,12 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (state_
         != com.google.spanner.admin.database.v1.Database.State.STATE_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(2, state_);
+    }
+    if (createTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getCreateTime());
+    }
+    if (restoreInfo_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getRestoreInfo());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -420,6 +601,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
 
     if (!getName().equals(other.getName())) return false;
     if (state_ != other.state_) return false;
+    if (hasCreateTime() != other.hasCreateTime()) return false;
+    if (hasCreateTime()) {
+      if (!getCreateTime().equals(other.getCreateTime())) return false;
+    }
+    if (hasRestoreInfo() != other.hasRestoreInfo()) return false;
+    if (hasRestoreInfo()) {
+      if (!getRestoreInfo().equals(other.getRestoreInfo())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -435,6 +624,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + getName().hashCode();
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
+    if (hasCreateTime()) {
+      hash = (37 * hash) + CREATE_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getCreateTime().hashCode();
+    }
+    if (hasRestoreInfo()) {
+      hash = (37 * hash) + RESTORE_INFO_FIELD_NUMBER;
+      hash = (53 * hash) + getRestoreInfo().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -584,6 +781,18 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
 
       state_ = 0;
 
+      if (createTimeBuilder_ == null) {
+        createTime_ = null;
+      } else {
+        createTime_ = null;
+        createTimeBuilder_ = null;
+      }
+      if (restoreInfoBuilder_ == null) {
+        restoreInfo_ = null;
+      } else {
+        restoreInfo_ = null;
+        restoreInfoBuilder_ = null;
+      }
       return this;
     }
 
@@ -613,6 +822,16 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           new com.google.spanner.admin.database.v1.Database(this);
       result.name_ = name_;
       result.state_ = state_;
+      if (createTimeBuilder_ == null) {
+        result.createTime_ = createTime_;
+      } else {
+        result.createTime_ = createTimeBuilder_.build();
+      }
+      if (restoreInfoBuilder_ == null) {
+        result.restoreInfo_ = restoreInfo_;
+      } else {
+        result.restoreInfo_ = restoreInfoBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -669,6 +888,12 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
+      if (other.hasCreateTime()) {
+        mergeCreateTime(other.getCreateTime());
+      }
+      if (other.hasRestoreInfo()) {
+        mergeRestoreInfo(other.getRestoreInfo());
+      }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -710,7 +935,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * identify the database.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The name.
      */
@@ -736,7 +961,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * identify the database.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for name.
      */
@@ -762,7 +987,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * identify the database.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -787,7 +1012,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * identify the database.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
@@ -808,7 +1033,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * identify the database.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.
@@ -832,7 +1057,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The current database state.
      * </pre>
      *
-     * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+     * <code>
+     * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The enum numeric value on the wire for state.
      */
@@ -846,7 +1073,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The current database state.
      * </pre>
      *
-     * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+     * <code>
+     * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
@@ -863,7 +1092,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The current database state.
      * </pre>
      *
-     * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+     * <code>
+     * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The state.
      */
@@ -882,7 +1113,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The current database state.
      * </pre>
      *
-     * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+     * <code>
+     * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The state to set.
      * @return This builder for chaining.
@@ -903,7 +1136,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The current database state.
      * </pre>
      *
-     * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+     * <code>
+     * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return This builder for chaining.
      */
@@ -912,6 +1147,420 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       state_ = 0;
       onChanged();
       return this;
+    }
+
+    private com.google.protobuf.Timestamp createTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        createTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the createTime field is set.
+     */
+    public boolean hasCreateTime() {
+      return createTimeBuilder_ != null || createTime_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The createTime.
+     */
+    public com.google.protobuf.Timestamp getCreateTime() {
+      if (createTimeBuilder_ == null) {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      } else {
+        return createTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        createTime_ = value;
+        onChanged();
+      } else {
+        createTimeBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (createTimeBuilder_ == null) {
+        createTime_ = builderForValue.build();
+        onChanged();
+      } else {
+        createTimeBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (createTime_ != null) {
+          createTime_ =
+              com.google.protobuf.Timestamp.newBuilder(createTime_).mergeFrom(value).buildPartial();
+        } else {
+          createTime_ = value;
+        }
+        onChanged();
+      } else {
+        createTimeBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearCreateTime() {
+      if (createTimeBuilder_ == null) {
+        createTime_ = null;
+        onChanged();
+      } else {
+        createTime_ = null;
+        createTimeBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
+
+      onChanged();
+      return getCreateTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+      if (createTimeBuilder_ != null) {
+        return createTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. If exists, the time at which the database creation started.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getCreateTimeFieldBuilder() {
+      if (createTimeBuilder_ == null) {
+        createTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getCreateTime(), getParentForChildren(), isClean());
+        createTime_ = null;
+      }
+      return createTimeBuilder_;
+    }
+
+    private com.google.spanner.admin.database.v1.RestoreInfo restoreInfo_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.RestoreInfo,
+            com.google.spanner.admin.database.v1.RestoreInfo.Builder,
+            com.google.spanner.admin.database.v1.RestoreInfoOrBuilder>
+        restoreInfoBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the restoreInfo field is set.
+     */
+    public boolean hasRestoreInfo() {
+      return restoreInfoBuilder_ != null || restoreInfo_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The restoreInfo.
+     */
+    public com.google.spanner.admin.database.v1.RestoreInfo getRestoreInfo() {
+      if (restoreInfoBuilder_ == null) {
+        return restoreInfo_ == null
+            ? com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()
+            : restoreInfo_;
+      } else {
+        return restoreInfoBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setRestoreInfo(com.google.spanner.admin.database.v1.RestoreInfo value) {
+      if (restoreInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        restoreInfo_ = value;
+        onChanged();
+      } else {
+        restoreInfoBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setRestoreInfo(
+        com.google.spanner.admin.database.v1.RestoreInfo.Builder builderForValue) {
+      if (restoreInfoBuilder_ == null) {
+        restoreInfo_ = builderForValue.build();
+        onChanged();
+      } else {
+        restoreInfoBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeRestoreInfo(com.google.spanner.admin.database.v1.RestoreInfo value) {
+      if (restoreInfoBuilder_ == null) {
+        if (restoreInfo_ != null) {
+          restoreInfo_ =
+              com.google.spanner.admin.database.v1.RestoreInfo.newBuilder(restoreInfo_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          restoreInfo_ = value;
+        }
+        onChanged();
+      } else {
+        restoreInfoBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearRestoreInfo() {
+      if (restoreInfoBuilder_ == null) {
+        restoreInfo_ = null;
+        onChanged();
+      } else {
+        restoreInfo_ = null;
+        restoreInfoBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.RestoreInfo.Builder getRestoreInfoBuilder() {
+
+      onChanged();
+      return getRestoreInfoFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder() {
+      if (restoreInfoBuilder_ != null) {
+        return restoreInfoBuilder_.getMessageOrBuilder();
+      } else {
+        return restoreInfo_ == null
+            ? com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()
+            : restoreInfo_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Applicable only for restored databases. Contains information
+     * about the restore source.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.RestoreInfo,
+            com.google.spanner.admin.database.v1.RestoreInfo.Builder,
+            com.google.spanner.admin.database.v1.RestoreInfoOrBuilder>
+        getRestoreInfoFieldBuilder() {
+      if (restoreInfoBuilder_ == null) {
+        restoreInfoBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.RestoreInfo,
+                com.google.spanner.admin.database.v1.RestoreInfo.Builder,
+                com.google.spanner.admin.database.v1.RestoreInfoOrBuilder>(
+                getRestoreInfo(), getParentForChildren(), isClean());
+        restoreInfo_ = null;
+      }
+      return restoreInfoBuilder_;
     }
 
     @java.lang.Override

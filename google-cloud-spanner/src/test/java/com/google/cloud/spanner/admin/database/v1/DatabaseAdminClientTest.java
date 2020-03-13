@@ -15,6 +15,9 @@
  */
 package com.google.cloud.spanner.admin.database.v1;
 
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -37,16 +40,30 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupsRequest;
+import com.google.spanner.admin.database.v1.ListBackupsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -323,7 +340,7 @@ public class DatabaseAdminClientTest {
     Policy expectedResponse = Policy.newBuilder().setVersion(version).setEtag(etag).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -348,7 +365,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       Policy policy = Policy.newBuilder().build();
 
       client.setIamPolicy(resource, policy);
@@ -366,7 +383,7 @@ public class DatabaseAdminClientTest {
     Policy expectedResponse = Policy.newBuilder().setVersion(version).setEtag(etag).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -389,7 +406,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
 
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
@@ -404,7 +421,7 @@ public class DatabaseAdminClientTest {
     TestIamPermissionsResponse expectedResponse = TestIamPermissionsResponse.newBuilder().build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -429,10 +446,400 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       List<String> permissions = new ArrayList<>();
 
       client.testIamPermissions(resource, permissions);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void createBackupTest() throws Exception {
+    String database = "database1789464955";
+    BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    long sizeBytes = 1796325715L;
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(database)
+            .setName(name.toString())
+            .setSizeBytes(sizeBytes)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("createBackupTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    Backup backup = Backup.newBuilder().build();
+    String backupId = "backupId1355353272";
+
+    Backup actualResponse = client.createBackupAsync(parent, backup, backupId).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateBackupRequest actualRequest = (CreateBackupRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertEquals(backup, actualRequest.getBackup());
+    Assert.assertEquals(backupId, actualRequest.getBackupId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void createBackupExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      Backup backup = Backup.newBuilder().build();
+      String backupId = "backupId1355353272";
+
+      client.createBackupAsync(parent, backup, backupId).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void getBackupTest() {
+    String database = "database1789464955";
+    BackupName name2 = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    long sizeBytes = 1796325715L;
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(database)
+            .setName(name2.toString())
+            .setSizeBytes(sizeBytes)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+    Backup actualResponse = client.getBackup(name);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    GetBackupRequest actualRequest = (GetBackupRequest) actualRequests.get(0);
+
+    Assert.assertEquals(name, BackupName.parse(actualRequest.getName()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void getBackupExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+      client.getBackup(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void updateBackupTest() {
+    String database = "database1789464955";
+    BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    long sizeBytes = 1796325715L;
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(database)
+            .setName(name.toString())
+            .setSizeBytes(sizeBytes)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    Backup backup = Backup.newBuilder().build();
+    FieldMask updateMask = FieldMask.newBuilder().build();
+
+    Backup actualResponse = client.updateBackup(backup, updateMask);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateBackupRequest actualRequest = (UpdateBackupRequest) actualRequests.get(0);
+
+    Assert.assertEquals(backup, actualRequest.getBackup());
+    Assert.assertEquals(updateMask, actualRequest.getUpdateMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void updateBackupExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      Backup backup = Backup.newBuilder().build();
+      FieldMask updateMask = FieldMask.newBuilder().build();
+
+      client.updateBackup(backup, updateMask);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void deleteBackupTest() {
+    Empty expectedResponse = Empty.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+    client.deleteBackup(name);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    DeleteBackupRequest actualRequest = (DeleteBackupRequest) actualRequests.get(0);
+
+    Assert.assertEquals(name, BackupName.parse(actualRequest.getName()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void deleteBackupExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+      client.deleteBackup(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listBackupsTest() {
+    String nextPageToken = "";
+    Backup backupsElement = Backup.newBuilder().build();
+    List<Backup> backups = Arrays.asList(backupsElement);
+    ListBackupsResponse expectedResponse =
+        ListBackupsResponse.newBuilder()
+            .setNextPageToken(nextPageToken)
+            .addAllBackups(backups)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListBackupsPagedResponse pagedListResponse = client.listBackups(parent);
+
+    List<Backup> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getBackupsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListBackupsRequest actualRequest = (ListBackupsRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listBackupsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+      client.listBackups(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void restoreDatabaseTest() throws Exception {
+    DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    Database expectedResponse = Database.newBuilder().setName(name.toString()).build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("restoreDatabaseTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    String databaseId = "databaseId816491103";
+    BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+    Database actualResponse = client.restoreDatabaseAsync(parent, databaseId, backup).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    RestoreDatabaseRequest actualRequest = (RestoreDatabaseRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertEquals(databaseId, actualRequest.getDatabaseId());
+    Assert.assertEquals(backup, BackupName.parse(actualRequest.getBackup()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void restoreDatabaseExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      String databaseId = "databaseId816491103";
+      BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+
+      client.restoreDatabaseAsync(parent, databaseId, backup).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listDatabaseOperationsTest() {
+    String nextPageToken = "";
+    Operation operationsElement = Operation.newBuilder().build();
+    List<Operation> operations = Arrays.asList(operationsElement);
+    ListDatabaseOperationsResponse expectedResponse =
+        ListDatabaseOperationsResponse.newBuilder()
+            .setNextPageToken(nextPageToken)
+            .addAllOperations(operations)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListDatabaseOperationsPagedResponse pagedListResponse = client.listDatabaseOperations(parent);
+
+    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListDatabaseOperationsRequest actualRequest =
+        (ListDatabaseOperationsRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listDatabaseOperationsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+      client.listDatabaseOperations(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listBackupOperationsTest() {
+    String nextPageToken = "";
+    Operation operationsElement = Operation.newBuilder().build();
+    List<Operation> operations = Arrays.asList(operationsElement);
+    ListBackupOperationsResponse expectedResponse =
+        ListBackupOperationsResponse.newBuilder()
+            .setNextPageToken(nextPageToken)
+            .addAllOperations(operations)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListBackupOperationsPagedResponse pagedListResponse = client.listBackupOperations(parent);
+
+    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListBackupOperationsRequest actualRequest = (ListBackupOperationsRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listBackupOperationsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+      client.listBackupOperations(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception

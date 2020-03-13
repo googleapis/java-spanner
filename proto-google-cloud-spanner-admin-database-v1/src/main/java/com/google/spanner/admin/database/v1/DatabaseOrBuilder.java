@@ -34,7 +34,7 @@ public interface DatabaseOrBuilder
    * identify the database.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The name.
    */
@@ -50,7 +50,7 @@ public interface DatabaseOrBuilder
    * identify the database.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for name.
    */
@@ -63,7 +63,9 @@ public interface DatabaseOrBuilder
    * Output only. The current database state.
    * </pre>
    *
-   * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+   * <code>
+   * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The enum numeric value on the wire for state.
    */
@@ -75,9 +77,93 @@ public interface DatabaseOrBuilder
    * Output only. The current database state.
    * </pre>
    *
-   * <code>.google.spanner.admin.database.v1.Database.State state = 2;</code>
+   * <code>
+   * .google.spanner.admin.database.v1.Database.State state = 2 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The state.
    */
   com.google.spanner.admin.database.v1.Database.State getState();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the createTime field is set.
+   */
+  boolean hasCreateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The createTime.
+   */
+  com.google.protobuf.Timestamp getCreateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If exists, the time at which the database creation started.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the restoreInfo field is set.
+   */
+  boolean hasRestoreInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The restoreInfo.
+   */
+  com.google.spanner.admin.database.v1.RestoreInfo getRestoreInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Applicable only for restored databases. Contains information
+   * about the restore source.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder();
 }
