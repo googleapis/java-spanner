@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.BaseMatcher;
@@ -252,18 +253,18 @@ public class DatabaseAdminClientTest {
       RetryingFuture<OperationSnapshot> pollingFuture = op.getPollingFuture();
       // Wait for the operation to finish.
       // isDone will return true if the operation has finished successfully or if it was cancelled
-      // or any other error occurred..
+      // or any other error occurred.
       while (!pollingFuture.get().isDone()) {
         Thread.sleep(TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS));
       }
-      if (pollingFuture.get().getErrorCode() == null) {
-        // The cancellation of the backup creation failed. Delete the backup.
-        backup.delete();
-      }
+    } catch (CancellationException e) {
+      // ignore, this exception may also occur if the polling future has been cancelled.
     } catch (ExecutionException e) {
-      throw (SpannerException) e.getCause();
+      throw (RuntimeException) e.getCause();
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
+    } finally {
+      backup.delete();
     }
   }
 

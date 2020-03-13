@@ -148,9 +148,9 @@ public class MockOperationsServiceImpl extends OperationsImplBase implements Moc
                         .build())
                 .build());
         fut.cancel(true);
-        responseObserver.onNext(Empty.getDefaultInstance());
-        responseObserver.onCompleted();
       }
+      responseObserver.onNext(Empty.getDefaultInstance());
+      responseObserver.onCompleted();
     } else {
       responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
     }

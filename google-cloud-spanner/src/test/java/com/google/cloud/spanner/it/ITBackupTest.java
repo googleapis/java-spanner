@@ -316,7 +316,7 @@ public class ITBackupTest {
         .doesNotContain(backup1);
 
     // Test pagination.
-    testPagination(3);
+    testPagination(2);
     logger.info("Finished listBackup tests");
 
     // Execute other tests as part of this integration test to reduce total execution time.
