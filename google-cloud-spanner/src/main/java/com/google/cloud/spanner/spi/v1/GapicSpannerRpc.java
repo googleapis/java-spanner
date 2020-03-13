@@ -57,18 +57,33 @@ import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupsRequest;
+import com.google.spanner.admin.database.v1.ListBackupsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -391,6 +406,65 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public Paginated<Operation> listBackupOperations(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    ListBackupOperationsRequest.Builder requestBuilder =
+        ListBackupOperationsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListBackupOperationsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListBackupOperationsResponse response =
+        get(databaseAdminStub.listBackupOperationsCallable().futureCall(request, context));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
+  }
+
+  @Override
+  public Paginated<Operation> listDatabaseOperations(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    ListDatabaseOperationsRequest.Builder requestBuilder =
+        ListDatabaseOperationsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListDatabaseOperationsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListDatabaseOperationsResponse response =
+        get(databaseAdminStub.listDatabaseOperationsCallable().futureCall(request, context));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
+  }
+
+  @Override
+  public Paginated<Backup> listBackups(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
+      throws SpannerException {
+    ListBackupsRequest.Builder requestBuilder =
+        ListBackupsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListBackupsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListBackupsResponse response =
+        get(databaseAdminStub.listBackupsCallable().futureCall(request, context));
+    return new Paginated<>(response.getBackupsList(), response.getNextPageToken());
+  }
+
+  @Override
   public Paginated<Database> listDatabases(
       String instanceName, int pageSize, @Nullable String pageToken) throws SpannerException {
     ListDatabasesRequest.Builder requestBuilder =
@@ -478,11 +552,71 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(
+      String instanceName, String backupId, Backup backup) throws SpannerException {
+    CreateBackupRequest request =
+        CreateBackupRequest.newBuilder()
+            .setParent(instanceName)
+            .setBackupId(backupId)
+            .setBackup(backup)
+            .build();
+    GrpcCallContext context = newCallContext(null, instanceName);
+    return databaseAdminStub.createBackupOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+      String databaseInstanceName, String databaseId, String backupName) {
+
+    RestoreDatabaseRequest request =
+        RestoreDatabaseRequest.newBuilder()
+            .setParent(databaseInstanceName)
+            .setDatabaseId(databaseId)
+            .setBackup(backupName)
+            .build();
+    GrpcCallContext context = newCallContext(null, databaseInstanceName);
+    return databaseAdminStub.restoreDatabaseOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public final Backup updateBackup(Backup backup, FieldMask updateMask) {
+    UpdateBackupRequest request =
+        UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
+    GrpcCallContext context = newCallContext(null, backup.getName());
+    return databaseAdminStub.updateBackupCallable().call(request, context);
+  }
+
+  @Override
+  public final void deleteBackup(String backupName) {
+    DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(backupName).build();
+    GrpcCallContext context = newCallContext(null, backupName);
+    databaseAdminStub.deleteBackupCallable().call(request, context);
+  }
+
+  @Override
+  public Backup getBackup(String backupName) throws SpannerException {
+    GetBackupRequest request = GetBackupRequest.newBuilder().setName(backupName).build();
+    GrpcCallContext context = newCallContext(null, backupName);
+    return get(databaseAdminStub.getBackupCallable().futureCall(request, context));
+  }
+
+  @Override
   public Operation getOperation(String name) throws SpannerException {
     GetOperationRequest request = GetOperationRequest.newBuilder().setName(name).build();
     GrpcCallContext context = newCallContext(null, name);
     return get(
         databaseAdminStub.getOperationsStub().getOperationCallable().futureCall(request, context));
+  }
+
+  @Override
+  public void cancelOperation(String name) throws SpannerException {
+    CancelOperationRequest request = CancelOperationRequest.newBuilder().setName(name).build();
+    GrpcCallContext context = newCallContext(null, name);
+    get(
+        databaseAdminStub
+            .getOperationsStub()
+            .cancelOperationCallable()
+            .futureCall(request, context));
   }
 
   @Override

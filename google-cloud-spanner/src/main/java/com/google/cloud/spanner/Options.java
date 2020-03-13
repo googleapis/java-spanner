@@ -314,5 +314,12 @@ public final class Options implements Serializable {
     void appendToOptions(Options options) {
       options.filter = filter;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof FilterOption)) return false;
+      return Objects.equals(filter, ((FilterOption) o).filter);
+    }
   }
 }

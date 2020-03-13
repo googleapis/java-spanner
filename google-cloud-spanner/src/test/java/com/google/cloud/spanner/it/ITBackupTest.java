@@ -1,0 +1,572 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.cloud.spanner.it;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
+
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.longrunning.OperationSnapshot;
+import com.google.api.gax.paging.Page;
+import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
+import com.google.api.gax.rpc.UnaryCallSettings;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Backup;
+import com.google.cloud.spanner.BackupId;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.GceTestEnvConfig;
+import com.google.cloud.spanner.Instance;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.longrunning.Operation;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.RestoreSourceType;
+import io.grpc.Status;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
+
+/**
+ * Integration tests creating, reading, updating and deleting backups. This test class combines
+ * several tests into one long test to reduce the total execution time.
+ */
+@Category(IntegrationTest.class)
+@RunWith(JUnit4.class)
+public class ITBackupTest {
+  private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
+  private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
+
+  public static class BackupTestEnvConfig extends GceTestEnvConfig {
+    @Override
+    public SpannerOptions spannerOptions() {
+      SpannerOptions.Builder builder = super.spannerOptions().toBuilder();
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .createDatabaseOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setSimpleTimeoutNoRetries(Duration.ofHours(1L))
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .createBackupOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setSimpleTimeoutNoRetries(Duration.ofHours(1L))
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .restoreDatabaseOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setSimpleTimeoutNoRetries(Duration.ofHours(1L))
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .deleteBackupSettings()
+          .setSimpleTimeoutNoRetries(Duration.ofHours(1L));
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .updateBackupSettings()
+          .setSimpleTimeoutNoRetries(Duration.ofMinutes(60L));
+      return builder.build();
+    }
+  }
+
+  @ClassRule
+  public static IntegrationTestEnv env =
+      new IntegrationTestEnv() {
+        @Override
+        protected void initializeConfig()
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+          System.setProperty(
+              TEST_ENV_CONFIG_CLASS_NAME,
+              "com.google.cloud.spanner.it.ITBackupTest$BackupTestEnvConfig");
+          super.initializeConfig();
+        }
+      };
+
+  @Rule public ExpectedException expectedException = ExpectedException.none();
+  private DatabaseAdminClient dbAdminClient;
+  private InstanceAdminClient instanceAdminClient;
+  private Instance instance;
+  private RemoteSpannerHelper testHelper;
+  private final AtomicInteger backupSeq = new AtomicInteger();
+  private List<String> databases = new ArrayList<>();
+  private List<String> backups = new ArrayList<>();
+  private final Random random = new Random();
+
+  @Before
+  public void setUp() throws Exception {
+    logger.info("Setting up tests");
+    testHelper = env.getTestHelper();
+    dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
+    instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
+    instance = instanceAdminClient.getInstance(testHelper.getInstanceId().getInstance());
+    logger.info("Finished setup");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    for (String backup : backups) {
+      dbAdminClient.deleteBackup(testHelper.getInstanceId().getInstance(), backup);
+    }
+    backups.clear();
+    for (String db : databases) {
+      dbAdminClient.dropDatabase(testHelper.getInstanceId().getInstance(), db);
+    }
+  }
+
+  private String getUniqueBackupId() {
+    return String.format("testbck_%06d_%04d", random.nextInt(1000000), backupSeq.incrementAndGet());
+  }
+
+  private static Timestamp after7Days() {
+    return Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            + TimeUnit.MICROSECONDS.convert(7L, TimeUnit.DAYS));
+  }
+
+  private Timestamp after5Minutes() {
+    return Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            + TimeUnit.MICROSECONDS.convert(5L, TimeUnit.MINUTES));
+  }
+
+  private Timestamp tomorrow() {
+    return Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            + TimeUnit.MICROSECONDS.convert(1L, TimeUnit.DAYS));
+  }
+
+  private Timestamp yesterday() {
+    return Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            - TimeUnit.MICROSECONDS.convert(1L, TimeUnit.DAYS));
+  }
+
+  @Test
+  public void testBackups() throws InterruptedException, ExecutionException {
+    // Create two test databases in parallel.
+    logger.info("Creating test databases");
+    OperationFuture<Database, CreateDatabaseMetadata> dbOp1 =
+        dbAdminClient.createDatabase(
+            testHelper.getInstanceId().getInstance(),
+            testHelper.getUniqueDatabaseId() + "_db1",
+            Arrays.asList("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+    OperationFuture<Database, CreateDatabaseMetadata> dbOp2 =
+        dbAdminClient.createDatabase(
+            testHelper.getInstanceId().getInstance(),
+            testHelper.getUniqueDatabaseId() + "_db2",
+            Arrays.asList("CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+    // Make sure all databases are created before we try to create any backups.
+    Database db1 = dbOp1.get();
+    Database db2 = dbOp2.get();
+    databases.add(db1.getId().getDatabase());
+    databases.add(db2.getId().getDatabase());
+    // Insert some data into db2 to make sure the backup will have a size>0.
+    DatabaseClient client = testHelper.getDatabaseClient(db2);
+    client.writeAtLeastOnce(
+        Arrays.asList(
+            Mutation.newInsertOrUpdateBuilder("BAR")
+                .set("ID")
+                .to(1L)
+                .set("NAME")
+                .to("TEST")
+                .build()));
+
+    // Create two backups in parallel.
+    String backupId1 = getUniqueBackupId() + "_bck1";
+    String backupId2 = getUniqueBackupId() + "_bck2";
+    Timestamp expireTime = after7Days();
+    logger.info("Creating backups");
+    OperationFuture<Backup, CreateBackupMetadata> op1 =
+        dbAdminClient.createBackup(
+            testHelper.getInstanceId().getInstance(),
+            backupId1,
+            db1.getId().getDatabase(),
+            expireTime);
+    OperationFuture<Backup, CreateBackupMetadata> op2 =
+        dbAdminClient.createBackup(
+            testHelper.getInstanceId().getInstance(),
+            backupId2,
+            db2.getId().getDatabase(),
+            expireTime);
+    backups.add(backupId1);
+    backups.add(backupId2);
+
+    // Execute metadata tests as part of this integration test to reduce total execution time.
+    testMetadata(op1, op2, backupId1, backupId2, db1, db2);
+
+    // Ensure both backups have been created before we proceed.
+    Backup backup1 = op1.get();
+    Backup backup2 = op2.get();
+    // Insert some more data into db2 to get a timestamp from the server.
+    Timestamp commitTs =
+        client.writeAtLeastOnce(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("BAR")
+                    .set("ID")
+                    .to(2L)
+                    .set("NAME")
+                    .to("TEST2")
+                    .build()));
+
+    // Test listing operations.
+    // List all backups.
+    logger.info("Listing all backups");
+    assertThat(instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
+    // List all backups whose names contain 'bck1'.
+    logger.info("Listing backups with name bck1");
+    assertThat(
+            dbAdminClient
+                .listBackups(
+                    testHelper.getInstanceId().getInstance(),
+                    Options.filter(String.format("name:%s", backup1.getId().getName())))
+                .iterateAll())
+        .containsExactly(backup1);
+    logger.info("Listing ready backups");
+    Iterable<Backup> readyBackups =
+        dbAdminClient
+            .listBackups(testHelper.getInstanceId().getInstance(), Options.filter("state:READY"))
+            .iterateAll();
+    assertThat(readyBackups).containsAtLeast(backup1, backup2);
+    // List all backups for databases whose names contain 'db1'.
+    logger.info("Listing backups for database db1");
+    assertThat(
+            dbAdminClient
+                .listBackups(
+                    testHelper.getInstanceId().getInstance(),
+                    Options.filter(String.format("database:%s", db1.getId().getName())))
+                .iterateAll())
+        .containsExactly(backup1);
+    // List all backups that were created before a certain time.
+    Timestamp ts = Timestamp.ofTimeSecondsAndNanos(commitTs.getSeconds(), 0);
+    logger.info(String.format("Listing backups created before %s", ts));
+    assertThat(
+            dbAdminClient
+                .listBackups(
+                    testHelper.getInstanceId().getInstance(),
+                    Options.filter(String.format("create_time<\"%s\"", ts)))
+                .iterateAll())
+        .containsAtLeast(backup1, backup2);
+    // List all backups with a size > 0.
+    logger.info("Listing backups with size>0");
+    assertThat(
+            dbAdminClient
+                .listBackups(
+                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
+                .iterateAll())
+        .contains(backup2);
+    assertThat(
+            dbAdminClient
+                .listBackups(
+                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
+                .iterateAll())
+        .doesNotContain(backup1);
+
+    // Test pagination.
+    testPagination(3);
+    logger.info("Finished listBackup tests");
+
+    // Execute other tests as part of this integration test to reduce total execution time.
+    testGetBackup(db2, backupId2, expireTime);
+    testUpdateBackup(backup1);
+    testCreateInvalidExpirationDate(db1);
+    testRestore(backup1, op1);
+
+    testDelete(backupId2);
+    testCancelBackupOperation(db1);
+    // Finished all tests.
+    logger.info("Finished all backup tests");
+  }
+
+  private void testMetadata(
+      OperationFuture<Backup, CreateBackupMetadata> op1,
+      OperationFuture<Backup, CreateBackupMetadata> op2,
+      String backupId1,
+      String backupId2,
+      Database db1,
+      Database db2)
+      throws InterruptedException, ExecutionException {
+    logger.info("Getting initial operation 1 status");
+    StatusCode status1 = op1.getInitialFuture().get().getErrorCode();
+    Code code1 = status1 == null ? Code.OK : status1.getCode();
+    assertThat(code1).isEqualTo(Code.OK);
+    logger.info("Getting initial operation 2 status");
+    StatusCode status2 = op2.getInitialFuture().get().getErrorCode();
+    Code code2 = status2 == null ? Code.OK : status2.getCode();
+    assertThat(code2).isEqualTo(Code.OK);
+
+    logger.info("Getting operation metadata 1");
+    CreateBackupMetadata metadata1 = op1.getMetadata().get();
+    logger.info("Getting operation metadata 2");
+    CreateBackupMetadata metadata2 = op2.getMetadata().get();
+    String expectedOperationName1 =
+        String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId1);
+    String expectedOperationName2 =
+        String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId2);
+    assertThat(op1.getName()).startsWith(expectedOperationName1);
+    assertThat(op2.getName()).startsWith(expectedOperationName2);
+    assertThat(metadata1.getDatabase()).isEqualTo(db1.getId().getName());
+    assertThat(metadata2.getDatabase()).isEqualTo(db2.getId().getName());
+    assertThat(metadata1.getName())
+        .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId1).getName());
+    assertThat(metadata2.getName())
+        .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId2).getName());
+  }
+
+  private void testCreateInvalidExpirationDate(Database db) throws InterruptedException {
+    // This is not allowed, the expiration date must be at least 6 hours in the future.
+    Timestamp expireTime = yesterday();
+    String backupId = getUniqueBackupId();
+    logger.info("Creating backup");
+    OperationFuture<Backup, CreateBackupMetadata> op =
+        dbAdminClient.createBackup(
+            testHelper.getInstanceId().getInstance(),
+            backupId,
+            db.getId().getDatabase(),
+            expireTime);
+    backups.add(backupId);
+    try {
+      op.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      Throwable cause = e.getCause();
+      assertThat(cause).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) cause;
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+  }
+
+  private void testCancelBackupOperation(Database db)
+      throws InterruptedException, ExecutionException {
+    Timestamp expireTime = after7Days();
+    String backupId = getUniqueBackupId();
+    logger.info("Creating backup 1");
+    OperationFuture<Backup, CreateBackupMetadata> op =
+        dbAdminClient.createBackup(
+            testHelper.getInstanceId().getInstance(),
+            backupId,
+            db.getId().getDatabase(),
+            expireTime);
+    backups.add(backupId);
+    // Cancel the backup operation.
+    logger.info("Cancelling backup 1");
+    dbAdminClient.cancelOperation(op.getName());
+    logger.info("Fetching backup operations");
+    boolean operationFound = false;
+    for (Operation operation :
+        dbAdminClient
+            .listBackupOperations(
+                testHelper.getInstanceId().getInstance(),
+                Options.filter(String.format("name:%s", op.getName())))
+            .iterateAll()) {
+      assertThat(operation.getError().getCode()).isEqualTo(Status.Code.CANCELLED.value());
+      operationFound = true;
+    }
+    assertThat(operationFound).isTrue();
+    logger.info("Finished cancel test");
+  }
+
+  private void testGetBackup(Database db, String backupId, Timestamp expireTime) {
+    // Get the most recent version of the backup.
+    logger.info("Getting backup");
+    Backup backup = instance.getBackup(backupId);
+    assertThat(backup.getState()).isEqualTo(Backup.State.READY);
+    assertThat(backup.getSize()).isGreaterThan(0L);
+    assertThat(backup.getExpireTime()).isEqualTo(expireTime);
+    assertThat(backup.getDatabase()).isEqualTo(db.getId());
+  }
+
+  private void testUpdateBackup(Backup backup) throws InterruptedException, ExecutionException {
+    // Update the expire time.
+    Timestamp tomorrow = tomorrow();
+    backup = backup.toBuilder().setExpireTime(tomorrow).build();
+    logger.info("Updating expire time to 1 week");
+    backup.updateExpireTime();
+    // Re-get the backup and ensure the expire time was updated.
+    backup = backup.reload();
+    assertThat(backup.getExpireTime()).isEqualTo(tomorrow);
+
+    // Try to set the expire time to 5 minutes in the future.
+    Timestamp in5Minutes = after5Minutes();
+    backup = backup.toBuilder().setExpireTime(in5Minutes).build();
+    try {
+      logger.info("Updating expire time to 5 minutes");
+      backup.updateExpireTime();
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    // Re-get the backup and ensure the expire time is still in one week.
+    backup = backup.reload();
+    assertThat(backup.getExpireTime()).isEqualTo(tomorrow);
+  }
+
+  private void testPagination(int expectedMinimumTotalBackups) {
+    logger.info("Listing backups using pagination");
+    int numBackups = 0;
+    logger.info("Fetching first page");
+    Page<Backup> page =
+        dbAdminClient.listBackups(testHelper.getInstanceId().getInstance(), Options.pageSize(1));
+    assertThat(page.getValues()).hasSize(1);
+    numBackups++;
+    assertThat(page.hasNextPage()).isTrue();
+    while (page.hasNextPage()) {
+      logger.info(String.format("Fetching page %d", numBackups + 1));
+      page =
+          dbAdminClient.listBackups(
+              testHelper.getInstanceId().getInstance(),
+              Options.pageToken(page.getNextPageToken()),
+              Options.pageSize(1));
+      assertThat(page.getValues()).hasSize(1);
+      numBackups++;
+    }
+    assertThat(numBackups).isAtLeast(expectedMinimumTotalBackups);
+  }
+
+  private void testDelete(String backupId) throws InterruptedException, ExecutionException {
+    // Get the backup.
+    logger.info("Fetching backup");
+    Backup backup = instance.getBackup(backupId);
+    // Delete it.
+    logger.info("Deleting backup");
+    backup.delete();
+    // Try to get it again. This should cause a NOT_FOUND error.
+    try {
+      logger.info("Fetching non-existent backup");
+      instance.getBackup(backupId);
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
+    // Try to delete the non-existent backup. This should be a no-op.
+    logger.info("Deleting non-existent backup");
+    backup.delete();
+    logger.info("Finished delete tests");
+  }
+
+  private void testRestore(Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp)
+      throws InterruptedException, ExecutionException {
+    final String backupOperationName = backupOp.getName();
+    // Restore the backup to a new database.
+    logger.info("Restoring database");
+    String restoredDb = testHelper.getUniqueDatabaseId();
+    OperationFuture<Database, RestoreDatabaseMetadata> restoreOp =
+        backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb));
+    databases.add(restoredDb);
+    final String restoreOperationName = restoreOp.getName();
+    RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
+    assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
+    assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
+    assertThat(metadata.getName())
+        .isEqualTo(DatabaseId.of(testHelper.getInstanceId(), restoredDb).getName());
+
+    // Ensure the operations show up in the right collections.
+    assertThat(
+            Iterables.any(
+                instance.listBackupOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(backupOperationName);
+                  }
+                }))
+        .isTrue();
+    assertThat(
+            Iterables.any(
+                instance.listBackupOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(restoreOperationName);
+                  }
+                }))
+        .isFalse();
+    assertThat(
+            Iterables.any(
+                instance.listDatabaseOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(backupOperationName);
+                  }
+                }))
+        .isFalse();
+    assertThat(
+            Iterables.any(
+                instance.listDatabaseOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(restoreOperationName);
+                  }
+                }))
+        .isTrue();
+
+    // Wait until the restore operation has finished successfully.
+    Database database = restoreOp.get();
+    assertThat(database.getId().getDatabase()).isEqualTo(restoredDb);
+    // Restoring the backup to an existing database should fail.
+    try {
+      logger.info("Restoring to existing database");
+      backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb)).get();
+      fail("Missing expected exception");
+    } catch (ExecutionException ee) {
+      assertThat(ee.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException e = (SpannerException) ee.getCause();
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
+  }
+}
