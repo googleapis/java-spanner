@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.GaxProperties;
 import com.google.common.collect.ImmutableList;
 import io.opencensus.metrics.LabelKey;
 import io.opencensus.metrics.LabelValue;
@@ -23,20 +24,13 @@ import io.opencensus.metrics.LabelValue;
 class MetricRegistryConstants {
 
   // The label keys are used to uniquely identify timeseries.
-  private static final LabelKey DATABASE = LabelKey.create("database", "Target database");
-  private static final LabelKey INSTANCE_ID =
-      LabelKey.create("instance_id", "Name of the instance");
   private static final LabelKey LIBRARY_VERSION =
       LabelKey.create("library_version", "Library version");
 
-  /** The label value is used to represent missing value. */
-  private static final LabelValue UNSET_LABEL = LabelValue.create(null);
-
-  static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =
-      ImmutableList.of(DATABASE, INSTANCE_ID, LIBRARY_VERSION);
+  static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS = ImmutableList.of(LIBRARY_VERSION);
 
   static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
-      ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
+      ImmutableList.of(LabelValue.create(GaxProperties.getLibraryVersion(SpannerImpl.class)));
 
   /** Unit to represent counts. */
   static final String COUNT = "1";

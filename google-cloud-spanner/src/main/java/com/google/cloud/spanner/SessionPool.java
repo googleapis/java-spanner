@@ -69,10 +69,13 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -1088,6 +1091,11 @@ final class SessionPool {
     RANDOM;
   }
 
+  private static final Object POOLS_LOCK = new Object();
+
+  @GuardedBy("POOLS_LOCK")
+  private static final Map<MetricRegistry, List<SessionPool>> REGISTERED_POOLS = new HashMap<>();
+
   private final SessionPoolOptions options;
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
@@ -1150,15 +1158,12 @@ final class SessionPool {
    * Return pool is immediately ready for use, though getting a session might block for sessions to
    * be created.
    */
-  static SessionPool createPool(
-      SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+  static SessionPool createPool(SpannerOptions spannerOptions, SessionClient sessionClient) {
     return createPool(
         spannerOptions.getSessionPoolOptions(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
-        new Clock(),
-        Metrics.getMetricRegistry(),
-        labelValues);
+        new Clock());
   }
 
   static SessionPool createPool(
@@ -1210,6 +1215,14 @@ final class SessionPool {
       Clock clock,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
+    synchronized (POOLS_LOCK) {
+      if (!REGISTERED_POOLS.containsKey(metricRegistry)) {
+        initMetricsCollection(metricRegistry, labelValues);
+        REGISTERED_POOLS.put(metricRegistry, new LinkedList<>(Arrays.asList(this)));
+      } else {
+        REGISTERED_POOLS.get(metricRegistry).add(this);
+      }
+    }
     this.options = options;
     this.executorFactory = executorFactory;
     this.executor = executor;
@@ -1229,7 +1242,6 @@ final class SessionPool {
     this.sessionClient = sessionClient;
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
-    this.initMetricsCollection(metricRegistry, labelValues);
   }
 
   @VisibleForTesting
@@ -1862,11 +1874,36 @@ final class SessionPool {
     }
   }
 
+  private static final class Sum implements ToLongFunction<Void> {
+    private final MetricRegistry registry;
+    private final Function<SessionPool, Long> function;
+
+    static Sum of(MetricRegistry registry, Function<SessionPool, Long> function) {
+      return new Sum(registry, function);
+    }
+
+    private Sum(MetricRegistry registry, Function<SessionPool, Long> function) {
+      this.registry = registry;
+      this.function = function;
+    }
+
+    @Override
+    public long applyAsLong(Void input) {
+      long res = 0L;
+      synchronized (POOLS_LOCK) {
+        for (SessionPool pool : REGISTERED_POOLS.get(registry)) {
+          res += function.apply(pool);
+        }
+      }
+      return res;
+    }
+  };
+
   /**
    * Initializes and creates Spanner session relevant metrics. When coupled with an exporter, it
    * allows users to monitor client behavior.
    */
-  private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+  static void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
     DerivedLongGauge maxInUseSessionsMetric =
         metricRegistry.addDerivedLongGauge(
             MAX_IN_USE_SESSIONS,
@@ -1925,68 +1962,80 @@ final class SessionPool {
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.createTimeSeries(
         labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.maxSessionsInUse;
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return Long.valueOf(input.maxSessionsInUse);
+              }
+            }));
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
     maxAllowedSessionsMetric.createTimeSeries(
         labelValues,
-        options,
-        new ToLongFunction<SessionPoolOptions>() {
-          @Override
-          public long applyAsLong(SessionPoolOptions options) {
-            return options.getMaxSessions();
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return Long.valueOf(input.options.getMaxSessions());
+              }
+            }));
 
     // The value of a numSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     numInUseSessionsMetric.createTimeSeries(
         labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return Long.valueOf(input.numSessionsInUse);
+              }
+            }));
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     sessionsTimeouts.createTimeSeries(
         labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.getNumWaiterTimeouts();
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return input.getNumWaiterTimeouts();
+              }
+            }));
 
     numAcquiredSessionsMetric.createTimeSeries(
         labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsAcquired;
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return input.numSessionsAcquired;
+              }
+            }));
 
     numReleasedSessionsMetric.createTimeSeries(
         labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsReleased;
-          }
-        });
+        null,
+        Sum.of(
+            metricRegistry,
+            new Function<SessionPool, Long>() {
+              @Override
+              public Long apply(SessionPool input) {
+                return input.numSessionsReleased;
+              }
+            }));
   }
 }

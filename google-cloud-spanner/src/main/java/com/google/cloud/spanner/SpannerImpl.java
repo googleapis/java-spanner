@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.BaseService;
 import com.google.cloud.PageImpl;
@@ -28,11 +27,9 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
@@ -153,14 +150,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       if (dbClients.containsKey(db)) {
         return dbClients.get(db);
       } else {
-        List<LabelValue> labelValues =
-            ImmutableList.of(
-                LabelValue.create(db.getDatabase()),
-                LabelValue.create(db.getInstanceId().getName()),
-                LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
         SessionPool pool =
-            SessionPool.createPool(
-                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
+            SessionPool.createPool(getOptions(), SpannerImpl.this.getSessionClient(db));
         DatabaseClientImpl dbClient = createDatabaseClient(pool);
         dbClients.put(db, dbClient);
         return dbClient;

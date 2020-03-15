@@ -1577,11 +1577,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
-    List<LabelValue> labelValues =
-        Arrays.asList(
-            LabelValue.create("database1"),
-            LabelValue.create("instance1"),
-            LabelValue.create("1.0.0"));
+    List<LabelValue> labelValues = Arrays.asList(LabelValue.create("1.0.0"));
 
     setupMockSessionCreation();
     pool = createPool(clock, metricRegistry, labelValues);
@@ -1590,7 +1586,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.getMetrics().size()).isEqualTo(6);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 2L);
+    assertThat(record.getMetrics()).containsKey(MetricRegistryConstants.IN_USE_SESSIONS);
+    assertThat(record.getMetrics().get(MetricRegistryConstants.IN_USE_SESSIONS)).isEqualTo(2L);
+    //    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS,
+    // 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
     assertThat(record.getMetrics())
