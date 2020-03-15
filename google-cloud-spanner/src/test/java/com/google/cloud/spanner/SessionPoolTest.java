@@ -1586,10 +1586,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.getMetrics().size()).isEqualTo(6);
-    assertThat(record.getMetrics()).containsKey(MetricRegistryConstants.IN_USE_SESSIONS);
-    assertThat(record.getMetrics().get(MetricRegistryConstants.IN_USE_SESSIONS)).isEqualTo(2L);
-    //    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS,
-    // 2L);
+    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
     assertThat(record.getMetrics())
