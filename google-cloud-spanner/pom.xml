@@ -74,7 +74,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>default-integration-tests</id>
+            <id>default</id>
             <configuration>
               <groups>com.google.cloud.spanner.IntegrationTest</groups>
               <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.ParallelIntegrationTest</excludedGroups>
@@ -82,6 +82,9 @@
           </execution>
           <execution>
             <id>parallel-integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
             <configuration>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
               <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>

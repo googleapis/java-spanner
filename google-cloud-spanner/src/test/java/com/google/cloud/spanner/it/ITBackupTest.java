@@ -36,10 +36,10 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
@@ -77,7 +77,7 @@ import org.threeten.bp.Duration;
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
  */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITBackupTest {
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
