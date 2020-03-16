@@ -87,6 +87,7 @@ public class ITBackupTest {
     @Override
     public SpannerOptions spannerOptions() {
       SpannerOptions.Builder builder = super.spannerOptions().toBuilder();
+      builder.setAutoThrottleAdministrativeRequests();
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .createDatabaseOperationSettings()
@@ -159,11 +160,47 @@ public class ITBackupTest {
   @After
   public void tearDown() throws Exception {
     for (String backup : backups) {
+      waitForDbOperations(backup);
       dbAdminClient.deleteBackup(testHelper.getInstanceId().getInstance(), backup);
     }
     backups.clear();
     for (String db : databases) {
       dbAdminClient.dropDatabase(testHelper.getInstanceId().getInstance(), db);
+    }
+  }
+
+  private void waitForDbOperations(String backupId) throws InterruptedException {
+    try {
+      Backup backupMetadata =
+          dbAdminClient.getBackup(testHelper.getInstanceId().getInstance(), backupId);
+      boolean allDbOpsDone = false;
+      while (!allDbOpsDone) {
+        allDbOpsDone = true;
+        for (String referencingDb : backupMetadata.getProto().getReferencingDatabasesList()) {
+          String filter =
+              String.format(
+                  "name:%s/operations/ AND "
+                      + "(metadata.@type:type.googleapis.com/"
+                      + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)",
+                  referencingDb);
+          for (Operation op :
+              dbAdminClient
+                  .listDatabaseOperations(
+                      testHelper.getInstanceId().getInstance(), Options.filter(filter))
+                  .iterateAll()) {
+            if (!op.getDone()) {
+              Thread.sleep(5000L);
+              allDbOpsDone = false;
+              break;
+            }
+          }
+        }
+      }
+    } catch (SpannerException e) {
+      if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
+        return;
+      }
+      throw e;
     }
   }
 
@@ -477,6 +514,7 @@ public class ITBackupTest {
   }
 
   private void testDelete(String backupId) throws InterruptedException, ExecutionException {
+    waitForDbOperations(backupId);
     // Get the backup.
     logger.info("Fetching backup");
     Backup backup = instance.getBackup(backupId);
