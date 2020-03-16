@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
@@ -60,11 +61,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */

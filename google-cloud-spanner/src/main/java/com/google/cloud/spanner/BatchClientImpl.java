@@ -52,6 +52,7 @@ public class BatchClientImpl implements BatchClient {
             .setTimestampBound(bound)
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
         checkNotNull(bound));
   }
@@ -68,6 +69,7 @@ public class BatchClientImpl implements BatchClient {
             .setTimestamp(batchTransactionId.getTimestamp())
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
         batchTransactionId);
   }

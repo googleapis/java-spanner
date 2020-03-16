@@ -49,6 +49,7 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -67,6 +68,7 @@ abstract class AbstractReadContext
     private Span span = Tracing.getTracer().getCurrentSpan();
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private ExecutorProvider executorProvider;
 
     Builder() {}
 
@@ -97,6 +99,11 @@ abstract class AbstractReadContext
 
     B setDefaultQueryOptions(QueryOptions defaultQueryOptions) {
       this.defaultQueryOptions = defaultQueryOptions;
+      return self();
+    }
+
+    B setExecutorProvider(ExecutorProvider executorProvider) {
+      this.executorProvider = executorProvider;
       return self();
     }
 
@@ -391,6 +398,7 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
+    this.executorProvider = builder.executorProvider;
   }
 
   @Override

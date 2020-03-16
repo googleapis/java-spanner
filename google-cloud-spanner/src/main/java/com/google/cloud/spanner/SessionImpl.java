@@ -25,7 +25,6 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
 import com.google.cloud.spanner.SessionClient.SessionId;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.collect.Lists;
@@ -177,6 +176,8 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setSpan(currentSpan)
+            .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
 
@@ -194,6 +195,8 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setSpan(currentSpan)
+            .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
   }
 
@@ -211,6 +214,8 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setSpan(currentSpan)
+            .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
 
@@ -281,6 +286,7 @@ class SessionImpl implements Session {
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setSpan(currentSpan)
+        .setExecutorProvider(spanner.getAsyncExecutorProvider())
         .build();
   }
 

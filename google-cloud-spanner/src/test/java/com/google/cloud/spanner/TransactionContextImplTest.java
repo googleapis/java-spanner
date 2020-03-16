@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
@@ -27,7 +26,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
-import io.opencensus.trace.Span;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
