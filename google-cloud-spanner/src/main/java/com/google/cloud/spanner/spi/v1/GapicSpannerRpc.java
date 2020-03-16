@@ -208,7 +208,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final ScheduledExecutorService spannerWatchdog;
 
   private final boolean throttleAdministrativeRequests;
-  private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 5.0D;
+  private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<String, RateLimiter>();
 
