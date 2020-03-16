@@ -29,8 +29,8 @@ import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceNotFoundException;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for database admin functionality: DDL etc. */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITDatabaseTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
