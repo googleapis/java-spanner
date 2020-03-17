@@ -235,12 +235,15 @@ public class ITBackupTest {
   @Test
   public void testBackups() throws InterruptedException, ExecutionException {
     // Create two test databases in parallel.
-    logger.info("Creating test databases");
+    String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
+    logger.info(String.format("Creating test database %s", db1Id));
     OperationFuture<Database, CreateDatabaseMetadata> dbOp1 =
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
-            testHelper.getUniqueDatabaseId() + "_db1",
+            db1Id,
             Arrays.asList("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+    String db2Id = testHelper.getUniqueDatabaseId() + "_db2";
+    logger.info(String.format("Creating test database %s", db2Id));
     OperationFuture<Database, CreateDatabaseMetadata> dbOp2 =
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
@@ -266,7 +269,7 @@ public class ITBackupTest {
     String backupId1 = getUniqueBackupId() + "_bck1";
     String backupId2 = getUniqueBackupId() + "_bck2";
     Timestamp expireTime = after7Days();
-    logger.info("Creating backups");
+    logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
     OperationFuture<Backup, CreateBackupMetadata> op1 =
         dbAdminClient.createBackup(
             testHelper.getInstanceId().getInstance(),
@@ -407,7 +410,7 @@ public class ITBackupTest {
     // This is not allowed, the expiration date must be at least 6 hours in the future.
     Timestamp expireTime = yesterday();
     String backupId = getUniqueBackupId();
-    logger.info("Creating backup");
+    logger.info(String.format("Creating backup %s with invalid expiration date", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
         dbAdminClient.createBackup(
             testHelper.getInstanceId().getInstance(),
@@ -430,7 +433,7 @@ public class ITBackupTest {
       throws InterruptedException, ExecutionException {
     Timestamp expireTime = after7Days();
     String backupId = getUniqueBackupId();
-    logger.info("Creating backup 1");
+    logger.info(String.format("Starting to create backup %s", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
         dbAdminClient.createBackup(
             testHelper.getInstanceId().getInstance(),
@@ -439,7 +442,7 @@ public class ITBackupTest {
             expireTime);
     backups.add(backupId);
     // Cancel the backup operation.
-    logger.info("Cancelling backup 1");
+    logger.info(String.format("Cancelling the creation of backup %s", backupId));
     dbAdminClient.cancelOperation(op.getName());
     logger.info("Fetching backup operations");
     boolean operationFound = false;
@@ -458,7 +461,7 @@ public class ITBackupTest {
 
   private void testGetBackup(Database db, String backupId, Timestamp expireTime) {
     // Get the most recent version of the backup.
-    logger.info("Getting backup");
+    logger.info(String.format("Getting backup %s", backupId));
     Backup backup = instance.getBackup(backupId);
     assertThat(backup.getState()).isEqualTo(Backup.State.READY);
     assertThat(backup.getSize()).isGreaterThan(0L);
@@ -470,9 +473,11 @@ public class ITBackupTest {
     // Update the expire time.
     Timestamp tomorrow = tomorrow();
     backup = backup.toBuilder().setExpireTime(tomorrow).build();
-    logger.info("Updating expire time to 1 week");
+    logger.info(
+        String.format("Updating expire time of backup %s to 1 week", backup.getId().getBackup()));
     backup.updateExpireTime();
     // Re-get the backup and ensure the expire time was updated.
+    logger.info(String.format("Reloading backup %s", backup.getId().getBackup()));
     backup = backup.reload();
     assertThat(backup.getExpireTime()).isEqualTo(tomorrow);
 
@@ -480,7 +485,9 @@ public class ITBackupTest {
     Timestamp in5Minutes = after5Minutes();
     backup = backup.toBuilder().setExpireTime(in5Minutes).build();
     try {
-      logger.info("Updating expire time to 5 minutes");
+      logger.info(
+          String.format(
+              "Updating expire time of backup %s to 5 minutes", backup.getId().getBackup()));
       backup.updateExpireTime();
       fail("Missing expected exception");
     } catch (SpannerException e) {
@@ -516,21 +523,21 @@ public class ITBackupTest {
   private void testDelete(String backupId) throws InterruptedException, ExecutionException {
     waitForDbOperations(backupId);
     // Get the backup.
-    logger.info("Fetching backup");
+    logger.info(String.format("Fetching backup %s", backupId));
     Backup backup = instance.getBackup(backupId);
     // Delete it.
-    logger.info("Deleting backup");
+    logger.info(String.format("Deleting backup %s", backupId));
     backup.delete();
     // Try to get it again. This should cause a NOT_FOUND error.
     try {
-      logger.info("Fetching non-existent backup");
+      logger.info(String.format("Fetching non-existent backup %s", backupId));
       instance.getBackup(backupId);
       fail("Missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
     // Try to delete the non-existent backup. This should be a no-op.
-    logger.info("Deleting non-existent backup");
+    logger.info(String.format("Deleting non-existent backup %s", backupId));
     backup.delete();
     logger.info("Finished delete tests");
   }
@@ -539,12 +546,15 @@ public class ITBackupTest {
       throws InterruptedException, ExecutionException {
     final String backupOperationName = backupOp.getName();
     // Restore the backup to a new database.
-    logger.info("Restoring database");
     String restoredDb = testHelper.getUniqueDatabaseId();
+    logger.info(
+        String.format(
+            "Restoring backup %s to database %s", backup.getId().getBackup(), restoredDb));
     OperationFuture<Database, RestoreDatabaseMetadata> restoreOp =
         backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb));
     databases.add(restoredDb);
     final String restoreOperationName = restoreOp.getName();
+    logger.info(String.format("Restore operation %s running", restoreOperationName));
     RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
     assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
     assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
@@ -598,7 +608,10 @@ public class ITBackupTest {
     assertThat(database.getId().getDatabase()).isEqualTo(restoredDb);
     // Restoring the backup to an existing database should fail.
     try {
-      logger.info("Restoring to existing database");
+      logger.info(
+          String.format(
+              "Restoring backup %s to existing database %s",
+              backup.getId().getBackup(), restoredDb));
       backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb)).get();
       fail("Missing expected exception");
     } catch (ExecutionException ee) {
