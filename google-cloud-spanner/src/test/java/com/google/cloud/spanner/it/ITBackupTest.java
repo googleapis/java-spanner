@@ -20,9 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.paging.Page;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
+import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -31,6 +34,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.GceTestEnvConfig;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
@@ -38,13 +42,17 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
@@ -64,6 +72,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 /**
  * Integration tests creating, reading, updating and deleting backups. This test class combines
@@ -74,7 +83,67 @@ import org.junit.runners.JUnit4;
 public class ITBackupTest {
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
   private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  public static class BackupTestEnvConfig extends GceTestEnvConfig {
+    @Override
+    public SpannerOptions spannerOptions() {
+      SpannerOptions.Builder builder = super.spannerOptions().toBuilder();
+      builder.setAutoThrottleAdministrativeRequests();
+      RetrySettings retrySettings =
+          RetrySettings.newBuilder().setInitialRpcTimeout(Duration.ofHours(48L)).build();
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .createDatabaseOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(retrySettings)
+                  .setRetryableCodes(Code.UNAVAILABLE)
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .createBackupOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(retrySettings)
+                  .setRetryableCodes(Code.UNAVAILABLE)
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .restoreDatabaseOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(retrySettings)
+                  .setRetryableCodes(Code.UNAVAILABLE)
+                  .build());
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .deleteBackupSettings()
+          .setRetrySettings(retrySettings)
+          .setRetryableCodes(Code.UNAVAILABLE);
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .updateBackupSettings()
+          .setRetrySettings(retrySettings)
+          .setRetryableCodes(Code.UNAVAILABLE);
+      return builder.build();
+    }
+  }
+
+  @ClassRule
+  public static IntegrationTestEnv env =
+      new IntegrationTestEnv() {
+        @Override
+        protected void initializeConfig()
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+          System.setProperty(
+              TEST_ENV_CONFIG_CLASS_NAME,
+              "com.google.cloud.spanner.it.ITBackupTest$BackupTestEnvConfig");
+          super.initializeConfig();
+        }
+      };
 
   @Rule public ExpectedException expectedException = ExpectedException.none();
   private DatabaseAdminClient dbAdminClient;
@@ -225,8 +294,7 @@ public class ITBackupTest {
     backups.add(backupId2);
 
     // Execute metadata tests as part of this integration test to reduce total execution time.
-    // TODO: Re-enable when DEADLINE_EXCEEDED problems have been fixed.
-    //    testMetadata(op1, op2, backupId1, backupId2, db1, db2);
+    testMetadata(op1, op2, backupId1, backupId2, db1, db2);
 
     // Ensure both backups have been created before we proceed.
     Backup backup1 = op1.get();
