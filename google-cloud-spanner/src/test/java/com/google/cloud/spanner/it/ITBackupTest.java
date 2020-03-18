@@ -93,13 +93,9 @@ public class ITBackupTest {
       OperationTimedPollAlgorithm pollingAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
-                  .setInitialRpcTimeout(Duration.ofMinutes(1L))
-                  .setMaxRpcTimeout(Duration.ofMinutes(2L))
-                  .setInitialRetryDelay(Duration.ofSeconds(20L))
-                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setInitialRpcTimeout(Duration.ofHours(48L))
+                  .setMaxRpcTimeout(Duration.ofHours(48L))
                   .setTotalTimeout(Duration.ofHours(48L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
                   .build());
 
       RetrySettings retrySettings =
@@ -115,7 +111,6 @@ public class ITBackupTest {
               UnaryCallSettings
                   .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
                   .setRetrySettings(retrySettings)
-                  .setRetryableCodes(Code.UNAVAILABLE)
                   .build());
       builder
           .getDatabaseAdminStubSettingsBuilder()
@@ -125,7 +120,6 @@ public class ITBackupTest {
               UnaryCallSettings
                   .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
                   .setRetrySettings(retrySettings)
-                  .setRetryableCodes(Code.UNAVAILABLE)
                   .build());
       builder
           .getDatabaseAdminStubSettingsBuilder()
@@ -135,18 +129,15 @@ public class ITBackupTest {
               UnaryCallSettings
                   .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
                   .setRetrySettings(retrySettings)
-                  .setRetryableCodes(Code.UNAVAILABLE)
                   .build());
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .deleteBackupSettings()
-          .setRetrySettings(retrySettings)
-          .setRetryableCodes(Code.UNAVAILABLE);
+          .setRetrySettings(retrySettings);
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .updateBackupSettings()
-          .setRetrySettings(retrySettings)
-          .setRetryableCodes(Code.UNAVAILABLE);
+          .setRetrySettings(retrySettings);
       return builder.build();
     }
   }
@@ -311,9 +302,13 @@ public class ITBackupTest {
             expireTime);
     backups.add(backupId1);
     backups.add(backupId2);
+    // Wait to prevent the test from exceeding the limit of administrative requests.
+    Thread.sleep(60_000L);
 
     // Execute metadata tests as part of this integration test to reduce total execution time.
     testMetadata(op1, op2, backupId1, backupId2, db1, db2);
+    // Wait to prevent the test from exceeding the limit of administrative requests.
+    Thread.sleep(60_000L);
 
     // Ensure both backups have been created before we proceed.
     Backup backup1 = op1.get();
@@ -398,9 +393,6 @@ public class ITBackupTest {
     logger.info("Finished all backup tests");
   }
 
-  // Disabled as these generate DEADLINE_EXCEEDED errors on the CI environment.
-  // TODO: Remove when re-enabled.
-  @SuppressWarnings("unused")
   private void testMetadata(
       OperationFuture<Backup, CreateBackupMetadata> op1,
       OperationFuture<Backup, CreateBackupMetadata> op2,
