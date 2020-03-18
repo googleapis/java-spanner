@@ -161,8 +161,7 @@ public class ITBackupTest {
           super.initializeConfig();
         }
       };
-//  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-
+  //  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   @Rule public ExpectedException expectedException = ExpectedException.none();
   private DatabaseAdminClient dbAdminClient;
