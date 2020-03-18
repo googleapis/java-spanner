@@ -52,6 +52,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -554,23 +555,23 @@ public class ITBackupTest {
     databases.add(restoredDb);
     final String restoreOperationName = restoreOp.getName();
     logger.info(String.format("Restore operation %s running", restoreOperationName));
-    //    RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
-    //    assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
-    //    assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
-    //    assertThat(metadata.getName())
-    //        .isEqualTo(DatabaseId.of(testHelper.getInstanceId(), restoredDb).getName());
+    RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
+    assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
+    assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
+    assertThat(metadata.getName())
+        .isEqualTo(DatabaseId.of(testHelper.getInstanceId(), restoredDb).getName());
 
     // Ensure the operations show up in the right collections.
-    assertThat(
-            Iterables.any(
-                instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
-        .isTrue();
+    //    assertThat(
+    //            Iterables.any(
+    //                instance.listBackupOperations().iterateAll(),
+    //                new Predicate<Operation>() {
+    //                  @Override
+    //                  public boolean apply(Operation input) {
+    //                    return input.getName().equals(backupOperationName);
+    //                  }
+    //                }))
+    //        .isTrue();
     //    assertThat(
     //            Iterables.any(
     //                instance.listBackupOperations().iterateAll(),
@@ -581,26 +582,26 @@ public class ITBackupTest {
     //                  }
     //                }))
     //        .isFalse();
-    //    assertThat(
-    //            Iterables.any(
-    //                instance.listDatabaseOperations().iterateAll(),
-    //                new Predicate<Operation>() {
-    //                  @Override
-    //                  public boolean apply(Operation input) {
-    //                    return input.getName().equals(backupOperationName);
-    //                  }
-    //                }))
-    //        .isFalse();
-    //    assertThat(
-    //            Iterables.any(
-    //                instance.listDatabaseOperations().iterateAll(),
-    //                new Predicate<Operation>() {
-    //                  @Override
-    //                  public boolean apply(Operation input) {
-    //                    return input.getName().equals(restoreOperationName);
-    //                  }
-    //                }))
-    //        .isTrue();
+    assertThat(
+            Iterables.any(
+                instance.listDatabaseOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(backupOperationName);
+                  }
+                }))
+        .isFalse();
+    assertThat(
+            Iterables.any(
+                instance.listDatabaseOperations().iterateAll(),
+                new Predicate<Operation>() {
+                  @Override
+                  public boolean apply(Operation input) {
+                    return input.getName().equals(restoreOperationName);
+                  }
+                }))
+        .isTrue();
 
     // Wait until the restore operation has finished successfully.
     Database database = restoreOp.get();
