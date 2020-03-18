@@ -24,8 +24,6 @@ import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.StatusCode;
-import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
@@ -93,15 +91,24 @@ public class ITBackupTest {
       OperationTimedPollAlgorithm pollingAlgorithm =
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
-                  .setInitialRpcTimeout(Duration.ofHours(48L))
-                  .setMaxRpcTimeout(Duration.ofHours(48L))
+                  .setInitialRpcTimeout(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeout(Duration.ofSeconds(600L))
+                  .setInitialRetryDelay(Duration.ofSeconds(20L))
+                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setRetryDelayMultiplier(1.5)
+                  .setRpcTimeoutMultiplier(1.5)
                   .setTotalTimeout(Duration.ofHours(48L))
                   .build());
 
       RetrySettings retrySettings =
           RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofHours(48L))
-              .setMaxRpcTimeout(Duration.ofHours(48L))
+              .setInitialRpcTimeout(Duration.ofSeconds(60L))
+              .setMaxRpcTimeout(Duration.ofSeconds(600L))
+              .setInitialRetryDelay(Duration.ofSeconds(20L))
+              .setMaxRetryDelay(Duration.ofSeconds(45L))
+              .setRetryDelayMultiplier(1.5)
+              .setRpcTimeoutMultiplier(1.5)
+              .setTotalTimeout(Duration.ofHours(48L))
               .build();
       builder
           .getDatabaseAdminStubSettingsBuilder()
@@ -154,6 +161,8 @@ public class ITBackupTest {
           super.initializeConfig();
         }
       };
+//  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
 
   @Rule public ExpectedException expectedException = ExpectedException.none();
   private DatabaseAdminClient dbAdminClient;
@@ -302,13 +311,9 @@ public class ITBackupTest {
             expireTime);
     backups.add(backupId1);
     backups.add(backupId2);
-    // Wait to prevent the test from exceeding the limit of administrative requests.
-    Thread.sleep(60_000L);
 
     // Execute metadata tests as part of this integration test to reduce total execution time.
     testMetadata(op1, op2, backupId1, backupId2, db1, db2);
-    // Wait to prevent the test from exceeding the limit of administrative requests.
-    Thread.sleep(60_000L);
 
     // Ensure both backups have been created before we proceed.
     Backup backup1 = op1.get();
@@ -401,15 +406,6 @@ public class ITBackupTest {
       Database db1,
       Database db2)
       throws InterruptedException, ExecutionException {
-
-    logger.info("Getting initial operation 1 status");
-    StatusCode status1 = op1.getInitialFuture().get().getErrorCode();
-    Code code1 = status1 == null ? Code.OK : status1.getCode();
-    assertThat(code1).isEqualTo(Code.OK);
-    logger.info("Getting initial operation 2 status");
-    StatusCode status2 = op2.getInitialFuture().get().getErrorCode();
-    Code code2 = status2 == null ? Code.OK : status2.getCode();
-    assertThat(code2).isEqualTo(Code.OK);
 
     logger.info("Getting operation metadata 1");
     CreateBackupMetadata metadata1 = op1.getMetadata().get();
