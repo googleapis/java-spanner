@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationSnapshot;
+import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.StatusCode;
@@ -89,11 +90,23 @@ public class ITBackupTest {
     public SpannerOptions spannerOptions() {
       SpannerOptions.Builder builder = super.spannerOptions().toBuilder();
       builder.setAutoThrottleAdministrativeRequests();
+      OperationTimedPollAlgorithm pollingAlgorithm =
+          OperationTimedPollAlgorithm.create(
+              RetrySettings.newBuilder()
+                  .setInitialRpcTimeout(Duration.ofMinutes(1L))
+                  .setInitialRetryDelay(Duration.ofSeconds(20L))
+                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setTotalTimeout(Duration.ofHours(48L))
+                  .setRetryDelayMultiplier(1.5)
+                  .setRpcTimeoutMultiplier(1.5)
+                  .build());
+
       RetrySettings retrySettings =
           RetrySettings.newBuilder().setInitialRpcTimeout(Duration.ofHours(48L)).build();
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .createDatabaseOperationSettings()
+          .setPollingAlgorithm(pollingAlgorithm)
           .setInitialCallSettings(
               UnaryCallSettings
                   .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
@@ -103,6 +116,7 @@ public class ITBackupTest {
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .createBackupOperationSettings()
+          .setPollingAlgorithm(pollingAlgorithm)
           .setInitialCallSettings(
               UnaryCallSettings
                   .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
@@ -112,6 +126,7 @@ public class ITBackupTest {
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .restoreDatabaseOperationSettings()
+          .setPollingAlgorithm(pollingAlgorithm)
           .setInitialCallSettings(
               UnaryCallSettings
                   .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
