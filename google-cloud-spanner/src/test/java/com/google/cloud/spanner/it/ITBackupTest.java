@@ -94,6 +94,7 @@ public class ITBackupTest {
           OperationTimedPollAlgorithm.create(
               RetrySettings.newBuilder()
                   .setInitialRpcTimeout(Duration.ofMinutes(1L))
+                  .setMaxRpcTimeout(Duration.ofMinutes(2L))
                   .setInitialRetryDelay(Duration.ofSeconds(20L))
                   .setMaxRetryDelay(Duration.ofSeconds(45L))
                   .setTotalTimeout(Duration.ofHours(48L))
@@ -102,7 +103,10 @@ public class ITBackupTest {
                   .build());
 
       RetrySettings retrySettings =
-          RetrySettings.newBuilder().setInitialRpcTimeout(Duration.ofHours(48L)).build();
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofHours(48L))
+              .setMaxRpcTimeout(Duration.ofHours(48L))
+              .build();
       builder
           .getDatabaseAdminStubSettingsBuilder()
           .createDatabaseOperationSettings()
