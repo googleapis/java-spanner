@@ -319,11 +319,11 @@ public class ITBackupTest {
       Database db2)
       throws InterruptedException, ExecutionException {
     logger.info("Getting initial operation 1 status");
-    StatusCode status1 = op1.getInitialFuture().get().getErrorCode();
+    StatusCode status1 = op1.getPollingFuture().get().getErrorCode();
     Code code1 = status1 == null ? Code.OK : status1.getCode();
     assertThat(code1).isEqualTo(Code.OK);
     logger.info("Getting initial operation 2 status");
-    StatusCode status2 = op2.getInitialFuture().get().getErrorCode();
+    StatusCode status2 = op2.getPollingFuture().get().getErrorCode();
     Code code2 = status2 == null ? Code.OK : status2.getCode();
     assertThat(code2).isEqualTo(Code.OK);
 
