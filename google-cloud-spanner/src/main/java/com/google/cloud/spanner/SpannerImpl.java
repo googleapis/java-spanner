@@ -171,16 +171,17 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       if (dbClients.containsKey(db)) {
         return dbClients.get(db);
       } else {
+        String clientId = nextDatabaseClientId(db);
         List<LabelValue> labelValues =
             ImmutableList.of(
-                LabelValue.create(nextDatabaseClientId(db)),
+                LabelValue.create(clientId),
                 LabelValue.create(db.getDatabase()),
                 LabelValue.create(db.getInstanceId().getName()),
                 LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
-        DatabaseClientImpl dbClient = createDatabaseClient(pool);
+        DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -188,8 +189,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @VisibleForTesting
-  DatabaseClientImpl createDatabaseClient(SessionPool pool) {
-    return new DatabaseClientImpl(pool);
+  DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
+    return new DatabaseClientImpl(clientId, pool);
   }
 
   @Override
