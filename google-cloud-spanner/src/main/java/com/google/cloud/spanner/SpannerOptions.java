@@ -18,8 +18,11 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.api.gax.longrunning.OperationSnapshot;
+import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -40,6 +43,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannelBuilder;
@@ -233,7 +239,60 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CallCredentialsProvider callCredentialsProvider;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
-    private Builder() {}
+    private Builder() {
+      // Manually set retry and polling settings that work.
+      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
+          OperationTimedPollAlgorithm.create(
+              RetrySettings.newBuilder()
+                  .setInitialRpcTimeout(Duration.ofSeconds(60L))
+                  .setMaxRpcTimeout(Duration.ofSeconds(600L))
+                  .setInitialRetryDelay(Duration.ofSeconds(20L))
+                  .setMaxRetryDelay(Duration.ofSeconds(45L))
+                  .setRetryDelayMultiplier(1.5)
+                  .setRpcTimeoutMultiplier(1.5)
+                  .setTotalTimeout(Duration.ofHours(48L))
+                  .build());
+      RetrySettings longRunningRetrySettings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofSeconds(60L))
+              .setMaxRpcTimeout(Duration.ofSeconds(600L))
+              .setInitialRetryDelay(Duration.ofSeconds(20L))
+              .setMaxRetryDelay(Duration.ofSeconds(45L))
+              .setRetryDelayMultiplier(1.5)
+              .setRpcTimeoutMultiplier(1.5)
+              .setTotalTimeout(Duration.ofHours(48L))
+              .build();
+      databaseAdminStubSettingsBuilder
+          .createDatabaseOperationSettings()
+          .setPollingAlgorithm(longRunningPollingAlgorithm)
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(longRunningRetrySettings)
+                  .build());
+      databaseAdminStubSettingsBuilder
+          .createBackupOperationSettings()
+          .setPollingAlgorithm(longRunningPollingAlgorithm)
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(longRunningRetrySettings)
+                  .build());
+      databaseAdminStubSettingsBuilder
+          .restoreDatabaseOperationSettings()
+          .setPollingAlgorithm(longRunningPollingAlgorithm)
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetrySettings(longRunningRetrySettings)
+                  .build());
+      databaseAdminStubSettingsBuilder
+          .deleteBackupSettings()
+          .setRetrySettings(longRunningRetrySettings);
+      databaseAdminStubSettingsBuilder
+          .updateBackupSettings()
+          .setRetrySettings(longRunningRetrySettings);
+    }
 
     Builder(SpannerOptions options) {
       super(options);
