@@ -23,6 +23,8 @@ import io.opencensus.metrics.LabelValue;
 class MetricRegistryConstants {
 
   // The label keys are used to uniquely identify timeseries.
+  private static final LabelKey CLIENT_ID =
+      LabelKey.create("client_id", "User defined database client id");
   private static final LabelKey DATABASE = LabelKey.create("database", "Target database");
   private static final LabelKey INSTANCE_ID =
       LabelKey.create("instance_id", "Name of the instance");
@@ -33,10 +35,10 @@ class MetricRegistryConstants {
   private static final LabelValue UNSET_LABEL = LabelValue.create(null);
 
   static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =
-      ImmutableList.of(DATABASE, INSTANCE_ID, LIBRARY_VERSION);
+      ImmutableList.of(CLIENT_ID, DATABASE, INSTANCE_ID, LIBRARY_VERSION);
 
   static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
-      ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
+      ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
 
   /** Unit to represent counts. */
   static final String COUNT = "1";
