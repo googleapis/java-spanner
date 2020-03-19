@@ -133,7 +133,10 @@ public class RemoteSpannerHelper {
    */
   public static RemoteSpannerHelper create(InstanceId instanceId) throws Throwable {
     SpannerOptions options =
-        SpannerOptions.newBuilder().setProjectId(instanceId.getProject()).build();
+        SpannerOptions.newBuilder()
+            .setProjectId(instanceId.getProject())
+            .setAutoThrottleAdministrativeRequests()
+            .build();
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
   }

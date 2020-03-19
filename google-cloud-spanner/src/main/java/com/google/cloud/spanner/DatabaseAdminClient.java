@@ -19,8 +19,12 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
+import com.google.longrunning.Operation;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -64,6 +68,75 @@ public interface DatabaseAdminClient {
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException;
 
+  /** Returns a builder for a {@code Backup} object with the given id. */
+  Backup.Builder newBackupBuilder(BackupId id);
+
+  /**
+   * Creates a new backup from a database in a Cloud Spanner instance.
+   *
+   * <p>Example to create a backup.
+   *
+   * <pre>{@code
+   * String instance       = my_instance_id;
+   * String backupId       = my_backup_id;
+   * String databaseId     = my_database_id;
+   * Timestamp expireTime  = Timestamp.ofTimeMicroseconds(micros);
+   * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient
+   *     .createBackup(
+   *         instanceId,
+   *         backupId,
+   *         databaseId,
+   *         expireTime);
+   * Backup backup = op.get();
+   * }</pre>
+   *
+   * @param instanceId the id of the instance where the database to backup is located and where the
+   *     backup will be created.
+   * @param backupId the id of the backup which will be created. It must conform to the regular
+   *     expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
+   * @param databaseId the id of the database to backup.
+   * @param expireTime the time that the backup will automatically expire.
+   */
+  OperationFuture<Backup, CreateBackupMetadata> createBackup(
+      String sourceInstanceId, String backupId, String databaseId, Timestamp expireTime)
+      throws SpannerException;
+
+  /**
+   * Restore a database from a backup. The database that is restored will be created and may not
+   * already exist.
+   *
+   * <p>Example to restore a database.
+   *
+   * <pre>{@code
+   * String backupInstanceId   = my_instance_id;
+   * String backupId           = my_backup_id;
+   * String restoreInstanceId  = my_db_instance_id;
+   * String restoreDatabaseId  = my_database_id;
+   * OperationFuture<Backup, RestoreDatabaseMetadata> op = dbAdminClient
+   *     .restoreDatabase(
+   *         backupInstanceId,
+   *         backupId,
+   *         restoreInstanceId,
+   *         restoreDatabaseId);
+   * Database database = op.get();
+   * }</pre>
+   *
+   * @param backupInstanceId the id of the instance where the backup is located.
+   * @param backupId the id of the backup to restore.
+   * @param restoreInstanceId the id of the instance where the database should be created. This may
+   *     be a different instance than where the backup is stored.
+   * @param restoreDatabaseId the id of the database to restore to.
+   */
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+      String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
+      throws SpannerException;
+
+  /** Lists long-running database operations on the specified instance. */
+  Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
+
+  /** Lists long-running backup operations on the specified instance. */
+  Page<Operation> listBackupOperations(String instanceId, ListOption... options);
+
   /**
    * Gets the current state of a Cloud Spanner database.
    *
@@ -76,6 +149,19 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   Database getDatabase(String instanceId, String databaseId) throws SpannerException;
+
+  /**
+   * Gets the current state of a Cloud Spanner database backup.
+   *
+   * <p>Example to get a backup.
+   *
+   * <pre>{@code
+   * String instanceId = my_instance_id;
+   * String backupId   = my_backup_id;
+   * Backup backup = dbAdminClient.getBackup(instanceId, backupId);
+   * }</pre>
+   */
+  Backup getBackup(String instanceId, String backupId) throws SpannerException;
 
   /**
    * Enqueues the given DDL statements to be applied, in order but not necessarily all at once, to
@@ -153,6 +239,48 @@ public interface DatabaseAdminClient {
    */
   Page<Database> listDatabases(String instanceId, ListOption... options);
 
+  /**
+   * Returns the list of Cloud Spanner backups in the given instance.
+   *
+   * <p>Example to get the list of Cloud Spanner backups in the given instance.
+   *
+   * <pre>{@code
+   * String instanceId = my_instance_id;
+   * Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
+   * List<Backup> backups = new ArrayList<>();
+   * while (page != null) {
+   *   Backup backup = Iterables.getOnlyElement(page.getValues());
+   *   dbs.add(backup);
+   *   page = page.getNextPage();
+   * }
+   * }</pre>
+   */
+  Page<Backup> listBackups(String instanceId, ListOption... options);
+
+  /**
+   * Updates the expire time of a backup.
+   *
+   * @param instanceId Required. The instance of the backup to update.
+   * @param backupId Required. The backup id of the backup to update.
+   * @param expireTime Required. The new expire time of the backup to set to.
+   * @return the updated Backup object.
+   */
+  Backup updateBackup(String instanceId, String backupId, Timestamp expireTime);
+
+  /**
+   * Deletes a pending or completed backup.
+   *
+   * @param instanceId Required. The instance where the backup exists.
+   * @param backupId Required. The id of the backup to delete.
+   */
+  void deleteBackup(String instanceId, String backupId);
+
+  /** Cancels the specified long-running operation. */
+  void cancelOperation(String name);
+
+  /** Gets the specified long-running operation. */
+  Operation getOperation(String name);
+
   /** Returns the IAM policy for the given database. */
   Policy getDatabaseIAMPolicy(String instanceId, String databaseId);
 
@@ -175,4 +303,27 @@ public interface DatabaseAdminClient {
    */
   Iterable<String> testDatabaseIAMPermissions(
       String instanceId, String databaseId, Iterable<String> permissions);
+
+  /** Returns the IAM policy for the given backup. */
+  Policy getBackupIAMPolicy(String instanceId, String backupId);
+
+  /**
+   * Updates the IAM policy for the given backup and returns the resulting policy. It is highly
+   * recommended to first get the current policy and base the updated policy on the returned policy.
+   * See {@link Policy.Builder#setEtag(String)} for information on the recommended read-modify-write
+   * cycle.
+   */
+  Policy setBackupIAMPolicy(String instanceId, String backupId, Policy policy);
+
+  /**
+   * Tests for the given permissions on the specified backup for the caller.
+   *
+   * @param instanceId the id of the instance where the backup to test is located.
+   * @param backupId the id of the backup to test.
+   * @param permissions the permissions to test for. Permissions with wildcards (such as '*',
+   *     'spanner.*', 'spanner.instances.*') are not allowed.
+   * @return the subset of the tested permissions that the caller is allowed.
+   */
+  Iterable<String> testBackupIAMPermissions(
+      String instanceId, String backupId, Iterable<String> permissions);
 }

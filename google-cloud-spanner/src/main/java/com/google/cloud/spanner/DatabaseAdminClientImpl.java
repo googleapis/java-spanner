@@ -24,14 +24,19 @@ import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
 import java.util.UUID;
@@ -54,6 +59,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   private final String projectId;
   private final SpannerRpc rpc;
   private final PolicyMarshaller policyMarshaller = new PolicyMarshaller();
+  private static final String EXPIRE_TIME_MASK = "expire_time";
 
   DatabaseAdminClientImpl(String projectId, SpannerRpc rpc) {
     this.projectId = projectId;
@@ -64,6 +70,196 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   private static String randomOperationId() {
     UUID uuid = UUID.randomUUID();
     return ("r" + uuid.toString()).replace("-", "_");
+  }
+
+  @Override
+  public Backup.Builder newBackupBuilder(BackupId backupId) {
+    return new Backup.Builder(this, backupId);
+  }
+
+  @Override
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+      String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
+      throws SpannerException {
+    String databaseInstanceName = getInstanceName(restoreInstanceId);
+    String backupName = getBackupName(backupInstanceId, backupId);
+
+    OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
+        rawOperationFuture =
+            rpc.restoreDatabase(databaseInstanceName, restoreDatabaseId, backupName);
+
+    return new OperationFutureImpl<Database, RestoreDatabaseMetadata>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        new ApiFunction<OperationSnapshot, Database>() {
+          @Override
+          public Database apply(OperationSnapshot snapshot) {
+            return Database.fromProto(
+                ProtoOperationTransformers.ResponseTransformer.create(
+                        com.google.spanner.admin.database.v1.Database.class)
+                    .apply(snapshot),
+                DatabaseAdminClientImpl.this);
+          }
+        },
+        ProtoOperationTransformers.MetadataTransformer.create(RestoreDatabaseMetadata.class),
+        new ApiFunction<Exception, Database>() {
+          @Override
+          public Database apply(Exception e) {
+            throw SpannerExceptionFactory.newSpannerException(e);
+          }
+        });
+  }
+
+  @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(
+      String instanceId, String backupId, String databaseId, Timestamp expireTime)
+      throws SpannerException {
+    com.google.spanner.admin.database.v1.Backup backup =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setDatabase(getDatabaseName(instanceId, databaseId))
+            .setExpireTime(expireTime.toProto())
+            .build();
+    String instanceName = getInstanceName(instanceId);
+    OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
+        rawOperationFuture = rpc.createBackup(instanceName, backupId, backup);
+
+    return new OperationFutureImpl<Backup, CreateBackupMetadata>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        new ApiFunction<OperationSnapshot, Backup>() {
+          @Override
+          public Backup apply(OperationSnapshot snapshot) {
+            com.google.spanner.admin.database.v1.Backup proto =
+                ProtoOperationTransformers.ResponseTransformer.create(
+                        com.google.spanner.admin.database.v1.Backup.class)
+                    .apply(snapshot);
+            return Backup.fromProto(
+                com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                    .setName(proto.getName())
+                    .setExpireTime(proto.getExpireTime())
+                    .setState(proto.getState())
+                    .build(),
+                DatabaseAdminClientImpl.this);
+          }
+        },
+        ProtoOperationTransformers.MetadataTransformer.create(CreateBackupMetadata.class),
+        new ApiFunction<Exception, Backup>() {
+          @Override
+          public Backup apply(Exception e) {
+            throw SpannerExceptionFactory.newSpannerException(e);
+          }
+        });
+  }
+
+  @Override
+  public Backup updateBackup(String instanceId, String backupId, Timestamp expireTime) {
+    String backupName = getBackupName(instanceId, backupId);
+    final com.google.spanner.admin.database.v1.Backup backup =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setName(backupName)
+            .setExpireTime(expireTime.toProto())
+            .build();
+    // Only update the expire time of the backup.
+    final FieldMask updateMask = FieldMask.newBuilder().addPaths(EXPIRE_TIME_MASK).build();
+    try {
+      return Backup.fromProto(rpc.updateBackup(backup, updateMask), DatabaseAdminClientImpl.this);
+    } catch (Exception e) {
+      throw SpannerExceptionFactory.newSpannerException(e);
+    }
+  }
+
+  @Override
+  public void deleteBackup(String instanceId, String backupId) {
+    final String backupName = getBackupName(instanceId, backupId);
+    try {
+      rpc.deleteBackup(backupName);
+    } catch (Exception e) {
+      throw SpannerExceptionFactory.newSpannerException(e);
+    }
+  }
+
+  @Override
+  public Backup getBackup(String instanceId, String backupId) throws SpannerException {
+    final String backupName = getBackupName(instanceId, backupId);
+    return Backup.fromProto(rpc.getBackup(backupName), DatabaseAdminClientImpl.this);
+  }
+
+  @Override
+  public final Page<Operation> listBackupOperations(String instanceId, ListOption... options) {
+    final String instanceName = getInstanceName(instanceId);
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+    final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
+    final String pageToken = listOptions.hasPageToken() ? listOptions.pageToken() : null;
+
+    PageFetcher<Operation, Operation> pageFetcher =
+        new PageFetcher<Operation, Operation>() {
+          @Override
+          public Paginated<Operation> getNextPage(String nextPageToken) {
+            return rpc.listBackupOperations(instanceName, pageSize, filter, pageToken);
+          }
+
+          @Override
+          public Operation fromProto(Operation proto) {
+            return proto;
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
+  public final Page<Operation> listDatabaseOperations(String instanceId, ListOption... options) {
+    final String instanceName = getInstanceName(instanceId);
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+    final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
+    final String pageToken = listOptions.hasPageToken() ? listOptions.pageToken() : null;
+
+    PageFetcher<Operation, Operation> pageFetcher =
+        new PageFetcher<Operation, Operation>() {
+          @Override
+          public Paginated<Operation> getNextPage(String nextPageToken) {
+            return rpc.listDatabaseOperations(instanceName, pageSize, filter, pageToken);
+          }
+
+          @Override
+          public Operation fromProto(Operation proto) {
+            return proto;
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
+  public Page<Backup> listBackups(String instanceId, ListOption... options) {
+    final String instanceName = getInstanceName(instanceId);
+    final Options listOptions = Options.fromListOptions(options);
+    final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+
+    PageFetcher<Backup, com.google.spanner.admin.database.v1.Backup> pageFetcher =
+        new PageFetcher<Backup, com.google.spanner.admin.database.v1.Backup>() {
+          @Override
+          public Paginated<com.google.spanner.admin.database.v1.Backup> getNextPage(
+              String nextPageToken) {
+            return rpc.listBackups(instanceName, pageSize, filter, nextPageToken);
+          }
+
+          @Override
+          public Backup fromProto(com.google.spanner.admin.database.v1.Backup proto) {
+            return Backup.fromProto(proto, DatabaseAdminClientImpl.this);
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
   }
 
   @Override
@@ -149,7 +345,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final String instanceName = getInstanceName(instanceId);
     final Options listOptions = Options.fromListOptions(options);
     Preconditions.checkArgument(
-        !listOptions.hasFilter(), "Filter option is not support by" + "listDatabases");
+        !listOptions.hasFilter(), "Filter option is not supported by listDatabases");
     final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
     PageFetcher<Database, com.google.spanner.admin.database.v1.Database> pageFetcher =
         new PageFetcher<Database, com.google.spanner.admin.database.v1.Database>() {
@@ -182,6 +378,18 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public void cancelOperation(String name) {
+    Preconditions.checkNotNull(name);
+    rpc.cancelOperation(name);
+  }
+
+  @Override
+  public Operation getOperation(String name) {
+    Preconditions.checkNotNull(name);
+    return rpc.getOperation(name);
+  }
+
+  @Override
   public Policy getDatabaseIAMPolicy(String instanceId, String databaseId) {
     final String databaseName = DatabaseId.of(projectId, instanceId, databaseId).getName();
     return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName));
@@ -203,11 +411,38 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     return rpc.testDatabaseAdminIAMPermissions(databaseName, permissions).getPermissionsList();
   }
 
+  @Override
+  public Policy getBackupIAMPolicy(String instanceId, String backupId) {
+    final String databaseName = BackupId.of(projectId, instanceId, backupId).getName();
+    return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName));
+  }
+
+  @Override
+  public Policy setBackupIAMPolicy(String instanceId, String backupId, final Policy policy) {
+    Preconditions.checkNotNull(policy);
+    final String databaseName = BackupId.of(projectId, instanceId, backupId).getName();
+    return policyMarshaller.fromPb(
+        rpc.setDatabaseAdminIAMPolicy(databaseName, policyMarshaller.toPb(policy)));
+  }
+
+  @Override
+  public Iterable<String> testBackupIAMPermissions(
+      String instanceId, String backupId, final Iterable<String> permissions) {
+    Preconditions.checkNotNull(permissions);
+    final String databaseName = BackupId.of(projectId, instanceId, backupId).getName();
+    return rpc.testDatabaseAdminIAMPermissions(databaseName, permissions).getPermissionsList();
+  }
+
   private String getInstanceName(String instanceId) {
     return new InstanceId(projectId, instanceId).getName();
   }
 
   private String getDatabaseName(String instanceId, String databaseId) {
     return new DatabaseId(new InstanceId(projectId, instanceId), databaseId).getName();
+  }
+
+  private String getBackupName(String instanceId, String backupId) {
+    InstanceId instance = new InstanceId(projectId, instanceId);
+    return new BackupId(instance, backupId).getName();
   }
 }

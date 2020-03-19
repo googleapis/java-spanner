@@ -21,10 +21,10 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -55,7 +55,7 @@ import org.junit.runners.JUnit4;
  * distinguished. Hence, these integration tests only minimally verify that read-only transactions
  * work at all, and unit tests are relied on for validating that modes are encoded correctly.
  */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITReadOnlyTxnTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

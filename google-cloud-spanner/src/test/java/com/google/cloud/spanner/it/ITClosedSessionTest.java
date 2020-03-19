@@ -20,9 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestWithClosedSessionsEnv;
 import com.google.cloud.spanner.IntegrationTestWithClosedSessionsEnv.DatabaseClientWithClosedSessionImpl;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionNotFoundException;
@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Test the automatic re-creation of sessions that have been invalidated by the server. */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITClosedSessionTest {
   // Run each test case twice to ensure that a retried session does not affect subsequent
