@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
+import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -475,13 +476,40 @@ public class ITBackupTest {
       throws InterruptedException, ExecutionException {
     // Restore the backup to a new database.
     String restoredDb = testHelper.getUniqueDatabaseId();
-    logger.info(
-        String.format(
-            "Restoring backup %s to database %s", backup.getId().getBackup(), restoredDb));
-    OperationFuture<Database, RestoreDatabaseMetadata> restoreOp =
-        backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb));
+    String restoreOperationName;
+    OperationFuture<Database, RestoreDatabaseMetadata> restoreOp;
+    int attempts = 0;
+    while (true) {
+      try {
+        logger.info(
+            String.format(
+                "Restoring backup %s to database %s", backup.getId().getBackup(), restoredDb));
+        restoreOp = backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb));
+        restoreOperationName = restoreOp.getName();
+        break;
+      } catch (ExecutionException e) {
+        if (e.getCause() instanceof FailedPreconditionException
+            && e.getCause()
+                .getMessage()
+                .contains("Please retry the operation once the pending restores complete")) {
+          attempts++;
+          if (attempts == 10) {
+            logger.info(
+                "Restore operation failed 10 times because of other pending restores. Skipping restore test.");
+            return;
+          }
+          // wait and then retry.
+          logger.info(
+              String.format(
+                  "Restoring backup %s to database %s must wait because of other pending restore operation",
+                  backup.getId().getBackup(), restoredDb));
+          Thread.sleep(60_000L);
+        } else {
+          throw e;
+        }
+      }
+    }
     databases.add(restoredDb);
-    final String restoreOperationName = restoreOp.getName();
     logger.info(String.format("Restore operation %s running", restoreOperationName));
     RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
     assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
