@@ -149,6 +149,11 @@
   <!-- Add Async API -->
   <difference>
     <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.core.ApiFuture executeQueryAsync(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>* runAsync(*)</method>
   </difference>

@@ -79,6 +79,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -230,11 +231,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private final StatementResultType type;
     private final Statement statement;
     private final Long updateCount;
-    private final ResultSet resultSet;
+    private final Deque<ResultSet> resultSets;
     private final StatusRuntimeException exception;
 
     /** Creates a {@link StatementResult} for a query that returns a {@link ResultSet}. */
     public static StatementResult query(Statement statement, ResultSet resultSet) {
+      return new StatementResult(statement, resultSet);
+    }
+
+    /** Creates a {@link StatementResult} for a query that returns a {@link ResultSet} the first time, and a different {@link ResultSet} for all subsequent calls. */
+    public static StatementResult queryAndThen(Statement statement, ResultSet resultSet, ResultSet next) {
       return new StatementResult(statement, resultSet);
     }
 
@@ -252,6 +258,25 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     /** Creates a {@link StatementResult} for statement that should return an error. */
     public static StatementResult exception(Statement statement, StatusRuntimeException exception) {
       return new StatementResult(statement, exception);
+    }
+
+    private static class KeepLastElementDeque<E> extends LinkedList<E> {
+      private static <E> KeepLastElementDeque<E> singleton(E item) {
+        return new KeepLastElementDeque<E>(Collections.singleton(item));
+      }
+
+      private static <E> KeepLastElementDeque<E> of(E first, E second) {
+        return new KeepLastElementDeque<E>(Arrays.asList(first, second));
+      }
+
+      private KeepLastElementDeque(Collection<E> coll) {
+        super(coll);
+      }
+
+      @Override
+      public E pop() {
+        return this.size() == 1 ? super.peek() : super.pop();
+      }
     }
 
     /**
@@ -301,14 +326,22 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(Statement statement, Long updateCount) {
       this.statement = Preconditions.checkNotNull(statement);
       this.updateCount = Preconditions.checkNotNull(updateCount);
-      this.resultSet = null;
+      this.resultSets = null;
       this.exception = null;
       this.type = StatementResultType.UPDATE_COUNT;
     }
 
     private StatementResult(Statement statement, ResultSet resultSet) {
       this.statement = Preconditions.checkNotNull(statement);
-      this.resultSet = Preconditions.checkNotNull(resultSet);
+      this.resultSets = KeepLastElementDeque.singleton(Preconditions.checkNotNull(resultSet));
+      this.updateCount = null;
+      this.exception = null;
+      this.type = StatementResultType.RESULT_SET;
+    }
+
+    private StatementResult(Statement statement, ResultSet resultSet, ResultSet andThen) {
+      this.statement = Preconditions.checkNotNull(statement);
+      this.resultSets = KeepLastElementDeque.of(Preconditions.checkNotNull(resultSet), Preconditions.checkNotNull(andThen));
       this.updateCount = null;
       this.exception = null;
       this.type = StatementResultType.RESULT_SET;
@@ -317,7 +350,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(
         String table, KeySet keySet, Iterable<String> columns, ResultSet resultSet) {
       this.statement = createReadStatement(table, keySet, columns);
-      this.resultSet = Preconditions.checkNotNull(resultSet);
+      this.resultSets = KeepLastElementDeque.singleton(Preconditions.checkNotNull(resultSet));
       this.updateCount = null;
       this.exception = null;
       this.type = StatementResultType.RESULT_SET;
@@ -326,7 +359,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(Statement statement, StatusRuntimeException exception) {
       this.statement = Preconditions.checkNotNull(statement);
       this.exception = Preconditions.checkNotNull(exception);
-      this.resultSet = null;
+      this.resultSets = null;
       this.updateCount = null;
       this.type = StatementResultType.EXCEPTION;
     }
@@ -339,7 +372,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Preconditions.checkState(
           type == StatementResultType.RESULT_SET,
           "This statement result does not contain a result set");
-      return resultSet;
+      return resultSets.pop();
     }
 
     private Long getUpdateCount() {
@@ -1102,6 +1135,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           case STRUCT:
             throw new IllegalArgumentException("Struct parameters not (yet) supported");
           case TIMESTAMP:
+            builder.bind(entry.getKey()).to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
