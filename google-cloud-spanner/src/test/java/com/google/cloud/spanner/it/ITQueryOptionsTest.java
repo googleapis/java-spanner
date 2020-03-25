@@ -22,8 +22,8 @@ import static org.junit.Assert.fail;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -40,7 +40,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITQueryOptionsTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

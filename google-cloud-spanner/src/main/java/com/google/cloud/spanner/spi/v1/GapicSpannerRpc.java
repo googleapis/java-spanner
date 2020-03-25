@@ -51,24 +51,40 @@ import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupsRequest;
+import com.google.spanner.admin.database.v1.ListBackupsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -110,6 +126,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -189,6 +207,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private final ScheduledExecutorService spannerWatchdog;
 
+  private final boolean throttleAdministrativeRequests;
+  private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
+  private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
+      new ConcurrentHashMap<String, RateLimiter>();
+
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
   }
@@ -203,6 +226,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (UnsupportedEncodingException e) { // Ignored.
     }
     this.projectName = projectNameStr;
+    this.throttleAdministrativeRequests = options.isAutoThrottleAdministrativeRequests();
+    if (throttleAdministrativeRequests) {
+      ADMINISTRATIVE_REQUESTS_RATE_LIMITERS.putIfAbsent(
+          projectNameStr, RateLimiter.create(ADMINISTRATIVE_REQUESTS_RATE_LIMIT));
+    }
 
     // create a metadataProvider which combines both internal headers and
     // per-method-call extra headers for channelProvider to inject the headers
@@ -307,6 +335,15 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  private void acquireAdministrativeRequestsRateLimiter() {
+    if (throttleAdministrativeRequests) {
+      RateLimiter limiter = ADMINISTRATIVE_REQUESTS_RATE_LIMITERS.get(this.projectName);
+      if (limiter != null) {
+        limiter.acquire();
+      }
+    }
+  }
+
   @Override
   public Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException {
@@ -391,8 +428,71 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public Paginated<Operation> listBackupOperations(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListBackupOperationsRequest.Builder requestBuilder =
+        ListBackupOperationsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListBackupOperationsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListBackupOperationsResponse response =
+        get(databaseAdminStub.listBackupOperationsCallable().futureCall(request, context));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
+  }
+
+  @Override
+  public Paginated<Operation> listDatabaseOperations(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListDatabaseOperationsRequest.Builder requestBuilder =
+        ListDatabaseOperationsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListDatabaseOperationsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListDatabaseOperationsResponse response =
+        get(databaseAdminStub.listDatabaseOperationsCallable().futureCall(request, context));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
+  }
+
+  @Override
+  public Paginated<Backup> listBackups(
+      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
+      throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
+    ListBackupsRequest.Builder requestBuilder =
+        ListBackupsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    ListBackupsRequest request = requestBuilder.build();
+
+    GrpcCallContext context = newCallContext(null, instanceName);
+    ListBackupsResponse response =
+        get(databaseAdminStub.listBackupsCallable().futureCall(request, context));
+    return new Paginated<>(response.getBackupsList(), response.getNextPageToken());
+  }
+
+  @Override
   public Paginated<Database> listDatabases(
       String instanceName, int pageSize, @Nullable String pageToken) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     ListDatabasesRequest.Builder requestBuilder =
         ListDatabasesRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
     if (pageToken != null) {
@@ -410,6 +510,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceName, String createDatabaseStatement, Iterable<String> additionalStatements)
       throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(instanceName)
@@ -424,6 +525,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId)
       throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     UpdateDatabaseDdlRequest request =
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(databaseName)
@@ -452,6 +554,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public void dropDatabase(String databaseName) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     DropDatabaseRequest request =
         DropDatabaseRequest.newBuilder().setDatabase(databaseName).build();
 
@@ -461,6 +564,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Database getDatabase(String databaseName) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     GetDatabaseRequest request = GetDatabaseRequest.newBuilder().setName(databaseName).build();
 
     GrpcCallContext context = newCallContext(null, databaseName);
@@ -469,6 +573,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public List<String> getDatabaseDdl(String databaseName) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder().setDatabase(databaseName).build();
 
@@ -478,11 +583,77 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(
+      String instanceName, String backupId, Backup backup) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
+    CreateBackupRequest request =
+        CreateBackupRequest.newBuilder()
+            .setParent(instanceName)
+            .setBackupId(backupId)
+            .setBackup(backup)
+            .build();
+    GrpcCallContext context = newCallContext(null, instanceName);
+    return databaseAdminStub.createBackupOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+      String databaseInstanceName, String databaseId, String backupName) {
+    acquireAdministrativeRequestsRateLimiter();
+    RestoreDatabaseRequest request =
+        RestoreDatabaseRequest.newBuilder()
+            .setParent(databaseInstanceName)
+            .setDatabaseId(databaseId)
+            .setBackup(backupName)
+            .build();
+    GrpcCallContext context = newCallContext(null, databaseInstanceName);
+    return databaseAdminStub.restoreDatabaseOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public final Backup updateBackup(Backup backup, FieldMask updateMask) {
+    acquireAdministrativeRequestsRateLimiter();
+    UpdateBackupRequest request =
+        UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
+    GrpcCallContext context = newCallContext(null, backup.getName());
+    return databaseAdminStub.updateBackupCallable().call(request, context);
+  }
+
+  @Override
+  public final void deleteBackup(String backupName) {
+    acquireAdministrativeRequestsRateLimiter();
+    DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(backupName).build();
+    GrpcCallContext context = newCallContext(null, backupName);
+    databaseAdminStub.deleteBackupCallable().call(request, context);
+  }
+
+  @Override
+  public Backup getBackup(String backupName) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
+    GetBackupRequest request = GetBackupRequest.newBuilder().setName(backupName).build();
+    GrpcCallContext context = newCallContext(null, backupName);
+    return get(databaseAdminStub.getBackupCallable().futureCall(request, context));
+  }
+
+  @Override
   public Operation getOperation(String name) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
     GetOperationRequest request = GetOperationRequest.newBuilder().setName(name).build();
     GrpcCallContext context = newCallContext(null, name);
     return get(
         databaseAdminStub.getOperationsStub().getOperationCallable().futureCall(request, context));
+  }
+
+  @Override
+  public void cancelOperation(String name) throws SpannerException {
+    acquireAdministrativeRequestsRateLimiter();
+    CancelOperationRequest request = CancelOperationRequest.newBuilder().setName(name).build();
+    GrpcCallContext context = newCallContext(null, name);
+    get(
+        databaseAdminStub
+            .getOperationsStub()
+            .cancelOperationCallable()
+            .futureCall(request, context));
   }
 
   @Override
@@ -636,6 +807,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Policy getDatabaseAdminIAMPolicy(String resource) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         databaseAdminStub
@@ -645,6 +817,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Policy setDatabaseAdminIAMPolicy(String resource, Policy policy) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         databaseAdminStub
@@ -657,6 +830,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public TestIamPermissionsResponse testDatabaseAdminIAMPermissions(
       String resource, Iterable<String> permissions) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         databaseAdminStub
@@ -671,6 +845,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Policy getInstanceAdminIAMPolicy(String resource) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         instanceAdminStub
@@ -680,6 +855,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Policy setInstanceAdminIAMPolicy(String resource, Policy policy) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         instanceAdminStub
@@ -692,6 +868,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions) {
+    acquireAdministrativeRequestsRateLimiter();
     GrpcCallContext context = newCallContext(null, resource);
     return get(
         instanceAdminStub

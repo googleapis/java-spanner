@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.spanner.Options.ListOption;
+import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Map;
@@ -111,8 +113,8 @@ public class Instance extends InstanceInfo {
     return instanceClient.updateInstance(this, fieldsToUpdate);
   }
 
-  public Page<Database> listDatabases() {
-    return dbClient.listDatabases(instanceId());
+  public Page<Database> listDatabases(ListOption... options) {
+    return dbClient.listDatabases(instanceId(), options);
   }
 
   public Database getDatabase(String databaseId) {
@@ -130,6 +132,26 @@ public class Instance extends InstanceInfo {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String databaseId, Iterable<String> statements) throws SpannerException {
     return dbClient.createDatabase(instanceId(), databaseId, statements);
+  }
+
+  /** Returns the backups belonging to this instance. */
+  public Page<Backup> listBackups(ListOption... options) {
+    return dbClient.listBackups(instanceId(), options);
+  }
+
+  /** Returns the backup with the given id on this instance. */
+  public Backup getBackup(String backupId) {
+    return dbClient.getBackup(instanceId(), backupId);
+  }
+
+  /** Returns the long-running database operations on this instance. */
+  public Page<Operation> listDatabaseOperations(ListOption... options) {
+    return dbClient.listDatabaseOperations(instanceId(), options);
+  }
+
+  /** Returns the long-running backup operations on this instance. */
+  public Page<Operation> listBackupOperations(ListOption... options) {
+    return dbClient.listBackupOperations(instanceId(), options);
   }
 
   /** Returns the IAM {@link Policy} for this instance. */

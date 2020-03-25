@@ -70,7 +70,10 @@ public class MockOperationsServiceImpl extends OperationsImplBase implements Moc
   }
 
   void update(Operation operation) {
-    operations.put(operation.getName(), operation);
+    Operation existing = operations.get(operation.getName());
+    if (!existing.getDone()) {
+      operations.put(operation.getName(), operation);
+    }
   }
 
   Iterable<Operation> iterable() {
@@ -133,8 +136,21 @@ public class MockOperationsServiceImpl extends OperationsImplBase implements Moc
     Future<?> fut = futures.get(request.getName());
     if (op != null && fut != null) {
       if (!op.getDone()) {
+        operations.put(
+            request.getName(),
+            op.toBuilder()
+                .clearResponse()
+                .setDone(true)
+                .setError(
+                    com.google.rpc.Status.newBuilder()
+                        .setCode(Status.CANCELLED.getCode().value())
+                        .setMessage("Operation was cancelled")
+                        .build())
+                .build());
         fut.cancel(true);
       }
+      responseObserver.onNext(Empty.getDefaultInstance());
+      responseObserver.onCompleted();
     } else {
       responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
     }

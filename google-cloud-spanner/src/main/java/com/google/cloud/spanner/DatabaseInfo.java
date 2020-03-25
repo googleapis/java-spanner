@@ -16,10 +16,69 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.Timestamp;
+import com.google.common.base.Preconditions;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database. */
 public class DatabaseInfo {
+  public abstract static class Builder {
+    abstract Builder setState(State state);
+
+    abstract Builder setCreateTime(Timestamp createTime);
+
+    abstract Builder setRestoreInfo(RestoreInfo restoreInfo);
+
+    abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
+
+    /** Builds the database from this builder. */
+    public abstract Database build();
+  }
+
+  abstract static class BuilderImpl extends Builder {
+    protected final DatabaseId id;
+    private State state = State.UNSPECIFIED;
+    private Timestamp createTime;
+    private RestoreInfo restoreInfo;
+    private com.google.spanner.admin.database.v1.Database proto;
+
+    BuilderImpl(DatabaseId id) {
+      this.id = Preconditions.checkNotNull(id);
+    }
+
+    BuilderImpl(DatabaseInfo other) {
+      this.id = other.id;
+      this.state = other.state;
+      this.createTime = other.createTime;
+      this.restoreInfo = other.restoreInfo;
+      this.proto = other.proto;
+    }
+
+    @Override
+    Builder setState(State state) {
+      this.state = Preconditions.checkNotNull(state);
+      return this;
+    }
+
+    @Override
+    Builder setCreateTime(Timestamp createTime) {
+      this.createTime = Preconditions.checkNotNull(createTime);
+      return this;
+    }
+
+    @Override
+    Builder setRestoreInfo(@Nullable RestoreInfo restoreInfo) {
+      this.restoreInfo = restoreInfo;
+      return this;
+    }
+
+    @Override
+    Builder setProto(@Nullable com.google.spanner.admin.database.v1.Database proto) {
+      this.proto = proto;
+      return this;
+    }
+  }
 
   /** State of the database. */
   public enum State {
@@ -28,15 +87,31 @@ public class DatabaseInfo {
     // The database is still being created and is not ready to use.
     CREATING,
     // The database is fully created and ready to use.
-    READY;
+    READY,
+    // The database has restored and is being optimized for use.
+    READY_OPTIMIZING
   }
 
   private final DatabaseId id;
   private final State state;
+  private final Timestamp createTime;
+  private final RestoreInfo restoreInfo;
+  private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
     this.id = id;
     this.state = state;
+    this.createTime = null;
+    this.restoreInfo = null;
+    this.proto = null;
+  }
+
+  DatabaseInfo(BuilderImpl builder) {
+    this.id = builder.id;
+    this.state = builder.state;
+    this.createTime = builder.createTime;
+    this.restoreInfo = builder.restoreInfo;
+    this.proto = builder.proto;
   }
 
   /** Returns the database id. */
@@ -49,6 +124,24 @@ public class DatabaseInfo {
     return state;
   }
 
+  /** Returns the creation time of the database. */
+  public Timestamp getCreateTime() {
+    return createTime;
+  }
+
+  /**
+   * Returns the {@link RestoreInfo} of the database if any is available, or <code>null</code> if no
+   * {@link RestoreInfo} is available for this database.
+   */
+  public @Nullable RestoreInfo getRestoreInfo() {
+    return restoreInfo;
+  }
+
+  /** Returns the raw proto instance that was used to construct this {@link Database}. */
+  public @Nullable com.google.spanner.admin.database.v1.Database getProto() {
+    return proto;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -58,16 +151,19 @@ public class DatabaseInfo {
       return false;
     }
     DatabaseInfo that = (DatabaseInfo) o;
-    return id.equals(that.id) && state == that.state;
+    return id.equals(that.id)
+        && state == that.state
+        && Objects.equals(createTime, that.createTime)
+        && Objects.equals(restoreInfo, that.restoreInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, state);
+    return Objects.hash(id, state, createTime, restoreInfo);
   }
 
   @Override
   public String toString() {
-    return String.format("Database[%s, %s]", id.getName(), state);
+    return String.format("Database[%s, %s, %s, %s]", id.getName(), state, createTime, restoreInfo);
   }
 }
