@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>1.52.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>1.51.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>1.52.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>1.51.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -62,38 +62,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing</spanner.testenv.instance>
-          </systemPropertyVariables>
-          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
-        </configuration>
-        <executions>
-          <execution>
-            <id>default</id>
-            <configuration>
-              <groups>com.google.cloud.spanner.IntegrationTest</groups>
-              <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.ParallelIntegrationTest</excludedGroups>
-            </configuration>
-          </execution>
-          <execution>
-            <id>parallel-integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
-              <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
-              <forkCount>8</forkCount>
-              <reuseForks>true</reuseForks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -106,6 +74,15 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.0.0-M4</version>
+          <configuration>
+            <systemPropertyVariables>
+              <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
+              <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing</spanner.testenv.instance>
+            </systemPropertyVariables>
+            <groups>com.google.cloud.spanner.IntegrationTest</groups>
+            <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest</excludedGroups>
+            <forkedProcessTimeoutInSeconds>2400</forkedProcessTimeoutInSeconds>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

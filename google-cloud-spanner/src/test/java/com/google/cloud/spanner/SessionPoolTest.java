@@ -1579,7 +1579,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
     List<LabelValue> labelValues =
         Arrays.asList(
-            LabelValue.create("client1"),
             LabelValue.create("database1"),
             LabelValue.create("instance1"),
             LabelValue.create("1.0.0"));

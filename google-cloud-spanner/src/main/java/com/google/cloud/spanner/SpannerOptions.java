@@ -18,11 +18,8 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
-import com.google.api.gax.longrunning.OperationSnapshot;
-import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -43,9 +40,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.spanner.admin.database.v1.CreateBackupRequest;
-import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
-import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannelBuilder;
@@ -87,7 +81,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
-  private final boolean autoThrottleAdministrativeRequests;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -159,7 +152,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
-    autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -234,65 +226,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
-    private boolean autoThrottleAdministrativeRequests = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
-    private Builder() {
-      // Manually set retry and polling settings that work.
-      OperationTimedPollAlgorithm longRunningPollingAlgorithm =
-          OperationTimedPollAlgorithm.create(
-              RetrySettings.newBuilder()
-                  .setInitialRpcTimeout(Duration.ofSeconds(60L))
-                  .setMaxRpcTimeout(Duration.ofSeconds(600L))
-                  .setInitialRetryDelay(Duration.ofSeconds(20L))
-                  .setMaxRetryDelay(Duration.ofSeconds(45L))
-                  .setRetryDelayMultiplier(1.5)
-                  .setRpcTimeoutMultiplier(1.5)
-                  .setTotalTimeout(Duration.ofHours(48L))
-                  .build());
-      RetrySettings longRunningRetrySettings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofSeconds(60L))
-              .setMaxRpcTimeout(Duration.ofSeconds(600L))
-              .setInitialRetryDelay(Duration.ofSeconds(20L))
-              .setMaxRetryDelay(Duration.ofSeconds(45L))
-              .setRetryDelayMultiplier(1.5)
-              .setRpcTimeoutMultiplier(1.5)
-              .setTotalTimeout(Duration.ofHours(48L))
-              .build();
-      databaseAdminStubSettingsBuilder
-          .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
-      databaseAdminStubSettingsBuilder
-          .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
-      databaseAdminStubSettingsBuilder
-          .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
-      databaseAdminStubSettingsBuilder
-          .deleteBackupSettings()
-          .setRetrySettings(longRunningRetrySettings);
-      databaseAdminStubSettingsBuilder
-          .updateBackupSettings()
-          .setRetrySettings(longRunningRetrySettings);
-    }
+    private Builder() {}
 
     Builder(SpannerOptions options) {
       super(options);
@@ -304,7 +242,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
-      this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.channelProvider = options.channelProvider;
@@ -499,22 +436,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Instructs the client library to automatically throttle the number of administrative requests
-     * if the rate of administrative requests generated by this {@link Spanner} instance will exceed
-     * the administrative limits Cloud Spanner. The default behavior is to not throttle any
-     * requests. If the limit is exceeded, Cloud Spanner will return a RESOURCE_EXHAUSTED error.
-     * More information on the administrative limits can be found here:
-     * https://cloud.google.com/spanner/quotas#administrative_limits. Setting this option is not a
-     * guarantee that the rate will never be exceeded, as this option will only throttle requests
-     * coming from this client. Additional requests from other clients could still cause the limit
-     * to be exceeded.
-     */
-    public Builder setAutoThrottleAdministrativeRequests() {
-      this.autoThrottleAdministrativeRequests = true;
-      return this;
-    }
-
-    /**
      * Sets the default {@link QueryOptions} that will be used for all queries on the specified
      * database. Query options can also be specified on a per-query basis and as environment
      * variables. The precedence of these settings are:
@@ -669,10 +590,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public Duration getPartitionedDmlTimeout() {
     return partitionedDmlTimeout;
-  }
-
-  public boolean isAutoThrottleAdministrativeRequests() {
-    return autoThrottleAdministrativeRequests;
   }
 
   public CallCredentialsProvider getCallCredentialsProvider() {

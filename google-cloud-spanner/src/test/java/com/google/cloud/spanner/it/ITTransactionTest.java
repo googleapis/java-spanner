@@ -28,11 +28,11 @@ import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
@@ -58,7 +58,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for read-write transactions. */
-@Category(ParallelIntegrationTest.class)
+@Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITTransactionTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

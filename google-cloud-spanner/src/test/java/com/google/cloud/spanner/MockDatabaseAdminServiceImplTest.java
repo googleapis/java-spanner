@@ -32,30 +32,15 @@ import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.spanner.OperationFutureUtil.FakeStatusCode;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
-import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
-import com.google.iam.v1.Binding;
-import com.google.iam.v1.GetIamPolicyRequest;
-import com.google.iam.v1.Policy;
-import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
-import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
-import com.google.protobuf.FieldMask;
-import com.google.protobuf.Timestamp;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.io.IOException;
@@ -63,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.After;
@@ -117,7 +101,6 @@ public class MockDatabaseAdminServiceImplTest {
 
   private static final String TEST_PARENT = "projects/my-project/instances/my-instance";
   private static final String TEST_DB_NAME = String.format("%s/databases/test-db", TEST_PARENT);
-  private static final String TEST_BCK_NAME = String.format("%s/backups/test-bck", TEST_PARENT);
   private static MockOperationsServiceImpl mockOperations;
   private static MockDatabaseAdminServiceImpl mockDatabaseAdmin;
   private static MockServiceHelper serviceHelper;
@@ -148,35 +131,7 @@ public class MockDatabaseAdminServiceImplTest {
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(NoCredentialsProvider.create());
     settingsBuilder
-        .createBackupOperationSettings()
-        .setPollingAlgorithm(
-            OperationTimedPollAlgorithm.create(
-                RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
-                    .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
-                    .setRetryDelayMultiplier(1.3)
-                    .setRpcTimeoutMultiplier(1.3)
-                    .build()));
-    settingsBuilder
         .createDatabaseOperationSettings()
-        .setPollingAlgorithm(
-            OperationTimedPollAlgorithm.create(
-                RetrySettings.newBuilder()
-                    .setInitialRpcTimeout(Duration.ofMillis(20L))
-                    .setInitialRetryDelay(Duration.ofMillis(10L))
-                    .setMaxRetryDelay(Duration.ofMillis(150L))
-                    .setMaxRpcTimeout(Duration.ofMillis(150L))
-                    .setMaxAttempts(10)
-                    .setTotalTimeout(Duration.ofMillis(5000L))
-                    .setRetryDelayMultiplier(1.3)
-                    .setRpcTimeoutMultiplier(1.3)
-                    .build()));
-    settingsBuilder
-        .restoreDatabaseOperationSettings()
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
@@ -285,17 +240,6 @@ public class MockDatabaseAdminServiceImplTest {
   }
 
   @Test
-  public void listDatabaseOperations() {
-    createTestDb();
-    ListDatabaseOperationsPagedResponse response = client.listDatabaseOperations(TEST_DB_NAME);
-    List<Operation> operations = new ArrayList<>();
-    for (Operation op : response.iterateAll()) {
-      operations.add(op);
-    }
-    assertThat(operations).hasSize(1);
-  }
-
-  @Test
   public void updateDatabaseDdl() throws InterruptedException, ExecutionException {
     createTestDb();
     UpdateDatabaseDdlRequest request =
@@ -312,174 +256,6 @@ public class MockDatabaseAdminServiceImplTest {
             "CREATE TABLE FOO", "CREATE TABLE BAR", "CREATE TABLE BAZ", "DROP TABLE FOO");
   }
 
-  private Backup createTestBackup() {
-    CreateBackupRequest request =
-        CreateBackupRequest.newBuilder()
-            .setBackupId("test-bck")
-            .setBackup(
-                Backup.newBuilder()
-                    .setDatabase(TEST_DB_NAME)
-                    .setExpireTime(
-                        Timestamp.newBuilder()
-                            .setSeconds(
-                                System.currentTimeMillis() * 1000L
-                                    + TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS)))
-                    .build())
-            .setParent(TEST_PARENT)
-            .build();
-    OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackupOperationCallable().futureCall(request);
-    try {
-      return op.get();
-    } catch (ExecutionException e) {
-      if (e.getCause() != null && e.getCause() instanceof RuntimeException) {
-        throw (RuntimeException) e.getCause();
-      }
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new CancelledException(e, FakeStatusCode.of(Code.CANCELLED), false);
-    }
-  }
-
-  @Test
-  public void createBackup() {
-    createTestDb();
-    Backup bck = createTestBackup();
-    assertThat(bck.getName()).isEqualTo(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void createBackupAlreadyExists() {
-    createTestDb();
-    createTestBackup();
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.ALREADY_EXISTS));
-    createTestBackup();
-  }
-
-  @Test
-  public void createBackupDatabaseDoesNotExist() {
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.NOT_FOUND));
-    createTestBackup();
-  }
-
-  @Test
-  public void deleteBackup() {
-    createTestDb();
-    createTestBackup();
-    Backup bck = client.getBackup(TEST_BCK_NAME);
-    assertThat(bck.getName()).isEqualTo(TEST_BCK_NAME);
-    client.deleteBackup(TEST_BCK_NAME);
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.NOT_FOUND));
-    client.getBackup(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void deleteBackupNotFound() {
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.NOT_FOUND));
-    client.deleteBackup(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void getBackup() {
-    createTestDb();
-    createTestBackup();
-    Backup bck = client.getBackup(TEST_BCK_NAME);
-    assertThat(bck.getName()).isEqualTo(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void getBackupNotFound() {
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.NOT_FOUND));
-    client.getBackup(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void listBackups() {
-    createTestDb();
-    createTestBackup();
-    ListBackupsPagedResponse response = client.listBackups(TEST_PARENT);
-    List<String> backups = new ArrayList<>();
-    for (Backup bck : response.iterateAll()) {
-      backups.add(bck.getName());
-    }
-    assertThat(backups).containsExactly(TEST_BCK_NAME);
-  }
-
-  @Test
-  public void listBackupOperations() {
-    createTestDb();
-    createTestBackup();
-    ListBackupOperationsPagedResponse response = client.listBackupOperations(TEST_BCK_NAME);
-    List<Operation> operations = new ArrayList<>();
-    for (Operation op : response.iterateAll()) {
-      operations.add(op);
-    }
-    assertThat(operations).hasSize(1);
-  }
-
-  @Test
-  public void updateBackup() {
-    createTestDb();
-    Backup backup = createTestBackup();
-    Backup toBeUpdated =
-        backup.toBuilder().setExpireTime(Timestamp.newBuilder().setSeconds(1000L).build()).build();
-    Backup updated =
-        client.updateBackup(toBeUpdated, FieldMask.newBuilder().addPaths("expire_time").build());
-    assertThat(updated.getExpireTime()).isEqualTo(toBeUpdated.getExpireTime());
-    assertThat(backup.getExpireTime()).isNotEqualTo(updated.getExpireTime());
-  }
-
-  @Test
-  public void restoreDatabase() throws InterruptedException, ExecutionException {
-    createTestDb();
-    createTestBackup();
-    RestoreDatabaseRequest request =
-        RestoreDatabaseRequest.newBuilder()
-            .setBackup(TEST_BCK_NAME)
-            .setDatabaseId("restored-db")
-            .setParent(TEST_PARENT)
-            .build();
-    OperationFuture<Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabaseOperationCallable().futureCall(request);
-    Database restoredDb = op.get();
-    assertThat(restoredDb.getName())
-        .isEqualTo(String.format("%s/databases/%s", TEST_PARENT, "restored-db"));
-    assertThat(restoredDb.getRestoreInfo().getBackupInfo().getBackup()).isEqualTo(TEST_BCK_NAME);
-    assertThat(restoredDb.getRestoreInfo().getBackupInfo().getSourceDatabase())
-        .isEqualTo(TEST_DB_NAME);
-  }
-
-  @Test
-  public void restoreDatabaseNotFound() throws InterruptedException, ExecutionException {
-    createTestDb();
-    RestoreDatabaseRequest request =
-        RestoreDatabaseRequest.newBuilder()
-            .setBackup(TEST_BCK_NAME)
-            .setDatabaseId("restored-db")
-            .setParent(TEST_PARENT)
-            .build();
-    OperationFuture<Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabaseOperationCallable().futureCall(request);
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.NOT_FOUND));
-    op.get();
-  }
-
-  @Test
-  public void restoreDatabaseAlreadyExists() throws InterruptedException, ExecutionException {
-    createTestDb();
-    createTestBackup();
-    RestoreDatabaseRequest request =
-        RestoreDatabaseRequest.newBuilder()
-            .setBackup(TEST_BCK_NAME)
-            .setDatabaseId("test-db")
-            .setParent(TEST_PARENT)
-            .build();
-    OperationFuture<Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabaseOperationCallable().futureCall(request);
-    exception.expect(ApiExceptionMatcher.forCode(StatusCode.Code.ALREADY_EXISTS));
-    op.get();
-  }
-
   @Test
   public void testIAMPolicy() {
     TestIamPermissionsResponse response =
@@ -491,30 +267,5 @@ public class MockDatabaseAdminServiceImplTest {
                 .build());
     assertThat(response.getPermissionsList())
         .containsExactly("spanner.databases.select", "spanner.databases.write");
-
-    GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder().setResource(TEST_PARENT).build();
-    Policy policy = client.getIamPolicy(request);
-    assertThat(policy).isNotNull();
-
-    Policy newPolicy =
-        Policy.newBuilder()
-            .addBindings(
-                Binding.newBuilder().setRole("roles/admin").addMembers("user:joe@example.com"))
-            .setEtag(policy.getEtag())
-            .build();
-    client.setIamPolicy(
-        SetIamPolicyRequest.newBuilder().setResource(TEST_PARENT).setPolicy(newPolicy).build());
-    policy = client.getIamPolicy(TEST_PARENT);
-    assertThat(policy).isEqualTo(newPolicy);
-
-    response =
-        client.testIamPermissions(
-            TestIamPermissionsRequest.newBuilder()
-                .setResource(TEST_PARENT)
-                .addPermissions("spanner.databases.select")
-                .addPermissions("spanner.databases.update")
-                .build());
-    assertThat(response.getPermissionsList())
-        .containsExactly("spanner.databases.select", "spanner.databases.update");
   }
 }

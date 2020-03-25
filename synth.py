@@ -18,8 +18,6 @@ import synthtool as s
 import synthtool.gcp as gcp
 import synthtool.languages.java as java
 
-AUTOSYNTH_MULTIPLE_COMMITS = True
-
 gapic = gcp.GAPICGenerator()
 
 library = gapic.java_library(
@@ -66,7 +64,9 @@ java.format_code('proto-google-cloud-spanner-admin-database-v1/src')
 java.format_code('grpc-google-cloud-spanner-admin-instance-v1/src')
 java.format_code('proto-google-cloud-spanner-admin-instance-v1/src')
 
-java.common_templates(excludes=[
+common_templates = gcp.CommonTemplates()
+templates = common_templates.java_library()
+s.copy(templates, excludes=[
     'README.md',
     '.kokoro/continuous/common.cfg',
     '.kokoro/nightly/common.cfg',

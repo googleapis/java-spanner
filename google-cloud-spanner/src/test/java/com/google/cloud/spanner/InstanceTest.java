@@ -110,38 +110,6 @@ public class InstanceTest {
   }
 
   @Test
-  public void listDatabases() {
-    InstanceId id = new InstanceId("test-project", "test-instance");
-    Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    instance.listDatabases();
-    verify(dbClient).listDatabases("test-instance");
-  }
-
-  @Test
-  public void listBackups() {
-    InstanceId id = new InstanceId("test-project", "test-instance");
-    Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    instance.listBackups();
-    verify(dbClient).listBackups("test-instance");
-  }
-
-  @Test
-  public void listDatabaseOperations() {
-    InstanceId id = new InstanceId("test-project", "test-instance");
-    Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    instance.listDatabaseOperations();
-    verify(dbClient).listDatabaseOperations("test-instance");
-  }
-
-  @Test
-  public void listBackupOperations() {
-    InstanceId id = new InstanceId("test-project", "test-instance");
-    Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    instance.listBackupOperations();
-    verify(dbClient).listBackupOperations("test-instance");
-  }
-
-  @Test
   public void getIAMPolicy() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();

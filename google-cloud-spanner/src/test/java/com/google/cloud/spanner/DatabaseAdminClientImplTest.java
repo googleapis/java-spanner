@@ -24,7 +24,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.collect.ImmutableList;
@@ -37,18 +36,13 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
-import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,9 +60,6 @@ public class DatabaseAdminClientImplTest {
   private static final String DB_NAME = "projects/my-project/instances/my-instance/databases/my-db";
   private static final String DB_NAME2 =
       "projects/my-project/instances/my-instance/databases/my-db2";
-  private static final String BK_ID = "my-bk";
-  private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
-  private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -91,22 +82,6 @@ public class DatabaseAdminClientImplTest {
     return Any.newBuilder()
         .setTypeUrl("type.googleapis.com/" + message.getDescriptorForType().getFullName())
         .setValue(message.toByteString())
-        .build();
-  }
-
-  private Backup getBackupProto() {
-    return Backup.newBuilder()
-        .setName(BK_NAME)
-        .setDatabase(DB_NAME)
-        .setState(Backup.State.READY)
-        .build();
-  }
-
-  private Backup getAnotherBackupProto() {
-    return Backup.newBuilder()
-        .setName(BK_NAME2)
-        .setDatabase(DB_NAME2)
-        .setState(Backup.State.READY)
         .build();
   }
 
@@ -157,7 +132,12 @@ public class DatabaseAdminClientImplTest {
             Empty.getDefaultInstance(),
             UpdateDatabaseDdlMetadata.getDefaultInstance());
 
+    String newOpName = DB_NAME + "/operations/newop";
     String newOpId = "newop";
+    OperationFuture<Empty, UpdateDatabaseDdlMetadata> newop =
+        OperationFutureUtil.immediateOperationFuture(
+            newOpName, Empty.getDefaultInstance(), UpdateDatabaseDdlMetadata.getDefaultInstance());
+
     when(rpc.updateDatabaseDdl(DB_NAME, ddl, newOpId)).thenReturn(originalOp);
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, newOpId);
@@ -289,81 +269,5 @@ public class DatabaseAdminClientImplTest {
                 .build());
     Iterable<String> allowed = client.testDatabaseIAMPermissions(INSTANCE_ID, DB_ID, permissions);
     assertThat(allowed).containsExactly("spanner.databases.select");
-  }
-
-  @Test
-  public void createBackup() throws Exception {
-    OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
-        OperationFutureUtil.immediateOperationFuture(
-            "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
-    Timestamp t =
-        Timestamp.ofTimeMicroseconds(
-            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
-                + TimeUnit.HOURS.toMicros(28));
-    Backup backup = Backup.newBuilder().setDatabase(DB_NAME).setExpireTime(t.toProto()).build();
-    when(rpc.createBackup(INSTANCE_NAME, BK_ID, backup)).thenReturn(rawOperationFuture);
-    OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, BK_ID, DB_ID, t);
-    assertThat(op.isDone()).isTrue();
-    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
-  }
-
-  @Test
-  public void deleteBackup() {
-    client.deleteBackup(INSTANCE_ID, BK_ID);
-    verify(rpc).deleteBackup(BK_NAME);
-  }
-
-  @Test
-  public void getBackup() {
-    when(rpc.getBackup(BK_NAME)).thenReturn(getBackupProto());
-    com.google.cloud.spanner.Backup bk = client.getBackup(INSTANCE_ID, BK_ID);
-    BackupId bid = BackupId.of(bk.getId().getName());
-    assertThat(bid.getName()).isEqualTo(BK_NAME);
-    assertThat(bk.getState()).isEqualTo(com.google.cloud.spanner.Backup.State.READY);
-  }
-
-  @Test
-  public void listBackups() {
-    String pageToken = "token";
-    when(rpc.listBackups(INSTANCE_NAME, 1, null, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getBackupProto()), pageToken));
-    when(rpc.listBackups(INSTANCE_NAME, 1, null, pageToken))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getAnotherBackupProto()), ""));
-    List<com.google.cloud.spanner.Backup> backups =
-        Lists.newArrayList(client.listBackups(INSTANCE_ID, Options.pageSize(1)).iterateAll());
-    assertThat(backups.get(0).getId().getName()).isEqualTo(BK_NAME);
-    assertThat(backups.get(1).getId().getName()).isEqualTo(BK_NAME2);
-    assertThat(backups.size()).isEqualTo(2);
-  }
-
-  @Test
-  public void updateBackup() throws Exception {
-    Timestamp t =
-        Timestamp.ofTimeMicroseconds(
-            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
-                + TimeUnit.HOURS.toMicros(28));
-    Backup backup = Backup.newBuilder().setName(BK_NAME).setExpireTime(t.toProto()).build();
-    when(rpc.updateBackup(backup, FieldMask.newBuilder().addPaths("expire_time").build()))
-        .thenReturn(
-            Backup.newBuilder()
-                .setName(BK_NAME)
-                .setDatabase(DB_NAME)
-                .setExpireTime(t.toProto())
-                .build());
-    com.google.cloud.spanner.Backup updatedBackup = client.updateBackup(INSTANCE_ID, BK_ID, t);
-    assertThat(updatedBackup.getExpireTime()).isEqualTo(t);
-  }
-
-  @Test
-  public void restoreDatabase() throws Exception {
-    OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
-        OperationFutureUtil.immediateOperationFuture(
-            "restoreDatabase", getDatabaseProto(), RestoreDatabaseMetadata.getDefaultInstance());
-    when(rpc.restoreDatabase(INSTANCE_NAME, DB_ID, BK_NAME)).thenReturn(rawOperationFuture);
-    OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabase(INSTANCE_ID, BK_ID, INSTANCE_ID, DB_ID);
-    assertThat(op.isDone()).isTrue();
-    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
   }
 }

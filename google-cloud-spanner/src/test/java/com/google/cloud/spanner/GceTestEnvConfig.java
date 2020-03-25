@@ -51,8 +51,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
     double errorProbability =
         Double.parseDouble(System.getProperty(GCE_STREAM_BROKEN_PROBABILITY, "0.0"));
     checkState(errorProbability <= 1.0);
-    SpannerOptions.Builder builder =
-        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
+    SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }

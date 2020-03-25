@@ -62,24 +62,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String QUERY = "CloudSpannerOperation.ExecuteStreamingQuery";
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
 
-  private static final Object CLIENT_ID_LOCK = new Object();
-
-  @GuardedBy("CLIENT_ID_LOCK")
-  private static final Map<DatabaseId, Long> CLIENT_IDS = new HashMap<>();
-
-  private static String nextDatabaseClientId(DatabaseId databaseId) {
-    synchronized (CLIENT_ID_LOCK) {
-      Long id = CLIENT_IDS.get(databaseId);
-      if (id == null) {
-        id = 1L;
-      } else {
-        id++;
-      }
-      CLIENT_IDS.put(databaseId, id);
-      return String.format("client-%d", id);
-    }
-  }
-
   private final SpannerRpc gapicRpc;
 
   @GuardedBy("this")
@@ -171,17 +153,15 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       if (dbClients.containsKey(db)) {
         return dbClients.get(db);
       } else {
-        String clientId = nextDatabaseClientId(db);
         List<LabelValue> labelValues =
             ImmutableList.of(
-                LabelValue.create(clientId),
                 LabelValue.create(db.getDatabase()),
                 LabelValue.create(db.getInstanceId().getName()),
                 LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
-        DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
+        DatabaseClientImpl dbClient = createDatabaseClient(pool);
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -189,8 +169,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @VisibleForTesting
-  DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool);
+  DatabaseClientImpl createDatabaseClient(SessionPool pool) {
+    return new DatabaseClientImpl(pool);
   }
 
   @Override

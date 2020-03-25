@@ -21,11 +21,11 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.common.hash.HashFunction;
@@ -46,7 +46,7 @@ import org.junit.runners.JUnit4;
  * Integration test reading large amounts of data. The size of data ensures that multiple chunks are
  * returned by the server.
  */
-@Category(ParallelIntegrationTest.class)
+@Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITLargeReadTest {
   private static int numRows;

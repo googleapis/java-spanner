@@ -22,10 +22,10 @@ import static org.junit.Assert.fail;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-@Category(ParallelIntegrationTest.class)
+@Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITTransactionManagerTest {
 

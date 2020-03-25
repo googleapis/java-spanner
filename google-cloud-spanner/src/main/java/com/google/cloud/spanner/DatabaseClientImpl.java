@@ -37,16 +37,9 @@ class DatabaseClientImpl implements DatabaseClient {
     READ_WRITE
   }
 
-  @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
 
-  @VisibleForTesting
   DatabaseClientImpl(SessionPool pool) {
-    this("", pool);
-  }
-
-  DatabaseClientImpl(String clientId, SessionPool pool) {
-    this.clientId = clientId;
     this.pool = pool;
   }
 

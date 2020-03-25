@@ -25,10 +25,10 @@ import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
@@ -56,7 +56,7 @@ import org.junit.runners.JUnit4;
  * Integration test reading large amounts of data using the Batch APIs. The size of data ensures
  * that multiple paritions are returned by the server.
  */
-@Category(ParallelIntegrationTest.class)
+@Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITBatchReadTest {
   private static int numRows;

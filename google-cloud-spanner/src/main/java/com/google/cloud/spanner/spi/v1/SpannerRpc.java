@@ -29,11 +29,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
@@ -208,58 +205,9 @@ public interface SpannerRpc extends ServiceRpc {
   Database getDatabase(String databaseName) throws SpannerException;
 
   List<String> getDatabaseDdl(String databaseName) throws SpannerException;
-  /** Lists the backups in the specified instance. */
-  Paginated<Backup> listBackups(
-      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
-      throws SpannerException;
-
-  /**
-   * Creates a new backup from the source database specified in the {@link Backup} instance.
-   *
-   * @param instanceName the name of the instance where the backup should be created.
-   * @param backupId the id of the backup to create.
-   * @param backup the backup to create. The database and expireTime fields of the backup must be
-   *     filled.
-   * @return the operation that monitors the backup creation.
-   */
-  OperationFuture<Backup, CreateBackupMetadata> createBackup(
-      String instanceName, String backupId, Backup backup) throws SpannerException;
-
-  /**
-   * Restore a backup into the given database.
-   *
-   * @param instanceName Fully qualified name of instance where to restore the database
-   * @param databaseId DatabaseId to restore into
-   * @param backupName Fully qualified name of backup to restore from
-   */
-  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
-      String instanceName, String databaseId, String backupName);
-
-  /** Gets the backup with the specified name. */
-  Backup getBackup(String backupName) throws SpannerException;
-
-  /** Updates the specified backup. The only supported field for updates is expireTime. */
-  Backup updateBackup(Backup backup, FieldMask updateMask);
-
-  /** List all long-running backup operations on the given instance. */
-  Paginated<Operation> listBackupOperations(
-      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
-
-  /**
-   * Deletes a pending or completed backup.
-   *
-   * @param backupName Required. The fully qualified name of the backup to delete.
-   */
-  void deleteBackup(String backupName);
-
-  Paginated<Operation> listDatabaseOperations(
-      String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
 
   /** Retrieves a long running operation. */
   Operation getOperation(String name) throws SpannerException;
-
-  /** Cancels the specified long-running operation. */
-  void cancelOperation(String name) throws SpannerException;
 
   List<Session> batchCreateSessions(
       String databaseName,
