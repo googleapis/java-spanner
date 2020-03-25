@@ -30,12 +30,21 @@ class MetricRegistryConstants {
       LabelKey.create("instance_id", "Name of the instance");
   private static final LabelKey LIBRARY_VERSION =
       LabelKey.create("library_version", "Library version");
+  private static final LabelKey SESSION_TYPE = LabelKey.create("Type", "Type of the Sessions");
 
   /** The label value is used to represent missing value. */
   private static final LabelValue UNSET_LABEL = LabelValue.create(null);
 
+  static final LabelValue NUM_IN_USE_SESSIONS = LabelValue.create("num_in_use_sessions");
+  static final LabelValue NUM_SESSIONS_BEING_PREPARED =
+      LabelValue.create("num_sessions_being_prepared");
+  static final LabelValue NUM_READ_SESSIONS = LabelValue.create("num_read_sessions");
+  static final LabelValue NUM_WRITE_SESSIONS = LabelValue.create("num_write_prepared_sessions");
+
   static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =
       ImmutableList.of(CLIENT_ID, DATABASE, INSTANCE_ID, LIBRARY_VERSION);
+  static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS_WITH_TYPE =
+      ImmutableList.of(CLIENT_ID, DATABASE, INSTANCE_ID, LIBRARY_VERSION, SESSION_TYPE);
 
   static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
       ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
@@ -46,20 +55,20 @@ class MetricRegistryConstants {
   // The Metric name and description
   static final String MAX_IN_USE_SESSIONS = "cloud.google.com/java/spanner/max_in_use_sessions";
   static final String MAX_ALLOWED_SESSIONS = "cloud.google.com/java/spanner/max_allowed_sessions";
-  static final String IN_USE_SESSIONS = "cloud.google.com/java/spanner/in_use_sessions";
   static final String GET_SESSION_TIMEOUTS = "cloud.google.com/java/spanner/get_session_timeouts";
   static final String NUM_ACQUIRED_SESSIONS = "cloud.google.com/java/spanner/num_acquired_sessions";
   static final String NUM_RELEASED_SESSIONS = "cloud.google.com/java/spanner/num_released_sessions";
+  static final String NUM_SESSIONS_IN_POOL = "cloud.google.com/java/spanner/num_sessions_in_pool";
 
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
       "The maximum number of sessions in use during the last 10 minute interval.";
   static final String MAX_ALLOWED_SESSIONS_DESCRIPTION =
       "The maximum number of sessions allowed. Configurable by the user.";
-  static final String IN_USE_SESSIONS_DESCRIPTION = "The number of sessions currently in use.";
   static final String SESSIONS_TIMEOUTS_DESCRIPTION =
       "The number of get sessions timeouts due to pool exhaustion";
   static final String NUM_ACQUIRED_SESSIONS_DESCRIPTION =
       "The number of sessions acquired from the session pool.";
   static final String NUM_RELEASED_SESSIONS_DESCRIPTION =
       "The number of sessions released by the user and pool maintainer.";
+  static final String NUM_SESSIONS_IN_POOL_DESCRIPTION = "The number of sessions in the pool.";
 }

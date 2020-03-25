@@ -1710,7 +1710,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.getMetrics().size()).isEqualTo(6);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
     assertThat(record.getMetrics())
@@ -1757,7 +1756,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 3L);
     assertThat(record.getMetrics())
         .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 3L);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.IN_USE_SESSIONS, 0L);
     assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
   }
 
