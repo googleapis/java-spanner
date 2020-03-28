@@ -182,7 +182,7 @@ public class SessionClientTest {
         };
     final int numSessions = 10;
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-      client.asyncBatchCreateSessions(numSessions, consumer);
+      client.asyncBatchCreateSessions(numSessions, true, consumer);
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
     assertThat(usedChannels.size()).isEqualTo(spannerOptions.getNumChannels());
@@ -275,7 +275,7 @@ public class SessionClientTest {
             };
         final int numSessions = 10;
         try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-          client.asyncBatchCreateSessions(numSessions, consumer);
+          client.asyncBatchCreateSessions(numSessions, true, consumer);
         }
         assertThat(errorCount.get()).isEqualTo(errorOnChannels.size());
         assertThat(returnedSessionCount.get())
@@ -330,7 +330,7 @@ public class SessionClientTest {
     // sessions.
     final int numSessions = 100;
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-      client.asyncBatchCreateSessions(numSessions, consumer);
+      client.asyncBatchCreateSessions(numSessions, true, consumer);
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
   }
