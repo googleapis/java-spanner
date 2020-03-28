@@ -23,7 +23,6 @@ import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
@@ -1626,14 +1625,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     } catch (Throwable t) {
       responseObserver.onError(Status.INTERNAL.asRuntimeException());
     }
-  }
-
-  public int numSessionsCreated() {
-    return numSessionsCreated.get();
-  }
-
-  public List<Session> dumpSessions() {
-    return ImmutableList.copyOf(this.sessions.values());
   }
 
   @Override
