@@ -81,7 +81,7 @@ public class SessionPoolLeakTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Make sure the session pool is empty by default, does not contain any write-prepared sessions,
-    // contains at most 2 sessions and creates sessions in steps of 1.
+    // contains at most 2 sessions, and creates sessions in steps of 1.
     builder.setSessionPoolOption(
         SessionPoolOptions.newBuilder()
             .setMinSessions(0)

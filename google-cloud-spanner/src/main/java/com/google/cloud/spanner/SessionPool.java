@@ -1718,13 +1718,6 @@ final class SessionPool {
     }
   }
 
-  @VisibleForTesting
-  int numSessionsTotalAndCreating() {
-    synchronized (lock) {
-      return totalSessions() + numSessionsBeingCreated;
-    }
-  }
-
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
