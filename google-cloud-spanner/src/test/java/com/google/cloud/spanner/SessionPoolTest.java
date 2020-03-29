@@ -33,7 +33,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
@@ -71,7 +70,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -874,7 +872,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     SessionImpl session1 = mockSession();
     SessionImpl session2 = mockSession();
     SessionImpl session3 = mockSession();
-    final AtomicInteger numSessionClosed = new AtomicInteger();
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -895,18 +892,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    for (Session session : new Session[] {session1, session2, session3}) {
-      doAnswer(
-              new Answer<ApiFuture<Empty>>() {
-
-                @Override
-                public ApiFuture<Empty> answer(InvocationOnMock invocation) throws Throwable {
-                  numSessionClosed.incrementAndGet();
-                  return ApiFutures.immediateFuture(Empty.getDefaultInstance());
-                }
-              })
-          .when(session)
-          .asyncClose();
+    for (SessionImpl sess : new SessionImpl[] {session1, session2, session3}) {
+      when(sess.get()).thenReturn(com.google.spanner.v1.Session.getDefaultInstance());
     }
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
@@ -914,25 +901,29 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Make sure pool has been initialized
     pool.getReadSession().close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
-    assertThat(numSessionClosed.get()).isEqualTo(0);
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     Session readSession1 = pool.getReadSession();
     Session readSession2 = pool.getReadSession();
     Session readSession3 = pool.getReadSession();
     readSession1.close();
     readSession2.close();
     readSession3.close();
-    // Now there are 3 sessions in the pool but since all were used in parallel, we will not close
-    // any.
+    // Now there are 3 sessions in the pool but since none of them has timed out, they will all be
+    // kept in the pool.
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
-    assertThat(numSessionClosed.get()).isEqualTo(0);
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     // Counters have now been reset
     // Use all 3 sessions sequentially
     pool.getReadSession().close();
     pool.getReadSession().close();
     pool.getReadSession().close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    // Advance the time by running the maintainer. This should cause
+    // one session to be kept alive and two sessions to be removed.
+    long cycles =
+        options.getRemoveInactiveSessionAfter().toMillis() / pool.poolMaintainer.loopFrequency;
+    runMaintainanceLoop(clock, pool, cycles);
     // We will still close 2 sessions since at any point in time only 1 session was in use.
-    assertThat(numSessionClosed.get()).isEqualTo(2);
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
     pool.closeAsync().get(5L, TimeUnit.SECONDS);
   }
 
@@ -972,15 +963,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session1.close();
     session2.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, never()).singleUse(any(TimestampBound.class));
+    verify(session, never()).get();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(2)).singleUse(any(TimestampBound.class));
-    clock.currentTimeMillis += clock.currentTimeMillis + 35 * 60 * 1000;
+    verify(session, times(2)).get();
+    clock.currentTimeMillis +=
+        clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getReadSession();
     session1.writeAtLeastOnce(new ArrayList<Mutation>());
     session1.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(3)).singleUse(any(TimestampBound.class));
+    verify(session, times(options.getMinSessions())).get();
     pool.closeAsync().get(5L, TimeUnit.SECONDS);
   }
 

@@ -69,6 +69,7 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -840,15 +841,10 @@ final class SessionPool {
 
     private void keepAlive() {
       markUsed();
-      try (ResultSet resultSet =
-          delegate
-              .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
-              .executeQuery(Statement.newBuilder("SELECT 1").build())) {
-        resultSet.next();
-      }
+      delegate.get();
     }
 
-    private void markUsed() {
+    void markUsed() {
       lastUseTime = clock.instant();
     }
 
@@ -929,24 +925,30 @@ final class SessionPool {
     }
   }
 
-  // Background task to maintain the pool. It closes idle sessions, keeps alive sessions that have
-  // not been used for a user configured time and creates session if needed to bring pool up to
-  // minimum required sessions. We keep track of the number of concurrent sessions being used.
-  // The maximum value of that over a window (10 minutes) tells us how many sessions we need in the
-  // pool. We close the remaining sessions. To prevent bursty traffic, we smear this out over the
-  // window length. We also smear out the keep alive traffic over the keep alive period.
+  /**
+   * Background task to maintain the pool. Tasks:
+   *
+   * <ul>
+   *   <li>Removes idle sessions from the pool. Sessions that go above MinSessions that have not
+   *       been used for the last 55 minutes will be removed from the pool. These will automatically
+   *       be garbage collected by the backend.
+   *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
+   *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
+   *       over a window of 10 minutes to avoid bursty traffic.
+   * </ul>
+   */
   final class PoolMaintainer {
     // Length of the window in millis over which we keep track of maximum number of concurrent
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
     // Frequency of the timer loop.
-    @VisibleForTesting static final long LOOP_FREQUENCY = 10 * 1000L;
+    @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
-    @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / LOOP_FREQUENCY;
+    @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
     private final Duration keepAliveMilis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / LOOP_FREQUENCY;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
@@ -969,8 +971,8 @@ final class SessionPool {
                     maintainPool();
                   }
                 },
-                LOOP_FREQUENCY,
-                LOOP_FREQUENCY,
+                loopFrequency,
+                loopFrequency,
                 TimeUnit.MILLISECONDS);
       }
     }
@@ -993,7 +995,7 @@ final class SessionPool {
         running = true;
       }
       Instant currTime = clock.instant();
-      closeIdleSessions(currTime);
+      removeIdleSessions(currTime);
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       keepAliveSessions(currTime);
       replenishPool();
@@ -1005,46 +1007,43 @@ final class SessionPool {
       }
     }
 
-    private void closeIdleSessions(Instant currTime) {
-      LinkedList<PooledSession> sessionsToClose = new LinkedList<>();
+    private void removeIdleSessions(Instant currTime) {
       synchronized (lock) {
-        // Every ten minutes figure out how many sessions need to be closed then close them over
-        // next ten minutes.
-        if (currTime.isAfter(lastResetTime.plus(windowLength))) {
-          int sessionsToKeep =
-              Math.max(options.getMinSessions(), maxSessionsInUse + options.getMaxIdleSessions());
-          numSessionsToClose = totalSessions() - sessionsToKeep;
-          sessionsToClosePerLoop = (int) Math.ceil((double) numSessionsToClose / numClosureCycles);
-          maxSessionsInUse = 0;
-          lastResetTime = currTime;
-        }
-        if (numSessionsToClose > 0) {
-          while (sessionsToClose.size() < Math.min(numSessionsToClose, sessionsToClosePerLoop)) {
-            PooledSession sess =
-                readSessions.size() > 0 ? readSessions.poll() : writePreparedSessions.poll();
-            if (sess != null) {
-              if (sess.state != SessionState.CLOSING) {
-                sess.markClosing();
-                sessionsToClose.add(sess);
+        // Determine the minimum last use time for a session to be deemed to still be alive. Remove
+        // all sessions that have a lastUseTime before that time, unless it would cause us to go
+        // below MinSessions. Prefer to remove read sessions above write-prepared sessions.
+        Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
+        for (Iterator<PooledSession> iterator :
+            Arrays.asList(
+                readSessions.descendingIterator(), writePreparedSessions.descendingIterator())) {
+          while (iterator.hasNext()) {
+            PooledSession session = iterator.next();
+            if (session.lastUseTime.isBefore(minLastUseTime)) {
+              if (session.state != SessionState.CLOSING) {
+                removeFromPool(session);
+                iterator.remove();
               }
-            } else {
-              break;
             }
           }
-          numSessionsToClose -= sessionsToClose.size();
         }
-      }
-      for (PooledSession sess : sessionsToClose) {
-        logger.log(Level.FINE, "Closing session {0}", sess.getName());
-        closeSessionAsync(sess);
       }
     }
 
     private void keepAliveSessions(Instant currTime) {
       long numSessionsToKeepAlive = 0;
       synchronized (lock) {
+        if (numSessionsInUse >= (options.getMinSessions() + options.getMaxIdleSessions())) {
+          // At least MinSessions are in use, so we don't have to ping any sessions.
+          return;
+        }
         // In each cycle only keep alive a subset of sessions to prevent burst of traffic.
-        numSessionsToKeepAlive = (long) Math.ceil((double) totalSessions() / numKeepAliveCycles);
+        numSessionsToKeepAlive =
+            (long)
+                Math.ceil(
+                    (double)
+                            ((options.getMinSessions() + options.getMaxIdleSessions())
+                                - numSessionsInUse)
+                        / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
@@ -1053,9 +1052,11 @@ final class SessionPool {
       while (numSessionsToKeepAlive > 0) {
         PooledSession sessionToKeepAlive = null;
         synchronized (lock) {
-          sessionToKeepAlive = findSessionToKeepAlive(readSessions, keepAliveThreshold);
+          sessionToKeepAlive = findSessionToKeepAlive(readSessions, keepAliveThreshold, 0);
           if (sessionToKeepAlive == null) {
-            sessionToKeepAlive = findSessionToKeepAlive(writePreparedSessions, keepAliveThreshold);
+            sessionToKeepAlive =
+                findSessionToKeepAlive(
+                    writePreparedSessions, keepAliveThreshold, readSessions.size());
           }
         }
         if (sessionToKeepAlive == null) {
@@ -1137,12 +1138,17 @@ final class SessionPool {
   @GuardedBy("lock")
   private long numSessionsReleased = 0;
 
+  @GuardedBy("lock")
+  private long numIdleSessionsRemoved = 0;
+
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
+
+  @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   /**
    * Create a session pool with the given options and for the given database. It will also start
@@ -1233,6 +1239,28 @@ final class SessionPool {
   }
 
   @VisibleForTesting
+  void removeFromPool(PooledSession session) {
+    synchronized (lock) {
+      if (isClosed()) {
+        decrementPendingClosures(1);
+        return;
+      }
+      session.markClosing();
+      allSessions.remove(session);
+      numIdleSessionsRemoved++;
+      if (idleSessionRemovedListener != null) {
+        idleSessionRemovedListener.apply(session);
+      }
+    }
+  }
+
+  long numIdleSessionsRemoved() {
+    synchronized (lock) {
+      return numIdleSessionsRemoved;
+    }
+  }
+
+  @VisibleForTesting
   int getNumberOfAvailableWritePreparedSessions() {
     synchronized (lock) {
       return writePreparedSessions.size();
@@ -1313,14 +1341,18 @@ final class SessionPool {
   }
 
   private PooledSession findSessionToKeepAlive(
-      Queue<PooledSession> queue, Instant keepAliveThreshold) {
+      Queue<PooledSession> queue, Instant keepAliveThreshold, int numAlreadyChecked) {
+    int numChecked = 0;
     Iterator<PooledSession> iterator = queue.iterator();
-    while (iterator.hasNext()) {
+    while (iterator.hasNext()
+        && (numChecked + numAlreadyChecked)
+            < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
       if (session.lastUseTime.isBefore(keepAliveThreshold)) {
         iterator.remove();
         return session;
       }
+      numChecked++;
     }
     return null;
   }

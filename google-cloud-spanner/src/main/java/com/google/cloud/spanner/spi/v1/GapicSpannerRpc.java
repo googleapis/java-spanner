@@ -120,6 +120,7 @@ import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
@@ -511,6 +512,13 @@ public class GapicSpannerRpc implements SpannerRpc {
         limiter.acquire();
       }
     }
+  }
+
+  @Override
+  public Session getSession(String name) {
+    GetSessionRequest request = GetSessionRequest.newBuilder().setName(name).build();
+    GrpcCallContext context = newCallContext(null, projectName);
+    return get(spannerStub.getSessionCallable().futureCall(request, context));
   }
 
   @Override

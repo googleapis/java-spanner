@@ -26,6 +26,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.DeleteSessionRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -46,13 +48,12 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.threeten.bp.Duration;
 
 /**
- * Benchmarks for common session pool scenarios. The simulated execution times are based on
- * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
- * before and after changes have been made to the pool. The benchmarks are bound to the Maven
- * profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=SessionPoolBenchmark
+ * Benchmarks for the SessionPoolMaintainer. Run these benchmarks from the command line like this:
+ * <code>
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=SessionPoolMaintainerBenchmark
  * </code>
  */
 @BenchmarkMode(Mode.AverageTime)
@@ -60,62 +61,43 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Warmup(batchSize = 0, iterations = 0)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class SessionPoolBenchmark {
+public class SessionPoolMaintainerBenchmark {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
-  private static final int HOLD_SESSION_TIME = 100;
-  private static final int RND_WAIT_TIME_BETWEEN_REQUESTS = 10;
+  private static final int HOLD_SESSION_TIME = 10;
+  private static final int RND_WAIT_TIME_BETWEEN_REQUESTS = 100;
   private static final Random RND = new Random();
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
-  public static class BenchmarkState {
+  public static class MockServer {
     private StandardBenchmarkMockServer mockServer;
     private Spanner spanner;
     private DatabaseClientImpl client;
 
+    /**
+     * The tests set the session idle timeout to an extremely low value to force timeouts and
+     * sessions to be evicted from the pool. This is not intended to replicate a realistic scenario,
+     * only to detect whether certain changes to the client library might cause the number of RPCs
+     * or the execution time to change drastically.
+     */
     @Param({"100"})
-    int minSessions;
+    long idleTimeout;
 
-    @Param({"400"})
-    int maxSessions;
-
-    @Param({"1", "10", "20", "25", "30", "40", "50", "100"})
-    int incStep;
-
-    @Param({"4"})
-    int numChannels;
-
-    @Param({"0.2"})
-    float writeFraction;
-
-    /** AuxCounter for number of RPCs. */
+    /** AuxCounter for number of create RPCs. */
     public int numBatchCreateSessionsRpcs() {
-      return countRequests(BatchCreateSessionsRequest.class);
+      return mockServer.countRequests(BatchCreateSessionsRequest.class);
     }
 
-    /** AuxCounter for number of sessions created. */
-    public int sessionsCreated() {
-      return mockSpanner.numSessionsCreated();
+    /** AuxCounter for number of delete RPCs. */
+    public int numDeleteSessionRpcs() {
+      return mockServer.countRequests(DeleteSessionRequest.class);
     }
 
-    @Setup(Level.Invocation)
-    public void setup() throws Exception {
-      mockSpanner = new MockSpannerServiceImpl();
-      mockSpanner.setAbortProbability(
-          0.0D); // We don't want any unpredictable aborted transactions.
-      mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-      mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
-      mockSpanner.putStatementResult(
-          StatementResult.exception(
-              INVALID_UPDATE_STATEMENT,
-              Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
-    }
-
-    /** AuxCounter for number of sessions created. */
-    public int sessionsCreated() {
-      return mockServer.getMockSpanner().numSessionsCreated();
+    /** AuxCounter for number of begin tx RPCs. */
+    public int numBeginTransactionRpcs() {
+      return mockServer.countRequests(BeginTransactionRequest.class);
     }
 
     @Setup(Level.Invocation)
@@ -127,14 +109,12 @@ public class SessionPoolBenchmark {
           SpannerOptions.newBuilder()
               .setProjectId(TEST_PROJECT)
               .setChannelProvider(channelProvider)
-              .setNumChannels(numChannels)
               .setCredentials(NoCredentials.getInstance())
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setMinSessions(minSessions)
-                      .setMaxSessions(maxSessions)
-                      .setIncStep(incStep)
-                      .setWriteSessionsFraction(writeFraction)
+                      // Set idle timeout and loop frequency to very low values.
+                      .setRemoveInactiveSessionAfter(Duration.ofMillis(idleTimeout))
+                      .setLoopFrequency(idleTimeout / 10)
                       .build())
               .build();
 
@@ -154,22 +134,19 @@ public class SessionPoolBenchmark {
       spanner.close();
       mockServer.shutdown();
     }
-
-    int expectedStepsToMax() {
-      int remainder = (maxSessions - minSessions) % incStep == 0 ? 0 : 1;
-      return numChannels + ((maxSessions - minSessions) / incStep) + remainder;
-    }
   }
 
-  /** Measures the time needed to execute a burst of read requests. */
+  /** Measures the time and RPCs needed to execute read requests. */
   @Benchmark
-  public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = server.maxSessions * 8;
-    int parallelThreads = server.maxSessions * 2;
+  public void read(final MockServer server) throws Exception {
+    int min = server.spanner.getOptions().getSessionPoolOptions().getMinSessions();
+    int max = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions();
+    int totalQueries = max * 4;
+    int parallelThreads = min;
     final DatabaseClient client =
         server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
+    assertThat(pool.totalSessions()).isEqualTo(min);
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -195,15 +172,17 @@ public class SessionPoolBenchmark {
     service.shutdown();
   }
 
-  /** Measures the time needed to execute a burst of write requests. */
+  /** Measures the time and RPCs needed to execute write requests. */
   @Benchmark
-  public void burstWrite(final BenchmarkState server) throws Exception {
-    int totalWrites = server.maxSessions * 8;
-    int parallelThreads = server.maxSessions * 2;
+  public void write(final MockServer server) throws Exception {
+    int min = server.spanner.getOptions().getSessionPoolOptions().getMinSessions();
+    int max = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions();
+    int totalWrites = max * 4;
+    int parallelThreads = max;
     final DatabaseClient client =
         server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
+    assertThat(pool.totalSessions()).isEqualTo(min);
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -231,16 +210,18 @@ public class SessionPoolBenchmark {
     service.shutdown();
   }
 
-  /** Measures the time needed to execute a burst of read and write requests. */
+  /** Measures the time and RPCs needed to execute read and write requests. */
   @Benchmark
-  public void burstReadAndWrite(final BenchmarkState server) throws Exception {
-    int totalWrites = server.maxSessions * 4;
-    int totalReads = server.maxSessions * 4;
-    int parallelThreads = server.maxSessions * 2;
+  public void readAndWrite(final MockServer server) throws Exception {
+    int min = server.spanner.getOptions().getSessionPoolOptions().getMinSessions();
+    int max = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions();
+    int totalWrites = max * 2;
+    int totalReads = max * 2;
+    int parallelThreads = max;
     final DatabaseClient client =
         server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
+    assertThat(pool.totalSessions()).isEqualTo(min);
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -283,25 +264,5 @@ public class SessionPoolBenchmark {
     }
     Futures.allAsList(futures).get();
     service.shutdown();
-  }
-
-  /** Measures the time needed to acquire MaxSessions session sequentially. */
-  @Benchmark
-  public void steadyIncrease(BenchmarkState server) throws Exception {
-    final DatabaseClient client =
-        server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
-
-    // Checkout maxSessions sessions by starting maxSessions read-only transactions sequentially.
-    List<ReadOnlyTransaction> transactions = new ArrayList<>(server.maxSessions);
-    for (int i = 0; i < server.maxSessions; i++) {
-      ReadOnlyTransaction tx = client.readOnlyTransaction();
-      tx.executeQuery(MockServer.SELECT1);
-      transactions.add(tx);
-    }
-    for (ReadOnlyTransaction tx : transactions) {
-      tx.close();
-    }
   }
 }
