@@ -1627,6 +1627,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public int numSessionsCreated() {
+    return numSessionsCreated.get();
+  }
+
   @Override
   public List<AbstractMessage> getRequests() {
     return new ArrayList<>(this.requests);
