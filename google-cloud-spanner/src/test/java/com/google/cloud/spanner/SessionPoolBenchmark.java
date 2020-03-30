@@ -279,9 +279,6 @@ public class SessionPoolBenchmark {
     }
     Futures.allAsList(futures).get();
     service.shutdown();
-    //    assertThat(pool.totalSessions()).isEqualTo(server.maxSessions);
-    //    assertThat(server.countRequests(BatchCreateSessionsRequest.class))
-    //        .isEqualTo(server.expectedStepsToMax());
   }
 
   /** Measures the time needed to execute a burst of write requests. */
@@ -317,9 +314,6 @@ public class SessionPoolBenchmark {
     }
     Futures.allAsList(futures).get();
     service.shutdown();
-    //    assertThat(pool.totalSessions()).isEqualTo(server.maxSessions);
-    //    assertThat(server.countRequests(BatchCreateSessionsRequest.class))
-    //        .isEqualTo(server.expectedStepsToMax());
   }
 
   /** Measures the time needed to execute a burst of read and write requests. */
@@ -372,9 +366,6 @@ public class SessionPoolBenchmark {
     }
     Futures.allAsList(futures).get();
     service.shutdown();
-    //    assertThat(pool.totalSessions()).isEqualTo(server.maxSessions);
-    //    assertThat(server.countRequests(BatchCreateSessionsRequest.class))
-    //        .isEqualTo(server.expectedStepsToMax());
   }
 
   /** Measures the time needed to acquire MaxSessions session sequentially. */
@@ -393,9 +384,5 @@ public class SessionPoolBenchmark {
     for (ReadOnlyTransaction tx : transactions) {
       tx.close();
     }
-
-    //    assertThat(pool.totalSessions()).isEqualTo(server.maxSessions);
-    //    assertThat(server.countRequests(BatchCreateSessionsRequest.class))
-    //        .isEqualTo(server.expectedStepsToMax());
   }
 }
