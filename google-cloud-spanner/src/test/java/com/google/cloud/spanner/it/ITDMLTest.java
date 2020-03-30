@@ -38,6 +38,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.Arrays;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -55,10 +56,13 @@ public final class ITDMLTest {
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
+  /** Id prefix per test case. */
+  private static int id;
+
   private static final String INSERT_DML =
-      "INSERT INTO T (k, v) VALUES ('boo1', 1), ('boo2', 2), ('boo3', 3), ('boo4', 4);";
-  private static final String UPDATE_DML = "UPDATE T SET T.V = 100 WHERE T.K LIKE 'boo%';";
-  private static final String DELETE_DML = "DELETE FROM T WHERE T.K like 'boo%';";
+      "INSERT INTO T (k, v) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4);";
+  private static final String UPDATE_DML = "UPDATE T SET T.V = 100 WHERE T.K LIKE '%d-boo%%';";
+  private static final String DELETE_DML = "DELETE FROM T WHERE T.K like '%d-boo%%';";
   private static final long DML_COUNT = 4;
 
   private static boolean throwAbortOnce = false;
@@ -75,8 +79,25 @@ public final class ITDMLTest {
     client = env.getTestHelper().getDatabaseClient(db);
   }
 
+  @Before
+  public void increaseTestId() {
+    id++;
+  }
+
   private static String uniqueKey() {
     return "k" + seq++;
+  }
+
+  private String insertDml() {
+    return String.format(INSERT_DML, id, id, id, id);
+  }
+
+  private String updateDml() {
+    return String.format(UPDATE_DML, id);
+  }
+
+  private String deleteDml() {
+    return String.format(DELETE_DML, id);
   }
 
   private void executeUpdate(long expectedCount, final String... stmts) {
@@ -106,7 +127,7 @@ public final class ITDMLTest {
   public void abortOnceShouldSucceedAfterRetry() {
     try {
       throwAbortOnce = true;
-      executeUpdate(DML_COUNT, INSERT_DML);
+      executeUpdate(DML_COUNT, insertDml());
       assertThat(throwAbortOnce).isFalse();
     } catch (AbortedException e) {
       fail("Abort Exception not caught and retried");
@@ -115,55 +136,55 @@ public final class ITDMLTest {
 
   @Test
   public void partitionedDML() {
-    executeUpdate(DML_COUNT, INSERT_DML);
+    executeUpdate(DML_COUNT, insertDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
                 .getLong(0))
         .isEqualTo(1);
 
-    long rowCount = client.executePartitionedUpdate(Statement.of(UPDATE_DML));
+    long rowCount = client.executePartitionedUpdate(Statement.of(updateDml()));
     // Note: With PDML there is a possibility of network replay or partial update to occur, causing
     // this assert to fail. We should remove this assert if it is a recurring failure in IT tests.
     assertThat(rowCount).isEqualTo(DML_COUNT);
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
                 .getLong(0))
         .isEqualTo(100);
 
-    rowCount = client.executePartitionedUpdate(Statement.of(DELETE_DML));
+    rowCount = client.executePartitionedUpdate(Statement.of(deleteDml()));
     assertThat(rowCount).isEqualTo(DML_COUNT);
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
         .isNull();
   }
 
   @Test
   public void standardDML() {
-    executeUpdate(DML_COUNT, INSERT_DML);
+    executeUpdate(DML_COUNT, insertDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
                 .getLong(0))
         .isEqualTo(1);
-    executeUpdate(DML_COUNT, UPDATE_DML);
+    executeUpdate(DML_COUNT, updateDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
                 .getLong(0))
         .isEqualTo(100);
-    executeUpdate(DML_COUNT, DELETE_DML);
+    executeUpdate(DML_COUNT, deleteDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
         .isNull();
   }
 
@@ -182,36 +203,40 @@ public final class ITDMLTest {
 
   @Test
   public void standardDMLWithDuplicates() {
-    executeUpdate(DML_COUNT, INSERT_DML);
+    executeUpdate(DML_COUNT, insertDml());
 
     executeUpdate(
         4,
-        "UPDATE T SET v = 200 WHERE k = 'boo1';",
-        "UPDATE T SET v = 300 WHERE k = 'boo1';",
-        "UPDATE T SET v = 400 WHERE k = 'boo1';",
-        "UPDATE T SET v = 500 WHERE k = 'boo1';");
+        String.format("UPDATE T SET v = 200 WHERE k = '%d-boo1';", id),
+        String.format("UPDATE T SET v = 300 WHERE k = '%d-boo1';", id),
+        String.format("UPDATE T SET v = 400 WHERE k = '%d-boo1';", id),
+        String.format("UPDATE T SET v = 500 WHERE k = '%d-boo1';", id));
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of("boo1"), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
                 .getLong(0))
         .isEqualTo(500);
 
-    executeUpdate(DML_COUNT, DELETE_DML, DELETE_DML);
+    executeUpdate(DML_COUNT, deleteDml(), deleteDml());
   }
 
   @Test
   public void standardDMLReadYourWrites() {
-    executeUpdate(DML_COUNT, INSERT_DML);
+    executeUpdate(DML_COUNT, insertDml());
 
     final TransactionCallable<Void> callable =
         new TransactionCallable<Void>() {
           @Override
           public Void run(TransactionContext transaction) {
             long rowCount =
-                transaction.executeUpdate(Statement.of("UPDATE T SET v = v * 2 WHERE k = 'boo2';"));
+                transaction.executeUpdate(
+                    Statement.of(String.format("UPDATE T SET v = v * 2 WHERE k = '%d-boo2';", id)));
             assertThat(rowCount).isEqualTo(1);
-            assertThat(transaction.readRow("T", Key.of("boo2"), Arrays.asList("v")).getLong(0))
+            assertThat(
+                    transaction
+                        .readRow("T", Key.of(String.format("%d-boo2", id)), Arrays.asList("v"))
+                        .getLong(0))
                 .isEqualTo(2 * 2);
             return null;
           }
@@ -219,7 +244,7 @@ public final class ITDMLTest {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(callable);
 
-    executeUpdate(DML_COUNT, DELETE_DML);
+    executeUpdate(DML_COUNT, deleteDml());
   }
 
   @Test
@@ -233,7 +258,7 @@ public final class ITDMLTest {
         new TransactionCallable<Void>() {
           @Override
           public Void run(TransactionContext transaction) throws UserException {
-            long rowCount = transaction.executeUpdate(Statement.of(INSERT_DML));
+            long rowCount = transaction.executeUpdate(Statement.of(insertDml()));
             assertThat(rowCount).isEqualTo(DML_COUNT);
             throw new UserException("failing to commit");
           }
@@ -252,7 +277,10 @@ public final class ITDMLTest {
     ResultSet resultSet =
         client
             .singleUse(TimestampBound.strong())
-            .read("T", KeySet.range(KeyRange.prefix(Key.of("boo"))), Arrays.asList("K"));
+            .read(
+                "T",
+                KeySet.range(KeyRange.prefix(Key.of(String.format("%d-boo", id)))),
+                Arrays.asList("K"));
     assertThat(resultSet.next()).isFalse();
   }
 
@@ -312,8 +340,8 @@ public final class ITDMLTest {
 
   @Test
   public void standardDMLWithExecuteSQL() {
-    executeQuery(DML_COUNT, INSERT_DML);
+    executeQuery(DML_COUNT, insertDml());
     // checks for multi-stmts within a txn, therefore also verifying seqNo.
-    executeQuery(DML_COUNT * 2, UPDATE_DML, DELETE_DML);
+    executeQuery(DML_COUNT * 2, updateDml(), deleteDml());
   }
 }
