@@ -841,7 +841,12 @@ final class SessionPool {
 
     private void keepAlive() {
       markUsed();
-      delegate.get();
+      try (ResultSet resultSet =
+          delegate
+              .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
+              .executeQuery(Statement.newBuilder("SELECT 1").build())) {
+        resultSet.next();
+      }
     }
 
     void markUsed() {

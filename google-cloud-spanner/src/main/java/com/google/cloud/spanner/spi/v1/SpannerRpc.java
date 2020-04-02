@@ -172,8 +172,6 @@ public interface SpannerRpc extends ServiceRpc {
     void cancel(@Nullable String message);
   }
 
-  Session getSession(String name);
-
   // Instance admin APIs.
   Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException;

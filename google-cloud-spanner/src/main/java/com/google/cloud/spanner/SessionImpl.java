@@ -101,10 +101,6 @@ class SessionImpl implements Session {
     return options;
   }
 
-  com.google.spanner.v1.Session get() {
-    return spanner.getRpc().getSession(name);
-  }
-
   @Override
   public long executePartitionedUpdate(Statement stmt) {
     setActive(null);

@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -99,20 +100,23 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionImpl setupMockSession(final SessionImpl session) {
-    when(session.get())
+    ReadContext mockContext = mock(ReadContext.class);
+    final ResultSet mockResult = mock(ResultSet.class);
+    when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
+    when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
-            new Answer<com.google.spanner.v1.Session>() {
+            new Answer<ResultSet>() {
               @Override
-              public com.google.spanner.v1.Session answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
                 Integer currentValue = pingedSessions.get(session.getName());
                 if (currentValue == null) {
                   currentValue = 0;
                 }
                 pingedSessions.put(session.getName(), ++currentValue);
-                return com.google.spanner.v1.Session.getDefaultInstance();
+                return mockResult;
               }
             });
+    when(mockResult.next()).thenReturn(true);
     return session;
   }
 

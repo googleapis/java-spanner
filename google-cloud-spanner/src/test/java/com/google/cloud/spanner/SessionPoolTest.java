@@ -892,8 +892,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    for (SessionImpl sess : new SessionImpl[] {session1, session2, session3}) {
-      when(sess.get()).thenReturn(com.google.spanner.v1.Session.getDefaultInstance());
+    for (SessionImpl session : sessions) {
+      mockKeepAlive(session);
     }
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
@@ -963,16 +963,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session1.close();
     session2.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, never()).get();
+    verify(session, never()).singleUse(any(TimestampBound.class));
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(2)).get();
+    verify(session, times(2)).singleUse(any(TimestampBound.class));
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getReadSession();
     session1.writeAtLeastOnce(new ArrayList<Mutation>());
     session1.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(options.getMinSessions())).get();
+    // The session pool only keeps MinSessions + MaxIdleSessions alive.
+    verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
+        .singleUse(any(TimestampBound.class));
     pool.closeAsync().get(5L, TimeUnit.SECONDS);
   }
 
@@ -1642,6 +1644,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private void mockKeepAlive(Session session) {
     ReadContext context = mock(ReadContext.class);
     ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true, false);
     when(session.singleUse(any(TimestampBound.class))).thenReturn(context);
     when(context.executeQuery(any(Statement.class))).thenReturn(resultSet);
   }
