@@ -149,6 +149,21 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
+  public void testExecuteSetOptimizerVersion() throws Exception {
+    ParsedStatement subject = parser.parse(Statement.of("set optimizer_version='foo'"));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementSetOptimizerVersion(any(String.class))).thenCallRealMethod();
+    for (String version : new String[] {"1", "200", "", "LATEST"}) {
+      subject
+          .getClientSideStatement()
+          .execute(executor, String.format("set optimizer_version='%s'", version));
+      verify(connection, times(1)).setOptimizerVersion(version);
+    }
+  }
+
+  @Test
   public void testExecuteSetTransaction() throws Exception {
     ParsedStatement subject = parser.parse(Statement.of("set transaction read_only"));
     ConnectionImpl connection = mock(ConnectionImpl.class);

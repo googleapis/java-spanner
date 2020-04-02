@@ -24,10 +24,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
@@ -38,6 +40,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -49,7 +53,9 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
+import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
@@ -57,6 +63,7 @@ import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.State
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -520,6 +527,76 @@ public class ConnectionImplTest {
       assertThat(
           res.getResultSet().getString("AUTOCOMMIT_DML_MODE"),
           is(equalTo(AutocommitDmlMode.PARTITIONED_NON_ATOMIC.toString())));
+    }
+  }
+
+  @Test
+  public void testExecuteSetOptimizerVersion() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+
+      StatementResult res = subject.execute(Statement.of("set optimizer_version='1'"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerVersion(), is(equalTo("1")));
+
+      res = subject.execute(Statement.of("set optimizer_version='1000'"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerVersion(), is(equalTo("1000")));
+
+      res = subject.execute(Statement.of("set optimizer_version='latest'"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerVersion(), is(equalTo("latest")));
+
+      res = subject.execute(Statement.of("set optimizer_version=''"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+    }
+  }
+
+  @Test
+  public void testExecuteSetOptimizerVersionInvalidValue() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+
+      try {
+        subject.execute(Statement.of("set optimizer_version='NOT_A_VERSION'"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.INVALID_ARGUMENT)));
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteGetOptimizerVersion() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+
+      StatementResult res = subject.execute(Statement.of("show variable optimizer_version"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(res.getResultSet().getString("OPTIMIZER_VERSION"), is(equalTo("")));
+
+      subject.execute(Statement.of("set optimizer_version='1'"));
+      res = subject.execute(Statement.of("show variable optimizer_version"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(res.getResultSet().getString("OPTIMIZER_VERSION"), is(equalTo("1")));
     }
   }
 
@@ -1112,6 +1189,75 @@ public class ConnectionImplTest {
       assertThat(subject.removeTransactionRetryListener(listener), is(true));
       assertThat(subject.getTransactionRetryListeners().hasNext(), is(false));
       assertThat(subject.removeTransactionRetryListener(listener), is(false));
+    }
+  }
+
+  @Test
+  public void testMergeQueryOptions() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    try (ConnectionImpl impl =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      // Execute query with an optimizer version set on the connection.
+      impl.setOptimizerVersion("1");
+      impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
+      verify(unitOfWork)
+          .executeQuery(
+              StatementParser.INSTANCE.parse(
+                  Statement.newBuilder("SELECT FOO FROM BAR")
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .build()),
+              AnalyzeMode.NONE);
+
+      // Execute query with an optimizer version set on the connection.
+      impl.setOptimizerVersion("2");
+      impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
+      verify(unitOfWork)
+          .executeQuery(
+              StatementParser.INSTANCE.parse(
+                  Statement.newBuilder("SELECT FOO FROM BAR")
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2").build())
+                      .build()),
+              AnalyzeMode.NONE);
+
+      // Execute query with an optimizer version set on the connection and PrefetchChunks query
+      // option specified for the query.
+      QueryOption prefetchOption = Options.prefetchChunks(100);
+      impl.setOptimizerVersion("3");
+      impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
+      verify(unitOfWork)
+          .executeQuery(
+              StatementParser.INSTANCE.parse(
+                  Statement.newBuilder("SELECT FOO FROM BAR")
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("3").build())
+                      .build()),
+              AnalyzeMode.NONE,
+              prefetchOption);
+
+      // Execute query with an optimizer version set on the connection, and the same options also
+      // passed in to the query. The specific options passed in to the query should take precedence.
+      impl.setOptimizerVersion("4");
+      impl.executeQuery(
+          Statement.newBuilder("SELECT FOO FROM BAR")
+              .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+              .build(),
+          prefetchOption);
+      verify(unitOfWork)
+          .executeQuery(
+              StatementParser.INSTANCE.parse(
+                  Statement.newBuilder("SELECT FOO FROM BAR")
+                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+                      .build()),
+              AnalyzeMode.NONE,
+              prefetchOption);
     }
   }
 }

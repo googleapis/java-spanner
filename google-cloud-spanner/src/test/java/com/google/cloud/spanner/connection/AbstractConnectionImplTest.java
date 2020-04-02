@@ -608,6 +608,51 @@ public abstract class AbstractConnectionImplTest {
     }
   }
 
+  boolean isSetOptimizerVersionAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testSetOptimizerVersion() {
+    try (Connection connection = getConnection()) {
+      if (isSetOptimizerVersionAllowed()) {
+        for (String version : new String[] {"1", "2", "latest", ""}) {
+          log("SET OPTIMIZER_VERSION='" + version + "';");
+          connection.setOptimizerVersion(version);
+
+          log("@EXPECT RESULT_SET 'OPTIMIZER_VERSION','" + version + "'");
+          log("SHOW VARIABLE OPTIMIZER_VERSION;");
+          assertThat(connection.getOptimizerVersion(), is(equalTo(version)));
+        }
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        log("SET OPTIMIZER_VERSION='1';");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.setOptimizerVersion("1");
+      }
+    }
+  }
+
+  boolean isGetOptimizerVersionAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testGetOptimizerVersion() {
+    try (Connection connection = getConnection()) {
+      if (isGetOptimizerVersionAllowed()) {
+        log("@EXPECT RESULT_SET 'OPTIMIZER_VERSION'");
+        log("SHOW VARIABLE OPTIMIZER_VERSION;");
+        assertThat(connection.getOptimizerVersion(), is(notNullValue()));
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        log("SHOW VARIABLE OPTIMIZER_VERSION;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getOptimizerVersion();
+      }
+    }
+  }
+
   abstract boolean isCommitAllowed();
 
   @Test

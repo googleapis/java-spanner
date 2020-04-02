@@ -101,6 +101,8 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void testSqlScript() throws Exception {
+    // Wait 100ms to ensure that staleness tests in the script succeed.
+    Thread.sleep(100L);
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
     verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class);
   }

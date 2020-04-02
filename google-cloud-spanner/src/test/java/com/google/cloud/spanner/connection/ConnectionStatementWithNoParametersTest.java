@@ -115,6 +115,18 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
+  public void testExecuteGetOptimizerVersion() throws Exception {
+    ParsedStatement statement = parser.parse(Statement.of("show variable optimizer_version"));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementShowOptimizerVersion()).thenCallRealMethod();
+    when(connection.getOptimizerVersion()).thenReturn("1");
+    statement.getClientSideStatement().execute(executor, "show variable optimizer_version");
+    verify(connection, times(1)).getOptimizerVersion();
+  }
+
+  @Test
   public void testExecuteBegin() throws Exception {
     ParsedStatement subject = parser.parse(Statement.of("begin"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {

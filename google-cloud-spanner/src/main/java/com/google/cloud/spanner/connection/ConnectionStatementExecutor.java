@@ -60,6 +60,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReadOnlyStaleness();
 
+  StatementResult statementSetOptimizerVersion(String optimizerVersion);
+
+  StatementResult statementShowOptimizerVersion();
+
   StatementResult statementBeginTransaction();
 
   StatementResult statementCommit();

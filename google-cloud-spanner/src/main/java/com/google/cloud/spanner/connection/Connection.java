@@ -83,6 +83,11 @@ import java.util.concurrent.TimeUnit;
  *   <li><code>
  *       SET READ_ONLY_STALENESS='STRONG' | 'MIN_READ_TIMESTAMP &lt;timestamp&gt;' | 'READ_TIMESTAMP &lt;timestamp&gt;' | 'MAX_STALENESS &lt;int64&gt;s|ms|mus|ns' | 'EXACT_STALENESS (&lt;int64&gt;s|ms|mus|ns)'
  *       </code>: Sets the value of <code>READ_ONLY_STALENESS</code> for this connection.
+ *   <li><code>SHOW OPTIMIZER_VERSION</code>: Returns the current value of <code>
+ *       OPTIMIZER_VERSION</code> of this connection as a {@link ResultSet}
+ *   <li><code>
+ *       SET OPTIMIZER_VERSION='&lt;version&gt;' | 'LATEST'
+ *       </code>: Sets the value of <code>OPTIMIZER_VERSION</code> for this connection.
  *   <li><code>BEGIN [TRANSACTION]</code>: Begins a new transaction. This statement is optional when
  *       the connection is not in autocommit mode, as a new transaction will automatically be
  *       started when a query or update statement is issued. In autocommit mode, this statement will
@@ -388,6 +393,24 @@ public interface Connection extends AutoCloseable {
    *     connection is in read-only and autocommit mode.
    */
   TimestampBound getReadOnlyStaleness();
+
+  /**
+   * Sets the query optimizer version to use for this connection.
+   *
+   * @param optimizerVersion The query optimizer version to use. Must be a valid optimizer version
+   *     number, the string <code>LATEST</code> or an empty string. The empty string will instruct
+   *     the connection to use the optimizer version that is defined in the environment variable
+   *     <code>SPANNER_OPTIMIZER_VERSION</code>. If no value is specified in the environment
+   *     variable, the default query optimizer of Cloud Spanner is used.
+   */
+  void setOptimizerVersion(String optimizerVersion);
+
+  /**
+   * Gets the current query optimizer version of this connection.
+   *
+   * @return The query optimizer version that is currently used by this connection.
+   */
+  String getOptimizerVersion();
 
   /**
    * Commits the current transaction of this connection. All mutations that have been buffered

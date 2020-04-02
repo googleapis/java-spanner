@@ -213,6 +213,20 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  static class StringValueConverter implements ClientSideStatementValueConverter<String> {
+    public StringValueConverter(String allowedValues) {}
+
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      return value;
+    }
+  }
+
   /** Converter for converting string values to {@link TransactionMode} values. */
   static class TransactionModeConverter
       implements ClientSideStatementValueConverter<TransactionMode> {

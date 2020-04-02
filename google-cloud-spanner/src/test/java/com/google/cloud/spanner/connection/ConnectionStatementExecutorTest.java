@@ -96,6 +96,12 @@ public class ConnectionStatementExecutorTest {
   }
 
   @Test
+  public void testStatementGetOptimizerVersion() {
+    subject.statementShowOptimizerVersion();
+    verify(connection).getOptimizerVersion();
+  }
+
+  @Test
   public void testStatementGetReadTimestamp() {
     subject.statementShowReadTimestamp();
     verify(connection).getReadTimestampOrNull();
@@ -165,6 +171,16 @@ public class ConnectionStatementExecutorTest {
         TimestampBound.ofMaxStaleness(20L, TimeUnit.MILLISECONDS));
     verify(connection)
         .setReadOnlyStaleness(TimestampBound.ofMaxStaleness(20L, TimeUnit.MILLISECONDS));
+  }
+
+  @Test
+  public void testStatementSetOptimizerVersion() {
+    subject.statementSetOptimizerVersion("1");
+    verify(connection).setOptimizerVersion("1");
+    subject.statementSetOptimizerVersion("");
+    verify(connection).setOptimizerVersion("");
+    subject.statementSetOptimizerVersion("LATEST");
+    verify(connection).setOptimizerVersion("LATEST");
   }
 
   @Test

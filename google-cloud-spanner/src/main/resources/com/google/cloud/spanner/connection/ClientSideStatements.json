@@ -69,6 +69,14 @@
 	  "exampleStatements": ["show variable read_only_staleness"]
 	},
 	{
+	  "name": "SHOW VARIABLE OPTIMIZER_VERSION",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+optimizer_version\\s*\\z",
+	  "method": "statementShowOptimizerVersion",
+	  "exampleStatements": ["show variable optimizer_version"]
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -240,6 +248,20 @@
 	    "separator": "=",
 	    "allowedValues": "'((STRONG)|(MIN_READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(MAX_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns))|(EXACT_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns)))'",
 	    "converterName": "ClientSideStatementValueConverters$ReadOnlyStalenessConverter"
+	  }
+	},
+	{
+	  "name": "SET OPTIMIZER_VERSION = '<version>'|'LATEST'|''",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+optimizer_version\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetOptimizerVersion",
+	  "exampleStatements": ["set optimizer_version='1'", "set optimizer_version='200'", "set optimizer_version='LATEST'", "set optimizer_version=''"],
+	  "setStatement": {
+	    "propertyName": "OPTIMIZER_VERSION",
+	    "separator": "=",
+	    "allowedValues": "'((\\d{1,20})|(LATEST)|())'",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	}
 	]

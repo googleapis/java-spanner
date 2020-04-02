@@ -24,7 +24,9 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -68,8 +70,10 @@ public class StatementParser {
       return new ParsedStatement(StatementType.DDL, statement, sqlWithoutComments);
     }
 
-    private static ParsedStatement query(Statement statement, String sqlWithoutComments) {
-      return new ParsedStatement(StatementType.QUERY, statement, sqlWithoutComments);
+    private static ParsedStatement query(
+        Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
+      return new ParsedStatement(
+          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions);
     }
 
     private static ParsedStatement update(Statement statement, String sqlWithoutComments) {
@@ -93,12 +97,38 @@ public class StatementParser {
     }
 
     private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
+      this(type, statement, sqlWithoutComments, null);
+    }
+
+    private ParsedStatement(
+        StatementType type,
+        Statement statement,
+        String sqlWithoutComments,
+        QueryOptions defaultQueryOptions) {
       Preconditions.checkNotNull(type);
       Preconditions.checkNotNull(statement);
       this.type = type;
       this.clientSideStatement = null;
-      this.statement = statement;
+      this.statement = mergeQueryOptions(statement, defaultQueryOptions);
       this.sqlWithoutComments = sqlWithoutComments;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          this.type, this.clientSideStatement, this.statement, this.sqlWithoutComments);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (!(other instanceof ParsedStatement)) {
+        return false;
+      }
+      ParsedStatement o = (ParsedStatement) other;
+      return Objects.equals(this.type, o.type)
+          && Objects.equals(this.clientSideStatement, o.clientSideStatement)
+          && Objects.equals(this.statement, o.statement)
+          && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
     StatementType getType() {
@@ -150,6 +180,26 @@ public class StatementParser {
       return statement;
     }
 
+    /**
+     * Merges the {@link QueryOptions} of the {@link Statement} with the current {@link
+     * QueryOptions} of this connection. The {@link QueryOptions} that are already present on the
+     * statement take precedence above the connection {@link QueryOptions}.
+     */
+    Statement mergeQueryOptions(Statement statement, QueryOptions defaultQueryOptions) {
+      if (defaultQueryOptions == null
+          || defaultQueryOptions.equals(QueryOptions.getDefaultInstance())) {
+        return statement;
+      }
+      if (statement.getQueryOptions() == null) {
+        return statement.toBuilder().withQueryOptions(defaultQueryOptions).build();
+      }
+      return statement
+          .toBuilder()
+          .withQueryOptions(
+              defaultQueryOptions.toBuilder().mergeFrom(statement.getQueryOptions()).build())
+          .build();
+    }
+
     String getSqlWithoutComments() {
       return sqlWithoutComments;
     }
@@ -185,12 +235,16 @@ public class StatementParser {
    * @return the parsed and categorized statement.
    */
   ParsedStatement parse(Statement statement) {
+    return parse(statement, null);
+  }
+
+  ParsedStatement parse(Statement statement, QueryOptions defaultQueryOptions) {
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
       return ParsedStatement.clientSideStatement(client, statement, sql);
     } else if (isQuery(sql)) {
-      return ParsedStatement.query(statement, sql);
+      return ParsedStatement.query(statement, sql, defaultQueryOptions);
     } else if (isUpdateStatement(sql)) {
       return ParsedStatement.update(statement, sql);
     } else if (isDdlStatement(sql)) {
@@ -228,6 +282,7 @@ public class StatementParser {
    * @return <code>true</code> if the statement is a DDL statement (i.e. starts with 'CREATE',
    *     'ALTER' or 'DROP').
    */
+  @InternalApi
   public boolean isDdlStatement(String sql) {
     return statementStartsWith(sql, ddlStatements);
   }
@@ -240,6 +295,7 @@ public class StatementParser {
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a SELECT statement (i.e. starts with 'SELECT').
    */
+  @InternalApi
   public boolean isQuery(String sql) {
     // Skip any query hints at the beginning of the query.
     if (sql.startsWith("@")) {
@@ -257,6 +313,7 @@ public class StatementParser {
    * @return <code>true</code> if the statement is a DML update statement (i.e. starts with
    *     'INSERT', 'UPDATE' or 'DELETE').
    */
+  @InternalApi
   public boolean isUpdateStatement(String sql) {
     return statementStartsWith(sql, dmlStatements);
   }
@@ -289,6 +346,7 @@ public class StatementParser {
    * @param sql The sql statement to remove comments from and to trim.
    * @return the sql statement without the comments and leading and trailing spaces.
    */
+  @InternalApi
   public static String removeCommentsAndTrim(String sql) {
     Preconditions.checkNotNull(sql);
     final char SINGLE_QUOTE = '\'';
