@@ -22,9 +22,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -49,7 +49,7 @@ import org.junit.runners.JUnit4;
  * This test class runs a SQL script for testing a connection in read-only mode, but also contains a
  * number of separate test methods that cannot be expressed in a pure SQL test.
  */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
   private static final Logger logger = Logger.getLogger(ITReadOnlySpannerTest.class.getName());

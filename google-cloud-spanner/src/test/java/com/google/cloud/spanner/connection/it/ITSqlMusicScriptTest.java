@@ -21,8 +21,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
@@ -42,7 +42,7 @@ import org.junit.runners.MethodSorters;
  * Integration test that runs one long sql script using the default Singers/Albums/Songs/Concerts
  * data model
  */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {

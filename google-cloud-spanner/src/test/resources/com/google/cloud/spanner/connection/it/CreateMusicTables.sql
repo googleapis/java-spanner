@@ -58,7 +58,8 @@ CREATE TABLE Concerts (
   ConcertDate  DATE NOT NULL,
   BeginTime    TIMESTAMP,
   EndTime      TIMESTAMP,
-  TicketPrices ARRAY<INT64>
+  TicketPrices ARRAY<INT64>,
+  CONSTRAINT Fk_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)
 ) PRIMARY KEY(VenueId, SingerId, ConcertDate);
 
 CREATE TABLE TableWithAllColumnTypes (
@@ -83,6 +84,17 @@ CREATE TABLE TableWithAllColumnTypes (
   ColDateArray		ARRAY<DATE>,
   ColTimestampArray	ARRAY<TIMESTAMP>
 ) PRIMARY KEY (ColInt64)
+;
+
+CREATE TABLE TableWithRef (
+  Id          INT64       NOT NULL,
+  RefFloat    FLOAT64     NOT NULL,
+  RefString   STRING(100) NOT NULL,
+  RefDate     DATE        NOT NULL,
+  CONSTRAINT Fk_TableWithRef_TableWithAllColumnTypes
+    FOREIGN KEY (RefFloat, RefString, RefDate)
+    REFERENCES TableWithAllColumnTypes (ColFloat64, ColString, ColDate)
+) PRIMARY KEY (Id)
 ;
 
 RUN BATCH;

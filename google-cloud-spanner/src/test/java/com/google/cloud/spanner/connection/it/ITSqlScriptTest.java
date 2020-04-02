@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
-import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
@@ -32,7 +32,7 @@ import org.junit.runners.MethodSorters;
  * performs all possible operations on this test database using only sql scripts. This test uses the
  * generic connection API.
  */
-@Category(IntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITSqlScriptTest extends ITAbstractSpannerTest {

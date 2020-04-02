@@ -25,6 +25,7 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -37,6 +38,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -46,6 +48,7 @@ import org.junit.runners.JUnit4;
  * transactions, both when possible and when the transaction must abort because of a concurrent
  * update.
  */
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   private static final Logger logger = Logger.getLogger(ITTransactionRetryTest.class.getName());
