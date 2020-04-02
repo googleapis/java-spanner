@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
+import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -239,8 +240,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return new StatementResult(statement, resultSet);
     }
 
-    /** Creates a {@link StatementResult} for a query that returns a {@link ResultSet} the first time, and a different {@link ResultSet} for all subsequent calls. */
-    public static StatementResult queryAndThen(Statement statement, ResultSet resultSet, ResultSet next) {
+    /**
+     * Creates a {@link StatementResult} for a query that returns a {@link ResultSet} the first
+     * time, and a different {@link ResultSet} for all subsequent calls.
+     */
+    public static StatementResult queryAndThen(
+        Statement statement, ResultSet resultSet, ResultSet next) {
       return new StatementResult(statement, resultSet);
     }
 
@@ -341,7 +346,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     private StatementResult(Statement statement, ResultSet resultSet, ResultSet andThen) {
       this.statement = Preconditions.checkNotNull(statement);
-      this.resultSets = KeepLastElementDeque.of(Preconditions.checkNotNull(resultSet), Preconditions.checkNotNull(andThen));
+      this.resultSets =
+          KeepLastElementDeque.of(
+              Preconditions.checkNotNull(resultSet), Preconditions.checkNotNull(andThen));
       this.updateCount = null;
       this.exception = null;
       this.type = StatementResultType.RESULT_SET;
@@ -1071,6 +1078,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Statement buildStatement(
       String sql, Map<String, Type> paramTypes, com.google.protobuf.Struct params) {
     Statement.Builder builder = Statement.newBuilder(sql);
@@ -1079,7 +1087,37 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (value.getKindCase() == KindCase.NULL_VALUE) {
         switch (entry.getValue().getCode()) {
           case ARRAY:
-            throw new IllegalArgumentException("Array parameters not (yet) supported");
+            switch (entry.getValue().getArrayElementType().getCode()) {
+              case BOOL:
+                builder.bind(entry.getKey()).toBoolArray((Iterable<Boolean>) null);
+                break;
+              case BYTES:
+                builder.bind(entry.getKey()).toBytesArray(null);
+                break;
+              case DATE:
+                builder.bind(entry.getKey()).toDateArray(null);
+                break;
+              case FLOAT64:
+                builder.bind(entry.getKey()).toFloat64Array((Iterable<Double>) null);
+                break;
+              case INT64:
+                builder.bind(entry.getKey()).toInt64Array((Iterable<Long>) null);
+                break;
+              case STRING:
+                builder.bind(entry.getKey()).toStringArray(null);
+                break;
+              case TIMESTAMP:
+                builder.bind(entry.getKey()).toTimestampArray(null);
+                break;
+              case STRUCT:
+              case TYPE_CODE_UNSPECIFIED:
+              case UNRECOGNIZED:
+              default:
+                throw new IllegalArgumentException(
+                    "Unknown or invalid array parameter type: "
+                        + entry.getValue().getArrayElementType().getCode());
+            }
+            break;
           case BOOL:
             builder.bind(entry.getKey()).to((Boolean) null);
             break;
@@ -1113,7 +1151,72 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       } else {
         switch (entry.getValue().getCode()) {
           case ARRAY:
-            throw new IllegalArgumentException("Array parameters not (yet) supported");
+            switch (entry.getValue().getArrayElementType().getCode()) {
+              case BOOL:
+                builder
+                    .bind(entry.getKey())
+                    .toBoolArray(
+                        (Iterable<Boolean>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.bool(), value.getListValue()));
+                break;
+              case BYTES:
+                builder
+                    .bind(entry.getKey())
+                    .toBytesArray(
+                        (Iterable<ByteArray>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.bytes(), value.getListValue()));
+                break;
+              case DATE:
+                builder
+                    .bind(entry.getKey())
+                    .toDateArray(
+                        (Iterable<Date>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case FLOAT64:
+                builder
+                    .bind(entry.getKey())
+                    .toFloat64Array(
+                        (Iterable<Double>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.float64(), value.getListValue()));
+                break;
+              case INT64:
+                builder
+                    .bind(entry.getKey())
+                    .toInt64Array(
+                        (Iterable<Long>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.int64(), value.getListValue()));
+                break;
+              case STRING:
+                builder
+                    .bind(entry.getKey())
+                    .toStringArray(
+                        (Iterable<String>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.string(), value.getListValue()));
+                break;
+              case TIMESTAMP:
+                builder
+                    .bind(entry.getKey())
+                    .toTimestampArray(
+                        (Iterable<com.google.cloud.Timestamp>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
+                break;
+              case STRUCT:
+              case TYPE_CODE_UNSPECIFIED:
+              case UNRECOGNIZED:
+              default:
+                throw new IllegalArgumentException(
+                    "Unknown or invalid array parameter type: "
+                        + entry.getValue().getArrayElementType().getCode());
+            }
+            break;
           case BOOL:
             builder.bind(entry.getKey()).to(value.getBoolValue());
             break;
@@ -1135,7 +1238,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           case STRUCT:
             throw new IllegalArgumentException("Struct parameters not (yet) supported");
           case TIMESTAMP:
-            builder.bind(entry.getKey()).to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
+            builder
+                .bind(entry.getKey())
+                .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:

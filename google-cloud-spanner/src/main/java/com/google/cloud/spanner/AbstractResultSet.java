@@ -495,7 +495,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return new GrpcStruct(structType, fields);
     }
 
-    private static Object decodeArrayValue(Type elementType, ListValue listValue) {
+    static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
         case BOOL:
           // Use a view: element conversion is virtually free.
@@ -1009,7 +1009,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
-  private static double valueProtoToFloat64(com.google.protobuf.Value proto) {
+  static double valueProtoToFloat64(com.google.protobuf.Value proto) {
     if (proto.getKindCase() == KindCase.STRING_VALUE) {
       switch (proto.getStringValue()) {
         case "-Infinity":
@@ -1037,7 +1037,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     return proto.getNumberValue();
   }
 
-  private static NullPointerException throwNotNull(int columnIndex) {
+  static NullPointerException throwNotNull(int columnIndex) {
     throw new NullPointerException(
         "Cannot call array getter for column " + columnIndex + " with null elements");
   }
@@ -1048,7 +1048,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
    * {@code BigDecimal} respectively. Rather than construct new wrapper objects for each array
    * element, we use primitive arrays and a {@code BitSet} to track nulls.
    */
-  private abstract static class PrimitiveArray<T, A> extends AbstractList<T> {
+  abstract static class PrimitiveArray<T, A> extends AbstractList<T> {
     private final A data;
     private final BitSet nulls;
     private final int size;
@@ -1103,7 +1103,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
-  private static class Int64Array extends PrimitiveArray<Long, long[]> {
+  static class Int64Array extends PrimitiveArray<Long, long[]> {
     Int64Array(ListValue protoList) {
       super(protoList);
     }
@@ -1128,7 +1128,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
-  private static class Float64Array extends PrimitiveArray<Double, double[]> {
+  static class Float64Array extends PrimitiveArray<Double, double[]> {
     Float64Array(ListValue protoList) {
       super(protoList);
     }
