@@ -31,6 +31,10 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import java.util.Random;
 
+/**
+ * Utility class for generating {@link ResultSet}s containing columns with all possible data types
+ * of Cloud Spanner filled with random data.
+ */
 public class RandomResultSetGenerator {
   private static final Type TYPES[] =
       new Type[] {
