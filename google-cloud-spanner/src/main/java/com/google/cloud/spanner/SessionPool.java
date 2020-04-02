@@ -1795,7 +1795,7 @@ final class SessionPool {
     }
   }
 
-  private void createSessions(final int sessionCount, boolean initialization) {
+  private void createSessions(final int sessionCount, boolean distributeOverChannels) {
     logger.log(Level.FINE, String.format("Creating %d sessions", sessionCount));
     synchronized (lock) {
       numSessionsBeingCreated += sessionCount;
@@ -1804,7 +1804,8 @@ final class SessionPool {
         // calls and the session consumer consumes the returned sessions as they become available.
         // The batchCreateSessions method automatically spreads the sessions evenly over all
         // available channels.
-        sessionClient.asyncBatchCreateSessions(sessionCount, initialization, sessionConsumer);
+        sessionClient.asyncBatchCreateSessions(
+            sessionCount, distributeOverChannels, sessionConsumer);
       } catch (Throwable t) {
         // Expose this to customer via a metric.
         numSessionsBeingCreated -= sessionCount;
