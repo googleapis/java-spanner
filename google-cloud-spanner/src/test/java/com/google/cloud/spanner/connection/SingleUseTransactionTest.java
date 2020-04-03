@@ -16,11 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -54,9 +51,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.invocation.InvocationOnMock;
@@ -71,8 +66,6 @@ public class SingleUseTransactionTest {
   private static final String INVALID_UPDATE = "UPDATE BAR SET FOO=1";
   private static final String SLOW_UPDATE = "UPDATE SLOW_TABLE SET FOO=1";
   private static final long VALID_UPDATE_COUNT = 99L;
-
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   private final StatementExecutor executor = new StatementExecutor();
 
@@ -440,29 +433,45 @@ public class SingleUseTransactionTest {
   @Test
   public void testCommit() {
     SingleUseTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.commit();
+    try {
+      subject.commit();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
   public void testRollback() {
     SingleUseTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.rollback();
+    try {
+      subject.rollback();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
   public void testRunBatch() {
     SingleUseTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.runBatch();
+    try {
+      subject.runBatch();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
   public void testAbortBatch() {
     SingleUseTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.abortBatch();
+    try {
+      subject.abortBatch();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
@@ -481,33 +490,30 @@ public class SingleUseTransactionTest {
       for (AnalyzeMode analyzeMode : AnalyzeMode.values()) {
         SingleUseTransaction subject = createReadOnlySubject(staleness);
         ResultSet rs = subject.executeQuery(createParsedQuery(VALID_QUERY), analyzeMode);
-        assertThat(rs, is(notNullValue()));
-        assertThat(subject.getReadTimestamp(), is(notNullValue()));
-        assertThat(
-            subject.getState(),
-            is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+        assertThat(rs).isNotNull();
+        assertThat(subject.getReadTimestamp()).isNotNull();
+        assertThat(subject.getState())
+            .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
         while (rs.next()) {
           // just loop to the end to get stats
         }
         if (analyzeMode == AnalyzeMode.NONE) {
-          assertThat(rs.getStats(), is(nullValue()));
+          assertThat(rs.getStats()).isNull();
         } else {
-          assertThat(rs.getStats(), is(notNullValue()));
+          assertThat(rs.getStats()).isNotNull();
         }
       }
     }
     for (TimestampBound staleness : getTestTimestampBounds()) {
       SingleUseTransaction subject = createReadOnlySubject(staleness);
-      boolean expectedException = false;
       try {
         subject.executeQuery(createParsedQuery(INVALID_QUERY), AnalyzeMode.NONE);
+        fail("missing expected exception");
       } catch (SpannerException e) {
-        expectedException = true;
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
       }
-      assertThat(expectedException, is(true));
-      assertThat(
-          subject.getState(),
-          is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED));
+      assertThat(subject.getState())
+          .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);
     }
   }
 
@@ -534,8 +540,7 @@ public class SingleUseTransactionTest {
             .withStatementExecutor(executor)
             .setReadOnlyStaleness(TimestampBound.strong())
             .build();
-    assertThat(
-        transaction.executeQuery(parsedStatement, AnalyzeMode.NONE, option), is(notNullValue()));
+    assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE, option)).isNotNull();
   }
 
   @Test
@@ -543,29 +548,36 @@ public class SingleUseTransactionTest {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject();
     long updateCount = subject.executeUpdate(update);
-    assertThat(updateCount, is(equalTo(VALID_UPDATE_COUNT)));
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+    assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
+    assertThat(subject.getCommitTimestamp()).isNotNull();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
   }
 
   @Test
   public void testExecuteUpdate_Transactional_Invalid() {
     ParsedStatement update = createParsedUpdate(INVALID_UPDATE);
     SingleUseTransaction subject = createSubject();
-    exception.expect(
-        SpannerExceptionMatcher.matchCodeAndMessage(ErrorCode.UNKNOWN, "invalid update"));
-    subject.executeUpdate(update);
+    try {
+      subject.executeUpdate(update);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+      assertThat(e.getMessage()).contains("invalid update");
+    }
   }
 
   @Test
   public void testExecuteUpdate_Transactional_Valid_FailedCommit() {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
-    exception.expect(
-        SpannerExceptionMatcher.matchCodeAndMessage(ErrorCode.UNKNOWN, "commit failed"));
-    subject.executeUpdate(update);
+    try {
+      subject.executeUpdate(update);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+      assertThat(e.getMessage()).contains("commit failed");
+    }
   }
 
   @Test
@@ -574,11 +586,10 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubject(CommitBehavior.ABORT);
     // even though the transaction aborts at first, it will be retried and eventually succeed
     long updateCount = subject.executeUpdate(update);
-    assertThat(updateCount, is(equalTo(VALID_UPDATE_COUNT)));
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+    assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
+    assertThat(subject.getCommitTimestamp()).isNotNull();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
   }
 
   @Test
@@ -586,37 +597,43 @@ public class SingleUseTransactionTest {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
     long updateCount = subject.executeUpdate(update);
-    assertThat(updateCount, is(equalTo(VALID_UPDATE_COUNT)));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+    assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
   }
 
   @Test
   public void testExecuteUpdate_Partitioned_Invalid() {
     ParsedStatement update = createParsedUpdate(INVALID_UPDATE);
     SingleUseTransaction subject = createSubject(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
-    exception.expect(
-        SpannerExceptionMatcher.matchCodeAndMessage(ErrorCode.UNKNOWN, "invalid update"));
-    subject.executeUpdate(update);
+    try {
+      subject.executeUpdate(update);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+      assertThat(e.getMessage()).contains("invalid update");
+    }
   }
 
   @Test
   public void testWrite() {
     SingleUseTransaction subject = createSubject();
     subject.write(Mutation.newInsertBuilder("FOO").build());
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+    assertThat(subject.getCommitTimestamp()).isNotNull();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
   }
 
   @Test
   public void testWriteFail() {
     SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
-    exception.expect(
-        SpannerExceptionMatcher.matchCodeAndMessage(ErrorCode.UNKNOWN, "commit failed"));
-    subject.write(Mutation.newInsertBuilder("FOO").build());
+    try {
+      subject.write(Mutation.newInsertBuilder("FOO").build());
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+      assertThat(e.getMessage()).contains("commit failed");
+    }
   }
 
   @Test
@@ -624,19 +641,22 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubject();
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
     subject.write(Arrays.asList(mutation, mutation));
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED));
+    assertThat(subject.getCommitTimestamp()).isNotNull();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
   }
 
   @Test
   public void testWriteIterableFail() {
     SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
-    exception.expect(
-        SpannerExceptionMatcher.matchCodeAndMessage(ErrorCode.UNKNOWN, "commit failed"));
-    subject.write(Arrays.asList(mutation, mutation));
+    try {
+      subject.write(Arrays.asList(mutation, mutation));
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+      assertThat(e.getMessage()).contains("commit failed");
+    }
   }
 
   @Test
@@ -644,15 +664,13 @@ public class SingleUseTransactionTest {
     for (TimestampBound staleness : getTestTimestampBounds()) {
       SingleUseTransaction subject = createReadOnlySubject(staleness);
       ResultSet rs = subject.executeQuery(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE);
-      assertThat(rs, is(notNullValue()));
-      assertThat(subject.getReadTimestamp(), is(notNullValue()));
-      boolean expectedException = false;
+      assertThat(rs).isNotNull();
+      assertThat(subject.getReadTimestamp()).isNotNull();
       try {
         subject.executeQuery(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE);
+        fail("missing expected exception");
       } catch (IllegalStateException e) {
-        expectedException = true;
       }
-      assertThat(expectedException, is(true));
     }
 
     String sql = "CREATE TABLE FOO";
@@ -661,49 +679,41 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     subject.executeDdl(ddl);
     verify(ddlClient).executeDdl(sql);
-    boolean expectedException = false;
     try {
       subject.executeDdl(ddl);
+      fail("missing expected exception");
     } catch (IllegalStateException e) {
-      expectedException = true;
     }
-    assertThat(expectedException, is(true));
 
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     subject = createSubject();
     long updateCount = subject.executeUpdate(update);
-    assertThat(updateCount, is(equalTo(VALID_UPDATE_COUNT)));
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    expectedException = false;
+    assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
+    assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
       subject.executeUpdate(update);
+      fail("missing expected exception");
     } catch (IllegalStateException e) {
-      expectedException = true;
     }
-    assertThat(expectedException, is(true));
 
     subject = createSubject();
     subject.write(Mutation.newInsertBuilder("FOO").build());
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    expectedException = false;
+    assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
       subject.write(Mutation.newInsertBuilder("FOO").build());
+      fail("missing expected exception");
     } catch (IllegalStateException e) {
-      expectedException = true;
     }
-    assertThat(expectedException, is(true));
 
     subject = createSubject();
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
     subject.write(Arrays.asList(mutation, mutation));
-    assertThat(subject.getCommitTimestamp(), is(notNullValue()));
-    expectedException = false;
+    assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
       subject.write(Arrays.asList(mutation, mutation));
+      fail("missing expected exception");
     } catch (IllegalStateException e) {
-      expectedException = true;
     }
-    assertThat(expectedException, is(true));
   }
 
   @Test
@@ -716,30 +726,32 @@ public class SingleUseTransactionTest {
         throw e;
       }
     }
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getReadTimestamp();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);
+    try {
+      subject.getReadTimestamp();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
   public void testExecuteUpdateWithTimeout() {
     SingleUseTransaction subject = createSubjectWithTimeout(1L);
-    boolean timeoutException = false;
     try {
       subject.executeUpdate(createParsedUpdate(SLOW_UPDATE));
+      fail("missing expected exception");
     } catch (SpannerException e) {
-      if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-        throw e;
-      }
-      timeoutException = true;
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
     }
-    assertThat(timeoutException, is(true));
-    assertThat(
-        subject.getState(),
-        is(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getCommitTimestamp();
+    assertThat(subject.getState())
+        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);
+    try {
+      subject.getCommitTimestamp();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 }
