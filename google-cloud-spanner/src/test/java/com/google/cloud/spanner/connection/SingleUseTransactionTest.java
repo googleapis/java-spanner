@@ -326,7 +326,7 @@ public class SingleUseTransactionTest {
             new Answer<Long>() {
               @Override
               public Long answer(InvocationOnMock invocation) throws Throwable {
-                Thread.sleep(10L);
+                Thread.sleep(1000L);
                 return VALID_UPDATE_COUNT;
               }
             });
