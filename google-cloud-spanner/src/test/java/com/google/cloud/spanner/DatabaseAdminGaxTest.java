@@ -235,10 +235,10 @@ public class DatabaseAdminGaxTest {
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1L))
             .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(1000L))
-            .setMaxRpcTimeout(Duration.ofMillis(2000L))
+            .setInitialRpcTimeout(Duration.ofMillis(2000L))
+            .setMaxRpcTimeout(Duration.ofMillis(5000L))
             .setMaxAttempts(3)
-            .setTotalTimeout(Duration.ofMillis(5000L))
+            .setTotalTimeout(Duration.ofMillis(15000L))
             .build();
     final RetrySettings retrySettingsToUse =
         exceptionType == ExceptionType.DELAYED

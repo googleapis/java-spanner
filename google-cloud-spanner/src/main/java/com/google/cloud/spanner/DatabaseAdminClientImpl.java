@@ -120,9 +120,9 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
             .setExpireTime(expireTime.toProto())
             .build();
     String instanceName = getInstanceName(instanceId);
-
     OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
         rawOperationFuture = rpc.createBackup(instanceName, backupId, backup);
+
     return new OperationFutureImpl<Backup, CreateBackupMetadata>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
