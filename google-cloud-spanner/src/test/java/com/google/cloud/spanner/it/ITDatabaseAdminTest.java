@@ -22,7 +22,6 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
-import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.Database;
@@ -32,6 +31,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
@@ -341,13 +341,13 @@ public class ITDatabaseAdminTest {
                   restoredDbId);
           databases.add(op.get());
           // Assert that the RestoreDatabase RPC was called only once, and that the operation
-          // tracking
-          // was resumed through a GetOperation call.
+          // tracking was resumed through a GetOperation call.
           assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
           assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
           break;
         } catch (ExecutionException e) {
-          if (e.getCause() instanceof FailedPreconditionException
+          if (e.getCause() instanceof SpannerException
+              && ((SpannerException) e.getCause()).getErrorCode() == ErrorCode.FAILED_PRECONDITION
               && e.getCause()
                   .getMessage()
                   .contains("Please retry the operation once the pending restores complete")) {
