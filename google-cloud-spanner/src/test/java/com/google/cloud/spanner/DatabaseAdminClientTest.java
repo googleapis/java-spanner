@@ -19,29 +19,37 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.api.gax.grpc.testing.LocalChannelProvider;
-import com.google.api.gax.grpc.testing.MockGrpcService;
-import com.google.api.gax.grpc.testing.MockServiceHelper;
+import com.google.api.core.ApiFunction;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.RetryingFuture;
+import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.Identity;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Server;
+import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -104,8 +112,9 @@ public class DatabaseAdminClientTest {
 
   private static MockOperationsServiceImpl mockOperations;
   private static MockDatabaseAdminServiceImpl mockDatabaseAdmin;
-  private static MockServiceHelper serviceHelper;
-  private LocalChannelProvider channelProvider;
+  private static Server server;
+  private static InetSocketAddress address;
+
   private Spanner spanner;
   private DatabaseAdminClient client;
   @Rule public ExpectedException exception = ExpectedException.none();
@@ -114,25 +123,48 @@ public class DatabaseAdminClientTest {
   private OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseOperation;
 
   @BeforeClass
-  public static void startStaticServer() {
+  public static void startStaticServer() throws Exception {
     mockOperations = new MockOperationsServiceImpl();
     mockDatabaseAdmin = new MockDatabaseAdminServiceImpl(mockOperations);
-    serviceHelper =
-        new MockServiceHelper(
-            "in-process-1", Arrays.<MockGrpcService>asList(mockOperations, mockDatabaseAdmin));
-    serviceHelper.start();
+    // This test uses a NettyServer to properly test network and timeout issues.
+    address = new InetSocketAddress("localhost", 0);
+    server =
+        NettyServerBuilder.forAddress(address)
+            .addService(mockOperations)
+            .addService(mockDatabaseAdmin)
+            .build()
+            .start();
   }
 
   @AfterClass
-  public static void stopServer() {
-    serviceHelper.stop();
+  public static void stopServer() throws Exception {
+    server.shutdown();
+    server.awaitTermination();
   }
 
+  @SuppressWarnings("rawtypes")
   @Before
   public void setUp() throws IOException {
-    serviceHelper.reset();
-    channelProvider = serviceHelper.createChannelProvider();
+    mockDatabaseAdmin.reset();
+    mockOperations.reset();
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+    RetrySettings longRunningInitialRetrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(60L))
+            .setMaxRpcTimeout(Duration.ofMillis(600L))
+            .setInitialRetryDelay(Duration.ofMillis(20L))
+            .setMaxRetryDelay(Duration.ofMillis(45L))
+            .setRetryDelayMultiplier(1.5)
+            .setRpcTimeoutMultiplier(1.5)
+            .setTotalTimeout(Duration.ofMinutes(48L))
+            .build();
+    builder
+        .getDatabaseAdminStubSettingsBuilder()
+        .createBackupOperationSettings()
+        .setInitialCallSettings(
+            UnaryCallSettings.<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                .setRetrySettings(longRunningInitialRetrySettings)
+                .build());
     builder
         .getDatabaseAdminStubSettingsBuilder()
         .createBackupOperationSettings()
@@ -148,6 +180,15 @@ public class DatabaseAdminClientTest {
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
+
+    builder
+        .getDatabaseAdminStubSettingsBuilder()
+        .createDatabaseOperationSettings()
+        .setInitialCallSettings(
+            UnaryCallSettings
+                .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                .setRetrySettings(longRunningInitialRetrySettings)
+                .build());
     builder
         .getDatabaseAdminStubSettingsBuilder()
         .createDatabaseOperationSettings()
@@ -166,6 +207,14 @@ public class DatabaseAdminClientTest {
     builder
         .getDatabaseAdminStubSettingsBuilder()
         .restoreDatabaseOperationSettings()
+        .setInitialCallSettings(
+            UnaryCallSettings
+                .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                .setRetrySettings(longRunningInitialRetrySettings)
+                .build());
+    builder
+        .getDatabaseAdminStubSettingsBuilder()
+        .restoreDatabaseOperationSettings()
         .setPollingAlgorithm(
             OperationTimedPollAlgorithm.create(
                 RetrySettings.newBuilder()
@@ -180,7 +229,14 @@ public class DatabaseAdminClientTest {
                     .build()));
     spanner =
         builder
-            .setChannelProvider(channelProvider)
+            .setHost("http://localhost:" + server.getPort())
+            .setChannelConfigurator(
+                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
+                  @Override
+                  public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
+                    return input.usePlaintext();
+                  }
+                })
             .setCredentials(NoCredentials.getInstance())
             .setProjectId(PROJECT_ID)
             .build()
@@ -193,7 +249,9 @@ public class DatabaseAdminClientTest {
 
   @After
   public void tearDown() throws Exception {
-    serviceHelper.reset();
+    mockDatabaseAdmin.reset();
+    mockDatabaseAdmin.removeAllExecutionTimes();
+    mockOperations.reset();
     spanner.close();
   }
 
@@ -761,5 +819,115 @@ public class DatabaseAdminClientTest {
     } catch (InterruptedException | ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
+  }
+
+  @Test
+  public void retryCreateBackupSlowResponse() throws Exception {
+    // Throw a DEADLINE_EXCEEDED after the operation has been created. This should cause the retry
+    // to pick up the existing operation.
+    mockDatabaseAdmin.setCreateBackupResponseExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String backupId = "other-backup-id";
+    OperationFuture<Backup, CreateBackupMetadata> op =
+        client.createBackup(INSTANCE_ID, backupId, DB_ID, after7Days());
+    Backup backup = op.get();
+    assertThat(backup.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/backups/%s", PROJECT_ID, INSTANCE_ID, backupId));
+    assertThat(client.getBackup(INSTANCE_ID, backupId)).isEqualTo(backup);
+    // There should be at exactly 2 requests. One from this test case and one from the setup of the
+    // test which also creates a test backup.
+    assertThat(mockDatabaseAdmin.countRequestsOfType(CreateBackupRequest.class)).isEqualTo(2);
+  }
+
+  @Test
+  public void retryCreateBackupSlowStartup() throws Exception {
+    mockDatabaseAdmin.setCreateBackupStartupExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String backupId = "other-backup-id";
+    OperationFuture<Backup, CreateBackupMetadata> op =
+        client.createBackup(INSTANCE_ID, backupId, DB_ID, after7Days());
+    Backup backup = op.get();
+    assertThat(backup.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/backups/%s", PROJECT_ID, INSTANCE_ID, backupId));
+    assertThat(client.getBackup(INSTANCE_ID, backupId)).isEqualTo(backup);
+    assertThat(mockDatabaseAdmin.countRequestsOfType(CreateBackupRequest.class)).isAtLeast(3);
+  }
+
+  @Test
+  public void retryCreateDatabaseSlowResponse() throws Exception {
+    // Throw a DEADLINE_EXCEEDED after the operation has been created. This should cause the retry
+    // to pick up the existing operation.
+    mockDatabaseAdmin.setCreateDatabaseResponseExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String databaseId = "other-database-id";
+    OperationFuture<Database, CreateDatabaseMetadata> op =
+        client.createDatabase(INSTANCE_ID, databaseId, Collections.<String>emptyList());
+    Database database = op.get();
+    assertThat(database.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/databases/%s", PROJECT_ID, INSTANCE_ID, databaseId));
+    assertThat(client.getDatabase(INSTANCE_ID, databaseId)).isEqualTo(database);
+    // There should be at exactly 2 requests. One from this test case and one from the setup of the
+    // test which also creates a test database.
+    assertThat(mockDatabaseAdmin.countRequestsOfType(CreateDatabaseRequest.class)).isEqualTo(2);
+  }
+
+  @Test
+  public void retryCreateDatabaseSlowStartup() throws Exception {
+    mockDatabaseAdmin.setCreateDatabaseStartupExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String databaseId = "other-database-id";
+    OperationFuture<Database, CreateDatabaseMetadata> op =
+        client.createDatabase(INSTANCE_ID, databaseId, Collections.<String>emptyList());
+    Database database = op.get();
+    assertThat(database.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/databases/%s", PROJECT_ID, INSTANCE_ID, databaseId));
+    assertThat(client.getDatabase(INSTANCE_ID, databaseId)).isEqualTo(database);
+    assertThat(mockDatabaseAdmin.countRequestsOfType(CreateDatabaseRequest.class)).isAtLeast(3);
+  }
+
+  @Test
+  public void retryRestoreDatabaseSlowResponse() throws Exception {
+    // Throw a DEADLINE_EXCEEDED after the operation has been created. This should cause the retry
+    // to pick up the existing operation.
+    mockDatabaseAdmin.setRestoreDatabaseResponseExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String databaseId = "other-database-id";
+    OperationFuture<Database, RestoreDatabaseMetadata> op =
+        client.restoreDatabase(INSTANCE_ID, BCK_ID, INSTANCE_ID, databaseId);
+    Database database = op.get();
+    assertThat(database.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/databases/%s", PROJECT_ID, INSTANCE_ID, databaseId));
+    Database retrieved = client.getDatabase(INSTANCE_ID, databaseId);
+    assertThat(retrieved.getCreateTime()).isEqualTo(database.getCreateTime());
+    // There should be exactly 2 requests. One from this test case and one from the setup of the
+    // test which also restores a test database.
+    assertThat(mockDatabaseAdmin.countRequestsOfType(RestoreDatabaseRequest.class)).isEqualTo(2);
+  }
+
+  @Test
+  public void retryRestoreDatabaseSlowStartup() throws Exception {
+    mockDatabaseAdmin.setRestoreDatabaseStartupExecutionTime(
+        SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
+    final String databaseId = "other-database-id";
+    OperationFuture<Database, RestoreDatabaseMetadata> op =
+        client.restoreDatabase(INSTANCE_ID, BCK_ID, INSTANCE_ID, databaseId);
+    Database database = op.get();
+    assertThat(database.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/databases/%s", PROJECT_ID, INSTANCE_ID, databaseId));
+    Database retrieved = client.getDatabase(INSTANCE_ID, databaseId);
+    assertThat(retrieved.getCreateTime()).isEqualTo(database.getCreateTime());
+    assertThat(mockDatabaseAdmin.countRequestsOfType(RestoreDatabaseRequest.class)).isAtLeast(3);
   }
 }

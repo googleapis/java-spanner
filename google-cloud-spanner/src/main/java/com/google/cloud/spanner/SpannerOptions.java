@@ -21,6 +21,7 @@ import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
@@ -291,7 +292,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           .setRetrySettings(longRunningRetrySettings);
       databaseAdminStubSettingsBuilder
           .updateBackupSettings()
-          .setRetrySettings(longRunningRetrySettings);
+          .setRetrySettings(longRunningRetrySettings)
+          .setRetryableCodes(StatusCode.Code.DEADLINE_EXCEEDED, StatusCode.Code.UNAVAILABLE);
     }
 
     Builder(SpannerOptions options) {
@@ -581,6 +583,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
