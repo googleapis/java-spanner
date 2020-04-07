@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
+import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.Database;
@@ -54,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -317,29 +319,49 @@ public class ITDatabaseAdminTest {
       }
 
       // RestoreBackup
-      InjectErrorInterceptorProvider restoreBackupInterceptor =
-          new InjectErrorInterceptorProvider("RestoreBackup");
-      options =
-          testHelper
-              .getOptions()
-              .toBuilder()
-              .setInterceptorProvider(restoreBackupInterceptor)
-              .build();
-      try (Spanner spanner = options.getService()) {
-        String backupId = backups.get(0).getId().getBackup();
-        String restoredDbId = testHelper.getUniqueDatabaseId();
-        DatabaseAdminClient client = spanner.getDatabaseAdminClient();
-        OperationFuture<Database, RestoreDatabaseMetadata> op =
-            client.restoreDatabase(
-                testHelper.getInstanceId().getInstance(),
-                backupId,
-                testHelper.getInstanceId().getInstance(),
-                restoredDbId);
-        databases.add(op.get());
-        // Assert that the RestoreDatabase RPC was called only once, and that the operation tracking
-        // was resumed through a GetOperation call.
-        assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
-        assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
+      int attempts = 0;
+      while (true) {
+        InjectErrorInterceptorProvider restoreBackupInterceptor =
+            new InjectErrorInterceptorProvider("RestoreBackup");
+        options =
+            testHelper
+                .getOptions()
+                .toBuilder()
+                .setInterceptorProvider(restoreBackupInterceptor)
+                .build();
+        try (Spanner spanner = options.getService()) {
+          String backupId = backups.get(0).getId().getBackup();
+          String restoredDbId = testHelper.getUniqueDatabaseId();
+          DatabaseAdminClient client = spanner.getDatabaseAdminClient();
+          OperationFuture<Database, RestoreDatabaseMetadata> op =
+              client.restoreDatabase(
+                  testHelper.getInstanceId().getInstance(),
+                  backupId,
+                  testHelper.getInstanceId().getInstance(),
+                  restoredDbId);
+          databases.add(op.get());
+          // Assert that the RestoreDatabase RPC was called only once, and that the operation
+          // tracking
+          // was resumed through a GetOperation call.
+          assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
+          assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
+          break;
+        } catch (ExecutionException e) {
+          if (e.getCause() instanceof FailedPreconditionException
+              && e.getCause()
+                  .getMessage()
+                  .contains("Please retry the operation once the pending restores complete")) {
+            attempts++;
+            if (attempts == 10) {
+              // Still same error after 10 attempts. Ignore.
+              break;
+            }
+            // wait and then retry.
+            Thread.sleep(60_000L);
+          } else {
+            throw e;
+          }
+        }
       }
     } finally {
       DatabaseAdminClient client = testHelper.getClient().getDatabaseAdminClient();
