@@ -491,6 +491,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
 
+  private final Object lock = new Object();
   private final Queue<AbstractMessage> requests = new ConcurrentLinkedQueue<>();
   private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
@@ -571,11 +572,24 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
    */
   public void putStatementResult(StatementResult result) {
     Preconditions.checkNotNull(result);
-    statementResults.put(result.statement, result);
+    synchronized (lock) {
+      statementResults.put(result.statement, result);
+    }
+  }
+
+  public void putStatementResults(StatementResult... results) {
+    synchronized (lock) {
+      for (StatementResult result : results) {
+        statementResults.put(result.statement, result);
+      }
+    }
   }
 
   private StatementResult getResult(Statement statement) {
-    StatementResult res = statementResults.get(statement);
+    StatementResult res;
+    synchronized (lock) {
+      res = statementResults.get(statement);
+    }
     if (res == null) {
       throw Status.INTERNAL
           .withDescription(
@@ -1322,12 +1336,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               return request.getColumnsList().iterator();
             }
           };
-      StatementResult res =
-          statementResults.get(
-              StatementResult.createReadStatement(
-                  request.getTable(),
-                  request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
-                  cols));
+      Statement statement =
+          StatementResult.createReadStatement(
+              request.getTable(),
+              request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
+              cols);
+      StatementResult res = getResult(statement);
       returnResultSet(
           res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
       responseObserver.onCompleted();
@@ -1377,7 +1391,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               request.getTable(),
               request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
               cols);
-      StatementResult res = statementResults.get(statement);
+      StatementResult res = getResult(statement);
       if (res == null) {
         throw Status.NOT_FOUND
             .withDescription("No result found for " + statement.toString())
