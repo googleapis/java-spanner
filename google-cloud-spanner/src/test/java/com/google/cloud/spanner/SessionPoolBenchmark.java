@@ -92,25 +92,7 @@ public class SessionPoolBenchmark {
 
     /** AuxCounter for number of RPCs. */
     public int numBatchCreateSessionsRpcs() {
-      return countRequests(BatchCreateSessionsRequest.class);
-    }
-
-    /** AuxCounter for number of sessions created. */
-    public int sessionsCreated() {
-      return mockSpanner.numSessionsCreated();
-    }
-
-    @Setup(Level.Invocation)
-    public void setup() throws Exception {
-      mockSpanner = new MockSpannerServiceImpl();
-      mockSpanner.setAbortProbability(
-          0.0D); // We don't want any unpredictable aborted transactions.
-      mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-      mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
-      mockSpanner.putStatementResult(
-          StatementResult.exception(
-              INVALID_UPDATE_STATEMENT,
-              Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+      return mockServer.countRequests(BatchCreateSessionsRequest.class);
     }
 
     /** AuxCounter for number of sessions created. */
