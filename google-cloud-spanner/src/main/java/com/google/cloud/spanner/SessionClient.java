@@ -231,12 +231,21 @@ class SessionClient implements AutoCloseable {
    * sessions that could not be created.
    *
    * @param sessionCount The number of sessions to create.
+   * @param distributeOverChannels Whether to distribute the sessions over all available channels
+   *     (true) or create all for the next channel round robin.
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
    */
-  void asyncBatchCreateSessions(final int sessionCount, SessionConsumer consumer) {
-    // We spread the session creation evenly over all available channels.
-    int sessionCountPerChannel = sessionCount / spanner.getOptions().getNumChannels();
-    int remainder = sessionCount % spanner.getOptions().getNumChannels();
+  void asyncBatchCreateSessions(
+      final int sessionCount, boolean distributeOverChannels, SessionConsumer consumer) {
+    int sessionCountPerChannel;
+    int remainder;
+    if (distributeOverChannels) {
+      sessionCountPerChannel = sessionCount / spanner.getOptions().getNumChannels();
+      remainder = sessionCount % spanner.getOptions().getNumChannels();
+    } else {
+      sessionCountPerChannel = sessionCount;
+      remainder = 0;
+    }
     int numBeingCreated = 0;
     synchronized (this) {
       for (int channelIndex = 0;
@@ -252,7 +261,7 @@ class SessionClient implements AutoCloseable {
         if (channelIndex == 0) {
           createCountForChannel = sessionCountPerChannel + remainder;
         }
-        if (createCountForChannel > 0) {
+        if (createCountForChannel > 0 && numBeingCreated < sessionCount) {
           try {
             executor.submit(
                 new BatchCreateSessionsRunnable(

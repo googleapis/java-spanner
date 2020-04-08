@@ -166,7 +166,11 @@ public class SpanTest {
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setWriteSessionsFraction(0.0f)
+                    .build());
 
     spanner = builder.build().getService();
 

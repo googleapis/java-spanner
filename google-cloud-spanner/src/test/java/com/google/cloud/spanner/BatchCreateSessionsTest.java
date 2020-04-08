@@ -104,6 +104,7 @@ public class BatchCreateSessionsTest {
   @Before
   public void setUp() throws IOException {
     mockSpanner.reset();
+    mockSpanner.removeAllExecutionTimes();
   }
 
   private Spanner createSpanner(int minSessions, int maxSessions) {
@@ -245,7 +246,7 @@ public class BatchCreateSessionsTest {
     int maxSessions = 1000;
     DatabaseClientImpl client = null;
     mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofException(
+        SimulatedExecutionTime.ofStickyException(
             Status.ABORTED.withDescription("BeginTransaction failed").asRuntimeException()));
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
       client =
