@@ -37,9 +37,8 @@ public class ForwardingAsyncResultSet extends ForwardingResultSet implements Asy
   }
 
   @Override
-  public void setCallback(Executor exec, ReadyCallback cb) {
-    delegate.setCallback(exec, cb);
-    ;
+  public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
+    return delegate.setCallback(exec, cb);
   }
 
   @Override

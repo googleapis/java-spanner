@@ -160,7 +160,7 @@ final class SessionPool {
       }
 
       @Override
-      public void setCallback(Executor exec, ReadyCallback cb) {
+      public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
             new Runnable() {
               @Override
@@ -178,7 +178,7 @@ final class SessionPool {
         try {
           asyncOperationsCount.incrementAndGet();
           addListener(listener);
-          super.setCallback(exec, cb);
+          return super.setCallback(exec, cb);
         } catch (Throwable t) {
           removeListener(listener);
           asyncOperationsCount.decrementAndGet();
@@ -2164,6 +2164,8 @@ final class SessionPool {
       readSessions.clear();
       writePreparedSessions.clear();
       prepareExecutor.shutdown();
+      readWaiterExecutor.shutdown();
+      writeWaiterExecutor.shutdown();
       executor.submit(
           new Runnable() {
             @Override

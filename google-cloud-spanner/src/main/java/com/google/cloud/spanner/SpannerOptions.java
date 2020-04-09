@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -60,6 +59,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +111,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final Map<DatabaseId, QueryOptions> mergedQueryOptions;
 
   private final CallCredentialsProvider callCredentialsProvider;
-  private final ExecutorProvider asyncExecutorProvider;
+  private final CloseableExecutorProvider asyncExecutorProvider;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -144,6 +144,41 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final AtomicInteger DEFAULT_POOL_COUNT = new AtomicInteger();
 
+  /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
+  interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+    /** Overridden to suppress the throws declaration of the super interface. */
+    @Override
+    public void close();
+  }
+
+  static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+    private final ScheduledExecutorService executor;
+
+    private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
+      this.executor = Preconditions.checkNotNull(executor);
+    }
+
+    @Override
+    public void close() {
+      executor.shutdown();
+    }
+
+    @Override
+    public ScheduledExecutorService getExecutor() {
+      return executor;
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return false;
+    }
+
+    /** Creates a FixedCloseableExecutorProvider. */
+    static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
+      return new FixedCloseableExecutorProvider(executor);
+    }
+  }
+
   /**
    * Default {@link ExecutorProvider} for high-level async calls that need an executor. The default
    * uses a cached thread pool containing a max of 8 threads. The pool is lazily initialized and
@@ -151,12 +186,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * also scale down the thread usage if the async load allows for that.
    */
   @VisibleForTesting
-  static ExecutorProvider createDefaultAsyncExecutorProvider() {
+  static CloseableExecutorProvider createDefaultAsyncExecutorProvider() {
     return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
   }
 
   @VisibleForTesting
-  static ExecutorProvider createAsyncExecutorProvider(
+  static CloseableExecutorProvider createAsyncExecutorProvider(
       int poolSize, long keepAliveTime, TimeUnit unit) {
     String format = String.format("async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
     ThreadFactory threadFactory =
@@ -164,7 +199,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(poolSize, threadFactory);
     executor.setKeepAliveTime(keepAliveTime, unit);
     executor.allowCoreThreadTimeOut(true);
-    return FixedExecutorProvider.create(executor);
+    return FixedCloseableExecutorProvider.create(executor);
   }
 
   private SpannerOptions(Builder builder) {
@@ -207,9 +242,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.mergedQueryOptions = ImmutableMap.copyOf(merged);
     }
     callCredentialsProvider = builder.callCredentialsProvider;
-    asyncExecutorProvider =
-        MoreObjects.firstNonNull(
-            builder.asyncExecutorProvider, createDefaultAsyncExecutorProvider());
+    asyncExecutorProvider = builder.asyncExecutorProvider;
   }
 
   /**
@@ -274,7 +307,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean autoThrottleAdministrativeRequests = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
-    private ExecutorProvider asyncExecutorProvider;
+    private CloseableExecutorProvider asyncExecutorProvider;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
     private Builder() {
@@ -731,7 +764,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return options;
   }
 
-  public ExecutorProvider getAsyncExecutorProvider() {
+  CloseableExecutorProvider getAsyncExecutorProvider() {
     return asyncExecutorProvider;
   }
 

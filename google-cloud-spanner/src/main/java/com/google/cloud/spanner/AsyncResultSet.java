@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFuture;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /** Interface for result sets returned by async query methods. */
@@ -131,8 +132,13 @@ public interface AsyncResultSet extends ResultSet {
    *     RuntimeException up the stack, lest you do damage to calling components. For example, it
    *     may cause an event dispatcher thread to crash.
    * @param cb ready callback
+   * @return An {@link ApiFuture} that returns <code>null</code> when the consumption of the {@link
+   *     AsyncResultSet} has finished successfully. No more calls to the {@link ReadyCallback} will
+   *     follow and all resources used by the {@link AsyncResultSet} have been cleaned up. The
+   *     {@link ApiFuture} throws an {@link ExecutionException} if the consumption of the {@link
+   *     AsyncResultSet} finished with an error.
    */
-  void setCallback(Executor exec, ReadyCallback cb);
+  ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb);
 
   /**
    * Attempt to cancel this operation and free all resources. Non-blocking. This is a no-op for

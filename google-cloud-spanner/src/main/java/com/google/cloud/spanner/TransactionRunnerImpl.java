@@ -98,7 +98,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
 
       @Override
-      public void setCallback(Executor exec, ReadyCallback cb) {
+      public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
             new Runnable() {
               @Override
@@ -109,7 +109,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         try {
           increaseAsynOperations();
           addListener(listener);
-          super.setCallback(exec, cb);
+          return super.setCallback(exec, cb);
         } catch (Throwable t) {
           removeListener(listener);
           finishedAsyncOperations.countDown();

@@ -17,12 +17,14 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ListenableFutureToApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Collection;
@@ -34,7 +36,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ScheduledExecutorService;
 
 /** Default implementation for {@link AsyncResultSet}. */
 class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsyncResultSet {
@@ -74,7 +75,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
    */
   private final ExecutorProvider executorProvider;
 
-  private final ScheduledExecutorService service;
+  private final ListeningScheduledExecutorService service;
 
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
@@ -108,7 +109,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
    */
   private volatile boolean finished;
 
-  private volatile Future<Void> result;
+  private volatile ApiFuture<Void> result;
 
   /**
    * {@link #cursorReturnedDoneOrException} indicates whether {@link #tryNext()} has returned {@link
@@ -136,7 +137,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     super(delegate);
     this.buffer = new LinkedBlockingDeque<>(bufferSize);
     this.executorProvider = executorProvider;
-    this.service = executorProvider.getExecutor();
+    this.service = MoreExecutors.listeningDecorator(executorProvider.getExecutor());
     this.delegateResultSet = delegate;
   }
 
@@ -420,18 +421,20 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   /** Sets the callback for this {@link AsyncResultSet}. */
   @Override
-  public void setCallback(Executor exec, ReadyCallback cb) {
+  public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
     synchronized (monitor) {
       Preconditions.checkState(!closed, "This AsyncResultSet has been closed");
       Preconditions.checkState(
           this.state == State.INITIALIZED, "callback may not be set multiple times");
 
       // Start to fetch data and buffer these.
-      this.result = this.service.submit(new ProduceRowsCallable());
+      this.result =
+          new ListenableFutureToApiFuture<>(this.service.submit(new ProduceRowsCallable()));
       this.executor = MoreExecutors.newSequentialExecutor(Preconditions.checkNotNull(exec));
       this.callback = Preconditions.checkNotNull(cb);
       this.state = State.RUNNING;
       pausedLatch.countDown();
+      return result;
     }
   }
 
