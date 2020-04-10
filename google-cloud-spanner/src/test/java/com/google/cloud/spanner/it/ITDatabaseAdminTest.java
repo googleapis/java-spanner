@@ -269,6 +269,8 @@ public class ITDatabaseAdminTest {
 
     List<Database> databases = new ArrayList<>();
     List<Backup> backups = new ArrayList<>();
+    String initialDatabaseId;
+    Timestamp initialDbCreateTime;
 
     try {
       // CreateDatabase
@@ -277,14 +279,19 @@ public class ITDatabaseAdminTest {
       SpannerOptions options =
           testHelper.getOptions().toBuilder().setInterceptorProvider(createDbInterceptor).build();
       try (Spanner spanner = options.getService()) {
-        String databaseId = testHelper.getUniqueDatabaseId();
+        initialDatabaseId = testHelper.getUniqueDatabaseId();
         DatabaseAdminClient client = spanner.getDatabaseAdminClient();
         OperationFuture<Database, CreateDatabaseMetadata> op =
             client.createDatabase(
                 testHelper.getInstanceId().getInstance(),
-                databaseId,
+                initialDatabaseId,
                 Collections.<String>emptyList());
         databases.add(op.get());
+        // Keep track of the original create time of this database, as we will drop this database
+        // later and create another one with the exact same name. That means that the ListOperations
+        // call will return at least two CreateDatabase operations. The retry logic should always
+        // pick the last one.
+        initialDbCreateTime = op.get().getCreateTime();
         // Assert that the CreateDatabase RPC was called only once, and that the operation tracking
         // was resumed through a GetOperation call.
         assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
@@ -362,6 +369,32 @@ public class ITDatabaseAdminTest {
             throw e;
           }
         }
+      }
+
+      // Create another database with the exact same name as the first database.
+      createDbInterceptor = new InjectErrorInterceptorProvider("CreateDatabase");
+      options =
+          testHelper.getOptions().toBuilder().setInterceptorProvider(createDbInterceptor).build();
+      try (Spanner spanner = options.getService()) {
+        DatabaseAdminClient client = spanner.getDatabaseAdminClient();
+        // First drop the initial database.
+        client.dropDatabase(testHelper.getInstanceId().getInstance(), initialDatabaseId);
+        // Now re-create a database with the exact same name.
+        OperationFuture<Database, CreateDatabaseMetadata> op =
+            client.createDatabase(
+                testHelper.getInstanceId().getInstance(),
+                initialDatabaseId,
+                Collections.<String>emptyList());
+        // Check that the second database was created and has a greater creation time than the
+        // first.
+        Timestamp secondCreationTime = op.get().getCreateTime();
+        // TODO: Change this to greaterThan when the create time of a database is reported back by
+        // the server.
+        assertThat(secondCreationTime).isAtLeast(initialDbCreateTime);
+        // Assert that the CreateDatabase RPC was called only once, and that the operation tracking
+        // was resumed through a GetOperation call.
+        assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
+        assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
       }
     } finally {
       DatabaseAdminClient client = testHelper.getClient().getDatabaseAdminClient();

@@ -148,6 +148,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
@@ -391,22 +392,20 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private final class OperationFutureCallable<RequestT, ResponseT, MetadataT extends Message>
       implements Callable<OperationFuture<ResponseT, MetadataT>> {
-    final Class<MetadataT> metadataClass;
     final OperationCallable<RequestT, ResponseT, MetadataT> operationCallable;
     final RequestT initialRequest;
     final String instanceName;
     final OperationsLister lister;
-    final Function<MetadataT, Timestamp> getStartTimeFunction;
+    final Function<Operation, Timestamp> getStartTimeFunction;
+    Timestamp initialCallTime;
     boolean isRetry = false;
 
     OperationFutureCallable(
-        Class<MetadataT> metadataClass,
         OperationCallable<RequestT, ResponseT, MetadataT> operationCallable,
         RequestT initialRequest,
         String instanceName,
         OperationsLister lister,
-        Function<MetadataT, Timestamp> getStartTimeFunction) {
-      this.metadataClass = metadataClass;
+        Function<Operation, Timestamp> getStartTimeFunction) {
       this.operationCallable = operationCallable;
       this.initialRequest = initialRequest;
       this.instanceName = instanceName;
@@ -422,11 +421,17 @@ public class GapicSpannerRpc implements SpannerRpc {
       if (isRetry) {
         // Query the backend to see if the operation was actually created, and that the
         // problem was caused by a network problem or other transient problem client side.
-        Operation operation = mostRecentOperation(metadataClass, lister, getStartTimeFunction);
+        Operation operation = mostRecentOperation(lister, getStartTimeFunction, initialCallTime);
         if (operation != null) {
           // Operation found, resume tracking that operation.
           operationName = operation.getName();
         }
+      } else {
+        initialCallTime =
+            Timestamp.newBuilder()
+                .setSeconds(
+                    TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS))
+                .build();
       }
       isRetry = true;
 
@@ -443,8 +448,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     Paginated<Operation> listOperations(String nextPageToken);
   }
 
-  private <T extends Message> Operation mostRecentOperation(
-      Class<T> metadataClass, OperationsLister lister, Function<T, Timestamp> getStartTimeFunction)
+  private Operation mostRecentOperation(
+      OperationsLister lister,
+      Function<Operation, Timestamp> getStartTimeFunction,
+      Timestamp initialCallTime)
       throws InvalidProtocolBufferException {
     Operation res = null;
     Timestamp currMaxStartTime = null;
@@ -453,9 +460,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     do {
       operations = lister.listOperations(nextPageToken);
       for (Operation op : operations.getResults()) {
-        T metadata = op.getMetadata().unpack(metadataClass);
-        Timestamp startTime = getStartTimeFunction.apply(metadata);
-        if (res == null || TimestampComparator.INSTANCE.compare(startTime, currMaxStartTime) > 0) {
+        Timestamp startTime = getStartTimeFunction.apply(op);
+        if (res == null
+            || (TimestampComparator.INSTANCE.compare(startTime, currMaxStartTime) > 0
+                && TimestampComparator.INSTANCE.compare(startTime, initialCallTime) >= 0)) {
           currMaxStartTime = startTime;
           res = op;
         }
@@ -463,6 +471,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         // is the one that is the most recent.
         if (startTime == null && currMaxStartTime == null && !op.getDone()) {
           res = op;
+          break;
         }
       }
     } while (operations.getNextPageToken() != null);
@@ -684,7 +693,6 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>(
-            CreateDatabaseMetadata.class,
             databaseAdminStub.createDatabaseOperationCallable(),
             request,
             instanceName,
@@ -701,9 +709,23 @@ public class GapicSpannerRpc implements SpannerRpc {
                     nextPageToken);
               }
             },
-            new Function<CreateDatabaseMetadata, Timestamp>() {
+            new Function<Operation, Timestamp>() {
               @Override
-              public Timestamp apply(CreateDatabaseMetadata input) {
+              public Timestamp apply(Operation input) {
+                if (input.getDone() && input.hasResponse()) {
+                  try {
+                    Timestamp createTime =
+                        input.getResponse().unpack(Database.class).getCreateTime();
+                    if (Timestamp.getDefaultInstance().equals(createTime)) {
+                      // Create time was not returned by the server (proto objects never return
+                      // null, instead they return the default instance). Return null from this
+                      // method to indicate that there is no known create time.
+                      return null;
+                    }
+                  } catch (InvalidProtocolBufferException e) {
+                    return null;
+                  }
+                }
                 return null;
               }
             });
@@ -790,7 +812,6 @@ public class GapicSpannerRpc implements SpannerRpc {
             .build();
     OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
         new OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata>(
-            CreateBackupMetadata.class,
             databaseAdminStub.createBackupOperationCallable(),
             request,
             instanceName,
@@ -807,10 +828,18 @@ public class GapicSpannerRpc implements SpannerRpc {
                     nextPageToken);
               }
             },
-            new Function<CreateBackupMetadata, Timestamp>() {
+            new Function<Operation, Timestamp>() {
               @Override
-              public Timestamp apply(CreateBackupMetadata input) {
-                return input.getProgress().getStartTime();
+              public Timestamp apply(Operation input) {
+                try {
+                  return input
+                      .getMetadata()
+                      .unpack(CreateBackupMetadata.class)
+                      .getProgress()
+                      .getStartTime();
+                } catch (InvalidProtocolBufferException e) {
+                  return null;
+                }
               }
             });
     return RetryHelper.runWithRetries(
@@ -835,7 +864,6 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata> callable =
         new OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>(
-            RestoreDatabaseMetadata.class,
             databaseAdminStub.restoreDatabaseOperationCallable(),
             request,
             databaseInstanceName,
@@ -852,10 +880,18 @@ public class GapicSpannerRpc implements SpannerRpc {
                     nextPageToken);
               }
             },
-            new Function<RestoreDatabaseMetadata, Timestamp>() {
+            new Function<Operation, Timestamp>() {
               @Override
-              public Timestamp apply(RestoreDatabaseMetadata input) {
-                return input.getProgress().getStartTime();
+              public Timestamp apply(Operation input) {
+                try {
+                  return input
+                      .getMetadata()
+                      .unpack(RestoreDatabaseMetadata.class)
+                      .getProgress()
+                      .getStartTime();
+                } catch (InvalidProtocolBufferException e) {
+                  return null;
+                }
               }
             });
     return RetryHelper.runWithRetries(
