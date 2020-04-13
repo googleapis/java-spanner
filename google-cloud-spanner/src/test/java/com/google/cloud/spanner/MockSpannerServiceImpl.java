@@ -418,7 +418,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       this.stickyException = stickyException;
     }
 
-    private void simulateExecutionTime(
+    void simulateExecutionTime(
         Queue<Exception> globalExceptions,
         boolean stickyGlobalExceptions,
         ReadWriteLock freezeLock) {

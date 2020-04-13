@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static org.junit.Assert.fail;
-
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -32,7 +30,6 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
@@ -379,59 +376,6 @@ public class DatabaseAdminGaxTest {
 
     List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
     Assert.assertEquals(2, actualRequests.size());
-  }
-
-  @Test
-  public void createDatabaseTest() throws Exception {
-    Exception exception = setupException();
-    DatabaseName name = DatabaseName.of(PROJECT, INSTANCE, "DATABASE");
-    com.google.spanner.admin.database.v1.Database expectedResponse =
-        com.google.spanner.admin.database.v1.Database.newBuilder().setName(name.toString()).build();
-    com.google.longrunning.Operation resultOperation =
-        com.google.longrunning.Operation.newBuilder()
-            .setName("createDatabaseTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    if (exceptionAtCall == 0) {
-      mockDatabaseAdmin.addException(exception);
-    }
-    mockDatabaseAdmin.addResponse(resultOperation);
-    if (exceptionAtCall == 1) {
-      mockDatabaseAdmin.addException(exception);
-    }
-    mockDatabaseAdmin.addResponse(resultOperation);
-
-    boolean methodIsIdempotent =
-        !spanner
-            .getOptions()
-            .getDatabaseAdminStubSettings()
-            .createDatabaseOperationSettings()
-            .getInitialCallSettings()
-            .getRetryableCodes()
-            .isEmpty();
-    for (int i = 0; i < 2; i++) {
-      OperationFuture<Database, CreateDatabaseMetadata> actualResponse =
-          client.createDatabase(INSTANCE, "DATABASE", Arrays.<String>asList());
-      try {
-        Database returnedInstance = actualResponse.get();
-        if (!methodIsIdempotent && i == exceptionAtCall) {
-          fail("missing expected exception");
-        }
-        Assert.assertEquals(name.toString(), returnedInstance.getId().getName());
-      } catch (ExecutionException e) {
-        if (!exceptionType.isRetryable() || methodIsIdempotent || i != exceptionAtCall) {
-          Throwables.throwIfUnchecked(e.getCause());
-          throw e;
-        }
-      }
-    }
-    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
-    if (methodIsIdempotent) {
-      Assert.assertEquals(2, actualRequests.size());
-    } else {
-      Assert.assertEquals(1, actualRequests.size());
-    }
   }
 
   @Test
