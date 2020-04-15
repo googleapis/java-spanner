@@ -459,12 +459,12 @@ public class DatabaseAdminClientTest {
   @Test
   @SuppressWarnings("all")
   public void createBackupTest() throws Exception {
-    String database = "database1789464955";
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     long sizeBytes = 1796325715L;
     Backup expectedResponse =
         Backup.newBuilder()
-            .setDatabase(database)
+            .setDatabase(database.toString())
             .setName(name.toString())
             .setSizeBytes(sizeBytes)
             .build();
@@ -519,12 +519,12 @@ public class DatabaseAdminClientTest {
   @Test
   @SuppressWarnings("all")
   public void getBackupTest() {
-    String database = "database1789464955";
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     BackupName name2 = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     long sizeBytes = 1796325715L;
     Backup expectedResponse =
         Backup.newBuilder()
-            .setDatabase(database)
+            .setDatabase(database.toString())
             .setName(name2.toString())
             .setSizeBytes(sizeBytes)
             .build();
@@ -565,12 +565,12 @@ public class DatabaseAdminClientTest {
   @Test
   @SuppressWarnings("all")
   public void updateBackupTest() {
-    String database = "database1789464955";
+    DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     long sizeBytes = 1796325715L;
     Backup expectedResponse =
         Backup.newBuilder()
-            .setDatabase(database)
+            .setDatabase(database.toString())
             .setName(name.toString())
             .setSizeBytes(sizeBytes)
             .build();

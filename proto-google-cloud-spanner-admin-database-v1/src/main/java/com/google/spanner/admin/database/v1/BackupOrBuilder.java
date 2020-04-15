@@ -34,7 +34,7 @@ public interface BackupOrBuilder
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The database.
    */
@@ -50,7 +50,7 @@ public interface BackupOrBuilder
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for database.
    */
