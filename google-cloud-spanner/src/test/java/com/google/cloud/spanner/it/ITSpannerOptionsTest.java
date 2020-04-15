@@ -16,9 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -38,10 +36,8 @@ import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -49,7 +45,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITSpannerOptionsTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private static Database db;
 
   @Before
@@ -73,7 +68,7 @@ public class ITSpannerOptionsTest {
     // The IT environment has already started some worker threads.
     int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
     for (int i = 0; i < NUMBER_OF_TEST_RUNS; i++) {
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME), is(equalTo(baseThreadCount)));
+      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
       // Create Spanner instance.
       // We make a copy of the options instance, as SpannerOptions caches any service object
       // that has been handed out.
@@ -106,9 +101,8 @@ public class ITSpannerOptionsTest {
       }
       // Check the number of threads after the query. Doing a request should initialize a thread
       // pool for the underlying SpannerClient.
-      assertThat(
-          getNumberOfThreadsWithName(SPANNER_THREAD_NAME),
-          is(equalTo(DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount)));
+      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
+          .isEqualTo(DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
 
       // Then do a request to the InstanceAdmin service and check the number of threads.
       // Doing a request should initialize a thread pool for the underlying InstanceAdminClient.
@@ -116,9 +110,8 @@ public class ITSpannerOptionsTest {
         InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
         instanceAdminClient.listInstances();
       }
-      assertThat(
-          getNumberOfThreadsWithName(SPANNER_THREAD_NAME),
-          is(equalTo(2 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount)));
+      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
+          .isEqualTo(2 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
 
       // Then do a request to the DatabaseAdmin service and check the number of threads.
       // Doing a request should initialize a thread pool for the underlying DatabaseAdminClient.
@@ -126,9 +119,8 @@ public class ITSpannerOptionsTest {
         DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
         databaseAdminClient.listDatabases(db.getId().getInstanceId().getInstance());
       }
-      assertThat(
-          getNumberOfThreadsWithName(SPANNER_THREAD_NAME),
-          is(equalTo(3 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount)));
+      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
+          .isEqualTo(3 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
 
       // Now close the Spanner instance and check whether the threads are shutdown or not.
       spanner.close();
@@ -138,7 +130,7 @@ public class ITSpannerOptionsTest {
           && watch.elapsed(TimeUnit.SECONDS) < 2) {
         Thread.sleep(50L);
       }
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME), is(equalTo(baseThreadCount)));
+      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
     }
   }
 
@@ -150,10 +142,10 @@ public class ITSpannerOptionsTest {
       // Having both in the try-with-resources block is not possible, as it is the same instance.
       // One will be closed before the other, and the closing of the second instance would fail.
       Spanner spanner2 = options.getService();
-      assertThat(spanner1 == spanner2, is(true));
+      assertThat(spanner1).isSameInstanceAs(spanner2);
       DatabaseClient client1 = spanner1.getDatabaseClient(db.getId());
       DatabaseClient client2 = spanner2.getDatabaseClient(db.getId());
-      assertThat(client1 == client2, is(true));
+      assertThat(client1).isSameInstanceAs(client2);
       try (ResultSet rs1 =
               client1
                   .singleUse()
@@ -172,7 +164,7 @@ public class ITSpannerOptionsTest {
         && watch.elapsed(TimeUnit.SECONDS) < 2) {
       Thread.sleep(50L);
     }
-    assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME), is(equalTo(baseThreadCount)));
+    assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
   }
 
   private int getNumberOfThreadsWithName(String serviceName) {
