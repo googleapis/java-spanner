@@ -46,6 +46,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -976,6 +977,99 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
         .singleUse(any(TimestampBound.class));
     pool.closeAsync().get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void testMaintainerKeepsWriteProportion() throws Exception {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(10)
+            .setMaxSessions(20)
+            .setWriteSessionsFraction(0.5f)
+            .build();
+    final SessionImpl session = mockSession();
+    mockKeepAlive(session);
+    // This is cheating as we are returning the same session each but it makes the verification
+    // easier.
+    doAnswer(
+            new Answer<Void>() {
+              @Override
+              public Void answer(final InvocationOnMock invocation) throws Throwable {
+                executor.submit(
+                    new Runnable() {
+                      @Override
+                      public void run() {
+                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        for (int i = 0; i < sessionCount; i++) {
+                          consumer.onSessionReady(session);
+                        }
+                      }
+                    });
+                return null;
+              }
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
+    pool = createPool(clock);
+    // Wait until all sessions have been created and prepared.
+    waitForExpectedSessionPool(options.getMinSessions(), options.getWriteSessionsFraction());
+    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
+    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
+        .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
+
+    // Run maintainer numKeepAliveCycles. No pings should be executed during these.
+    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    verify(session, never()).singleUse(any(TimestampBound.class));
+    // Run maintainer numKeepAliveCycles again. All sessions should now be pinged.
+    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
+    // Verify that all sessions are still in the pool, and that the write fraction is maintained.
+    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
+    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
+        .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
+
+    // Check out MaxSessions sessions to add additional sessions to the pool.
+    List<Session> sessions = new ArrayList<>(options.getMaxSessions());
+    for (int i = 0; i < options.getMaxSessions(); i++) {
+      sessions.add(pool.getReadSession());
+    }
+    for (Session s : sessions) {
+      s.close();
+    }
+    // There should be MaxSessions in the pool and the writeFraction should be respected.
+    waitForExpectedSessionPool(options.getMaxSessions(), options.getWriteSessionsFraction());
+    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMaxSessions());
+    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
+        .isEqualTo((int) Math.ceil(options.getMaxSessions() * options.getWriteSessionsFraction()));
+
+    // Advance the clock to allow the sessions to time out or be kept alive.
+    clock.currentTimeMillis +=
+        clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
+    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    // The session pool only keeps MinSessions alive.
+    verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
+    // Verify that MinSessions and WriteFraction are respected.
+    waitForExpectedSessionPool(options.getMinSessions(), options.getWriteSessionsFraction());
+    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
+    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
+        .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
+
+    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+  }
+
+  private void waitForExpectedSessionPool(int expectedSessions, float writeFraction)
+      throws InterruptedException {
+    Stopwatch watch = Stopwatch.createStarted();
+    while ((pool.getNumberOfSessionsInPool() < expectedSessions
+            || pool.getNumberOfAvailableWritePreparedSessions()
+                < Math.ceil(expectedSessions * writeFraction))
+        && watch.elapsed(TimeUnit.SECONDS) < 5) {
+      Thread.sleep(1L);
+    }
   }
 
   @Test
