@@ -345,7 +345,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The database.
    */
@@ -371,7 +371,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for database.
    */
@@ -1178,7 +1178,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The database.
      */
@@ -1204,7 +1204,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for database.
      */
@@ -1230,7 +1230,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The database to set.
      * @return This builder for chaining.
@@ -1255,7 +1255,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -1276,7 +1276,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for database to set.
      * @return This builder for chaining.
