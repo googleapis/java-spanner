@@ -31,8 +31,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -191,6 +193,73 @@ public class SessionClientTest {
       expectedChannels.add(l);
     }
     assertThat(usedChannels).containsExactlyElementsIn(expectedChannels);
+  }
+
+  /**
+   * Tests that multiple consequtive calls to {@link SessionClient#asyncBatchCreateSessions(int,
+   * boolean, SessionConsumer)} with distributeOverChannels=false does not distribute one batch over
+   * multiple channels, but it does assign each new call to a new channel. This means that multiple
+   * calls to this method will still distribute the total set of sessions over all available
+   * channels.
+   */
+  @SuppressWarnings("unchecked")
+  @Test
+  public void batchCreateSessionsDistributesMultipleRequestsOverChannels() {
+    DatabaseId db = DatabaseId.of(dbName);
+    final String sessionName = dbName + "/sessions/s%d";
+    final Map<String, String> labels = Collections.<String, String>emptyMap();
+    when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<Long>());
+    when(rpc.batchCreateSessions(
+            Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
+        .then(
+            new Answer<List<com.google.spanner.v1.Session>>() {
+              @Override
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
+                  throws Throwable {
+                Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
+                Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
+                usedChannelHintss.add(channelHint);
+                int sessionCount = invocation.getArgumentAt(1, Integer.class);
+                List<com.google.spanner.v1.Session> res = new ArrayList<>();
+                for (int i = 1; i <= sessionCount; i++) {
+                  res.add(
+                      com.google.spanner.v1.Session.newBuilder()
+                          .setName(String.format(sessionName, i))
+                          .putAllLabels(labels)
+                          .build());
+                }
+                return res;
+              }
+            });
+
+    final AtomicInteger returnedSessionCount = new AtomicInteger();
+    SessionConsumer consumer =
+        new SessionConsumer() {
+          @Override
+          public void onSessionReady(SessionImpl session) {
+            assertThat(session.getName()).startsWith(dbName + "/sessions/s");
+            returnedSessionCount.incrementAndGet();
+            session.close();
+          }
+
+          @Override
+          public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {}
+        };
+    final int numSessions = 10;
+    final int numBatches = spannerOptions.getNumChannels() * 2;
+    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+      for (int batch = 0; batch < numBatches; batch++) {
+        client.asyncBatchCreateSessions(numSessions, false, consumer);
+      }
+    }
+    assertThat(returnedSessionCount.get()).isEqualTo(numSessions * numBatches);
+    assertThat(usedChannelHintss.size()).isEqualTo(spannerOptions.getNumChannels() * 2);
+    List<Long> expectedChannels = new ArrayList<>();
+    for (long l = 0; l < spannerOptions.getNumChannels() * 2; l++) {
+      expectedChannels.add(l);
+    }
+    assertThat(usedChannelHintss).containsExactlyElementsIn(expectedChannels);
   }
 
   private enum AddRemoveSetException {
