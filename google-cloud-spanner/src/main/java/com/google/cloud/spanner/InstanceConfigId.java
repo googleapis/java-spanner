@@ -30,8 +30,8 @@ public final class InstanceConfigId {
   private final String instanceConfig;
 
   InstanceConfigId(String project, String instanceConfig) {
-    this.project = project;
-    this.instanceConfig = instanceConfig;
+    this.project = Preconditions.checkNotNull(project);
+    this.instanceConfig = Preconditions.checkNotNull(instanceConfig);
   }
 
   /** Returns project of this instane config. */
@@ -80,6 +80,7 @@ public final class InstanceConfigId {
    *     pattern.
    */
   static InstanceConfigId of(String name) {
+    Preconditions.checkNotNull(name);
     Map<String, String> parts = NAME_TEMPLATE.match(name);
     Preconditions.checkArgument(
         parts != null, "Name should confirm to pattern %s: %s", NAME_TEMPLATE, name);
