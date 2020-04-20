@@ -379,7 +379,9 @@ public class SessionPoolBenchmark {
     // Checkout maxSessions sessions by starting maxSessions read-only transactions sequentially.
     List<ReadOnlyTransaction> transactions = new ArrayList<>(server.maxSessions);
     for (int i = 0; i < server.maxSessions; i++) {
-      transactions.add(client.readOnlyTransaction());
+      ReadOnlyTransaction tx = client.readOnlyTransaction();
+      tx.executeQuery(MockServer.SELECT1);
+      transactions.add(tx);
     }
     for (ReadOnlyTransaction tx : transactions) {
       tx.close();
