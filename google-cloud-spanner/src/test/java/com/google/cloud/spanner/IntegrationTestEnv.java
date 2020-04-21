@@ -22,6 +22,8 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import io.grpc.Status;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,7 +84,10 @@ public class IntegrationTestEnv extends ExternalResource {
       isOwnedInstance = false;
       logger.log(Level.INFO, "Using existing test instance: {0}", instanceId);
     } else {
-      instanceId = InstanceId.of(config.spannerOptions().getProjectId(), "test-instance");
+      instanceId =
+          InstanceId.of(
+              config.spannerOptions().getProjectId(),
+              String.format("test-instance-%08d", new Random().nextInt(100000000)));
       isOwnedInstance = true;
     }
     testHelper = createTestHelper(options, instanceId);
@@ -123,6 +128,34 @@ public class IntegrationTestEnv extends ExternalResource {
     try {
       createdInstance = op.get(30000L, TimeUnit.MILLISECONDS);
     } catch (Exception e) {
+      boolean cancelled = false;
+      try {
+        // Try to cancel the createInstance operation.
+        instanceAdminClient.cancelOperation(op.getName());
+        com.google.longrunning.Operation createOperation =
+            instanceAdminClient.getOperation(op.getName());
+        cancelled =
+            createOperation.hasError()
+                && createOperation.getError().getCode() == Status.CANCELLED.getCode().value();
+        if (cancelled) {
+          logger.info("Cancelled the createInstance operation because the operation failed");
+        } else {
+          logger.info(
+              "Tried to cancel the createInstance operation because the operation failed, but the operation could not be cancelled. Current status: "
+                  + createOperation.getError().getCode());
+        }
+      } catch (Throwable t) {
+        logger.log(Level.WARNING, "Failed to cancel the createInstance operation", t);
+      }
+      if (!cancelled) {
+        try {
+          instanceAdminClient.deleteInstance(instanceId.getInstance());
+          logger.info(
+              "Deleted the test instance because the createInstance operation failed and cancelling the operation did not succeed");
+        } catch (Throwable t) {
+          logger.log(Level.WARNING, "Failed to delete the test instance", t);
+        }
+      }
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     logger.log(Level.INFO, "Created test instance: {0}", createdInstance.getId());

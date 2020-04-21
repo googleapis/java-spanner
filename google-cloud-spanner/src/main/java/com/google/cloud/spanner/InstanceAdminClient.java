@@ -20,6 +20,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.spanner.Options.ListOption;
+import com.google.longrunning.Operation;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 
@@ -217,4 +218,10 @@ public interface InstanceAdminClient {
 
   /** Returns a builder for {@code Instance} object with the given id. */
   Instance.Builder newInstanceBuilder(InstanceId id);
+
+  /** Cancels the specified long-running operation. */
+  void cancelOperation(String name);
+
+  /** Gets the specified long-running operation. */
+  Operation getOperation(String name);
 }
