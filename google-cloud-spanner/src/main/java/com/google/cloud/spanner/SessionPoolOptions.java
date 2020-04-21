@@ -24,9 +24,11 @@ public class SessionPoolOptions {
   // Default number of channels * 100.
   private static final int DEFAULT_MAX_SESSIONS = 400;
   private static final int DEFAULT_MIN_SESSIONS = 100;
+  private static final int DEFAULT_INC_STEP = 25;
   private static final ActionOnExhaustion DEFAULT_ACTION = ActionOnExhaustion.BLOCK;
   private final int minSessions;
   private final int maxSessions;
+  private final int incStep;
   private final int maxIdleSessions;
   private final float writeSessionsFraction;
   private final ActionOnExhaustion actionOnExhaustion;
@@ -41,6 +43,7 @@ public class SessionPoolOptions {
     // maxSessions value is less than the default for minSessions.
     this.minSessions = Math.min(builder.minSessions, builder.maxSessions);
     this.maxSessions = builder.maxSessions;
+    this.incStep = builder.incStep;
     this.maxIdleSessions = builder.maxIdleSessions;
     this.writeSessionsFraction = builder.writeSessionsFraction;
     this.actionOnExhaustion = builder.actionOnExhaustion;
@@ -56,6 +59,10 @@ public class SessionPoolOptions {
 
   public int getMaxSessions() {
     return maxSessions;
+  }
+
+  int getIncStep() {
+    return incStep;
   }
 
   public int getMaxIdleSessions() {
@@ -117,6 +124,7 @@ public class SessionPoolOptions {
     private boolean minSessionsSet = false;
     private int minSessions = DEFAULT_MIN_SESSIONS;
     private int maxSessions = DEFAULT_MAX_SESSIONS;
+    private int incStep = DEFAULT_INC_STEP;
     private int maxIdleSessions;
     private float writeSessionsFraction = 0.2f;
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
@@ -145,6 +153,16 @@ public class SessionPoolOptions {
     public Builder setMaxSessions(int maxSessions) {
       Preconditions.checkArgument(maxSessions > 0, "maxSessions must be > 0");
       this.maxSessions = maxSessions;
+      return this;
+    }
+
+    /**
+     * Number of sessions to batch create when the pool needs at least one more session. Defaults to
+     * 25.
+     */
+    Builder setIncStep(int incStep) {
+      Preconditions.checkArgument(incStep > 0, "incStep must be > 0");
+      this.incStep = incStep;
       return this;
     }
 

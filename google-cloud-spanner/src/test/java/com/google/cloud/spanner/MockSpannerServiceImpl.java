@@ -95,6 +95,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.threeten.bp.Instant;
 
@@ -462,7 +463,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       this.stickyException = stickyException;
     }
 
-    private void simulateExecutionTime(
+    void simulateExecutionTime(
         Queue<Exception> globalExceptions,
         boolean stickyGlobalExceptions,
         CountDownLatch freezeLock) {
@@ -512,6 +513,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
+  private AtomicInteger numSessionsCreated = new AtomicInteger();
 
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime commitExecutionTime = NO_EXECUTION_TIME;
@@ -703,6 +705,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           if (sessions.size() <= maxTotalSessions) {
             sessionLastUsed.put(name, Instant.now());
             response.addSession(session);
+            numSessionsCreated.incrementAndGet();
           } else {
             sessions.remove(name);
           }
@@ -748,6 +751,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Session prev = sessions.putIfAbsent(name, session);
       if (prev == null) {
         sessionLastUsed.put(name, Instant.now());
+        numSessionsCreated.incrementAndGet();
         responseObserver.onNext(session);
         responseObserver.onCompleted();
       } else {
@@ -1788,6 +1792,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public int numSessionsCreated() {
+    return numSessionsCreated.get();
+  }
+
   @Override
   public List<AbstractMessage> getRequests() {
     return new ArrayList<>(this.requests);
@@ -1839,6 +1847,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public void reset() {
     requests.clear();
     sessions.clear();
+    numSessionsCreated.set(0);
     sessionLastUsed.clear();
     transactions.clear();
     isPartitionedDmlTransaction.clear();

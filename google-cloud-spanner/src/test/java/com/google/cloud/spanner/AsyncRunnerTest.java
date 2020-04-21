@@ -120,7 +120,11 @@ public class AsyncRunnerTest {
             .getOptions()
             .toBuilder()
             .setSessionPoolOption(
-                SessionPoolOptions.newBuilder().setFailOnSessionLeak().setMinSessions(0).build())
+                SessionPoolOptions.newBuilder()
+                    .setFailOnSessionLeak()
+                    .setMinSessions(0)
+                    .setIncStep(1)
+                    .build())
             .build()
             .getService();
   }

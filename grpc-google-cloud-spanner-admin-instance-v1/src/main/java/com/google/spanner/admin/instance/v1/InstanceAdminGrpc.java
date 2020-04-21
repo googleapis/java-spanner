@@ -47,7 +47,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
  * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.10.0)",
+    value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/instance/v1/spanner_instance_admin.proto")
 public final class InstanceAdminGrpc {
 
@@ -56,30 +56,20 @@ public final class InstanceAdminGrpc {
   public static final String SERVICE_NAME = "google.spanner.admin.instance.v1.InstanceAdmin";
 
   // Static method descriptors that strictly reflect the proto.
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getListInstanceConfigsMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
-          com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
-      METHOD_LIST_INSTANCE_CONFIGS = getListInstanceConfigsMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
           com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
       getListInstanceConfigsMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListInstanceConfigs",
+      requestType = com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
           com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
       getListInstanceConfigsMethod() {
-    return getListInstanceConfigsMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
-          com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
-      getListInstanceConfigsMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
             com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
@@ -96,9 +86,7 @@ public final class InstanceAdminGrpc {
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
                       .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin",
-                              "ListInstanceConfigs"))
+                          generateFullMethodName(SERVICE_NAME, "ListInstanceConfigs"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -117,30 +105,20 @@ public final class InstanceAdminGrpc {
     return getListInstanceConfigsMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getGetInstanceConfigMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
-          com.google.spanner.admin.instance.v1.InstanceConfig>
-      METHOD_GET_INSTANCE_CONFIG = getGetInstanceConfigMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
           com.google.spanner.admin.instance.v1.InstanceConfig>
       getGetInstanceConfigMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetInstanceConfig",
+      requestType = com.google.spanner.admin.instance.v1.GetInstanceConfigRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.InstanceConfig.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
           com.google.spanner.admin.instance.v1.InstanceConfig>
       getGetInstanceConfigMethod() {
-    return getGetInstanceConfigMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
-          com.google.spanner.admin.instance.v1.InstanceConfig>
-      getGetInstanceConfigMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
             com.google.spanner.admin.instance.v1.InstanceConfig>
@@ -155,10 +133,7 @@ public final class InstanceAdminGrpc {
                           com.google.spanner.admin.instance.v1.InstanceConfig>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin",
-                              "GetInstanceConfig"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetInstanceConfig"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -177,30 +152,20 @@ public final class InstanceAdminGrpc {
     return getGetInstanceConfigMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getListInstancesMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.ListInstancesRequest,
-          com.google.spanner.admin.instance.v1.ListInstancesResponse>
-      METHOD_LIST_INSTANCES = getListInstancesMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.ListInstancesRequest,
           com.google.spanner.admin.instance.v1.ListInstancesResponse>
       getListInstancesMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListInstances",
+      requestType = com.google.spanner.admin.instance.v1.ListInstancesRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.ListInstancesResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.ListInstancesRequest,
           com.google.spanner.admin.instance.v1.ListInstancesResponse>
       getListInstancesMethod() {
-    return getListInstancesMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.ListInstancesRequest,
-          com.google.spanner.admin.instance.v1.ListInstancesResponse>
-      getListInstancesMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.ListInstancesRequest,
             com.google.spanner.admin.instance.v1.ListInstancesResponse>
@@ -215,9 +180,7 @@ public final class InstanceAdminGrpc {
                           com.google.spanner.admin.instance.v1.ListInstancesResponse>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "ListInstances"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListInstances"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -236,30 +199,20 @@ public final class InstanceAdminGrpc {
     return getListInstancesMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getGetInstanceMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.GetInstanceRequest,
-          com.google.spanner.admin.instance.v1.Instance>
-      METHOD_GET_INSTANCE = getGetInstanceMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.GetInstanceRequest,
           com.google.spanner.admin.instance.v1.Instance>
       getGetInstanceMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetInstance",
+      requestType = com.google.spanner.admin.instance.v1.GetInstanceRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.Instance.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.GetInstanceRequest,
           com.google.spanner.admin.instance.v1.Instance>
       getGetInstanceMethod() {
-    return getGetInstanceMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.GetInstanceRequest,
-          com.google.spanner.admin.instance.v1.Instance>
-      getGetInstanceMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.GetInstanceRequest,
             com.google.spanner.admin.instance.v1.Instance>
@@ -274,9 +227,7 @@ public final class InstanceAdminGrpc {
                           com.google.spanner.admin.instance.v1.Instance>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "GetInstance"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetInstance"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -293,30 +244,20 @@ public final class InstanceAdminGrpc {
     return getGetInstanceMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getCreateInstanceMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.CreateInstanceRequest,
-          com.google.longrunning.Operation>
-      METHOD_CREATE_INSTANCE = getCreateInstanceMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.CreateInstanceRequest,
           com.google.longrunning.Operation>
       getCreateInstanceMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "CreateInstance",
+      requestType = com.google.spanner.admin.instance.v1.CreateInstanceRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.CreateInstanceRequest,
           com.google.longrunning.Operation>
       getCreateInstanceMethod() {
-    return getCreateInstanceMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.CreateInstanceRequest,
-          com.google.longrunning.Operation>
-      getCreateInstanceMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.CreateInstanceRequest,
             com.google.longrunning.Operation>
@@ -331,9 +272,7 @@ public final class InstanceAdminGrpc {
                           com.google.longrunning.Operation>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "CreateInstance"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CreateInstance"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -351,30 +290,20 @@ public final class InstanceAdminGrpc {
     return getCreateInstanceMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getUpdateInstanceMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
-          com.google.longrunning.Operation>
-      METHOD_UPDATE_INSTANCE = getUpdateInstanceMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
           com.google.longrunning.Operation>
       getUpdateInstanceMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UpdateInstance",
+      requestType = com.google.spanner.admin.instance.v1.UpdateInstanceRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
           com.google.longrunning.Operation>
       getUpdateInstanceMethod() {
-    return getUpdateInstanceMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
-          com.google.longrunning.Operation>
-      getUpdateInstanceMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
             com.google.longrunning.Operation>
@@ -389,9 +318,7 @@ public final class InstanceAdminGrpc {
                           com.google.longrunning.Operation>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "UpdateInstance"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UpdateInstance"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -409,26 +336,18 @@ public final class InstanceAdminGrpc {
     return getUpdateInstanceMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getDeleteInstanceMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.DeleteInstanceRequest, com.google.protobuf.Empty>
-      METHOD_DELETE_INSTANCE = getDeleteInstanceMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.DeleteInstanceRequest, com.google.protobuf.Empty>
       getDeleteInstanceMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DeleteInstance",
+      requestType = com.google.spanner.admin.instance.v1.DeleteInstanceRequest.class,
+      responseType = com.google.protobuf.Empty.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.DeleteInstanceRequest, com.google.protobuf.Empty>
       getDeleteInstanceMethod() {
-    return getDeleteInstanceMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.spanner.admin.instance.v1.DeleteInstanceRequest, com.google.protobuf.Empty>
-      getDeleteInstanceMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.spanner.admin.instance.v1.DeleteInstanceRequest, com.google.protobuf.Empty>
         getDeleteInstanceMethod;
@@ -442,9 +361,7 @@ public final class InstanceAdminGrpc {
                           com.google.protobuf.Empty>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "DeleteInstance"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DeleteInstance"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -462,26 +379,18 @@ public final class InstanceAdminGrpc {
     return getDeleteInstanceMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getSetIamPolicyMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>
-      METHOD_SET_IAM_POLICY = getSetIamPolicyMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>
       getSetIamPolicyMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "SetIamPolicy",
+      requestType = com.google.iam.v1.SetIamPolicyRequest.class,
+      responseType = com.google.iam.v1.Policy.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>
       getSetIamPolicyMethod() {
-    return getSetIamPolicyMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>
-      getSetIamPolicyMethodHelper() {
     io.grpc.MethodDescriptor<com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>
         getSetIamPolicyMethod;
     if ((getSetIamPolicyMethod = InstanceAdminGrpc.getSetIamPolicyMethod) == null) {
@@ -492,9 +401,7 @@ public final class InstanceAdminGrpc {
                   io.grpc.MethodDescriptor
                       .<com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "SetIamPolicy"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "SetIamPolicy"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -511,26 +418,18 @@ public final class InstanceAdminGrpc {
     return getSetIamPolicyMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getGetIamPolicyMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>
-      METHOD_GET_IAM_POLICY = getGetIamPolicyMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>
       getGetIamPolicyMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetIamPolicy",
+      requestType = com.google.iam.v1.GetIamPolicyRequest.class,
+      responseType = com.google.iam.v1.Policy.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>
       getGetIamPolicyMethod() {
-    return getGetIamPolicyMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>
-      getGetIamPolicyMethodHelper() {
     io.grpc.MethodDescriptor<com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>
         getGetIamPolicyMethod;
     if ((getGetIamPolicyMethod = InstanceAdminGrpc.getGetIamPolicyMethod) == null) {
@@ -541,9 +440,7 @@ public final class InstanceAdminGrpc {
                   io.grpc.MethodDescriptor
                       .<com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin", "GetIamPolicy"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetIamPolicy"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -560,26 +457,18 @@ public final class InstanceAdminGrpc {
     return getGetIamPolicyMethod;
   }
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  @java.lang.Deprecated // Use {@link #getTestIamPermissionsMethod()} instead.
-  public static final io.grpc.MethodDescriptor<
-          com.google.iam.v1.TestIamPermissionsRequest, com.google.iam.v1.TestIamPermissionsResponse>
-      METHOD_TEST_IAM_PERMISSIONS = getTestIamPermissionsMethodHelper();
-
   private static volatile io.grpc.MethodDescriptor<
           com.google.iam.v1.TestIamPermissionsRequest, com.google.iam.v1.TestIamPermissionsResponse>
       getTestIamPermissionsMethod;
 
-  @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "TestIamPermissions",
+      requestType = com.google.iam.v1.TestIamPermissionsRequest.class,
+      responseType = com.google.iam.v1.TestIamPermissionsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<
           com.google.iam.v1.TestIamPermissionsRequest, com.google.iam.v1.TestIamPermissionsResponse>
       getTestIamPermissionsMethod() {
-    return getTestIamPermissionsMethodHelper();
-  }
-
-  private static io.grpc.MethodDescriptor<
-          com.google.iam.v1.TestIamPermissionsRequest, com.google.iam.v1.TestIamPermissionsResponse>
-      getTestIamPermissionsMethodHelper() {
     io.grpc.MethodDescriptor<
             com.google.iam.v1.TestIamPermissionsRequest,
             com.google.iam.v1.TestIamPermissionsResponse>
@@ -594,10 +483,7 @@ public final class InstanceAdminGrpc {
                           com.google.iam.v1.TestIamPermissionsResponse>
                           newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(
-                          generateFullMethodName(
-                              "google.spanner.admin.instance.v1.InstanceAdmin",
-                              "TestIamPermissions"))
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "TestIamPermissions"))
                       .setSampledToLocalTracing(true)
                       .setRequestMarshaller(
                           io.grpc.protobuf.ProtoUtils.marshaller(
@@ -616,19 +502,43 @@ public final class InstanceAdminGrpc {
 
   /** Creates a new async stub that supports all call types for the service */
   public static InstanceAdminStub newStub(io.grpc.Channel channel) {
-    return new InstanceAdminStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<InstanceAdminStub> factory =
+        new io.grpc.stub.AbstractStub.StubFactory<InstanceAdminStub>() {
+          @java.lang.Override
+          public InstanceAdminStub newStub(
+              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+            return new InstanceAdminStub(channel, callOptions);
+          }
+        };
+    return InstanceAdminStub.newStub(factory, channel);
   }
 
   /**
    * Creates a new blocking-style stub that supports unary and streaming output calls on the service
    */
   public static InstanceAdminBlockingStub newBlockingStub(io.grpc.Channel channel) {
-    return new InstanceAdminBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<InstanceAdminBlockingStub> factory =
+        new io.grpc.stub.AbstractStub.StubFactory<InstanceAdminBlockingStub>() {
+          @java.lang.Override
+          public InstanceAdminBlockingStub newStub(
+              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+            return new InstanceAdminBlockingStub(channel, callOptions);
+          }
+        };
+    return InstanceAdminBlockingStub.newStub(factory, channel);
   }
 
   /** Creates a new ListenableFuture-style stub that supports unary calls on the service */
   public static InstanceAdminFutureStub newFutureStub(io.grpc.Channel channel) {
-    return new InstanceAdminFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<InstanceAdminFutureStub> factory =
+        new io.grpc.stub.AbstractStub.StubFactory<InstanceAdminFutureStub>() {
+          @java.lang.Override
+          public InstanceAdminFutureStub newStub(
+              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+            return new InstanceAdminFutureStub(channel, callOptions);
+          }
+        };
+    return InstanceAdminFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -669,7 +579,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListInstanceConfigsMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getListInstanceConfigsMethod(), responseObserver);
     }
 
     /**
@@ -683,7 +593,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetInstanceConfigMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getGetInstanceConfigMethod(), responseObserver);
     }
 
     /**
@@ -697,7 +607,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListInstancesMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getListInstancesMethod(), responseObserver);
     }
 
     /**
@@ -711,7 +621,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetInstanceMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getGetInstanceMethod(), responseObserver);
     }
 
     /**
@@ -750,7 +660,7 @@ public final class InstanceAdminGrpc {
     public void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getCreateInstanceMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getCreateInstanceMethod(), responseObserver);
     }
 
     /**
@@ -794,7 +704,7 @@ public final class InstanceAdminGrpc {
     public void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getUpdateInstanceMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getUpdateInstanceMethod(), responseObserver);
     }
 
     /**
@@ -813,7 +723,7 @@ public final class InstanceAdminGrpc {
     public void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getDeleteInstanceMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getDeleteInstanceMethod(), responseObserver);
     }
 
     /**
@@ -829,7 +739,7 @@ public final class InstanceAdminGrpc {
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getSetIamPolicyMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getSetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -845,7 +755,7 @@ public final class InstanceAdminGrpc {
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetIamPolicyMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getGetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -863,71 +773,71 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getTestIamPermissionsMethodHelper(), responseObserver);
+      asyncUnimplementedUnaryCall(getTestIamPermissionsMethod(), responseObserver);
     }
 
     @java.lang.Override
     public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
-              getListInstanceConfigsMethodHelper(),
+              getListInstanceConfigsMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
                       com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
                       this, METHODID_LIST_INSTANCE_CONFIGS)))
           .addMethod(
-              getGetInstanceConfigMethodHelper(),
+              getGetInstanceConfigMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
                       com.google.spanner.admin.instance.v1.InstanceConfig>(
                       this, METHODID_GET_INSTANCE_CONFIG)))
           .addMethod(
-              getListInstancesMethodHelper(),
+              getListInstancesMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.ListInstancesRequest,
                       com.google.spanner.admin.instance.v1.ListInstancesResponse>(
                       this, METHODID_LIST_INSTANCES)))
           .addMethod(
-              getGetInstanceMethodHelper(),
+              getGetInstanceMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.GetInstanceRequest,
                       com.google.spanner.admin.instance.v1.Instance>(this, METHODID_GET_INSTANCE)))
           .addMethod(
-              getCreateInstanceMethodHelper(),
+              getCreateInstanceMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.CreateInstanceRequest,
                       com.google.longrunning.Operation>(this, METHODID_CREATE_INSTANCE)))
           .addMethod(
-              getUpdateInstanceMethodHelper(),
+              getUpdateInstanceMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
                       com.google.longrunning.Operation>(this, METHODID_UPDATE_INSTANCE)))
           .addMethod(
-              getDeleteInstanceMethodHelper(),
+              getDeleteInstanceMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
                       com.google.protobuf.Empty>(this, METHODID_DELETE_INSTANCE)))
           .addMethod(
-              getSetIamPolicyMethodHelper(),
+              getSetIamPolicyMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_SET_IAM_POLICY)))
           .addMethod(
-              getGetIamPolicyMethodHelper(),
+              getGetIamPolicyMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_GET_IAM_POLICY)))
           .addMethod(
-              getTestIamPermissionsMethodHelper(),
+              getTestIamPermissionsMethod(),
               asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.TestIamPermissionsRequest,
@@ -961,11 +871,8 @@ public final class InstanceAdminGrpc {
    * databases in that instance, and their performance may suffer.
    * </pre>
    */
-  public static final class InstanceAdminStub extends io.grpc.stub.AbstractStub<InstanceAdminStub> {
-    private InstanceAdminStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
+  public static final class InstanceAdminStub
+      extends io.grpc.stub.AbstractAsyncStub<InstanceAdminStub> {
     private InstanceAdminStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -988,7 +895,7 @@ public final class InstanceAdminGrpc {
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
             responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getListInstanceConfigsMethodHelper(), getCallOptions()),
+          getChannel().newCall(getListInstanceConfigsMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1005,7 +912,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getGetInstanceConfigMethodHelper(), getCallOptions()),
+          getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1022,7 +929,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getListInstancesMethodHelper(), getCallOptions()),
+          getChannel().newCall(getListInstancesMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1039,7 +946,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getGetInstanceMethodHelper(), getCallOptions()),
+          getChannel().newCall(getGetInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1081,7 +988,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getCreateInstanceMethodHelper(), getCallOptions()),
+          getChannel().newCall(getCreateInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1128,7 +1035,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getUpdateInstanceMethodHelper(), getCallOptions()),
+          getChannel().newCall(getUpdateInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1150,7 +1057,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getDeleteInstanceMethodHelper(), getCallOptions()),
+          getChannel().newCall(getDeleteInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1169,7 +1076,7 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getSetIamPolicyMethodHelper(), getCallOptions()),
+          getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1188,7 +1095,7 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getGetIamPolicyMethodHelper(), getCallOptions()),
+          getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1209,7 +1116,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getTestIamPermissionsMethodHelper(), getCallOptions()),
+          getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1240,11 +1147,7 @@ public final class InstanceAdminGrpc {
    * </pre>
    */
   public static final class InstanceAdminBlockingStub
-      extends io.grpc.stub.AbstractStub<InstanceAdminBlockingStub> {
-    private InstanceAdminBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
+      extends io.grpc.stub.AbstractBlockingStub<InstanceAdminBlockingStub> {
     private InstanceAdminBlockingStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -1265,7 +1168,7 @@ public final class InstanceAdminGrpc {
     public com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
       return blockingUnaryCall(
-          getChannel(), getListInstanceConfigsMethodHelper(), getCallOptions(), request);
+          getChannel(), getListInstanceConfigsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1278,7 +1181,7 @@ public final class InstanceAdminGrpc {
     public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
       return blockingUnaryCall(
-          getChannel(), getGetInstanceConfigMethodHelper(), getCallOptions(), request);
+          getChannel(), getGetInstanceConfigMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1290,8 +1193,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstancesResponse listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getListInstancesMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getListInstancesMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1303,8 +1205,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.Instance getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getGetInstanceMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getGetInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1342,8 +1243,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.longrunning.Operation createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getCreateInstanceMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getCreateInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1386,8 +1286,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.longrunning.Operation updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getUpdateInstanceMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getUpdateInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1405,8 +1304,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.protobuf.Empty deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getDeleteInstanceMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getDeleteInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1420,8 +1318,7 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getSetIamPolicyMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1435,8 +1332,7 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return blockingUnaryCall(
-          getChannel(), getGetIamPolicyMethodHelper(), getCallOptions(), request);
+      return blockingUnaryCall(getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1453,7 +1349,7 @@ public final class InstanceAdminGrpc {
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request) {
       return blockingUnaryCall(
-          getChannel(), getTestIamPermissionsMethodHelper(), getCallOptions(), request);
+          getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
   }
 
@@ -1482,11 +1378,7 @@ public final class InstanceAdminGrpc {
    * </pre>
    */
   public static final class InstanceAdminFutureStub
-      extends io.grpc.stub.AbstractStub<InstanceAdminFutureStub> {
-    private InstanceAdminFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
+      extends io.grpc.stub.AbstractFutureStub<InstanceAdminFutureStub> {
     private InstanceAdminFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -1509,7 +1401,7 @@ public final class InstanceAdminGrpc {
         listInstanceConfigs(
             com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getListInstanceConfigsMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getListInstanceConfigsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1523,7 +1415,7 @@ public final class InstanceAdminGrpc {
             com.google.spanner.admin.instance.v1.InstanceConfig>
         getInstanceConfig(com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getGetInstanceConfigMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1537,7 +1429,7 @@ public final class InstanceAdminGrpc {
             com.google.spanner.admin.instance.v1.ListInstancesResponse>
         listInstances(com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getListInstancesMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getListInstancesMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1551,7 +1443,7 @@ public final class InstanceAdminGrpc {
             com.google.spanner.admin.instance.v1.Instance>
         getInstance(com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getGetInstanceMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getGetInstanceMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1590,7 +1482,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createInstance(com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getCreateInstanceMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getCreateInstanceMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1634,7 +1526,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         updateInstance(com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getUpdateInstanceMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getUpdateInstanceMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1653,7 +1545,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteInstance(com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getDeleteInstanceMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getDeleteInstanceMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1669,7 +1561,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getSetIamPolicyMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1685,7 +1577,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getGetIamPolicyMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1703,7 +1595,7 @@ public final class InstanceAdminGrpc {
             com.google.iam.v1.TestIamPermissionsResponse>
         testIamPermissions(com.google.iam.v1.TestIamPermissionsRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getTestIamPermissionsMethodHelper(), getCallOptions()), request);
+          getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()), request);
     }
   }
 
@@ -1856,16 +1748,16 @@ public final class InstanceAdminGrpc {
               result =
                   io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
                       .setSchemaDescriptor(new InstanceAdminFileDescriptorSupplier())
-                      .addMethod(getListInstanceConfigsMethodHelper())
-                      .addMethod(getGetInstanceConfigMethodHelper())
-                      .addMethod(getListInstancesMethodHelper())
-                      .addMethod(getGetInstanceMethodHelper())
-                      .addMethod(getCreateInstanceMethodHelper())
-                      .addMethod(getUpdateInstanceMethodHelper())
-                      .addMethod(getDeleteInstanceMethodHelper())
-                      .addMethod(getSetIamPolicyMethodHelper())
-                      .addMethod(getGetIamPolicyMethodHelper())
-                      .addMethod(getTestIamPermissionsMethodHelper())
+                      .addMethod(getListInstanceConfigsMethod())
+                      .addMethod(getGetInstanceConfigMethod())
+                      .addMethod(getListInstancesMethod())
+                      .addMethod(getGetInstanceMethod())
+                      .addMethod(getCreateInstanceMethod())
+                      .addMethod(getUpdateInstanceMethod())
+                      .addMethod(getDeleteInstanceMethod())
+                      .addMethod(getSetIamPolicyMethod())
+                      .addMethod(getGetIamPolicyMethod())
+                      .addMethod(getTestIamPermissionsMethod())
                       .build();
         }
       }

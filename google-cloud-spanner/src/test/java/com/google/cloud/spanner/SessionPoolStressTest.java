@@ -129,7 +129,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                       maxAliveSessions = sessions.size();
                     }
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(1, SessionConsumerImpl.class);
+                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session);
                   }
                 }
@@ -137,7 +137,8 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               }
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.anyInt(), Mockito.any(SessionConsumer.class));
+        .asyncBatchCreateSessions(
+            Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
 
   private void setupSession(final SessionImpl session) {

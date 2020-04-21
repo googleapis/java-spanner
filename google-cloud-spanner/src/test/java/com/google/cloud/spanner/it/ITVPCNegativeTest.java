@@ -22,6 +22,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.rpc.PermissionDeniedException;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.Policy;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -35,7 +42,16 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.longrunning.OperationsClient;
+import com.google.longrunning.OperationsSettings;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -48,6 +64,7 @@ import org.junit.runners.JUnit4;
 @Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITVPCNegativeTest {
+  private static final Logger logger = Logger.getLogger(ITVPCNegativeTest.class.getName());
   private static final String IN_VPCSC_TEST = System.getenv("GOOGLE_CLOUD_TESTS_IN_VPCSC");
   private static final String OUTSIDE_VPC_PROJECT =
       System.getenv("GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT");
@@ -56,6 +73,8 @@ public class ITVPCNegativeTest {
   private InstanceAdminClient instanceAdminClient;
   private DatabaseAdminClient databaseAdminClient;
   private DatabaseClient databaseClient;
+  private InstanceId instanceId;
+  private BackupId backupId;
 
   @BeforeClass
   public static void setUpClass() {
@@ -70,7 +89,8 @@ public class ITVPCNegativeTest {
 
   @Before
   public void setUp() {
-    InstanceId instanceId = InstanceId.of(OUTSIDE_VPC_PROJECT, "nonexistent-instance");
+    instanceId = InstanceId.of(OUTSIDE_VPC_PROJECT, "nonexistent-instance");
+    backupId = BackupId.of(OUTSIDE_VPC_PROJECT, "nonexistent-instance", "nonexistent-backup");
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
@@ -167,8 +187,170 @@ public class ITVPCNegativeTest {
       databaseClient
           .singleUse()
           .read("nonexistent-table", KeySet.all(), Arrays.asList("nonexistent-col"));
+      fail("Expected PERMISSION_DENIED SpannerException");
     } catch (SpannerException e) {
       checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedCreateBackup() throws InterruptedException {
+    try {
+      databaseAdminClient
+          .createBackup(instanceId.getInstance(), "newbackup-id", "nonexistent-db", Timestamp.now())
+          .get();
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (ExecutionException e) {
+      Throwable thrown = e.getCause();
+      checkExceptionForVPCError((SpannerException) thrown);
+    }
+  }
+
+  @Test
+  public void deniedGetBackup() {
+    try {
+      databaseAdminClient.getBackup(instanceId.getInstance(), backupId.getBackup());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedUpdateBackup() {
+    try {
+      databaseAdminClient.updateBackup(
+          instanceId.getInstance(), backupId.getBackup(), Timestamp.now());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedListBackup() {
+    try {
+      databaseAdminClient.listBackups(instanceId.getInstance());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedDeleteBackup() {
+    try {
+      databaseAdminClient.deleteBackup(instanceId.getInstance(), backupId.getBackup());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedRestoreDatabase() throws InterruptedException {
+    try {
+      databaseAdminClient
+          .restoreDatabase(
+              instanceId.getInstance(), "nonexistent-backup", instanceId.getInstance(), "newdb-id")
+          .get();
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (ExecutionException e) {
+      Throwable thrown = e.getCause();
+      checkExceptionForVPCError((SpannerException) thrown);
+    }
+  }
+
+  @Test
+  public void deniedListBackupOperationsInInstance() {
+    try {
+      databaseAdminClient.listBackupOperations(instanceId.getInstance());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedListDatabaseOperationsInInstance() {
+    try {
+      databaseAdminClient.listDatabaseOperations(instanceId.getInstance());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedGetBackupIamPolicy() {
+    try {
+      databaseAdminClient.getBackupIAMPolicy(instanceId.getInstance(), backupId.getBackup());
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedSetBackupIamPolicy() {
+    try {
+      Policy policy = Policy.newBuilder().build();
+      databaseAdminClient.setBackupIAMPolicy(
+          backupId.getInstanceId().getInstance(), backupId.getBackup(), policy);
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedTestBackupIamPermissions() {
+    try {
+      List<String> permissions = new ArrayList<>();
+      databaseAdminClient.testBackupIAMPermissions(
+          backupId.getInstanceId().getInstance(), backupId.getBackup(), permissions);
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedCancelBackupOperation() {
+    try {
+      databaseAdminClient.cancelOperation(backupId.getName() + "/operations/nonexistentop");
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedGetBackupOperation() {
+    try {
+      databaseAdminClient.getOperation(backupId.getName() + "/operations/nonexistentop");
+      fail("Expected PERMISSION_DENIED SpannerException");
+    } catch (SpannerException e) {
+      checkExceptionForVPCError(e);
+    }
+  }
+
+  @Test
+  public void deniedListBackupOperations() throws FileNotFoundException, IOException {
+    try (OperationsClient client =
+        OperationsClient.create(
+            OperationsSettings.newBuilder()
+                .setTransportChannelProvider(InstantiatingGrpcChannelProvider.newBuilder().build())
+                .setEndpoint("spanner.googleapis.com:443")
+                .setCredentialsProvider(
+                    FixedCredentialsProvider.create(
+                        GoogleCredentials.fromStream(
+                            new FileInputStream(System.getenv("GOOGLE_APPLICATION_CREDENTIALS")))))
+                .build())) {
+      client.listOperations(backupId.getName() + "/operations", "");
+      fail("Expected PermissionDeniedException");
+    } catch (PermissionDeniedException e) {
+      assertThat(e.getMessage()).contains("Request is prohibited by organization's policy");
     }
   }
 }

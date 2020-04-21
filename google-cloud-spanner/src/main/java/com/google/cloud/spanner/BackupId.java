@@ -30,8 +30,8 @@ public final class BackupId {
   private final String backup;
 
   BackupId(InstanceId instanceId, String backup) {
-    this.instanceId = instanceId;
-    this.backup = backup;
+    this.instanceId = Preconditions.checkNotNull(instanceId);
+    this.backup = Preconditions.checkNotNull(backup);
   }
 
   /** Returns the instance id for this backup. */
@@ -81,6 +81,7 @@ public final class BackupId {
    * @throws IllegalArgumentException if {@code name} does not conform to the expected pattern
    */
   static BackupId of(String name) {
+    Preconditions.checkNotNull(name);
     Map<String, String> parts = NAME_TEMPLATE.match(name);
     Preconditions.checkArgument(
         parts != null, "Name should conform to pattern %s: %s", NAME_TEMPLATE, name);

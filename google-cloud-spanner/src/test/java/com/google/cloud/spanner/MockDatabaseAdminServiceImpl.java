@@ -17,7 +17,10 @@
 package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.testing.MockGrpcService;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -66,7 +69,6 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -77,6 +79,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implements MockGrpcService {
   private static final class MockDatabase {
@@ -253,9 +258,9 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
       Operation operation = operations.get(operationName);
       for (int progress = 1; progress <= 100; progress++) {
         operation = operations.get(operationName);
-        long sleep = createBackupExecutionTime / 100;
+        long sleep = createBackupOperationExecutionTime / 100;
         if (progress == 100) {
-          sleep += createBackupExecutionTime % 100;
+          sleep += createBackupOperationExecutionTime % 100;
         }
         Thread.sleep(sleep);
         if (operation != null) {
@@ -318,9 +323,9 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
       Database proto = db.toProto();
       Operation operation = operations.get(operationName);
       for (int progress = 1; progress <= 100; progress++) {
-        long sleep = restoreDatabaseExecutionTime / 100;
+        long sleep = restoreDatabaseOperationExecutionTime / 100;
         if (progress == 100) {
-          sleep += restoreDatabaseExecutionTime % 100;
+          sleep += restoreDatabaseOperationExecutionTime % 100;
         }
         Thread.sleep(sleep);
         if (operation != null) {
@@ -391,7 +396,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
           Thread.sleep(10L);
           restoreOperation = operations.get(restoreOperationName);
         }
-        Thread.sleep(optimizeDatabaseExecutionTime);
+        Thread.sleep(optimizeDatabaseOperationExecutionTime);
         db.state = State.READY;
         Database proto = db.toProto();
         if (operation != null) {
@@ -423,18 +428,30 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
     return com.google.rpc.Status.newBuilder().setCode(code).setMessage(e.getMessage()).build();
   }
 
+  private final Queue<AbstractMessage> requests = new ConcurrentLinkedQueue<>();
   private ConcurrentMap<String, Policy> policies = new ConcurrentHashMap<>();
   private static final String EXPIRE_TIME_MASK = "expire_time";
   private static final Random RND = new Random();
   private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
+  private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private final ConcurrentMap<String, MockDatabase> databases = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, MockBackup> backups = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Set<String>> filterMatches = new ConcurrentHashMap<>();
   private final MockOperationsServiceImpl operations;
 
-  private long createBackupExecutionTime;
-  private long restoreDatabaseExecutionTime;
-  private long optimizeDatabaseExecutionTime;
+  private long createBackupOperationExecutionTime;
+  private long restoreDatabaseOperationExecutionTime;
+  private long optimizeDatabaseOperationExecutionTime;
+
+  private SimulatedExecutionTime createBackupStartupExecutionTime = SimulatedExecutionTime.none();
+  private SimulatedExecutionTime createBackupResponseExecutionTime = SimulatedExecutionTime.none();
+  private SimulatedExecutionTime createDatabaseStartupExecutionTime = SimulatedExecutionTime.none();
+  private SimulatedExecutionTime createDatabaseResponseExecutionTime =
+      SimulatedExecutionTime.none();
+  private SimulatedExecutionTime restoreDatabaseStartupExecutionTime =
+      SimulatedExecutionTime.none();
+  private SimulatedExecutionTime restoreDatabaseResponseExecutionTime =
+      SimulatedExecutionTime.none();
 
   public MockDatabaseAdminServiceImpl(MockOperationsServiceImpl operations) {
     this.operations = operations;
@@ -443,36 +460,44 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void createDatabase(
       CreateDatabaseRequest request, StreamObserver<Operation> responseObserver) {
-    String id = request.getCreateStatement().replace("CREATE DATABASE ", "");
-    if (id.startsWith("`") && id.endsWith("`")) {
-      id = id.substring(1, id.length() - 1);
-    }
-    String name = String.format("%s/databases/%s", request.getParent(), id);
-    MockDatabase db = new MockDatabase(name, request.getExtraStatementsList(), null);
-    if (databases.putIfAbsent(name, db) == null) {
-      CreateDatabaseMetadata metadata =
-          CreateDatabaseMetadata.newBuilder().setDatabase(name).build();
-      Database database = Database.newBuilder().setName(name).setState(db.state).build();
-      Operation operation =
-          Operation.newBuilder()
-              .setMetadata(Any.pack(metadata))
-              .setResponse(Any.pack(database))
-              .setDone(false)
-              .setName(operations.generateOperationName(name))
-              .build();
-      operations.addOperation(operation, new CreateDatabaseCallable(operation.getName(), name));
-      responseObserver.onNext(operation);
-      responseObserver.onCompleted();
-    } else {
-      responseObserver.onError(
-          Status.ALREADY_EXISTS
-              .withDescription(String.format("Database with name %s already exists", name))
-              .asRuntimeException());
+    requests.add(request);
+    try {
+      createDatabaseStartupExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+      String id = request.getCreateStatement().replace("CREATE DATABASE ", "");
+      if (id.startsWith("`") && id.endsWith("`")) {
+        id = id.substring(1, id.length() - 1);
+      }
+      String name = String.format("%s/databases/%s", request.getParent(), id);
+      MockDatabase db = new MockDatabase(name, request.getExtraStatementsList(), null);
+      if (databases.putIfAbsent(name, db) == null) {
+        CreateDatabaseMetadata metadata =
+            CreateDatabaseMetadata.newBuilder().setDatabase(name).build();
+        Database database = Database.newBuilder().setName(name).setState(db.state).build();
+        Operation operation =
+            Operation.newBuilder()
+                .setMetadata(Any.pack(metadata))
+                .setResponse(Any.pack(database))
+                .setDone(false)
+                .setName(operations.generateOperationName(name))
+                .build();
+        operations.addOperation(operation, new CreateDatabaseCallable(operation.getName(), name));
+        createDatabaseResponseExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+        responseObserver.onNext(operation);
+        responseObserver.onCompleted();
+      } else {
+        responseObserver.onError(
+            Status.ALREADY_EXISTS
+                .withDescription(String.format("Database with name %s already exists", name))
+                .asRuntimeException());
+      }
+    } catch (Throwable t) {
+      responseObserver.onError(t);
     }
   }
 
   @Override
   public void dropDatabase(DropDatabaseRequest request, StreamObserver<Empty> responseObserver) {
+    requests.add(request);
     MockDatabase db = databases.get(request.getDatabase());
     if (databases.remove(request.getDatabase(), db)) {
       responseObserver.onNext(Empty.getDefaultInstance());
@@ -484,6 +509,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public void getDatabase(GetDatabaseRequest request, StreamObserver<Database> responseObserver) {
+    requests.add(request);
     MockDatabase db = databases.get(request.getName());
     if (db != null) {
       responseObserver.onNext(
@@ -501,6 +527,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void getDatabaseDdl(
       GetDatabaseDdlRequest request, StreamObserver<GetDatabaseDdlResponse> responseObserver) {
+    requests.add(request);
     MockDatabase db = databases.get(request.getDatabase());
     if (db != null) {
       responseObserver.onNext(GetDatabaseDdlResponse.newBuilder().addAllStatements(db.ddl).build());
@@ -513,6 +540,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void listDatabases(
       ListDatabasesRequest request, StreamObserver<ListDatabasesResponse> responseObserver) {
+    requests.add(request);
     List<Database> dbs = new ArrayList<>(databases.size());
     for (Entry<String, MockDatabase> entry : databases.entrySet()) {
       dbs.add(
@@ -530,6 +558,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   public void listDatabaseOperations(
       ListDatabaseOperationsRequest request,
       StreamObserver<ListDatabaseOperationsResponse> responseObserver) {
+    requests.add(request);
     ListDatabaseOperationsResponse.Builder builder = ListDatabaseOperationsResponse.newBuilder();
     try {
       for (Operation op : operations.iterable()) {
@@ -554,6 +583,36 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         String name = (String) obj.getClass().getMethod("getName").invoke(obj);
         return matches.contains(name);
       }
+      if (obj instanceof Operation) {
+        Operation operation = (Operation) obj;
+        Pattern pattern =
+            Pattern.compile(
+                "(?:\\(metadata.(?:name|database):(.*)\\)|\\(name:(.*)/operations/\\)) AND \\(metadata.@type:type.googleapis.com/(.*)\\)");
+        Matcher matcher = pattern.matcher(filter);
+        if (matcher.matches()) {
+          String objectName = matcher.group(1);
+          if (objectName == null) {
+            objectName = matcher.group(2);
+          }
+          String type = matcher.group(3);
+          Any anyMetadata = operation.getMetadata();
+          if (anyMetadata.getTypeUrl().endsWith(type)) {
+            if (type.equals(CreateBackupMetadata.getDescriptor().getFullName())) {
+              CreateBackupMetadata metadata =
+                  operation.getMetadata().unpack(CreateBackupMetadata.class);
+              return metadata.getName().equals(objectName);
+            } else if (type.equals(CreateDatabaseMetadata.getDescriptor().getFullName())) {
+              CreateDatabaseMetadata metadata =
+                  operation.getMetadata().unpack(CreateDatabaseMetadata.class);
+              return metadata.getDatabase().equals(objectName);
+            } else if (type.equals(RestoreDatabaseMetadata.getDescriptor().getFullName())) {
+              RestoreDatabaseMetadata metadata =
+                  operation.getMetadata().unpack(RestoreDatabaseMetadata.class);
+              return metadata.getName().equals(objectName);
+            }
+          }
+        }
+      }
       return false;
     }
     return true;
@@ -562,6 +621,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void updateDatabaseDdl(
       UpdateDatabaseDdlRequest request, StreamObserver<Operation> responseObserver) {
+    requests.add(request);
     MockDatabase db = databases.get(request.getDatabase());
     if (db != null) {
       db.ddl.addAll(request.getStatementsList());
@@ -588,50 +648,59 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void createBackup(
       CreateBackupRequest request, StreamObserver<Operation> responseObserver) {
-    String name = String.format("%s/backups/%s", request.getParent(), request.getBackupId());
-    MockDatabase db = databases.get(request.getBackup().getDatabase());
-    if (db == null) {
-      responseObserver.onError(
-          Status.NOT_FOUND
-              .withDescription(
-                  String.format(
-                      "Database with name %s not found", request.getBackup().getDatabase()))
-              .asRuntimeException());
-      return;
-    }
-    MockBackup bck = new MockBackup(name, request.getBackup(), db);
-    if (backups.putIfAbsent(name, bck) == null) {
-      CreateBackupMetadata metadata =
-          CreateBackupMetadata.newBuilder()
-              .setName(name)
-              .setDatabase(bck.database)
-              .setProgress(
-                  OperationProgress.newBuilder()
-                      .setStartTime(
-                          Timestamp.newBuilder()
-                              .setSeconds(System.currentTimeMillis() / 1000L)
-                              .build())
-                      .setProgressPercent(0))
-              .build();
-      Operation operation =
-          Operation.newBuilder()
-              .setMetadata(Any.pack(metadata))
-              .setResponse(Any.pack(bck.toProto()))
-              .setName(operations.generateOperationName(name))
-              .build();
-      operations.addOperation(operation, new CreateBackupCallable(operation.getName(), name));
-      responseObserver.onNext(operation);
-      responseObserver.onCompleted();
-    } else {
-      responseObserver.onError(
-          Status.ALREADY_EXISTS
-              .withDescription(String.format("Backup with name %s already exists", name))
-              .asRuntimeException());
+    requests.add(request);
+    try {
+      createBackupStartupExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+      String name = String.format("%s/backups/%s", request.getParent(), request.getBackupId());
+      MockDatabase db = databases.get(request.getBackup().getDatabase());
+      if (db == null) {
+        responseObserver.onError(
+            Status.NOT_FOUND
+                .withDescription(
+                    String.format(
+                        "Database with name %s not found", request.getBackup().getDatabase()))
+                .asRuntimeException());
+        return;
+      }
+      MockBackup bck = new MockBackup(name, request.getBackup(), db);
+      if (backups.putIfAbsent(name, bck) == null) {
+        CreateBackupMetadata metadata =
+            CreateBackupMetadata.newBuilder()
+                .setName(name)
+                .setDatabase(bck.database)
+                .setProgress(
+                    OperationProgress.newBuilder()
+                        .setStartTime(
+                            Timestamp.newBuilder()
+                                .setSeconds(System.currentTimeMillis() / 1000L)
+                                .build())
+                        .setProgressPercent(0))
+                .build();
+        Operation operation =
+            Operation.newBuilder()
+                .setMetadata(Any.pack(metadata))
+                .setResponse(Any.pack(bck.toProto()))
+                .setName(operations.generateOperationName(name))
+                .build();
+        operations.addOperation(operation, new CreateBackupCallable(operation.getName(), name));
+
+        createBackupResponseExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+        responseObserver.onNext(operation);
+        responseObserver.onCompleted();
+      } else {
+        responseObserver.onError(
+            Status.ALREADY_EXISTS
+                .withDescription(String.format("Backup with name %s already exists", name))
+                .asRuntimeException());
+      }
+    } catch (Throwable t) {
+      responseObserver.onError(t);
     }
   }
 
   @Override
   public void deleteBackup(DeleteBackupRequest request, StreamObserver<Empty> responseObserver) {
+    requests.add(request);
     MockBackup bck = backups.get(request.getName());
     if (backups.remove(request.getName(), bck)) {
       responseObserver.onNext(Empty.getDefaultInstance());
@@ -643,6 +712,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public void getBackup(GetBackupRequest request, StreamObserver<Backup> responseObserver) {
+    requests.add(request);
     MockBackup bck = backups.get(request.getName());
     if (bck != null) {
       responseObserver.onNext(
@@ -663,6 +733,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void listBackups(
       ListBackupsRequest request, StreamObserver<ListBackupsResponse> responseObserver) {
+    requests.add(request);
     List<Backup> bcks = new ArrayList<>(backups.size());
     try {
       for (Entry<String, MockBackup> entry : backups.entrySet()) {
@@ -689,6 +760,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   public void listBackupOperations(
       ListBackupOperationsRequest request,
       StreamObserver<ListBackupOperationsResponse> responseObserver) {
+    requests.add(request);
     ListBackupOperationsResponse.Builder builder = ListBackupOperationsResponse.newBuilder();
     try {
       for (Operation op : operations.iterable()) {
@@ -708,6 +780,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public void updateBackup(UpdateBackupRequest request, StreamObserver<Backup> responseObserver) {
+    requests.add(request);
     MockBackup bck = backups.get(request.getBackup().getName());
     if (bck != null) {
       if (request.getUpdateMask().getPathsList().contains(EXPIRE_TIME_MASK)) {
@@ -731,70 +804,80 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void restoreDatabase(
       RestoreDatabaseRequest request, StreamObserver<Operation> responseObserver) {
-    MockBackup bck = backups.get(request.getBackup());
-    if (bck != null) {
-      String name = String.format("%s/databases/%s", request.getParent(), request.getDatabaseId());
-      MockDatabase db =
-          new MockDatabase(
-              name,
-              bck.ddl,
-              RestoreInfo.newBuilder()
+    requests.add(request);
+    try {
+      restoreDatabaseStartupExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+      MockBackup bck = backups.get(request.getBackup());
+      if (bck != null) {
+        String name =
+            String.format("%s/databases/%s", request.getParent(), request.getDatabaseId());
+        MockDatabase db =
+            new MockDatabase(
+                name,
+                bck.ddl,
+                RestoreInfo.newBuilder()
+                    .setBackupInfo(bck.toBackupInfo())
+                    .setSourceType(RestoreSourceType.BACKUP)
+                    .build());
+        if (databases.putIfAbsent(name, db) == null) {
+          bck.referencingDatabases.add(db.name);
+          Operation optimizeOperation =
+              Operation.newBuilder()
+                  .setDone(false)
+                  .setName(operations.generateOperationName(name))
+                  .setMetadata(
+                      Any.pack(
+                          OptimizeRestoredDatabaseMetadata.newBuilder()
+                              .setName(name)
+                              .setProgress(
+                                  OperationProgress.newBuilder()
+                                      .setStartTime(currentTime())
+                                      .setProgressPercent(0)
+                                      .build())
+                              .build()))
+                  .setResponse(Any.pack(db.toProto()))
+                  .build();
+          RestoreDatabaseMetadata metadata =
+              RestoreDatabaseMetadata.newBuilder()
                   .setBackupInfo(bck.toBackupInfo())
+                  .setName(name)
+                  .setProgress(
+                      OperationProgress.newBuilder()
+                          .setStartTime(currentTime())
+                          .setProgressPercent(0)
+                          .build())
+                  .setOptimizeDatabaseOperationName(optimizeOperation.getName())
                   .setSourceType(RestoreSourceType.BACKUP)
-                  .build());
-      if (databases.putIfAbsent(name, db) == null) {
-        bck.referencingDatabases.add(db.name);
-        Operation optimizeOperation =
-            Operation.newBuilder()
-                .setDone(false)
-                .setName(operations.generateOperationName(name))
-                .setMetadata(
-                    Any.pack(
-                        OptimizeRestoredDatabaseMetadata.newBuilder()
-                            .setName(name)
-                            .setProgress(
-                                OperationProgress.newBuilder()
-                                    .setStartTime(currentTime())
-                                    .setProgressPercent(0)
-                                    .build())
-                            .build()))
-                .setResponse(Any.pack(db.toProto()))
-                .build();
-        RestoreDatabaseMetadata metadata =
-            RestoreDatabaseMetadata.newBuilder()
-                .setBackupInfo(bck.toBackupInfo())
-                .setName(name)
-                .setProgress(
-                    OperationProgress.newBuilder()
-                        .setStartTime(currentTime())
-                        .setProgressPercent(0)
-                        .build())
-                .setOptimizeDatabaseOperationName(optimizeOperation.getName())
-                .setSourceType(RestoreSourceType.BACKUP)
-                .build();
-        Operation operation =
-            Operation.newBuilder()
-                .setMetadata(Any.pack(metadata))
-                .setResponse(Any.pack(db.toProto()))
-                .setDone(false)
-                .setName(operations.generateOperationName(name))
-                .build();
-        operations.addOperation(operation, new RestoreDatabaseCallable(operation.getName(), name));
-        operations.addOperation(
-            optimizeOperation,
-            new OptimizeDatabaseCallable(optimizeOperation.getName(), operation.getName(), name));
-        responseObserver.onNext(operation);
-        responseObserver.onCompleted();
+                  .build();
+          Operation operation =
+              Operation.newBuilder()
+                  .setMetadata(Any.pack(metadata))
+                  .setResponse(Any.pack(db.toProto()))
+                  .setDone(false)
+                  .setName(operations.generateOperationName(name))
+                  .build();
+          operations.addOperation(
+              operation, new RestoreDatabaseCallable(operation.getName(), name));
+          operations.addOperation(
+              optimizeOperation,
+              new OptimizeDatabaseCallable(optimizeOperation.getName(), operation.getName(), name));
+          restoreDatabaseResponseExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+          responseObserver.onNext(operation);
+          responseObserver.onCompleted();
+        } else {
+          responseObserver.onError(Status.ALREADY_EXISTS.asRuntimeException());
+        }
       } else {
-        responseObserver.onError(Status.ALREADY_EXISTS.asRuntimeException());
+        responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
       }
-    } else {
-      responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
+    } catch (Throwable t) {
+      responseObserver.onError(t);
     }
   }
 
   @Override
   public void getIamPolicy(GetIamPolicyRequest request, StreamObserver<Policy> responseObserver) {
+    requests.add(request);
     Policy policy = policies.get(request.getResource());
     if (policy != null) {
       responseObserver.onNext(policy);
@@ -806,6 +889,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public void setIamPolicy(SetIamPolicyRequest request, StreamObserver<Policy> responseObserver) {
+    requests.add(request);
     policies.put(request.getResource(), request.getPolicy());
     responseObserver.onNext(request.getPolicy());
     responseObserver.onCompleted();
@@ -815,6 +899,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   public void testIamPermissions(
       TestIamPermissionsRequest request,
       StreamObserver<TestIamPermissionsResponse> responseObserver) {
+    requests.add(request);
     // Just return the same permissions as in the request, as we don't have any credentials.
     responseObserver.onNext(
         TestIamPermissionsResponse.newBuilder()
@@ -825,7 +910,19 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public List<AbstractMessage> getRequests() {
-    return Collections.emptyList();
+    return new ArrayList<>(requests);
+  }
+
+  public int countRequestsOfType(final Class<? extends AbstractMessage> type) {
+    return Collections2.filter(
+            getRequests(),
+            new Predicate<AbstractMessage>() {
+              @Override
+              public boolean apply(AbstractMessage input) {
+                return input.getClass().equals(type);
+              }
+            })
+        .size();
   }
 
   @Override
@@ -858,6 +955,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
 
   @Override
   public void reset() {
+    requests.clear();
     exceptions.clear();
     policies.clear();
     databases.clear();
@@ -865,7 +963,42 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
     filterMatches.clear();
   }
 
+  public void removeAllExecutionTimes() {
+    createBackupStartupExecutionTime = SimulatedExecutionTime.none();
+    createBackupResponseExecutionTime = SimulatedExecutionTime.none();
+    createBackupOperationExecutionTime = 0L;
+    createDatabaseStartupExecutionTime = SimulatedExecutionTime.none();
+    createDatabaseResponseExecutionTime = SimulatedExecutionTime.none();
+    restoreDatabaseStartupExecutionTime = SimulatedExecutionTime.none();
+    restoreDatabaseResponseExecutionTime = SimulatedExecutionTime.none();
+    restoreDatabaseOperationExecutionTime = 0L;
+  }
+
   private Timestamp currentTime() {
     return Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000L).build();
+  }
+
+  public void setCreateBackupStartupExecutionTime(SimulatedExecutionTime exec) {
+    this.createBackupStartupExecutionTime = exec;
+  }
+
+  public void setCreateBackupResponseExecutionTime(SimulatedExecutionTime exec) {
+    this.createBackupResponseExecutionTime = exec;
+  }
+
+  public void setCreateDatabaseStartupExecutionTime(SimulatedExecutionTime exec) {
+    this.createDatabaseStartupExecutionTime = exec;
+  }
+
+  public void setCreateDatabaseResponseExecutionTime(SimulatedExecutionTime exec) {
+    this.createDatabaseResponseExecutionTime = exec;
+  }
+
+  public void setRestoreDatabaseStartupExecutionTime(SimulatedExecutionTime exec) {
+    this.restoreDatabaseStartupExecutionTime = exec;
+  }
+
+  public void setRestoreDatabaseResponseExecutionTime(SimulatedExecutionTime exec) {
+    this.restoreDatabaseResponseExecutionTime = exec;
   }
 }

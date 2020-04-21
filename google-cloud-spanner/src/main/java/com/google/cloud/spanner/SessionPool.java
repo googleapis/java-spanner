@@ -799,7 +799,7 @@ final class SessionPool {
       if (restartedAfterSessionNotFound) {
         return TransactionState.ABORTED;
       } else {
-        return delegate.getState();
+        return delegate == null ? null : delegate.getState();
       }
     }
   }
@@ -1550,7 +1550,7 @@ final class SessionPool {
         // If we have gone below min pool size, create that many sessions.
         int sessionCount = options.getMinSessions() - (totalSessions() + numSessionsBeingCreated);
         if (sessionCount > 0) {
-          createSessions(getAllowedCreateSessions(sessionCount));
+          createSessions(getAllowedCreateSessions(sessionCount), false);
         }
       }
     }
@@ -1768,7 +1768,7 @@ final class SessionPool {
     synchronized (lock) {
       poolMaintainer.init();
       if (options.getMinSessions() > 0) {
-        createSessions(options.getMinSessions());
+        createSessions(options.getMinSessions(), true);
       }
     }
   }
@@ -1807,7 +1807,7 @@ final class SessionPool {
       }
       allSessions.remove(session);
       // replenish the pool.
-      createSessions(getAllowedCreateSessions(1));
+      createSessions(getAllowedCreateSessions(1), false);
     }
   }
 
@@ -2016,7 +2016,7 @@ final class SessionPool {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {
           span.addAnnotation("Creating sessions");
-          createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated + 1));
+          createSessions(getAllowedCreateSessions(options.getIncStep()), false);
         } else if (options.isFailIfPoolExhausted()) {
           span.addAnnotation("Pool exhausted. Failing");
           // throw specific exception
@@ -2249,7 +2249,8 @@ final class SessionPool {
               }
               // Create a new session if needed to unblock some waiter.
               if (numWaiters() > numSessionsBeingCreated) {
-                createSessions(getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated));
+                createSessions(
+                    getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
               }
             }
           }
@@ -2311,7 +2312,7 @@ final class SessionPool {
     }
   }
 
-  private void createSessions(final int sessionCount) {
+  private void createSessions(final int sessionCount, boolean distributeOverChannels) {
     logger.log(Level.FINE, String.format("Creating %d sessions", sessionCount));
     synchronized (lock) {
       numSessionsBeingCreated += sessionCount;
@@ -2320,8 +2321,8 @@ final class SessionPool {
         // calls and the session consumer consumes the returned sessions as they become available.
         // The batchCreateSessions method automatically spreads the sessions evenly over all
         // available channels.
-        sessionClient.asyncBatchCreateSessions(sessionCount, sessionConsumer);
-        logger.log(Level.FINE, "Sessions created");
+        sessionClient.asyncBatchCreateSessions(
+            sessionCount, distributeOverChannels, sessionConsumer);
       } catch (Throwable t) {
         // Expose this to customer via a metric.
         numSessionsBeingCreated -= sessionCount;

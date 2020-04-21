@@ -31,8 +31,8 @@ public final class DatabaseId {
   private final String database;
 
   DatabaseId(InstanceId instanceId, String database) {
-    this.instanceId = instanceId;
-    this.database = database;
+    this.instanceId = Preconditions.checkNotNull(instanceId);
+    this.database = Preconditions.checkNotNull(database);
   }
 
   /** Returns the instance id for this databse. */
@@ -82,6 +82,7 @@ public final class DatabaseId {
    * @throws IllegalArgumentException if {@code name} does not conform to the expected pattern
    */
   static DatabaseId of(String name) {
+    Preconditions.checkNotNull(name);
     Map<String, String> parts = NAME_TEMPLATE.match(name);
     Preconditions.checkArgument(
         parts != null, "Name should conform to pattern %s: %s", NAME_TEMPLATE, name);

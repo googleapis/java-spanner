@@ -45,7 +45,17 @@ public final class ResultSets {
 
   /** Converts the given {@link ResultSet} to an {@link AsyncResultSet}. */
   public static AsyncResultSet toAsyncResultSet(ResultSet delegate) {
-    return new AsyncResultSetImpl(InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).setThreadFactory(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("test-async-resultset-%d").build()).build(), delegate, 100);
+    return new AsyncResultSetImpl(
+        InstantiatingExecutorProvider.newBuilder()
+            .setExecutorThreadCount(1)
+            .setThreadFactory(
+                new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setNameFormat("test-async-resultset-%d")
+                    .build())
+            .build(),
+        delegate,
+        100);
   }
 
   private static class PrePopulatedResultSet implements ResultSet {
