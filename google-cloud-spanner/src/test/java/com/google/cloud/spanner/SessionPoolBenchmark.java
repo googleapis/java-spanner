@@ -279,7 +279,7 @@ public class SessionPoolBenchmark {
     List<ReadOnlyTransaction> transactions = new ArrayList<>(server.maxSessions);
     for (int i = 0; i < server.maxSessions; i++) {
       ReadOnlyTransaction tx = client.readOnlyTransaction();
-      tx.executeQuery(MockServer.SELECT1);
+      tx.executeQuery(StandardBenchmarkMockServer.SELECT1);
       transactions.add(tx);
     }
     for (ReadOnlyTransaction tx : transactions) {
