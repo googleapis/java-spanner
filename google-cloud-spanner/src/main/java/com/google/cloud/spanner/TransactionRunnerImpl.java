@@ -37,6 +37,7 @@ import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ResultSet;
@@ -347,12 +348,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public Long apply(ResultSet input) {
                   if (!input.hasStats()) {
-                    SpannerException e =
-                        SpannerExceptionFactory.newSpannerException(
-                            ErrorCode.INVALID_ARGUMENT,
-                            "DML response missing stats possibly due to non-DML statement as input");
-                    onError(e);
-                    throw e;
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.INVALID_ARGUMENT,
+                        "DML response missing stats possibly due to non-DML statement as input");
                   }
                   // For standard DML, using the exact row count.
                   return input.getStats().getRowCountExact();
@@ -406,6 +404,64 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         onError(e);
         throw e;
       }
+    }
+
+    @Override
+    public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+      beforeReadOrQuery();
+      final ExecuteBatchDmlRequest.Builder builder = getExecuteBatchDmlRequestBuilder(statements);
+      ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
+      try {
+        // Register the update as an async operation that must finish before the transaction may
+        // commit.
+        increaseAsynOperations();
+        response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
+      } catch (Throwable t) {
+        finishedAsyncOperations.countDown();
+        throw t;
+      }
+      final ApiFuture<long[]> updateCounts =
+          ApiFutures.transform(
+              response,
+              new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
+                @Override
+                public long[] apply(ExecuteBatchDmlResponse input) {
+                  long[] results = new long[input.getResultSetsCount()];
+                  for (int i = 0; i < input.getResultSetsCount(); ++i) {
+                    results[i] = input.getResultSets(i).getStats().getRowCountExact();
+                  }
+                  // If one of the DML statements was aborted, we should throw an aborted exception.
+                  // In all other cases, we should throw a BatchUpdateException.
+                  if (input.getStatus().getCode() == Code.ABORTED_VALUE) {
+                    throw newSpannerException(
+                        ErrorCode.fromRpcStatus(input.getStatus()), input.getStatus().getMessage());
+                  } else if (input.getStatus().getCode() != 0) {
+                    throw newSpannerBatchUpdateException(
+                        ErrorCode.fromRpcStatus(input.getStatus()),
+                        input.getStatus().getMessage(),
+                        results);
+                  }
+                  return results;
+                }
+              },
+              MoreExecutors.directExecutor());
+      updateCounts.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                updateCounts.get();
+              } catch (ExecutionException e) {
+                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
+              } catch (InterruptedException e) {
+                onError(SpannerExceptionFactory.propagateInterrupt(e));
+              } finally {
+                finishedAsyncOperations.countDown();
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+      return updateCounts;
     }
 
     private ListenableAsyncResultSet wrap(ListenableAsyncResultSet delegate) {

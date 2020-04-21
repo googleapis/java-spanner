@@ -38,6 +38,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -87,6 +88,10 @@ public class AsyncRunnerTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.exception(
+            UPDATE_ABORTED_STATEMENT,
+            Status.ABORTED.withDescription("Transaction was aborted").asRuntimeException()));
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
@@ -368,6 +373,225 @@ public class AsyncRunnerTest {
             BatchCreateSessionsRequest.class,
             BeginTransactionRequest.class,
             ExecuteSqlRequest.class,
+            CommitRequest.class);
+  }
+
+  @Test
+  public void asyncRunnerBatchUpdate() throws Exception {
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<long[]> updateCount =
+        runner.runAsync(
+            new AsyncWork<long[]>() {
+              @Override
+              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    assertThat(updateCount.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+  }
+
+  @Test
+  public void asyncRunnerIsNonBlockingWithBatchUpdate() throws Exception {
+    mockSpanner.freeze();
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    ApiFuture<Void> res =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor);
+    ApiFuture<Timestamp> ts = runner.getCommitTimestamp();
+    mockSpanner.unfreeze();
+    assertThat(res.get()).isNull();
+    assertThat(ts.get()).isNotNull();
+  }
+
+  @Test
+  public void asyncRunnerInvalidBatchUpdate() throws Exception {
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<long[]> updateCount =
+        runner.runAsync(
+            new AsyncWork<long[]>() {
+              @Override
+              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                return txn.batchUpdateAsync(
+                    ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    try {
+      updateCount.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(se.getMessage()).contains("invalid statement");
+    }
+  }
+
+  @Test
+  public void asyncRunnerFireAndForgetInvalidBatchUpdate() throws Exception {
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<long[]> res =
+        runner.runAsync(
+            new AsyncWork<long[]>() {
+              @Override
+              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+                return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    assertThat(res.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+  }
+
+  @Test
+  public void asyncRunnerBatchUpdateAborted() throws Exception {
+    final AtomicInteger attempt = new AtomicInteger();
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<long[]> updateCount =
+        runner.runAsync(
+            new AsyncWork<long[]>() {
+              @Override
+              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                if (attempt.incrementAndGet() == 1) {
+                  return txn.batchUpdateAsync(
+                      ImmutableList.of(UPDATE_STATEMENT, UPDATE_ABORTED_STATEMENT));
+                } else {
+                  return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                }
+              }
+            },
+            executor);
+    assertThat(updateCount.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+    assertThat(attempt.get()).isEqualTo(2);
+  }
+
+  @Test
+  public void asyncRunnerWithBatchUpdateCommitAborted() throws Exception {
+    try {
+      // Temporarily set the result of the update to 2 rows.
+      mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
+      final AtomicInteger attempt = new AtomicInteger();
+      AsyncRunner runner = client().runAsync();
+      ApiFuture<long[]> updateCount =
+          runner.runAsync(
+              new AsyncWork<long[]>() {
+                @Override
+                public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                  if (attempt.get() > 0) {
+                    // Set the result of the update statement back to 1 row.
+                    mockSpanner.putStatementResult(
+                        StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                  }
+                  ApiFuture<long[]> updateCount =
+                      txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                  if (attempt.incrementAndGet() == 1) {
+                    mockSpanner.abortTransaction(txn);
+                  }
+                  return updateCount;
+                }
+              },
+              executor);
+      assertThat(updateCount.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+      assertThat(attempt.get()).isEqualTo(2);
+    } finally {
+      mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+    }
+  }
+
+  @Test
+  public void asyncRunnerBatchUpdateAbortedWithoutGettingResult() throws Exception {
+    final AtomicInteger attempt = new AtomicInteger();
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    ApiFuture<Void> result =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                if (attempt.incrementAndGet() == 1) {
+                  mockSpanner.abortTransaction(txn);
+                }
+                // This update statement will be aborted, but the error will not propagated to the
+                // transaction runner and cause the transaction to retry. Instead, the commit call
+                // will do that.
+                txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                // Resolving this future will not resolve the result of the entire transaction. The
+                // transaction result will be resolved when the commit has actually finished
+                // successfully.
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor);
+    assertThat(result.get()).isNull();
+    assertThat(attempt.get()).isEqualTo(2);
+    assertThat(mockSpanner.getRequestTypes())
+        .containsExactly(
+            BatchCreateSessionsRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
+            CommitRequest.class);
+  }
+
+  @Test
+  public void asyncRunnerWithBatchUpdateCommitFails() throws Exception {
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.RESOURCE_EXHAUSTED
+                .withDescription("mutation limit exceeded")
+                .asRuntimeException()));
+    AsyncRunner runner = client().runAsync();
+    ApiFuture<long[]> updateCount =
+        runner.runAsync(
+            new AsyncWork<long[]>() {
+              @Override
+              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                // This statement will succeed, but the commit will fail. The error from the commit
+                // will bubble up to the future that is returned by the transaction, and the update
+                // count returned here will never reach the user application.
+                return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    try {
+      updateCount.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(se.getMessage()).contains("mutation limit exceeded");
+    }
+  }
+
+  @Test
+  public void asyncRunnerWaitsUntilAsyncBatchUpdateHasFinished() throws Exception {
+    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
+    ApiFuture<Void> res =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor);
+    res.get();
+    assertThat(mockSpanner.getRequestTypes())
+        .containsExactly(
+            BatchCreateSessionsRequest.class,
+            BeginTransactionRequest.class,
+            ExecuteBatchDmlRequest.class,
             CommitRequest.class);
   }
 

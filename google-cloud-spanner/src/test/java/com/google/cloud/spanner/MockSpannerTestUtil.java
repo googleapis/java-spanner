@@ -57,6 +57,8 @@ public class MockSpannerTestUtil {
   static final Statement UPDATE_STATEMENT = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
   static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
+  static final Statement UPDATE_ABORTED_STATEMENT =
+      Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2 AND THIS_WILL_ABORT=TRUE");
   static final long UPDATE_COUNT = 1L;
 
   static final String READ_TABLE_NAME = "TestTable";

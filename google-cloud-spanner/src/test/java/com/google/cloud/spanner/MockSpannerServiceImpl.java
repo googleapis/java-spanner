@@ -996,6 +996,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               status =
                   com.google.rpc.Status.newBuilder()
                       .setCode(res.getException().getStatus().getCode().value())
+                      .setMessage(res.getException().getMessage())
                       .build();
               break resultLoop;
             case RESULT_SET:

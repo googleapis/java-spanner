@@ -293,8 +293,14 @@ public interface SpannerRpc extends ServiceRpc {
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
+  ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
+      ExecuteBatchDmlRequest build, Map<Option, ?> options);
+
   Transaction beginTransaction(BeginTransactionRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException;
+
+  ApiFuture<Transaction> beginTransactionAsync(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options);
 
   CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException;
