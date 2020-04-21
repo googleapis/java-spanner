@@ -30,8 +30,8 @@ public final class InstanceId {
   private final String instance;
 
   InstanceId(String project, String instance) {
-    this.project = project;
-    this.instance = instance;
+    this.project = Preconditions.checkNotNull(project);
+    this.instance = Preconditions.checkNotNull(instance);
   }
 
   /** Returns the instance ID. */
@@ -79,6 +79,7 @@ public final class InstanceId {
    *     pattern.
    */
   static InstanceId of(String name) {
+    Preconditions.checkNotNull(name);
     Map<String, String> parts = NAME_TEMPLATE.match(name);
     Preconditions.checkArgument(
         parts != null, "Name should conform to pattern %s: %s", NAME_TEMPLATE, name);
