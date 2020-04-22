@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +25,9 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import com.google.common.base.Function;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               @Override
               public Session answer(InvocationOnMock invocation) throws Throwable {
                 synchronized (lock) {
-                  Session session = mockSession();
+                  SessionImpl session = mockSession();
                   setupSession(session);
 
                   sessions.put(session.getName(), false);
@@ -140,7 +142,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
 
-  private void setupSession(final Session session) {
+  private void setupSession(final SessionImpl session) {
     ReadContext mockContext = mock(ReadContext.class);
     final ResultSet mockResult = mock(ResultSet.class);
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
@@ -258,6 +260,16 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     pool =
         SessionPool.createPool(
             builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock);
+    pool.idleSessionRemovedListener =
+        new Function<PooledSession, Void>() {
+          @Override
+          public Void apply(PooledSession pooled) {
+            synchronized (lock) {
+              sessions.remove(pooled.getName());
+              return null;
+            }
+          }
+        };
     for (int i = 0; i < concurrentThreads; i++) {
       new Thread(
               new Runnable() {
