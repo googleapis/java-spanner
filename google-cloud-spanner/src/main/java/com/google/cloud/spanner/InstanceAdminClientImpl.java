@@ -30,6 +30,7 @@ import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.base.Preconditions;
+import com.google.longrunning.Operation;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -219,5 +220,15 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   @Override
   public Instance.Builder newInstanceBuilder(InstanceId id) {
     return new Instance.Builder(this, dbClient, id);
+  }
+
+  @Override
+  public void cancelOperation(String name) {
+    rpc.cancelOperation(Preconditions.checkNotNull(name));
+  }
+
+  @Override
+  public Operation getOperation(String name) {
+    return rpc.getOperation(Preconditions.checkNotNull(name));
   }
 }
