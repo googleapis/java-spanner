@@ -44,11 +44,12 @@ class SessionClient implements AutoCloseable {
     private final String name;
 
     private SessionId(DatabaseId db, String name) {
-      this.db = db;
-      this.name = name;
+      this.db = Preconditions.checkNotNull(db);
+      this.name = Preconditions.checkNotNull(name);
     }
 
     static SessionId of(String name) {
+      Preconditions.checkNotNull(name);
       Map<String, String> parts = NAME_TEMPLATE.match(name);
       Preconditions.checkArgument(
           parts != null, "Name should conform to pattern %s: %s", NAME_TEMPLATE, name);

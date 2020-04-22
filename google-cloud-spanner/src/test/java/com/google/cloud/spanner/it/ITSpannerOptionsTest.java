@@ -33,8 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,13 +47,13 @@ public class ITSpannerOptionsTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     db = env.getTestHelper().createTestDatabase();
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     db.drop();
   }
 
@@ -65,9 +65,9 @@ public class ITSpannerOptionsTest {
 
   @Test
   public void testCloseAllThreadsWhenClosingSpanner() throws InterruptedException {
-    // The IT environment has already started some worker threads.
     int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
     for (int i = 0; i < NUMBER_OF_TEST_RUNS; i++) {
+      waitForStartup();
       assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
       // Create Spanner instance.
       // We make a copy of the options instance, as SpannerOptions caches any service object
@@ -136,6 +136,7 @@ public class ITSpannerOptionsTest {
 
   @Test
   public void testMultipleSpannersFromSameSpannerOptions() throws InterruptedException {
+    waitForStartup();
     int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
     SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
     try (Spanner spanner1 = options.getService()) {
@@ -165,6 +166,17 @@ public class ITSpannerOptionsTest {
       Thread.sleep(50L);
     }
     assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
+  }
+
+  private void waitForStartup() throws InterruptedException {
+    // Wait until the IT environment has already started all base worker threads.
+    int threadCount;
+    Stopwatch watch = Stopwatch.createStarted();
+    do {
+      threadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
+      Thread.sleep(100L);
+    } while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME) > threadCount
+        && watch.elapsed(TimeUnit.SECONDS) < 5);
   }
 
   private int getNumberOfThreadsWithName(String serviceName) {

@@ -147,4 +147,16 @@
     <method>com.google.api.gax.paging.Page listDatabases()</method>
   </difference>
   
+  <!-- Adding operation RPCs to InstanceAdminClient. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>void cancelOperation(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.longrunning.Operation getOperation(java.lang.String)</method>
+  </difference>
+  
 </differences>

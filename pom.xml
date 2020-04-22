@@ -14,7 +14,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-shared-config</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
   </parent>
 
   <developers>
@@ -67,7 +67,7 @@
     <google.api-common.version>1.9.0</google.api-common.version>
     <google.common-protos.version>1.17.0</google.common-protos.version>
     <gax.version>1.56.0</gax.version>
-    <grpc.version>1.28.1</grpc.version>
+    <grpc.version>1.29.0</grpc.version>
     <protobuf.version>3.11.4</protobuf.version>
     <junit.version>4.13</junit.version>
     <guava.version>29.0-android</guava.version>
@@ -313,4 +313,13 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <id>enable-samples</id>
+      <modules>
+        <module>samples</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
