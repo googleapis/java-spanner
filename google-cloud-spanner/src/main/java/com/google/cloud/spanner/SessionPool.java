@@ -1526,6 +1526,11 @@ final class SessionPool {
           if (sess == null) {
             waiter = new Waiter();
             if (inProcessPrepare) {
+              // inProcessPrepare=true means that we have already determined that the queue for
+              // preparing read/write sessions is larger than the number of threads in the prepare
+              // thread pool, and that it's more efficient to do the prepare in-process. We will
+              // therefore create a waiter for a read-only session, even though a read/write session
+              // has been requested.
               readWaiters.add(waiter);
             } else {
               readWriteWaiters.add(waiter);
