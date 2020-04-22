@@ -1,0 +1,42 @@
+custom_content: |
+  #### Calling Cloud Spanner
+  Here is a code snippet showing a simple usage example. Add the following imports
+  at the top of your file:
+
+  ```java
+  import com.google.cloud.spanner.DatabaseClient;
+  import com.google.cloud.spanner.DatabaseId;
+  import com.google.cloud.spanner.ResultSet;
+  import com.google.cloud.spanner.Spanner;
+  import com.google.cloud.spanner.SpannerOptions;
+  import com.google.cloud.spanner.Statement;
+
+  ```
+
+  Then, to make a query to Spanner, use the following code:
+  ```java
+  // Instantiates a client
+  SpannerOptions options = SpannerOptions.newBuilder().build();
+  Spanner spanner = options.getService();
+  String instance = "my-instance";
+  String database = "my-database";
+  try {
+    // Creates a database client
+    DatabaseClient dbClient = spanner.getDatabaseClient(
+      DatabaseId.of(options.getProjectId(), instance, database));
+    // Queries the database
+    try (ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+      // Prints the results
+      while (resultSet.next()) {
+        System.out.printf("%d\n", resultSet.getLong(0));
+      }
+    }
+  } finally {
+    // Closes the client which will free up the resources used
+    spanner.close();
+  }
+  ```
+
+  #### Complete source code
+
+  In [DatabaseSelect.java](https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-examples/src/main/java/com/google/cloud/examples/spanner/snippets/DatabaseSelect.java) we put together all the code shown above in a single program.
