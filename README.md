@@ -139,6 +139,10 @@ In [DatabaseSelect.java](https://github.com/googleapis/google-cloud-java/tree/ma
 
 To get help, follow the instructions in the [shared Troubleshooting document][troubleshooting].
 
+## Transport
+
+Cloud Spanner uses gRPC for the transport layer.
+
 ## Java Versions
 
 Java 7 or above is required for using this client.
