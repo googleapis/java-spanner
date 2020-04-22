@@ -339,10 +339,28 @@ public class StatementParserTest {
                 + "UNION ALL\n"
                 + "SELECT * FROM subQ2"));
 
+    // Multiple query hints.
+    assertTrue(
+        StatementParser.INSTANCE.isQuery(
+            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} SELECT * FROM tbl"));
+    assertTrue(
+        StatementParser.INSTANCE.isQuery(
+            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} Select * FROM tbl"));
+    assertTrue(
+        StatementParser.INSTANCE.isQuery(
+            "@{FORCE_INDEX=index_name}\n@{JOIN_METHOD=HASH_JOIN}\nWITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                + "SELECT * FROM subQ1\n"
+                + "UNION ALL\n"
+                + "SELECT * FROM subQ2"));
+
     // Invalid query hints.
     assertFalse(parser.isQuery("@{JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
+    assertFalse(
+        StatementParser.INSTANCE.isQuery(
+            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} UPDATE tbl set FOO=1 WHERE ID=2"));
   }
 
   @Test
