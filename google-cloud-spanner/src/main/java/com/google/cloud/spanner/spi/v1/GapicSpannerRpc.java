@@ -703,9 +703,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                     instanceName,
                     0,
                     String.format(
-                        "(name:%s/operations/) AND (metadata.@type:type.googleapis.com/%s)",
-                        String.format("%s/databases/%s", instanceName, databaseId),
-                        CreateDatabaseMetadata.getDescriptor().getFullName()),
+                        "(metadata.@type:type.googleapis.com/%s) AND (name:%s/operations/)",
+                        CreateDatabaseMetadata.getDescriptor().getFullName(),
+                        String.format("%s/databases/%s", instanceName, databaseId)),
                     nextPageToken);
               }
             },
@@ -822,9 +822,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                     instanceName,
                     0,
                     String.format(
-                        "(metadata.name:%s) AND (metadata.@type:type.googleapis.com/%s)",
-                        String.format("%s/backups/%s", instanceName, backupId),
-                        CreateBackupMetadata.getDescriptor().getFullName()),
+                        "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
+                        CreateBackupMetadata.getDescriptor().getFullName(),
+                        String.format("%s/backups/%s", instanceName, backupId)),
                     nextPageToken);
               }
             },
@@ -874,9 +874,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                     databaseInstanceName,
                     0,
                     String.format(
-                        "(metadata.name:%s) AND (metadata.@type:type.googleapis.com/%s)",
-                        String.format("%s/databases/%s", databaseInstanceName, databaseId),
-                        RestoreDatabaseMetadata.getDescriptor().getFullName()),
+                        "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
+                        RestoreDatabaseMetadata.getDescriptor().getFullName(),
+                        String.format("%s/databases/%s", databaseInstanceName, databaseId)),
                     nextPageToken);
               }
             },
