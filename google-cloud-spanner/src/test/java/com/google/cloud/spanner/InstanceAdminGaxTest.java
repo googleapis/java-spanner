@@ -29,6 +29,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
@@ -52,6 +53,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -70,7 +72,6 @@ import org.threeten.bp.Duration;
 public class InstanceAdminGaxTest {
   public static class DelayedStatusRuntimeException extends RuntimeException {
     private final long millis;
-    private boolean hasWaited = false;
 
     public DelayedStatusRuntimeException(StatusRuntimeException cause, long millis) {
       super(cause);
@@ -79,14 +80,7 @@ public class InstanceAdminGaxTest {
 
     @Override
     public synchronized Throwable getCause() {
-      if (!hasWaited) {
-        try {
-          Thread.sleep(millis);
-          hasWaited = true;
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
+      Uninterruptibles.sleepUninterruptibly(millis, TimeUnit.MILLISECONDS);
       return super.getCause();
     }
   }
