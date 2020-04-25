@@ -240,7 +240,7 @@ public class ITBackupTest {
     } catch (TimeoutException e) {
       logger.warning(
           "Waiting for backup operations to finish timed out. Getting long-running operations.");
-      while (watch.elapsed(TimeUnit.MINUTES) < 5L
+      while (watch.elapsed(TimeUnit.MINUTES) < 12L
           && (!dbAdminClient.getOperation(op1.getName()).getDone()
               || !dbAdminClient.getOperation(op2.getName()).getDone())) {
         Thread.sleep(10_000L);
