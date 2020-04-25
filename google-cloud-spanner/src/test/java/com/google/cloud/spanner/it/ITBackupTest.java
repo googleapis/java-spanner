@@ -43,6 +43,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -56,6 +57,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -240,6 +242,26 @@ public class ITBackupTest {
     } catch (TimeoutException e) {
       logger.warning(
           "Waiting for backup operations to finish timed out. Getting long-running operations.");
+
+      try {
+        for (Operation operation :
+            dbAdminClient.listBackupOperations(instance.getId().getInstance()).iterateAll()) {
+          logger.info(
+              String.format(
+                  "Existing backup operation: %s, done: %s, end time: %s",
+                  operation.getName(),
+                  String.valueOf(operation.getDone()),
+                  operation
+                      .getMetadata()
+                      .unpack(CreateBackupMetadata.class)
+                      .getProgress()
+                      .getEndTime()
+                      .toString()));
+        }
+      } catch (InvalidProtocolBufferException ipbe) {
+        logger.log(Level.WARNING, "Could not list all existing backup operations.", ipbe);
+      }
+
       while (watch.elapsed(TimeUnit.MINUTES) < 12L
           && (!dbAdminClient.getOperation(op1.getName()).getDone()
               || !dbAdminClient.getOperation(op2.getName()).getDone())) {
