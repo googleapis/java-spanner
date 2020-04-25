@@ -246,11 +246,13 @@ public class ITBackupTest {
         Thread.sleep(10_000L);
       }
       if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
+        logger.warning(String.format("Operation %s still not finished", op1.getName()));
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.DEADLINE_EXCEEDED,
             "Backup1 still not finished. Test is giving up waiting for it.");
       }
       if (!dbAdminClient.getOperation(op2.getName()).getDone()) {
+        logger.warning(String.format("Operation %s still not finished", op2.getName()));
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.DEADLINE_EXCEEDED,
             "Backup2 still not finished. Test is giving up waiting for it.");
