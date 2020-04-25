@@ -47,11 +47,14 @@ public class IntegrationTestEnv extends ExternalResource {
    */
   public static final String TEST_INSTANCE_PROPERTY = "spanner.testenv.instance";
 
+  public static final String DROP_ORPHANED_TEST_DATABASES = "spanner.testenv.dropOrphaned";
+
   private static final Logger logger = Logger.getLogger(IntegrationTestEnv.class.getName());
 
   private TestEnvConfig config;
   private InstanceAdminClient instanceAdminClient;
   private boolean isOwnedInstance;
+  private boolean dropOrphanedTestDbs;
   private RemoteSpannerHelper testHelper;
 
   public RemoteSpannerHelper getTestHelper() {
@@ -78,6 +81,7 @@ public class IntegrationTestEnv extends ExternalResource {
 
     SpannerOptions options = config.spannerOptions();
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
+    dropOrphanedTestDbs = Boolean.valueOf(System.getProperty(DROP_ORPHANED_TEST_DATABASES, "true"));
     InstanceId instanceId;
     if (!instanceProperty.isEmpty()) {
       instanceId = InstanceId.of(instanceProperty);
@@ -172,7 +176,7 @@ public class IntegrationTestEnv extends ExternalResource {
         logger.log(Level.SEVERE, "Failed to delete test instance " + testHelper.getInstanceId(), e);
       }
     } else {
-      testHelper.cleanUp();
+      testHelper.cleanUp(dropOrphanedTestDbs);
     }
   }
 

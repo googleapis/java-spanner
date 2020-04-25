@@ -185,7 +185,7 @@ public class ITBackupTest {
     OperationFuture<Database, CreateDatabaseMetadata> dbOp2 =
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
-            testHelper.getUniqueDatabaseId() + "_db2",
+            db2Id,
             Arrays.asList("CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     // Make sure all databases are created before we try to create any backups.
     Database db1 = dbOp1.get();
