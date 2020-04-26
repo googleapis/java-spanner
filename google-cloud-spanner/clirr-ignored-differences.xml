@@ -185,7 +185,22 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>* batchUpdateAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
     <method>* executeUpdateAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>* beginTransactionAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>* executeBatchDmlAsync(*)</method>
   </difference>
   
 </differences>
