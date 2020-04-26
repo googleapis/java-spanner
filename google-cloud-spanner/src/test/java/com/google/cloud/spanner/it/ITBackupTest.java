@@ -59,6 +59,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -98,6 +100,40 @@ public class ITBackupTest {
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
     instance = instanceAdminClient.getInstance(testHelper.getInstanceId().getInstance());
     logger.info("Finished setup");
+
+    // Cancel any backup operation that has been started by this integration test if it has been
+    // running for at least 6 hours.
+    logger.info("Cancelling long-running test backup operations");
+    Pattern pattern = Pattern.compile(".*/backups/testbck_\\d{6}_\\d{4}_bck\\d/operations/.*");
+    try {
+      for (Operation operation :
+          dbAdminClient.listBackupOperations(instance.getId().getInstance()).iterateAll()) {
+        Matcher matcher = pattern.matcher(operation.getName());
+        if (matcher.matches()) {
+          if (!operation.getDone()) {
+            Timestamp currentTime = Timestamp.now();
+            Timestamp startTime =
+                Timestamp.fromProto(
+                    operation
+                        .getMetadata()
+                        .unpack(CreateBackupMetadata.class)
+                        .getProgress()
+                        .getStartTime());
+            long diffSeconds = currentTime.getSeconds() - startTime.getSeconds();
+            if (TimeUnit.HOURS.convert(diffSeconds, TimeUnit.SECONDS) >= 6L) {
+              logger.warning(
+                  String.format(
+                      "Cancelling test backup operation %s that was started at %s",
+                      operation.getName(), startTime.toString()));
+              dbAdminClient.cancelOperation(operation.getName());
+            }
+          }
+        }
+      }
+    } catch (InvalidProtocolBufferException e) {
+      logger.log(Level.WARNING, "Could not list all existing backup operations.", e);
+    }
+    logger.info("Finished checking existing test backup operations");
   }
 
   @After
@@ -242,26 +278,6 @@ public class ITBackupTest {
     } catch (TimeoutException e) {
       logger.warning(
           "Waiting for backup operations to finish timed out. Getting long-running operations.");
-
-      try {
-        for (Operation operation :
-            dbAdminClient.listBackupOperations(instance.getId().getInstance()).iterateAll()) {
-          logger.info(
-              String.format(
-                  "Existing backup operation: %s, done: %s, end time: %s",
-                  operation.getName(),
-                  String.valueOf(operation.getDone()),
-                  operation
-                      .getMetadata()
-                      .unpack(CreateBackupMetadata.class)
-                      .getProgress()
-                      .getEndTime()
-                      .toString()));
-        }
-      } catch (InvalidProtocolBufferException ipbe) {
-        logger.log(Level.WARNING, "Could not list all existing backup operations.", ipbe);
-      }
-
       while (watch.elapsed(TimeUnit.MINUTES) < 12L
           && (!dbAdminClient.getOperation(op1.getName()).getDone()
               || !dbAdminClient.getOperation(op2.getName()).getDone())) {
