@@ -84,7 +84,7 @@ class SessionImpl implements Session {
   private final String name;
   private final DatabaseId databaseId;
   private SessionTransaction activeTransaction;
-  private ByteString readyTransactionId;
+  ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private Span currentSpan;
 
@@ -302,6 +302,10 @@ class SessionImpl implements Session {
       activeTransaction.setSpan(currentSpan);
     }
     return ctx;
+  }
+
+  boolean hasReadyTransaction() {
+    return readyTransactionId != null;
   }
 
   @Override

@@ -52,13 +52,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.ForwardingFuture.SimpleForwardingFuture;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
 import io.opencensus.common.ToLongFunction;
@@ -82,18 +81,16 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -957,10 +954,6 @@ final class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
-  private PooledSessionFuture createPooledSessionFuture(PooledSession session, Span span) {
-    return new PooledSessionFuture(Futures.immediateFuture(session), span);
-  }
-
   final class PooledSessionFuture extends SimpleForwardingFuture<PooledSession> implements Session {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
@@ -1192,6 +1185,11 @@ final class SessionPool {
       this.lastUseTime = clock.instant();
     }
 
+    @Override
+    public String toString() {
+      return getName();
+    }
+
     @VisibleForTesting
     void setAllowReplacing(boolean allowReplacing) {
       this.allowReplacing = allowReplacing;
@@ -1340,50 +1338,37 @@ final class SessionPool {
     }
   }
 
-  private static final class SessionOrError {
-    private final PooledSession session;
-    private final SpannerException e;
-
-    SessionOrError(PooledSession session) {
-      this.session = session;
-      this.e = null;
-    }
-
-    SessionOrError(SpannerException e) {
-      this.session = null;
-      this.e = e;
-    }
-  }
-
-  private final class Waiter {
+  private final class WaiterFuture extends ForwardingFuture<PooledSession> {
     private static final long MAX_SESSION_WAIT_TIMEOUT = 240_000L;
-    private final BlockingQueue<SessionOrError> waiter = new LinkedBlockingQueue<>(1);
-    //    private final SynchronousQueue<SessionOrError> waiter = new SynchronousQueue<>();
+    private final SettableApiFuture<PooledSession> waiter = SettableApiFuture.create();
+
+    @Override
+    protected Future<? extends PooledSession> delegate() {
+      return waiter;
+    }
 
     private void put(PooledSession session) {
-      Uninterruptibles.putUninterruptibly(waiter, new SessionOrError(session));
+      waiter.set(session);
     }
 
     private void put(SpannerException e) {
-      Uninterruptibles.putUninterruptibly(waiter, new SessionOrError(e));
+      waiter.setException(e);
     }
 
-    private PooledSession take() throws SpannerException {
+    @Override
+    public PooledSession get() {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          SessionOrError s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
             tracer.getCurrentSpan().setStatus(Status.DEADLINE_EXCEEDED);
             currentTimeout = Math.min(currentTimeout * 2, MAX_SESSION_WAIT_TIMEOUT);
           } else {
-            if (s.e != null) {
-              throw newSpannerException(s.e);
-            }
-            return s.session;
+            return s;
           }
         } catch (Exception e) {
           TraceUtil.setWithFailure(span, e);
@@ -1394,14 +1379,18 @@ final class SessionPool {
       }
     }
 
-    private SessionOrError pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
+          } catch (TimeoutException e) {
+            return null;
+          } catch (ExecutionException e) {
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
           }
         }
       } finally {
@@ -1582,21 +1571,6 @@ final class SessionPool {
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService prepareExecutor;
 
-  // TODO(loite): Refactor Waiter to use a SettableFuture that can be set when a session is released
-  // into the pool, instead of using a thread waiting on a synchronous queue.
-  private final ScheduledExecutorService readWaiterExecutor =
-      Executors.newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("session-pool-read-waiter-%d")
-              .build());
-  private final ScheduledExecutorService writeWaiterExecutor =
-      Executors.newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("session-pool-write-waiter-%d")
-              .build());
-
   private final int prepareThreadPoolSize;
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
@@ -1619,10 +1593,10 @@ final class SessionPool {
   private final LinkedList<PooledSession> writePreparedSessions = new LinkedList<>();
 
   @GuardedBy("lock")
-  private final Queue<Waiter> readWaiters = new LinkedList<>();
+  private final Queue<WaiterFuture> readWaiters = new LinkedList<>();
 
   @GuardedBy("lock")
-  private final Queue<Waiter> readWriteWaiters = new LinkedList<>();
+  private final Queue<WaiterFuture> readWriteWaiters = new LinkedList<>();
 
   @GuardedBy("lock")
   private int numSessionsBeingPrepared = 0;
@@ -1779,9 +1753,9 @@ final class SessionPool {
       session.markClosing();
       allSessions.remove(session);
       numIdleSessionsRemoved++;
-      if (idleSessionRemovedListener != null) {
-        idleSessionRemovedListener.apply(session);
-      }
+    }
+    if (idleSessionRemovedListener != null) {
+      idleSessionRemovedListener.apply(session);
     }
   }
 
@@ -1914,7 +1888,7 @@ final class SessionPool {
   PooledSessionFuture getReadSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
-    Waiter waiter = null;
+    WaiterFuture waiter = null;
     PooledSession sess = null;
     synchronized (lock) {
       if (closureFuture != null) {
@@ -1936,7 +1910,7 @@ final class SessionPool {
         if (sess == null) {
           span.addAnnotation("No session available");
           maybeCreateSession();
-          waiter = new Waiter();
+          waiter = new WaiterFuture();
           readWaiters.add(waiter);
         } else {
           span.addAnnotation("Acquired read write session");
@@ -1944,7 +1918,7 @@ final class SessionPool {
       } else {
         span.addAnnotation("Acquired read only session");
       }
-      return checkoutSession(span, sess, waiter, false);
+      return checkoutSession(span, sess, waiter, false, false);
     }
   }
 
@@ -1970,103 +1944,80 @@ final class SessionPool {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring read write session");
     PooledSession sess = null;
-    // Loop to retry SessionNotFoundExceptions that might occur during in-process prepare of a
-    // session.
-    while (true) {
-      Waiter waiter = null;
-      boolean inProcessPrepare = false;
-      synchronized (lock) {
-        if (closureFuture != null) {
-          span.addAnnotation("Pool has been closed");
-          throw new IllegalStateException("Pool has been closed");
-        }
-        if (resourceNotFoundException != null) {
-          span.addAnnotation("Database has been deleted");
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.NOT_FOUND,
-              String.format(
-                  "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                  resourceNotFoundException.getMessage()),
-              resourceNotFoundException);
-        }
-        sess = writePreparedSessions.poll();
-        if (sess == null) {
-          if (numSessionsBeingPrepared <= prepareThreadPoolSize) {
-            if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
-              PooledSession readSession = readSessions.poll();
-              if (readSession != null) {
-                span.addAnnotation(
-                    "Acquired read only session. Preparing for read write transaction");
-                prepareSession(readSession);
-              } else {
-                span.addAnnotation("No session available");
-                maybeCreateSession();
-              }
-            }
-          } else {
-            inProcessPrepare = true;
-            numSessionsInProcessPrepared++;
+    WaiterFuture waiter = null;
+    boolean inProcessPrepare = false;
+    synchronized (lock) {
+      if (closureFuture != null) {
+        span.addAnnotation("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed");
+      }
+      if (resourceNotFoundException != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                resourceNotFoundException.getMessage()),
+            resourceNotFoundException);
+      }
+      sess = writePreparedSessions.poll();
+      if (sess == null) {
+        if (numSessionsBeingPrepared <= prepareThreadPoolSize) {
+          if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
             PooledSession readSession = readSessions.poll();
             if (readSession != null) {
-              // Create a read/write transaction in-process if there is already a queue for prepared
-              // sessions. This is more efficient than doing it asynchronously, as it scales with
-              // the number of user threads. The thread pool for asynchronously preparing sessions
-              // is fixed.
               span.addAnnotation(
-                  "Acquired read only session. Preparing in-process for read write transaction");
-              sess = readSession;
+                  "Acquired read only session. Preparing for read write transaction");
+              prepareSession(readSession);
             } else {
               span.addAnnotation("No session available");
               maybeCreateSession();
             }
           }
-          if (sess == null) {
-            waiter = new Waiter();
-            if (inProcessPrepare) {
-              // inProcessPrepare=true means that we have already determined that the queue for
-              // preparing read/write sessions is larger than the number of threads in the prepare
-              // thread pool, and that it's more efficient to do the prepare in-process. We will
-              // therefore create a waiter for a read-only session, even though a read/write session
-              // has been requested.
-              readWaiters.add(waiter);
-            } else {
-              readWriteWaiters.add(waiter);
-            }
-          }
         } else {
-          span.addAnnotation("Acquired read write session");
-        }
-      }
-      if (waiter != null) {
-        logger.log(
-            Level.FINE,
-            "No session available in the pool. Blocking for one to become available/created");
-        span.addAnnotation("Waiting for read write session to be available");
-        sess = waiter.take();
-      }
-      if (inProcessPrepare) {
-        try {
-          sess.prepareReadWriteTransaction();
-        } catch (Throwable t) {
-          sess = null;
-          SpannerException e = newSpannerException(t);
-          if (!isClosed()) {
-            handlePrepareSessionFailure(e, sess, false);
-          }
-          if (!isSessionNotFound(e)) {
-            throw e;
+          inProcessPrepare = true;
+          numSessionsInProcessPrepared++;
+          PooledSession readSession = readSessions.poll();
+          if (readSession != null) {
+            // Create a read/write transaction in-process if there is already a queue for prepared
+            // sessions. This is more efficient than doing it asynchronously, as it scales with
+            // the number of user threads. The thread pool for asynchronously preparing sessions
+            // is fixed.
+            span.addAnnotation(
+                "Acquired read only session. Preparing in-process for read write transaction");
+            sess = readSession;
+          } else {
+            span.addAnnotation("No session available");
+            maybeCreateSession();
           }
         }
+        if (sess == null) {
+          waiter = new WaiterFuture();
+          if (inProcessPrepare) {
+            // inProcessPrepare=true means that we have already determined that the queue for
+            // preparing read/write sessions is larger than the number of threads in the prepare
+            // thread pool, and that it's more efficient to do the prepare in-process. We will
+            // therefore create a waiter for a read-only session, even though a read/write session
+            // has been requested.
+            readWaiters.add(waiter);
+          } else {
+            readWriteWaiters.add(waiter);
+          }
+        }
+      } else {
+        span.addAnnotation("Acquired read write session");
       }
-      if (sess != null) {
-        return checkoutSession(span, sess, waiter, true);
-      }
+      return checkoutSession(span, sess, waiter, true, inProcessPrepare);
     }
   }
 
   private PooledSessionFuture checkoutSession(
-      final Span span, final PooledSession sess, final Waiter waiter, boolean write) {
-    final PooledSessionFuture res;
+      final Span span,
+      final PooledSession readySession,
+      WaiterFuture waiter,
+      boolean write,
+      final boolean inProcessPrepare) {
+    Future<PooledSession> sessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
@@ -2074,20 +2025,95 @@ final class SessionPool {
       span.addAnnotation(
           String.format(
               "Waiting for %s session to be available", write ? "read write" : "read only"));
-      ScheduledExecutorService executor = write ? writeWaiterExecutor : readWaiterExecutor;
-      res =
-          createPooledSessionFuture(
-              executor.submit(
-                  new Callable<PooledSession>() {
-                    @Override
-                    public PooledSession call() throws Exception {
-                      return waiter.take();
-                    }
-                  }),
-              span);
+
+      //      sessionFuture = ApiFutures.transform(finalWaiter.waiter, new
+      // ApiFunction<SessionOrError, PooledSession>(){
+      //        @Override
+      //        public PooledSession apply(SessionOrError input) {
+      //          if (input.session != null) {
+      //            return input.session;
+      //          }
+      //          throw input.e;
+      //        }
+      //      }, MoreExecutors.directExecutor());
+      sessionFuture = waiter;
     } else {
-      res = createPooledSessionFuture(sess, span);
+      sessionFuture = ApiFutures.immediateFuture(readySession);
     }
+    SimpleForwardingFuture<PooledSession> forwardingFuture =
+        new SimpleForwardingFuture<SessionPool.PooledSession>(sessionFuture) {
+          private volatile boolean initialized = false;
+          private final Object prepareLock = new Object();
+          private volatile PooledSession result;
+
+          @Override
+          public PooledSession get() throws InterruptedException, ExecutionException {
+            try {
+              return initialize(super.get());
+            } catch (ExecutionException e) {
+              throw SpannerExceptionFactory.newSpannerException(e.getCause());
+            } catch (InterruptedException e) {
+              throw SpannerExceptionFactory.propagateInterrupt(e);
+            }
+          }
+
+          @Override
+          public PooledSession get(long timeout, TimeUnit unit)
+              throws InterruptedException, ExecutionException, TimeoutException {
+            try {
+              return initialize(super.get(timeout, unit));
+            } catch (ExecutionException e) {
+              throw SpannerExceptionFactory.newSpannerException(e.getCause());
+            } catch (InterruptedException e) {
+              throw SpannerExceptionFactory.propagateInterrupt(e);
+            } catch (TimeoutException e) {
+              throw SpannerExceptionFactory.propagateTimeout(e);
+            }
+          }
+
+          private PooledSession initialize(PooledSession sess) {
+            if (!initialized) {
+              synchronized (prepareLock) {
+                if (!initialized) {
+                  result = prepare(sess);
+                  initialized = true;
+                }
+              }
+            }
+            return result;
+          }
+
+          private PooledSession prepare(PooledSession sess) {
+            if (inProcessPrepare && !sess.delegate.hasReadyTransaction()) {
+              while (true) {
+                try {
+                  sess.prepareReadWriteTransaction();
+                  break;
+                } catch (Throwable t) {
+                  if (isClosed()) {
+                    span.addAnnotation("Pool has been closed");
+                    throw new IllegalStateException("Pool has been closed");
+                  }
+                  SpannerException e = newSpannerException(t);
+                  WaiterFuture waiter = new WaiterFuture();
+                  synchronized (lock) {
+                    handlePrepareSessionFailure(e, sess, false);
+                    if (!isSessionNotFound(e)) {
+                      throw e;
+                    }
+                    readWaiters.add(waiter);
+                  }
+                  sess = waiter.get();
+                  if (sess.delegate.hasReadyTransaction()) {
+                    break;
+                  }
+                }
+              }
+            }
+            return sess;
+          }
+        };
+    PooledSessionFuture res = createPooledSessionFuture(forwardingFuture, span);
     res.markCheckedOut();
     return res;
   }
@@ -2207,10 +2233,12 @@ final class SessionPool {
           break;
         }
       }
-      this.resourceNotFoundException =
-          MoreObjects.firstNonNull(
-              this.resourceNotFoundException,
-              isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
+      if (isDatabaseOrInstanceNotFound(e)) {
+        this.resourceNotFoundException =
+            MoreObjects.firstNonNull(
+                this.resourceNotFoundException,
+                isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
+      }
     }
   }
 
@@ -2230,14 +2258,13 @@ final class SessionPool {
           readWaiters.poll().put(e);
         }
         // Remove the session from the pool.
-        allSessions.remove(session);
-        if (isClosed()) {
-          decrementPendingClosures(1);
+        removeFromPool(session);
+        if (isDatabaseOrInstanceNotFound(e)) {
+          this.resourceNotFoundException =
+              MoreObjects.firstNonNull(
+                  this.resourceNotFoundException,
+                  isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
         }
-        this.resourceNotFoundException =
-            MoreObjects.firstNonNull(
-                this.resourceNotFoundException,
-                isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
       } else if (informFirstWaiter && readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);
@@ -2266,7 +2293,7 @@ final class SessionPool {
         throw new IllegalStateException("Close has already been invoked");
       }
       // Fail all pending waiters.
-      Waiter waiter = readWaiters.poll();
+      WaiterFuture waiter = readWaiters.poll();
       while (waiter != null) {
         waiter.put(newSpannerException(ErrorCode.INTERNAL, "Client has been closed"));
         waiter = readWaiters.poll();
@@ -2287,8 +2314,6 @@ final class SessionPool {
       readSessions.clear();
       writePreparedSessions.clear();
       prepareExecutor.shutdown();
-      readWaiterExecutor.shutdown();
-      writeWaiterExecutor.shutdown();
       executor.submit(
           new Runnable() {
             @Override

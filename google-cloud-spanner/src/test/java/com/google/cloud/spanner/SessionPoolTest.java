@@ -320,7 +320,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     insideCreation.await();
     pool.closeAsync();
     releaseCreation.countDown();
-    latch.await();
+    latch.await(5L, TimeUnit.SECONDS);
     assertThat(failed.get()).isTrue();
   }
 
