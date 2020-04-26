@@ -94,6 +94,11 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <?m2e ignore?>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
