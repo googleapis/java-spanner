@@ -212,9 +212,9 @@ public class StatementParser {
     }
   }
 
-  private final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
-  private final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH");
-  private final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
+  private static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
+  private static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH");
+  private static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
   /** Private constructor for singleton instance. */
@@ -445,19 +445,31 @@ public class StatementParser {
 
   /** Removes any statement hints at the beginning of the statement. */
   static String removeStatementHint(String sql) {
-    // Valid statement hints at the beginning of a SQL statement can only contain a fixed set of
+    // Valid statement hints at the beginning of a query statement can only contain a fixed set of
     // possible values. Although it is possible to add a @{FORCE_INDEX=...} as a statement hint, the
     // only allowed value is _BASE_TABLE. This means that we can safely assume that the statement
-    // hint will not contain any special characters, for example a closing curly brace, and
-    // that we can keep the check simple by just searching for the first occurrence of a closing
-    // curly brace at the end of the statement hint.
+    // hint will not contain any special characters, for example a closing curly brace or one of the
+    // keywords SELECT, UPDATE, DELETE, WITH, and that we can keep the check simple by just
+    // searching for the first occurrence of a keyword that should be preceded by a closing curly
+    // brace at the end of the statement hint.
     int startStatementHintIndex = sql.indexOf('{');
-    int endStatementHintIndex = sql.indexOf('}');
-    if (startStatementHintIndex == -1 || startStatementHintIndex > endStatementHintIndex) {
-      // Looks like an invalid statement hint. Just ignore at this point and let the caller handle
-      // the invalid query.
-      return sql;
+    // Statement hints are only allowed for queries.
+    int startQueryIndex = -1;
+    String upperCaseSql = sql.toUpperCase();
+    for (String keyword : selectStatements) {
+      startQueryIndex = upperCaseSql.indexOf(keyword);
+      if (startQueryIndex > -1) break;
     }
-    return removeCommentsAndTrim(sql.substring(endStatementHintIndex + 1));
+    if (startQueryIndex > -1) {
+      int endStatementHintIndex = sql.substring(0, startQueryIndex).lastIndexOf('}');
+      if (startStatementHintIndex == -1 || startStatementHintIndex > endStatementHintIndex) {
+        // Looks like an invalid statement hint. Just ignore at this point and let the caller handle
+        // the invalid query.
+        return sql;
+      }
+      return removeCommentsAndTrim(sql.substring(endStatementHintIndex + 1));
+    }
+    // Seems invalid, just return the original statement.
+    return sql;
   }
 }

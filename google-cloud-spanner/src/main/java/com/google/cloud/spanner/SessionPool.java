@@ -74,6 +74,7 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1329,7 +1330,7 @@ final class SessionPool {
       this.state = SessionState.CLOSING;
     }
 
-    private void markUsed() {
+    void markUsed() {
       lastUseTime = clock.instant();
     }
 
@@ -1411,24 +1412,30 @@ final class SessionPool {
     }
   }
 
-  // Background task to maintain the pool. It closes idle sessions, keeps alive sessions that have
-  // not been used for a user configured time and creates session if needed to bring pool up to
-  // minimum required sessions. We keep track of the number of concurrent sessions being used.
-  // The maximum value of that over a window (10 minutes) tells us how many sessions we need in the
-  // pool. We close the remaining sessions. To prevent bursty traffic, we smear this out over the
-  // window length. We also smear out the keep alive traffic over the keep alive period.
+  /**
+   * Background task to maintain the pool. Tasks:
+   *
+   * <ul>
+   *   <li>Removes idle sessions from the pool. Sessions that go above MinSessions that have not
+   *       been used for the last 55 minutes will be removed from the pool. These will automatically
+   *       be garbage collected by the backend.
+   *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
+   *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
+   *       over a window of 10 minutes to avoid bursty traffic.
+   * </ul>
+   */
   final class PoolMaintainer {
     // Length of the window in millis over which we keep track of maximum number of concurrent
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
     // Frequency of the timer loop.
-    @VisibleForTesting static final long LOOP_FREQUENCY = 10 * 1000L;
+    @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
-    @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / LOOP_FREQUENCY;
+    @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
     private final Duration keepAliveMilis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / LOOP_FREQUENCY;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
@@ -1451,8 +1458,8 @@ final class SessionPool {
                     maintainPool();
                   }
                 },
-                LOOP_FREQUENCY,
-                LOOP_FREQUENCY,
+                loopFrequency,
+                loopFrequency,
                 TimeUnit.MILLISECONDS);
       }
     }
@@ -1475,7 +1482,7 @@ final class SessionPool {
         running = true;
       }
       Instant currTime = clock.instant();
-      closeIdleSessions(currTime);
+      removeIdleSessions(currTime);
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       keepAliveSessions(currTime);
       replenishPool();
@@ -1487,46 +1494,43 @@ final class SessionPool {
       }
     }
 
-    private void closeIdleSessions(Instant currTime) {
-      LinkedList<PooledSession> sessionsToClose = new LinkedList<>();
+    private void removeIdleSessions(Instant currTime) {
       synchronized (lock) {
-        // Every ten minutes figure out how many sessions need to be closed then close them over
-        // next ten minutes.
-        if (currTime.isAfter(lastResetTime.plus(windowLength))) {
-          int sessionsToKeep =
-              Math.max(options.getMinSessions(), maxSessionsInUse + options.getMaxIdleSessions());
-          numSessionsToClose = totalSessions() - sessionsToKeep;
-          sessionsToClosePerLoop = (int) Math.ceil((double) numSessionsToClose / numClosureCycles);
-          maxSessionsInUse = 0;
-          lastResetTime = currTime;
-        }
-        if (numSessionsToClose > 0) {
-          while (sessionsToClose.size() < Math.min(numSessionsToClose, sessionsToClosePerLoop)) {
-            PooledSession sess =
-                readSessions.size() > 0 ? readSessions.poll() : writePreparedSessions.poll();
-            if (sess != null) {
-              if (sess.state != SessionState.CLOSING) {
-                sess.markClosing();
-                sessionsToClose.add(sess);
+        // Determine the minimum last use time for a session to be deemed to still be alive. Remove
+        // all sessions that have a lastUseTime before that time, unless it would cause us to go
+        // below MinSessions. Prefer to remove read sessions above write-prepared sessions.
+        Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
+        for (Iterator<PooledSession> iterator :
+            Arrays.asList(
+                readSessions.descendingIterator(), writePreparedSessions.descendingIterator())) {
+          while (iterator.hasNext()) {
+            PooledSession session = iterator.next();
+            if (session.lastUseTime.isBefore(minLastUseTime)) {
+              if (session.state != SessionState.CLOSING) {
+                removeFromPool(session);
+                iterator.remove();
               }
-            } else {
-              break;
             }
           }
-          numSessionsToClose -= sessionsToClose.size();
         }
-      }
-      for (PooledSession sess : sessionsToClose) {
-        logger.log(Level.FINE, "Closing session {0}", sess.getName());
-        closeSessionAsync(sess);
       }
     }
 
     private void keepAliveSessions(Instant currTime) {
       long numSessionsToKeepAlive = 0;
       synchronized (lock) {
+        if (numSessionsInUse >= (options.getMinSessions() + options.getMaxIdleSessions())) {
+          // At least MinSessions are in use, so we don't have to ping any sessions.
+          return;
+        }
         // In each cycle only keep alive a subset of sessions to prevent burst of traffic.
-        numSessionsToKeepAlive = (long) Math.ceil((double) totalSessions() / numKeepAliveCycles);
+        numSessionsToKeepAlive =
+            (long)
+                Math.ceil(
+                    (double)
+                            ((options.getMinSessions() + options.getMaxIdleSessions())
+                                - numSessionsInUse)
+                        / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
@@ -1535,9 +1539,11 @@ final class SessionPool {
       while (numSessionsToKeepAlive > 0) {
         PooledSession sessionToKeepAlive = null;
         synchronized (lock) {
-          sessionToKeepAlive = findSessionToKeepAlive(readSessions, keepAliveThreshold);
+          sessionToKeepAlive = findSessionToKeepAlive(readSessions, keepAliveThreshold, 0);
           if (sessionToKeepAlive == null) {
-            sessionToKeepAlive = findSessionToKeepAlive(writePreparedSessions, keepAliveThreshold);
+            sessionToKeepAlive =
+                findSessionToKeepAlive(
+                    writePreparedSessions, keepAliveThreshold, readSessions.size());
           }
         }
         if (sessionToKeepAlive == null) {
@@ -1591,6 +1597,7 @@ final class SessionPool {
               .setNameFormat("session-pool-write-waiter-%d")
               .build());
 
+  private final int prepareThreadPoolSize;
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
   private final Object lock = new Object();
@@ -1635,6 +1642,15 @@ final class SessionPool {
   @GuardedBy("lock")
   private long numSessionsReleased = 0;
 
+  @GuardedBy("lock")
+  private long numSessionsInProcessPrepared = 0;
+
+  @GuardedBy("lock")
+  private long numSessionsAsyncPrepared = 0;
+
+  @GuardedBy("lock")
+  private long numIdleSessionsRemoved = 0;
+
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
@@ -1644,6 +1660,8 @@ final class SessionPool {
   private final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
+
+  @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   /**
    * Create a session pool with the given options and for the given database. It will also start
@@ -1714,15 +1732,14 @@ final class SessionPool {
     this.options = options;
     this.executorFactory = executorFactory;
     this.executor = executor;
-    int prepareThreads;
     if (executor instanceof ThreadPoolExecutor) {
-      prepareThreads = Math.max(((ThreadPoolExecutor) executor).getCorePoolSize(), 1);
+      prepareThreadPoolSize = Math.max(((ThreadPoolExecutor) executor).getCorePoolSize(), 1);
     } else {
-      prepareThreads = 8;
+      prepareThreadPoolSize = 8;
     }
     this.prepareExecutor =
         Executors.newScheduledThreadPool(
-            prepareThreads,
+            prepareThreadPoolSize,
             new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("session-pool-prepare-%d")
@@ -1737,6 +1754,40 @@ final class SessionPool {
   int getNumberOfSessionsInUse() {
     synchronized (lock) {
       return numSessionsInUse;
+    }
+  }
+
+  long getNumberOfSessionsInProcessPrepared() {
+    synchronized (lock) {
+      return numSessionsInProcessPrepared;
+    }
+  }
+
+  @VisibleForTesting
+  long getNumberOfSessionsAsyncPrepared() {
+    synchronized (lock) {
+      return numSessionsAsyncPrepared;
+    }
+  }
+
+  void removeFromPool(PooledSession session) {
+    synchronized (lock) {
+      if (isClosed()) {
+        decrementPendingClosures(1);
+        return;
+      }
+      session.markClosing();
+      allSessions.remove(session);
+      numIdleSessionsRemoved++;
+      if (idleSessionRemovedListener != null) {
+        idleSessionRemovedListener.apply(session);
+      }
+    }
+  }
+
+  long numIdleSessionsRemoved() {
+    synchronized (lock) {
+      return numIdleSessionsRemoved;
     }
   }
 
@@ -1821,14 +1872,18 @@ final class SessionPool {
   }
 
   private PooledSession findSessionToKeepAlive(
-      Queue<PooledSession> queue, Instant keepAliveThreshold) {
+      Queue<PooledSession> queue, Instant keepAliveThreshold, int numAlreadyChecked) {
+    int numChecked = 0;
     Iterator<PooledSession> iterator = queue.iterator();
-    while (iterator.hasNext()) {
+    while (iterator.hasNext()
+        && (numChecked + numAlreadyChecked)
+            < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
       if (session.lastUseTime.isBefore(keepAliveThreshold)) {
         iterator.remove();
         return session;
       }
+      numChecked++;
     }
     return null;
   }
@@ -1914,40 +1969,98 @@ final class SessionPool {
   PooledSessionFuture getReadWriteSession() {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring read write session");
-    Waiter waiter = null;
     PooledSession sess = null;
-    synchronized (lock) {
-      if (closureFuture != null) {
-        span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed");
-      }
-      if (resourceNotFoundException != null) {
-        span.addAnnotation("Database has been deleted");
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.NOT_FOUND,
-            String.format(
-                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                resourceNotFoundException.getMessage()),
-            resourceNotFoundException);
-      }
-      sess = writePreparedSessions.poll();
-      if (sess == null) {
-        if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
-          PooledSession readSession = readSessions.poll();
-          if (readSession != null) {
-            span.addAnnotation("Acquired read only session. Preparing for read write transaction");
-            prepareSession(readSession);
+    // Loop to retry SessionNotFoundExceptions that might occur during in-process prepare of a
+    // session.
+    while (true) {
+      Waiter waiter = null;
+      boolean inProcessPrepare = false;
+      synchronized (lock) {
+        if (closureFuture != null) {
+          span.addAnnotation("Pool has been closed");
+          throw new IllegalStateException("Pool has been closed");
+        }
+        if (resourceNotFoundException != null) {
+          span.addAnnotation("Database has been deleted");
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.NOT_FOUND,
+              String.format(
+                  "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                  resourceNotFoundException.getMessage()),
+              resourceNotFoundException);
+        }
+        sess = writePreparedSessions.poll();
+        if (sess == null) {
+          if (numSessionsBeingPrepared <= prepareThreadPoolSize) {
+            if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
+              PooledSession readSession = readSessions.poll();
+              if (readSession != null) {
+                span.addAnnotation(
+                    "Acquired read only session. Preparing for read write transaction");
+                prepareSession(readSession);
+              } else {
+                span.addAnnotation("No session available");
+                maybeCreateSession();
+              }
+            }
           } else {
-            span.addAnnotation("No session available");
-            maybeCreateSession();
+            inProcessPrepare = true;
+            numSessionsInProcessPrepared++;
+            PooledSession readSession = readSessions.poll();
+            if (readSession != null) {
+              // Create a read/write transaction in-process if there is already a queue for prepared
+              // sessions. This is more efficient than doing it asynchronously, as it scales with
+              // the number of user threads. The thread pool for asynchronously preparing sessions
+              // is fixed.
+              span.addAnnotation(
+                  "Acquired read only session. Preparing in-process for read write transaction");
+              sess = readSession;
+            } else {
+              span.addAnnotation("No session available");
+              maybeCreateSession();
+            }
+          }
+          if (sess == null) {
+            waiter = new Waiter();
+            if (inProcessPrepare) {
+              // inProcessPrepare=true means that we have already determined that the queue for
+              // preparing read/write sessions is larger than the number of threads in the prepare
+              // thread pool, and that it's more efficient to do the prepare in-process. We will
+              // therefore create a waiter for a read-only session, even though a read/write session
+              // has been requested.
+              readWaiters.add(waiter);
+            } else {
+              readWriteWaiters.add(waiter);
+            }
+          }
+        } else {
+          span.addAnnotation("Acquired read write session");
+        }
+      }
+      if (waiter != null) {
+        logger.log(
+            Level.FINE,
+            "No session available in the pool. Blocking for one to become available/created");
+        span.addAnnotation("Waiting for read write session to be available");
+        sess = waiter.take();
+      }
+      if (inProcessPrepare) {
+        try {
+          sess.prepareReadWriteTransaction();
+        } catch (Throwable t) {
+          sess = null;
+          SpannerException e = newSpannerException(t);
+          if (!isClosed()) {
+            handlePrepareSessionFailure(e, sess, false);
+          }
+          if (!isSessionNotFound(e)) {
+            throw e;
           }
         }
-        waiter = new Waiter();
-        readWriteWaiters.add(waiter);
-      } else {
-        span.addAnnotation("Acquired read write session");
       }
-      return checkoutSession(span, sess, waiter, true);
+      if (sess != null) {
+        return checkoutSession(span, sess, waiter, true);
+      }
     }
   }
 
@@ -2101,7 +2214,8 @@ final class SessionPool {
     }
   }
 
-  private void handlePrepareSessionFailure(SpannerException e, PooledSession session) {
+  private void handlePrepareSessionFailure(
+      SpannerException e, PooledSession session, boolean informFirstWaiter) {
     synchronized (lock) {
       if (isSessionNotFound(e)) {
         invalidateSession(session);
@@ -2124,7 +2238,7 @@ final class SessionPool {
             MoreObjects.firstNonNull(
                 this.resourceNotFoundException,
                 isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
-      } else if (readWriteWaiters.size() > 0) {
+      } else if (informFirstWaiter && readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
         readWriteWaiters.poll().put(e);
       } else {
@@ -2281,6 +2395,7 @@ final class SessionPool {
               sess.prepareReadWriteTransaction();
               logger.log(Level.FINE, "Session prepared");
               synchronized (lock) {
+                numSessionsAsyncPrepared++;
                 numSessionsBeingPrepared--;
                 if (!isClosed()) {
                   if (readWriteWaiters.size() > 0) {
@@ -2296,7 +2411,7 @@ final class SessionPool {
               synchronized (lock) {
                 numSessionsBeingPrepared--;
                 if (!isClosed()) {
-                  handlePrepareSessionFailure(newSpannerException(t), sess);
+                  handlePrepareSessionFailure(newSpannerException(t), sess, true);
                 }
               }
             }

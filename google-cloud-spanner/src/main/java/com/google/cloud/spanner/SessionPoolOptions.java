@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
 public class SessionPoolOptions {
@@ -32,7 +33,9 @@ public class SessionPoolOptions {
   private final int maxIdleSessions;
   private final float writeSessionsFraction;
   private final ActionOnExhaustion actionOnExhaustion;
+  private final long loopFrequency;
   private final int keepAliveIntervalMinutes;
+  private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final long initialWaitForSessionTimeoutMillis;
@@ -50,7 +53,9 @@ public class SessionPoolOptions {
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
     this.actionOnSessionLeak = builder.actionOnSessionLeak;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
+    this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
+    this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
   }
 
   public int getMinSessions() {
@@ -73,8 +78,16 @@ public class SessionPoolOptions {
     return writeSessionsFraction;
   }
 
+  long getLoopFrequency() {
+    return loopFrequency;
+  }
+
   public int getKeepAliveIntervalMinutes() {
     return keepAliveIntervalMinutes;
+  }
+
+  public Duration getRemoveInactiveSessionAfter() {
+    return removeInactiveSessionAfter;
   }
 
   public boolean isFailIfPoolExhausted() {
@@ -131,7 +144,9 @@ public class SessionPoolOptions {
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
+    private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
+    private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
 
     /**
      * Minimum number of sessions that this pool will always maintain. These will be created eagerly
@@ -175,6 +190,16 @@ public class SessionPoolOptions {
      */
     public Builder setMaxIdleSessions(int maxIdleSessions) {
       this.maxIdleSessions = maxIdleSessions;
+      return this;
+    }
+
+    Builder setLoopFrequency(long loopFrequency) {
+      this.loopFrequency = loopFrequency;
+      return this;
+    }
+
+    public Builder setRemoveInactiveSessionAfter(Duration duration) {
+      this.removeInactiveSessionAfter = duration;
       return this;
     }
 
