@@ -61,4 +61,14 @@
       </dependencies>
     </profile>
   </profiles>
+
+  <build>
+    <plugins>
+      <plugin>
+        <?m2e ignore?>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
