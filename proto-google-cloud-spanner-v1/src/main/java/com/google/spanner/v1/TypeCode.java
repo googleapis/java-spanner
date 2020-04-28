@@ -144,6 +144,23 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>STRUCT = 9;</code>
    */
   STRUCT(9),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in decimal format or scientific notation format.
+   * &lt;br&gt;Decimal format:
+   * &lt;br&gt;`[+-]Digits[.[Digits]]` or
+   * &lt;br&gt;`[+-][Digits].Digits`
+   * Scientific notation:
+   * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
+   * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
+   * &lt;br&gt;(ExponentIndicator is `"e"` or `"E"`)
+   * </pre>
+   *
+   * <code>NUMERIC = 10;</code>
+   */
+  NUMERIC(10),
   UNRECOGNIZED(-1),
   ;
 
@@ -258,6 +275,23 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>STRUCT = 9;</code>
    */
   public static final int STRUCT_VALUE = 9;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in decimal format or scientific notation format.
+   * &lt;br&gt;Decimal format:
+   * &lt;br&gt;`[+-]Digits[.[Digits]]` or
+   * &lt;br&gt;`[+-][Digits].Digits`
+   * Scientific notation:
+   * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
+   * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
+   * &lt;br&gt;(ExponentIndicator is `"e"` or `"E"`)
+   * </pre>
+   *
+   * <code>NUMERIC = 10;</code>
+   */
+  public static final int NUMERIC_VALUE = 10;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -303,6 +337,8 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return ARRAY;
       case 9:
         return STRUCT;
+      case 10:
+        return NUMERIC;
       default:
         return null;
     }

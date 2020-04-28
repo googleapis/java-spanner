@@ -57,14 +57,14 @@ public final class TypeProto {
           + "StructType\0223\n\006fields\030\001 \003(\0132#.google.span"
           + "ner.v1.StructType.Field\032<\n\005Field\022\014\n\004name"
           + "\030\001 \001(\t\022%\n\004type\030\002 \001(\0132\027.google.spanner.v1"
-          + ".Type*\216\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIF"
+          + ".Type*\233\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIF"
           + "IED\020\000\022\010\n\004BOOL\020\001\022\t\n\005INT64\020\002\022\013\n\007FLOAT64\020\003\022"
           + "\r\n\tTIMESTAMP\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005"
-          + "BYTES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\tB\222\001\n\025com.g"
-          + "oogle.spanner.v1B\tTypeProtoP\001Z8google.go"
-          + "lang.org/genproto/googleapis/spanner/v1;"
-          + "spanner\252\002\027Google.Cloud.Spanner.V1\312\002\027Goog"
-          + "le\\Cloud\\Spanner\\V1b\006proto3"
+          + "BYTES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\t\022\013\n\007NUMERI"
+          + "C\020\nB\222\001\n\025com.google.spanner.v1B\tTypeProto"
+          + "P\001Z8google.golang.org/genproto/googleapi"
+          + "s/spanner/v1;spanner\252\002\027Google.Cloud.Span"
+          + "ner.V1\312\002\027Google\\Cloud\\Spanner\\V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
