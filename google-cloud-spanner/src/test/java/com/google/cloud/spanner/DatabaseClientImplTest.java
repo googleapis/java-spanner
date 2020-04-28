@@ -469,12 +469,25 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testPermissionDeniedOnPrepareSession() throws Exception {
+    testExceptionOnPrepareSession(
+        Status.PERMISSION_DENIED
+            .withDescription(
+                "Caller is missing IAM permission spanner.databases.beginOrRollbackReadWriteTransaction on resource")
+            .asRuntimeException());
+  }
+
+  @Test
+  public void testFailedPreconditionOnPrepareSession() throws Exception {
+    testExceptionOnPrepareSession(
+        Status.FAILED_PRECONDITION
+            .withDescription("FAILED_PRECONDITION: Database is in read-only mode")
+            .asRuntimeException());
+  }
+
+  private void testExceptionOnPrepareSession(StatusRuntimeException exception)
+      throws InterruptedException {
     mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            Status.PERMISSION_DENIED
-                .withDescription(
-                    "Caller is missing IAM permission spanner.databases.beginOrRollbackReadWriteTransaction on resource")
-                .asRuntimeException()));
+        SimulatedExecutionTime.ofStickyException(exception));
     DatabaseClientImpl dbClient =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -503,10 +516,39 @@ public class DatabaseClientImplTest {
                   return null;
                 }
               });
-      fail("missing expected PERMISSION_DENIED exception");
+      fail(String.format("missing expected %s exception", exception.getStatus().getCode().name()));
     } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.PERMISSION_DENIED)));
+      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.fromGrpcStatus(exception.getStatus()))));
     }
+    // Remove the semi-permanent error condition. Getting a read/write transaction should now
+    // succeed, and the automatic preparing of sessions should be restarted.
+    mockSpanner.setBeginTransactionExecutionTime(SimulatedExecutionTime.none());
+    dbClient
+        .readWriteTransaction()
+        .run(
+            new TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                return null;
+              }
+            });
+    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMinSessions(); i++) {
+      dbClient.pool.getReadSession().close();
+    }
+    int expectedPreparedSessions =
+        (int)
+            Math.ceil(
+                dbClient.pool.getNumberOfSessionsInPool()
+                    * spanner.getOptions().getSessionPoolOptions().getWriteSessionsFraction());
+    watch = watch.reset().start();
+    while (watch.elapsed(TimeUnit.SECONDS) < 5
+        && dbClient.pool.getNumberOfAvailableWritePreparedSessions() < expectedPreparedSessions) {
+      Thread.sleep(1L);
+    }
+    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
+    assertThat(
+        dbClient.pool.getNumberOfAvailableWritePreparedSessions(),
+        is(equalTo(expectedPreparedSessions)));
   }
 
   /**
