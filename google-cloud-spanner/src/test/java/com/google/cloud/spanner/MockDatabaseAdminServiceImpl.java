@@ -588,14 +588,14 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
         Operation operation = (Operation) obj;
         Pattern pattern =
             Pattern.compile(
-                "(?:\\(metadata.(?:name|database):(.*)\\)|\\(name:(.*)/operations/\\)) AND \\(metadata.@type:type.googleapis.com/(.*)\\)");
+                "(?:\\(metadata.@type:type.googleapis.com/(.*)\\)) AND (?:\\(metadata.(?:name|database):(.*)\\)|\\(name:(.*)/operations/\\))");
         Matcher matcher = pattern.matcher(filter);
         if (matcher.matches()) {
-          String objectName = matcher.group(1);
+          String type = matcher.group(1);
+          String objectName = matcher.group(2);
           if (objectName == null) {
-            objectName = matcher.group(2);
+            objectName = matcher.group(3);
           }
-          String type = matcher.group(3);
           Any anyMetadata = operation.getMetadata();
           if (anyMetadata.getTypeUrl().endsWith(type)) {
             if (type.equals(CreateBackupMetadata.getDescriptor().getFullName())) {
