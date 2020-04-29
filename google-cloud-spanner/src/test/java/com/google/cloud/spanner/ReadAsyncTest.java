@@ -442,43 +442,42 @@ public class ReadAsyncTest {
   @Test
   public void cancel() throws Exception {
     final List<String> values = new LinkedList<>();
-    final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
     final CountDownLatch receivedFirstRow = new CountDownLatch(1);
     final CountDownLatch cancelled = new CountDownLatch(1);
+    final ApiFuture<Void> res;
     try (AsyncResultSet rs =
         client.singleUse().readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)) {
-      rs.setCallback(
-          executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      finished.set(true);
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      values.add(resultSet.getString("Value"));
-                      receivedFirstRow.countDown();
-                      cancelled.await();
-                      break;
+      res =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  try {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          values.add(resultSet.getString("Value"));
+                          receivedFirstRow.countDown();
+                          cancelled.await();
+                          break;
+                      }
+                    }
+                  } catch (Throwable t) {
+                    return CallbackResponse.DONE;
                   }
                 }
-              } catch (Throwable t) {
-                finished.setException(t);
-                return CallbackResponse.DONE;
-              }
-            }
-          });
+              });
       receivedFirstRow.await();
       rs.cancel();
     }
     cancelled.countDown();
     try {
-      finished.get();
+      res.get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);

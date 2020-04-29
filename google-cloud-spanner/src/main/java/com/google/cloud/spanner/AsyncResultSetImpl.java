@@ -65,6 +65,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   static final int DEFAULT_BUFFER_SIZE = 10;
   private static final int MAX_WAIT_FOR_BUFFER_CONSUMPTION = 10;
+  private static final SpannerException CANCELLED_EXCEPTION =
+      SpannerExceptionFactory.newSpannerException(
+          ErrorCode.CANCELLED, "This AsyncResultSet has been cancelled");
 
   private final Object monitor = new Object();
   private boolean closed;
@@ -187,8 +190,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     synchronized (monitor) {
       if (state == State.CANCELLED) {
         cursorReturnedDoneOrException = true;
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.CANCELLED, "This AsyncResultSet has been cancelled");
+        throw CANCELLED_EXCEPTION;
       }
       if (buffer.isEmpty() && executionException != null) {
         cursorReturnedDoneOrException = true;
@@ -384,6 +386,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         synchronized (monitor) {
           if (executionException != null) {
             throw executionException;
+          }
+          if (state == State.CANCELLED) {
+            throw CANCELLED_EXCEPTION;
           }
         }
       }
