@@ -2041,17 +2041,6 @@ final class SessionPool {
       span.addAnnotation(
           String.format(
               "Waiting for %s session to be available", write ? "read write" : "read only"));
-
-      //      sessionFuture = ApiFutures.transform(finalWaiter.waiter, new
-      // ApiFunction<SessionOrError, PooledSession>(){
-      //        @Override
-      //        public PooledSession apply(SessionOrError input) {
-      //          if (input.session != null) {
-      //            return input.session;
-      //          }
-      //          throw input.e;
-      //        }
-      //      }, MoreExecutors.directExecutor());
       sessionFuture = waiter;
     } else {
       sessionFuture = ApiFutures.immediateFuture(readySession);

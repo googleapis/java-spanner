@@ -970,8 +970,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    PooledSessionFuture session1 = pool.getReadSession();
+    PooledSessionFuture session2 = pool.getReadSession();
+    session1.get();
+    session2.get();
     session1.close();
     session2.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
