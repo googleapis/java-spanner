@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -26,9 +26,10 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
@@ -36,12 +37,11 @@ import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import org.junit.Before;
+import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
@@ -52,16 +52,15 @@ import org.threeten.bp.Instant;
 @RunWith(JUnit4.class)
 public class ITCommitTimestampTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  @Rule public final ExpectedException expectedException = ExpectedException.none();
-  private Database db;
-  private DatabaseClient client;
-  private DatabaseAdminClient dbAdminClient;
-  private RemoteSpannerHelper testHelper;
-  private String instanceId;
-  private String databaseId;
+  private static Database db;
+  private static DatabaseClient client;
+  private static DatabaseAdminClient dbAdminClient;
+  private static RemoteSpannerHelper testHelper;
+  private static String instanceId;
+  private static String databaseId;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     testHelper = env.getTestHelper();
     db =
         testHelper.createTestDatabase(
@@ -75,6 +74,11 @@ public class ITCommitTimestampTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     instanceId = testHelper.getInstanceId().getInstance();
     databaseId = db.getId().getDatabase();
+  }
+
+  @After
+  public void deleteAllTestRecords() {
+    client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
   }
 
   private Timestamp write(Mutation m) {
@@ -104,15 +108,18 @@ public class ITCommitTimestampTest {
 
     // 2. attempt to write CommitTimestamp to not enabled column should fail
     // error_catalog error CommitTimestampOptionNotEnabled
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage("allow_commit_timestamp column option is not");
-    write(
-        Mutation.newInsertOrUpdateBuilder("T")
-            .set("K")
-            .to("a")
-            .set("T3")
-            .to(Value.COMMIT_TIMESTAMP)
-            .build());
+    try {
+      write(
+          Mutation.newInsertOrUpdateBuilder("T")
+              .set("K")
+              .to("a")
+              .set("T3")
+              .to(Value.COMMIT_TIMESTAMP)
+              .build());
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
@@ -148,66 +155,81 @@ public class ITCommitTimestampTest {
             .build());
 
     // error_catalog error CommitTimestampNotInFuture
-    expectedException.expectCause(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage("has a timestamp in the future at key");
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=true)";
     try {
       dbAdminClient
           .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
           .get();
+      fail("missing expected exception");
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 
   @Test
   public void insertTimestampInFuture() {
     // error_catalog error TimestampInFuture
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage("in the future");
-    write(
-        Mutation.newInsertOrUpdateBuilder("T")
-            .set("K")
-            .to("a")
-            .set("T1")
-            .to(Timestamp.MAX_VALUE)
-            .build());
+    try {
+      write(
+          Mutation.newInsertOrUpdateBuilder("T")
+              .set("K")
+              .to("a")
+              .set("T1")
+              .to(Timestamp.MAX_VALUE)
+              .build());
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
   public void invalidColumnOption() throws Exception {
     // error_catalog error DDLStatementWithError
-    expectedException.expectCause(isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    expectedException.expectMessage("Option: bogus is unknown.");
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (bogus=null)";
-    dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-        .get();
+    try {
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
   }
 
   @Test
   public void invalidColumnOptionValue() throws Exception {
     // error_catalog error DDLStatementWithErrors
-    expectedException.expectCause(isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    expectedException.expectMessage("Errors parsing Spanner DDL statement");
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=bogus)";
-    dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-        .get();
+    try {
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
   }
 
   @Test
   public void invalidColumnType() throws Exception {
     // error_catalog error OptionErrorList
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage("Option only allowed on TIMESTAMP columns");
     String statement = "ALTER TABLE T ADD COLUMN T4 INT64 OPTIONS (allow_commit_timestamp=true)";
     try {
       dbAdminClient
           .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
           .get();
+      fail("missing expected exception");
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -286,12 +308,17 @@ public class ITCommitTimestampTest {
     db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage(
-        "corresponding shared key columns in this table's interleaved table hierarchy");
-    client.write(
-        Arrays.asList(
-            Mutation.newInsertOrUpdateBuilder("T3").set("ts").to(Value.COMMIT_TIMESTAMP).build()));
+    try {
+      client.write(
+          Arrays.asList(
+              Mutation.newInsertOrUpdateBuilder("T3")
+                  .set("ts")
+                  .to(Value.COMMIT_TIMESTAMP)
+                  .build()));
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   // In interleaved table, use of commit timestamp in parent table is not
@@ -309,11 +336,16 @@ public class ITCommitTimestampTest {
     db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage(
-        "corresponding shared key columns in this table's interleaved table hierarchy");
-    client.write(
-        Arrays.asList(
-            Mutation.newInsertOrUpdateBuilder("T1").set("ts").to(Value.COMMIT_TIMESTAMP).build()));
+    try {
+      client.write(
+          Arrays.asList(
+              Mutation.newInsertOrUpdateBuilder("T1")
+                  .set("ts")
+                  .to(Value.COMMIT_TIMESTAMP)
+                  .build()));
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 }
