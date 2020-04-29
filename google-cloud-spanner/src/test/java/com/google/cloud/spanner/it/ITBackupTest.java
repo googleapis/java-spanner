@@ -37,10 +37,13 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -52,8 +55,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -93,6 +100,40 @@ public class ITBackupTest {
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
     instance = instanceAdminClient.getInstance(testHelper.getInstanceId().getInstance());
     logger.info("Finished setup");
+
+    // Cancel any backup operation that has been started by this integration test if it has been
+    // running for at least 6 hours.
+    logger.info("Cancelling long-running test backup operations");
+    Pattern pattern = Pattern.compile(".*/backups/testbck_\\d{6}_\\d{4}_bck\\d/operations/.*");
+    try {
+      for (Operation operation :
+          dbAdminClient.listBackupOperations(instance.getId().getInstance()).iterateAll()) {
+        Matcher matcher = pattern.matcher(operation.getName());
+        if (matcher.matches()) {
+          if (!operation.getDone()) {
+            Timestamp currentTime = Timestamp.now();
+            Timestamp startTime =
+                Timestamp.fromProto(
+                    operation
+                        .getMetadata()
+                        .unpack(CreateBackupMetadata.class)
+                        .getProgress()
+                        .getStartTime());
+            long diffSeconds = currentTime.getSeconds() - startTime.getSeconds();
+            if (TimeUnit.HOURS.convert(diffSeconds, TimeUnit.SECONDS) >= 6L) {
+              logger.warning(
+                  String.format(
+                      "Cancelling test backup operation %s that was started at %s",
+                      operation.getName(), startTime.toString()));
+              dbAdminClient.cancelOperation(operation.getName());
+            }
+          }
+        }
+      }
+    } catch (InvalidProtocolBufferException e) {
+      logger.log(Level.WARNING, "Could not list all existing backup operations.", e);
+    }
+    logger.info("Finished checking existing test backup operations");
   }
 
   @After
@@ -227,8 +268,37 @@ public class ITBackupTest {
     testMetadata(op1, op2, backupId1, backupId2, db1, db2);
 
     // Ensure both backups have been created before we proceed.
-    Backup backup1 = op1.get();
-    Backup backup2 = op2.get();
+    logger.info("Waiting for backup operations to finish");
+    Backup backup1 = null;
+    Backup backup2 = null;
+    Stopwatch watch = Stopwatch.createStarted();
+    try {
+      backup1 = op1.get(6L, TimeUnit.MINUTES);
+      backup2 = op2.get(Math.max(1L, 6L - watch.elapsed(TimeUnit.MINUTES)), TimeUnit.MINUTES);
+    } catch (TimeoutException e) {
+      logger.warning(
+          "Waiting for backup operations to finish timed out. Getting long-running operations.");
+      while (watch.elapsed(TimeUnit.MINUTES) < 12L
+          && (!dbAdminClient.getOperation(op1.getName()).getDone()
+              || !dbAdminClient.getOperation(op2.getName()).getDone())) {
+        Thread.sleep(10_000L);
+      }
+      if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
+        logger.warning(String.format("Operation %s still not finished", op1.getName()));
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Backup1 still not finished. Test is giving up waiting for it.");
+      }
+      if (!dbAdminClient.getOperation(op2.getName()).getDone()) {
+        logger.warning(String.format("Operation %s still not finished", op2.getName()));
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Backup2 still not finished. Test is giving up waiting for it.");
+      }
+      logger.info("Long-running operations finished. Getting backups by id.");
+      backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
+      backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
+    }
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
@@ -334,6 +404,7 @@ public class ITBackupTest {
         .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId1).getName());
     assertThat(metadata2.getName())
         .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId2).getName());
+    logger.info("Finished metadata tests");
   }
 
   private void testCreateInvalidExpirationDate(Database db) throws InterruptedException {
