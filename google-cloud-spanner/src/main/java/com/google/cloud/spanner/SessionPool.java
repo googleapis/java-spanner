@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.ForwardingFuture.SimpleForwardingFuture;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
@@ -112,6 +113,17 @@ final class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
+  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
+      ImmutableSet.of(
+          ErrorCode.UNKNOWN,
+          ErrorCode.INVALID_ARGUMENT,
+          ErrorCode.PERMISSION_DENIED,
+          ErrorCode.UNAUTHENTICATED,
+          ErrorCode.RESOURCE_EXHAUSTED,
+          ErrorCode.FAILED_PRECONDITION,
+          ErrorCode.OUT_OF_RANGE,
+          ErrorCode.UNIMPLEMENTED,
+          ErrorCode.INTERNAL);
 
   /**
    * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
@@ -1587,6 +1599,9 @@ final class SessionPool {
   private ResourceNotFoundException resourceNotFoundException;
 
   @GuardedBy("lock")
+  private boolean stopAutomaticPrepare;
+
+  @GuardedBy("lock")
   private final LinkedList<PooledSession> readSessions = new LinkedList<>();
 
   @GuardedBy("lock")
@@ -1829,8 +1844,9 @@ final class SessionPool {
     return e instanceof DatabaseNotFoundException || e instanceof InstanceNotFoundException;
   }
 
-  private boolean isPermissionDenied(SpannerException e) {
-    return e.getErrorCode() == ErrorCode.PERMISSION_DENIED;
+  private boolean shouldStopPrepareSessions(SpannerException e) {
+    return isDatabaseOrInstanceNotFound(e)
+        || SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES.contains(e.getErrorCode());
   }
 
   private void invalidateSession(PooledSession session) {
@@ -1945,7 +1961,7 @@ final class SessionPool {
     span.addAnnotation("Acquiring read write session");
     PooledSession sess = null;
     WaiterFuture waiter = null;
-    boolean inProcessPrepare = false;
+    boolean inProcessPrepare = stopAutomaticPrepare;
     synchronized (lock) {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
@@ -1962,7 +1978,7 @@ final class SessionPool {
       }
       sess = writePreparedSessions.poll();
       if (sess == null) {
-        if (numSessionsBeingPrepared <= prepareThreadPoolSize) {
+        if (!inProcessPrepare && numSessionsBeingPrepared <= prepareThreadPoolSize) {
           if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
             PooledSession readSession = readSessions.poll();
             if (readSession != null) {
@@ -2045,6 +2061,7 @@ final class SessionPool {
           private volatile boolean initialized = false;
           private final Object prepareLock = new Object();
           private volatile PooledSession result;
+          private volatile SpannerException error;
 
           @Override
           public PooledSession get() throws InterruptedException, ExecutionException {
@@ -2075,10 +2092,18 @@ final class SessionPool {
             if (!initialized) {
               synchronized (prepareLock) {
                 if (!initialized) {
-                  result = prepare(sess);
-                  initialized = true;
+                  try {
+                    result = prepare(sess);
+                  } catch (Throwable t) {
+                    error = SpannerExceptionFactory.newSpannerException(t);
+                  } finally {
+                    initialized = true;
+                  }
                 }
               }
+            }
+            if (error != null) {
+              throw error;
             }
             return result;
           }
@@ -2088,6 +2113,9 @@ final class SessionPool {
               while (true) {
                 try {
                   sess.prepareReadWriteTransaction();
+                  synchronized (lock) {
+                    stopAutomaticPrepare = false;
+                  }
                   break;
                 } catch (Throwable t) {
                   if (isClosed()) {
@@ -2247,23 +2275,26 @@ final class SessionPool {
     synchronized (lock) {
       if (isSessionNotFound(e)) {
         invalidateSession(session);
-      } else if (isDatabaseOrInstanceNotFound(e) || isPermissionDenied(e)) {
-        // Database has been deleted or the user has no permission to write to this database. We
-        // should stop trying to prepare any transactions. Also propagate the error to all waiters,
-        // as any further waiting is pointless.
+      } else if (shouldStopPrepareSessions(e)) {
+        // Database has been deleted or the user has no permission to write to this database, or
+        // there is some other semi-permanent error. We should stop trying to prepare any
+        // transactions. Also propagate the error to all waiters if the database or instance has
+        // been deleted, as any further waiting is pointless.
+        stopAutomaticPrepare = true;
         while (readWriteWaiters.size() > 0) {
           readWriteWaiters.poll().put(e);
         }
         while (readWaiters.size() > 0) {
           readWaiters.poll().put(e);
         }
-        // Remove the session from the pool.
-        removeFromPool(session);
         if (isDatabaseOrInstanceNotFound(e)) {
+          // Remove the session from the pool.
+          removeFromPool(session);
           this.resourceNotFoundException =
               MoreObjects.firstNonNull(
-                  this.resourceNotFoundException,
-                  isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
+                  this.resourceNotFoundException, (ResourceNotFoundException) e);
+        } else {
+          releaseSession(session, Position.FIRST);
         }
       } else if (informFirstWaiter && readWriteWaiters.size() > 0) {
         releaseSession(session, Position.FIRST);
@@ -2365,6 +2396,9 @@ final class SessionPool {
 
   private boolean shouldPrepareSession() {
     synchronized (lock) {
+      if (stopAutomaticPrepare) {
+        return false;
+      }
       int preparedSessions = writePreparedSessions.size() + numSessionsBeingPrepared;
       return preparedSessions < Math.floor(options.getWriteSessionsFraction() * totalSessions());
     }
