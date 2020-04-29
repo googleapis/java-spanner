@@ -58,9 +58,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
@@ -86,7 +84,7 @@ public class DatabaseClientImplTest {
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
 
-//  @Rule public Timeout globalTimeout = new Timeout(5L, TimeUnit.SECONDS);
+  //  @Rule public Timeout globalTimeout = new Timeout(5L, TimeUnit.SECONDS);
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
