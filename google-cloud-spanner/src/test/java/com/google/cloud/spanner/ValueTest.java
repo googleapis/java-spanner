@@ -29,6 +29,7 @@ import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -185,6 +186,95 @@ public class ValueTest {
     } catch (IllegalStateException e) {
       assertThat(e.getMessage()).contains("null value");
     }
+  }
+
+  @Test
+  public void numeric() {
+    Value v = Value.numeric(new BigDecimal("1.23"));
+    assertThat(v.getType()).isEqualTo(Type.numeric());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getNumeric()).isEqualTo(BigDecimal.valueOf(123, 2));
+    assertThat(v.toString()).isEqualTo("1.23");
+  }
+
+  @Test
+  public void testNumericFormats() {
+    // The following is copied from the Numeric proto documentation.
+    // Encoded as `string`, in decimal format or scientific notation format.
+    // <br>Decimal format:
+    // <br>`[+-]Digits[.[Digits]]` or
+    // <br>`[+-][Digits].Digits`
+    //
+    // Scientific notation:
+    // <br>`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
+    // <br>`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
+    // <br>(ExponentIndicator is `"e"` or `"E"`)
+
+    // The following is copied from the BigDecimal#toString() documentation.
+    // <li>There is a one-to-one mapping between the distinguishable
+    // {@code BigDecimal} values and the result of this conversion.
+    // That is, every distinguishable {@code BigDecimal} value
+    // (unscaled value and scale) has a unique string representation
+    // as a result of using {@code toString}.  If that string
+    // representation is converted back to a {@code BigDecimal} using
+    // the {@link #BigDecimal(String)} constructor, then the original
+    // value will be recovered.
+    //
+    // <li>The string produced for a given number is always the same;
+    // it is not affected by locale.  This means that it can be used
+    // as a canonical string representation for exchanging decimal
+    // data, or as a key for a Hashtable, etc.  Locale-sensitive
+    // number formatting and parsing is handled by the {@link
+    // java.text.NumberFormat} class and its subclasses.
+
+    // Test that BigDecimal supports all formats that are supported by Cloud Spanner.
+    assertThat(new BigDecimal("1").toString()).isEqualTo("1");
+    assertThat(new BigDecimal("01").toString()).isEqualTo("1");
+    assertThat(new BigDecimal("1.").toString()).isEqualTo("1");
+    assertThat(new BigDecimal("+1").toString()).isEqualTo("1");
+    assertThat(new BigDecimal("+1.").toString()).isEqualTo("1");
+    assertThat(new BigDecimal("-1").toString()).isEqualTo("-1");
+    assertThat(new BigDecimal("-1.").toString()).isEqualTo("-1");
+
+    assertThat(new BigDecimal("0.1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("00.1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal(".1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("+0.1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("+.1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("-0.1").toString()).isEqualTo("-0.1");
+    assertThat(new BigDecimal("-.1").toString()).isEqualTo("-0.1");
+
+    assertThat(new BigDecimal("1E+1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1e+1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1E1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1e1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("01E+1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("01e+1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("01E1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("01e1").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1E+01").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1e+01").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1E01").toString()).isEqualTo("1E+1");
+    assertThat(new BigDecimal("1e01").toString()).isEqualTo("1E+1");
+
+    assertThat(new BigDecimal("1E-1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("1e-1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("01E-1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("01e-1").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("1E-01").toString()).isEqualTo("0.1");
+    assertThat(new BigDecimal("1e-01").toString()).isEqualTo("0.1");
+  }
+
+  @Test
+  public void numericNull() {
+    Value v = Value.numeric(null);
+    assertThat(v.getType()).isEqualTo(Type.numeric());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("null value");
+    v.getNumeric();
   }
 
   @Test
@@ -535,6 +625,37 @@ public class ValueTest {
   }
 
   @Test
+  public void numericArray() {
+    Value v =
+        Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1), null, BigDecimal.valueOf(3, 1)));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getNumericArray())
+        .containsExactly(new BigDecimal("0.1"), null, new BigDecimal("0.3"))
+        .inOrder();
+    assertThat(v.toString()).isEqualTo("[0.1,NULL,0.3]");
+  }
+
+  @Test
+  public void numericArrayNull() {
+    Value v = Value.numericArray((Iterable<BigDecimal>) null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("null value");
+    v.getNumericArray();
+  }
+
+  @Test
+  public void numericArrayTryGetInt64Array() {
+    Value value = Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1)));
+
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>");
+    value.getInt64Array();
+  }
+
+  @Test
   public void stringArray() {
     Value v = Value.stringArray(Arrays.asList("a", null, "c"));
     assertThat(v.isNull()).isFalse();
@@ -829,6 +950,11 @@ public class ValueTest {
     tester.addEqualityGroup(Value.float64(4.56));
     tester.addEqualityGroup(Value.float64(null));
 
+    tester.addEqualityGroup(
+        Value.numeric(BigDecimal.valueOf(123, 2)), Value.numeric(new BigDecimal("1.23")));
+    tester.addEqualityGroup(Value.numeric(BigDecimal.valueOf(456, 2)));
+    tester.addEqualityGroup(Value.numeric(null));
+
     tester.addEqualityGroup(Value.string("abc"), Value.string("abc"));
     tester.addEqualityGroup(Value.string("def"));
     tester.addEqualityGroup(Value.string(null));
@@ -885,6 +1011,11 @@ public class ValueTest {
     tester.addEqualityGroup(Value.float64Array((Iterable<Double>) null));
 
     tester.addEqualityGroup(
+        Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1))));
+    tester.addEqualityGroup(Value.numericArray(Arrays.asList(BigDecimal.valueOf(3, 1))));
+    tester.addEqualityGroup(Value.numericArray((Iterable<BigDecimal>) null));
+
+    tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
     tester.addEqualityGroup(Value.stringArray(Arrays.asList("c")));
     tester.addEqualityGroup(Value.stringArray(null));
@@ -933,6 +1064,9 @@ public class ValueTest {
     reserializeAndAssert(Value.float64(1.23));
     reserializeAndAssert(Value.float64(null));
 
+    reserializeAndAssert(Value.numeric(BigDecimal.valueOf(123, 2)));
+    reserializeAndAssert(Value.numeric(null));
+
     reserializeAndAssert(Value.string("abc"));
     reserializeAndAssert(Value.string(null));
 
@@ -960,6 +1094,15 @@ public class ValueTest {
     reserializeAndAssert(Value.float64Array(new double[] {.1, .2}));
     reserializeAndAssert(Value.float64Array(BrokenSerializationList.of(.1, .2, .3)));
     reserializeAndAssert(Value.float64Array((Iterable<Double>) null));
+
+    reserializeAndAssert(
+        Value.numericArray(
+            Arrays.asList(BigDecimal.valueOf(1, 1), null, BigDecimal.valueOf(2, 1))));
+    reserializeAndAssert(
+        Value.numericArray(
+            BrokenSerializationList.of(
+                BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1), BigDecimal.valueOf(3, 1))));
+    reserializeAndAssert(Value.numericArray((Iterable<BigDecimal>) null));
 
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));

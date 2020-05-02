@@ -194,6 +194,19 @@ public class DirectExecuteResultSetTest {
     subject.getDoubleList("test2");
     verify(delegate).getDoubleList("test2");
 
+    subject.getBigDecimal(0);
+    verify(delegate).getBigDecimal(0);
+    subject.getBigDecimal("test0");
+    verify(delegate).getBigDecimal("test0");
+    subject.getBigDecimalList(1);
+    verify(delegate).getBigDecimalList(1);
+    subject.getBigDecimalList("test1");
+    verify(delegate).getBigDecimalList("test1");
+    subject.getBigDecimalList(2);
+    verify(delegate).getBigDecimalList(2);
+    subject.getBigDecimalList("test2");
+    verify(delegate).getBigDecimalList("test2");
+
     subject.getLong(0);
     verify(delegate).getLong(0);
     subject.getLong("test0");

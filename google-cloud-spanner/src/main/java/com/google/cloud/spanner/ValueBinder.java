@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 
 /**
@@ -82,6 +83,11 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.float64(value)} */
   public R to(@Nullable Double value) {
     return handle(Value.float64(value));
+  }
+
+  /** Binds to {@code Value.numeric(value)} */
+  public R to(BigDecimal value) {
+    return handle(Value.numeric(value));
   }
 
   /** Binds to {@code Value.string(value)} */
@@ -160,6 +166,11 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.float64Array(values)} */
   public R toFloat64Array(@Nullable Iterable<Double> values) {
     return handle(Value.float64Array(values));
+  }
+
+  /** Binds to {@code Value.numericArray(values)} */
+  public R toNumericArray(@Nullable Iterable<BigDecimal> values) {
+    return handle(Value.numericArray(values));
   }
 
   /** Binds to {@code Value.stringArray(values)} */

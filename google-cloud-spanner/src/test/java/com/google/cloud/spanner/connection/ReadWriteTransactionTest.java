@@ -48,6 +48,7 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.spanner.v1.ResultSetStats;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
@@ -483,38 +484,113 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
     ResultSet delegate1 =
         ResultSets.forRows(
-            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Type.struct(
+                StructField.of("ID", Type.int64()),
+                StructField.of("NAME", Type.string()),
+                StructField.of("AMOUNT", Type.numeric())),
             Arrays.asList(
-                Struct.newBuilder().set("ID").to(1l).set("NAME").to("TEST 1").build(),
-                Struct.newBuilder().set("ID").to(2l).set("NAME").to("TEST 2").build()));
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(1l)
+                    .set("NAME")
+                    .to("TEST 1")
+                    .set("AMOUNT")
+                    .to(BigDecimal.valueOf(550, 2))
+                    .build(),
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(2l)
+                    .set("NAME")
+                    .to("TEST 2")
+                    .set("AMOUNT")
+                    .to(BigDecimal.valueOf(750, 2))
+                    .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
     ResultSet delegate2 =
         ResultSets.forRows(
-            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Type.struct(
+                StructField.of("ID", Type.int64()),
+                StructField.of("NAME", Type.string()),
+                StructField.of("AMOUNT", Type.numeric())),
             Arrays.asList(
-                Struct.newBuilder().set("ID").to(1l).set("NAME").to("TEST 1").build(),
-                Struct.newBuilder().set("ID").to(2l).set("NAME").to("TEST 2").build()));
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(1l)
+                    .set("NAME")
+                    .to("TEST 1")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("5.50"))
+                    .build(),
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(2l)
+                    .set("NAME")
+                    .to("TEST 2")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("7.50"))
+                    .build()));
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
     // rs1 and rs2 are equal, rs3 contains the same rows, but in a different order
     ResultSet delegate3 =
         ResultSets.forRows(
-            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Type.struct(
+                StructField.of("ID", Type.int64()),
+                StructField.of("NAME", Type.string()),
+                StructField.of("AMOUNT", Type.numeric())),
             Arrays.asList(
-                Struct.newBuilder().set("ID").to(2l).set("NAME").to("TEST 2").build(),
-                Struct.newBuilder().set("ID").to(1l).set("NAME").to("TEST 1").build()));
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(2l)
+                    .set("NAME")
+                    .to("TEST 2")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("7.50"))
+                    .build(),
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(1l)
+                    .set("NAME")
+                    .to("TEST 1")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("5.50"))
+                    .build()));
     ChecksumResultSet rs3 =
         transaction.createChecksumResultSet(delegate3, parsedStatement, AnalyzeMode.NONE);
 
     // rs4 contains the same rows as rs1 and rs2, but also an additional row
     ResultSet delegate4 =
         ResultSets.forRows(
-            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Type.struct(
+                StructField.of("ID", Type.int64()),
+                StructField.of("NAME", Type.string()),
+                StructField.of("AMOUNT", Type.numeric())),
             Arrays.asList(
-                Struct.newBuilder().set("ID").to(1l).set("NAME").to("TEST 1").build(),
-                Struct.newBuilder().set("ID").to(2l).set("NAME").to("TEST 2").build(),
-                Struct.newBuilder().set("ID").to(3l).set("NAME").to("TEST 3").build()));
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(1l)
+                    .set("NAME")
+                    .to("TEST 1")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("5.50"))
+                    .build(),
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(2l)
+                    .set("NAME")
+                    .to("TEST 2")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("7.50"))
+                    .build(),
+                Struct.newBuilder()
+                    .set("ID")
+                    .to(3l)
+                    .set("NAME")
+                    .to("TEST 3")
+                    .set("AMOUNT")
+                    .to(new BigDecimal("9.99"))
+                    .build()));
     ChecksumResultSet rs4 =
         transaction.createChecksumResultSet(delegate4, parsedStatement, AnalyzeMode.NONE);
 
