@@ -42,7 +42,7 @@ public class RandomResultSetGenerator {
         Type.newBuilder().setCode(TypeCode.BOOL).build(),
         Type.newBuilder().setCode(TypeCode.INT64).build(),
         Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
-        Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
+        //        Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
         Type.newBuilder().setCode(TypeCode.STRING).build(),
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
