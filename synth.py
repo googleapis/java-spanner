@@ -76,7 +76,6 @@ java.format_code('grpc-google-cloud-spanner-admin-instance-v1/src')
 java.format_code('proto-google-cloud-spanner-admin-instance-v1/src')
 
 java.common_templates(excludes=[
-    'README.md',
     '.kokoro/continuous/common.cfg',
     '.kokoro/nightly/common.cfg',
     '.kokoro/presubmit/common.cfg',
