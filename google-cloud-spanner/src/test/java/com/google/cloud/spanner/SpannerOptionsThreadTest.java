@@ -163,6 +163,27 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
     assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
   }
 
+  @Test
+  public void testCompression() {
+    for (String compressorName : new String[] {"gzip", "identity", null}) {
+      SpannerOptions options =
+          env.getTestHelper().getOptions().toBuilder().setCompressorName(compressorName).build();
+      try (Spanner spanner = options.getService()) {
+        DatabaseClient client = spanner.getDatabaseClient(db.getId());
+        try (ResultSet rs =
+            client
+                .singleUse()
+                .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"))) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getLong(0)).isEqualTo(1L);
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getLong(0)).isEqualTo(2L);
+          assertThat(rs.next()).isFalse();
+        }
+      }
+    }
+  }
+
   private void waitForStartup() throws InterruptedException {
     // Wait until the IT environment has already started all base worker threads.
     int threadCount;

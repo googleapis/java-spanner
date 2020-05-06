@@ -49,6 +49,8 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
+import io.grpc.CompressorRegistry;
+import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -58,6 +60,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
@@ -104,6 +107,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final Map<DatabaseId, QueryOptions> mergedQueryOptions;
 
   private final CallCredentialsProvider callCredentialsProvider;
+  private final String compressorName;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -174,6 +178,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.mergedQueryOptions = ImmutableMap.copyOf(merged);
     }
     callCredentialsProvider = builder.callCredentialsProvider;
+    compressorName = builder.compressorName;
   }
 
   /**
@@ -238,6 +243,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean autoThrottleAdministrativeRequests = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
+    private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
     private Builder() {
@@ -309,6 +315,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
+      this.compressorName = options.compressorName;
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
@@ -559,6 +566,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
+     * the {@link CompressorRegistry}.
+     *
+     * <p>Supported values are:
+     *
+     * <ul>
+     *   <li>gzip: Enable gzip compression
+     *   <li>identity: Disable compression
+     *   <li><code>null</code>: Use default comporession
+     *       <ul>
+     */
+    @ExperimentalApi("https://github.com/grpc/grpc-java/issues/1704")
+    public Builder setCompressorName(@Nullable String compressorName) {
+      Preconditions.checkArgument(
+          compressorName == null
+              || CompressorRegistry.getDefaultInstance().lookupCompressor(compressorName) != null,
+          String.format("%s is not a known compressor", compressorName));
+      this.compressorName = compressorName;
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -688,6 +717,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public CallCredentialsProvider getCallCredentialsProvider() {
     return callCredentialsProvider;
+  }
+
+  public String getCompressorName() {
+    return compressorName;
   }
 
   /** Returns the default query options to use for the specific database. */
