@@ -853,7 +853,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       final String databaseInstanceName, final String databaseId, String backupName) {
     RestoreDatabaseRequest request =
         RestoreDatabaseRequest.newBuilder()
@@ -905,7 +905,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final Backup updateBackup(Backup backup, FieldMask updateMask) {
+  public Backup updateBackup(Backup backup, FieldMask updateMask) {
     acquireAdministrativeRequestsRateLimiter();
     UpdateBackupRequest request =
         UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
@@ -914,7 +914,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final void deleteBackup(String backupName) {
+  public void deleteBackup(String backupName) {
     acquireAdministrativeRequestsRateLimiter();
     DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(backupName).build();
     GrpcCallContext context = newCallContext(null, backupName);
