@@ -42,6 +42,7 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -58,6 +59,8 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -166,6 +169,26 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
+  public void testClosedPoolIncludesClosedException() {
+    pool = createPool();
+    assertThat(pool.isValid()).isTrue();
+    closePoolWithStacktrace();
+    try {
+      pool.getReadSession();
+      fail("missing expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+      StringWriter sw = new StringWriter();
+      e.getCause().printStackTrace(new PrintWriter(sw));
+      assertThat(sw.toString()).contains("closePoolWithStacktrace");
+    }
+  }
+
+  private void closePoolWithStacktrace() {
+    pool.closeAsync(new SpannerImpl.ClosedException());
+  }
+
+  @Test
   public void sessionCreation() {
     setupMockSessionCreation();
     pool = createPool();
@@ -203,7 +226,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolClosure() throws Exception {
     setupMockSessionCreation();
     pool = createPool();
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   @Test
@@ -237,7 +260,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Clear the leaked exception to suppress logging of expected exceptions.
     leakedSession.clearLeakedException();
     session1.close();
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
     verify(mockSession1).asyncClose();
     verify(mockSession2).asyncClose();
   }
@@ -260,7 +283,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               }
             })
         .start();
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
     stop.set(true);
   }
 
@@ -316,7 +339,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     CountDownLatch latch = new CountDownLatch(1);
     getSessionAsync(latch, failed);
     insideCreation.await();
-    pool.closeAsync();
+    pool.closeAsync(new SpannerImpl.ClosedException());
     releaseCreation.countDown();
     latch.await();
     assertThat(failed.get()).isTrue();
@@ -374,7 +397,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     CountDownLatch latch = new CountDownLatch(1);
     getReadWriteSessionAsync(latch, failed);
     insideCreation.await();
-    pool.closeAsync();
+    pool.closeAsync(new SpannerImpl.ClosedException());
     releaseCreation.countDown();
     latch.await();
     assertThat(failed.get()).isTrue();
@@ -411,7 +434,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     CountDownLatch latch = new CountDownLatch(1);
     getSessionAsync(latch, failed);
     insideCreation.await();
-    ListenableFuture<Void> f = pool.closeAsync();
+    ListenableFuture<Void> f = pool.closeAsync(new SpannerImpl.ClosedException());
     releaseCreation.countDown();
     f.get();
     assertThat(f.isDone()).isTrue();
@@ -456,7 +479,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     CountDownLatch latch = new CountDownLatch(1);
     getReadWriteSessionAsync(latch, failed);
     insidePrepare.await();
-    ListenableFuture<Void> f = pool.closeAsync();
+    ListenableFuture<Void> f = pool.closeAsync(new SpannerImpl.ClosedException());
     releasePrepare.countDown();
     f.get();
     assertThat(f.isDone()).isTrue();
@@ -487,7 +510,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSession leakedSession = pool.getReadSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
-    pool.closeAsync();
+    pool.closeAsync(new SpannerImpl.ClosedException());
     expectedException.expect(IllegalStateException.class);
     pool.getReadSession();
   }
@@ -925,7 +948,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     runMaintainanceLoop(clock, pool, cycles);
     // We will still close 2 sessions since at any point in time only 1 session was in use.
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   @Test
@@ -976,7 +999,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
     verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
         .singleUse(any(TimestampBound.class));
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   @Test
@@ -1061,7 +1084,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(pool.getNumberOfAvailableWritePreparedSessions())
         .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
 
-    pool.closeAsync().get(5L, TimeUnit.SECONDS);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   private void waitForExpectedSessionPool(int expectedSessions, float writeFraction)
@@ -1447,7 +1470,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 .isTrue();
           }
         }
-        pool.closeAsync();
+        pool.closeAsync(new SpannerImpl.ClosedException());
       }
     }
   }

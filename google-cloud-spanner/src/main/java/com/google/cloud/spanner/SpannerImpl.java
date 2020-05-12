@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
+import org.threeten.bp.Instant;
 
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
@@ -94,8 +95,22 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
 
+  /**
+   * Exception class used to track the stack trace at the point when a Spanner instance is closed.
+   * This exception will be thrown if a user tries to use any resources that were returned by this
+   * Spanner instance after the instance has been closed. This makes it easier to track down the
+   * code that (accidently) closed the Spanner instance.
+   */
+  static final class ClosedException extends RuntimeException {
+    private static final long serialVersionUID = 1451131180314064914L;
+
+    ClosedException() {
+      super("Spanner client was closed at " + Instant.now());
+    }
+  }
+
   @GuardedBy("this")
-  private boolean spannerIsClosed = false;
+  private ClosedException closedException;
 
   @VisibleForTesting
   SpannerImpl(SpannerRpc gapicRpc, SpannerOptions options) {
@@ -131,9 +146,17 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getSessionClient(id.getDatabaseId()).sessionWithId(name);
   }
 
+  void checkClosed() {
+    synchronized (this) {
+      if (closedException != null) {
+        throw new IllegalStateException("Cloud Spanner client has been closed", closedException);
+      }
+    }
+  }
+
   SessionClient getSessionClient(DatabaseId db) {
     synchronized (this) {
-      Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
+      checkClosed();
       if (sessionClients.containsKey(db)) {
         return sessionClients.get(db);
       } else {
@@ -161,7 +184,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @Override
   public DatabaseClient getDatabaseClient(DatabaseId db) {
     synchronized (this) {
-      Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
+      checkClosed();
       if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
         // Move the invalidated client to a separate list, so we can close it together with the
         // other database clients when the Spanner instance is closed.
@@ -206,12 +229,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   void close(long timeout, TimeUnit unit) {
     List<ListenableFuture<Void>> closureFutures = null;
     synchronized (this) {
-      Preconditions.checkState(!spannerIsClosed, "Cloud Spanner client has been closed");
-      spannerIsClosed = true;
+      checkClosed();
+      closedException = new ClosedException();
       closureFutures = new ArrayList<>();
       invalidatedDbClients.addAll(dbClients.values());
       for (DatabaseClientImpl dbClient : invalidatedDbClients) {
-        closureFutures.add(dbClient.closeAsync());
+        closureFutures.add(dbClient.closeAsync(closedException));
       }
       dbClients.clear();
     }
@@ -234,7 +257,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public boolean isClosed() {
-    return spannerIsClosed;
+    synchronized (this) {
+      return closedException != null;
+    }
   }
 
   /** Helper class for gRPC calls that can return paginated results. */
