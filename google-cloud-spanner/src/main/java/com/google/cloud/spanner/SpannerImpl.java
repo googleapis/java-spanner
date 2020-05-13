@@ -185,16 +185,20 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   public DatabaseClient getDatabaseClient(DatabaseId db) {
     synchronized (this) {
       checkClosed();
+      String clientId = null;
       if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
         // Move the invalidated client to a separate list, so we can close it together with the
         // other database clients when the Spanner instance is closed.
         invalidatedDbClients.add(dbClients.get(db));
+        clientId = dbClients.get(db).clientId;
         dbClients.remove(db);
       }
       if (dbClients.containsKey(db)) {
         return dbClients.get(db);
       } else {
-        String clientId = nextDatabaseClientId(db);
+        if (clientId == null) {
+          clientId = nextDatabaseClientId(db);
+        }
         List<LabelValue> labelValues =
             ImmutableList.of(
                 LabelValue.create(clientId),

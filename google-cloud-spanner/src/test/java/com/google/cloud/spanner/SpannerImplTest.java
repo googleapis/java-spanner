@@ -28,6 +28,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.PrintWriter;
@@ -190,7 +191,7 @@ public class SpannerImplTest {
   }
 
   @Test
-  public void testClientId() {
+  public void testClientId() throws Exception {
     // Create a unique database id to be sure it has not yet been used in the lifetime of this JVM.
     String dbName =
         String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
@@ -214,6 +215,13 @@ public class SpannerImplTest {
     DatabaseId db2 = DatabaseId.of(dbName2);
     DatabaseClientImpl databaseClient2 = (DatabaseClientImpl) impl.getDatabaseClient(db2);
     assertThat(databaseClient2.clientId).isEqualTo("client-1");
+
+    // Getting a new database client for an invalidated database should use the same client id.
+    databaseClient.pool.setResourceNotFoundException(
+        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
+    DatabaseClientImpl revalidated = (DatabaseClientImpl) impl.getDatabaseClient(db);
+    assertThat(revalidated).isNotSameInstanceAs(databaseClient);
+    assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
 
     // Create a new Spanner instance. This will generate new database clients with new ids.
     try (Spanner spanner =

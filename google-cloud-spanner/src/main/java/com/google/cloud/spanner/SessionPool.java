@@ -1708,10 +1708,9 @@ final class SessionPool {
           break;
         }
       }
-      this.resourceNotFoundException =
-          MoreObjects.firstNonNull(
-              this.resourceNotFoundException,
-              isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
+      if (isDatabaseOrInstanceNotFound(e)) {
+        setResourceNotFoundException((ResourceNotFoundException) e);
+      }
     }
   }
 
@@ -1738,9 +1737,7 @@ final class SessionPool {
             decrementPendingClosures(1);
           }
           allSessions.remove(session);
-          this.resourceNotFoundException =
-              MoreObjects.firstNonNull(
-                  this.resourceNotFoundException, (ResourceNotFoundException) e);
+          setResourceNotFoundException((ResourceNotFoundException) e);
         } else {
           releaseSession(session, Position.FIRST);
         }
@@ -1751,6 +1748,10 @@ final class SessionPool {
         releaseSession(session, Position.FIRST);
       }
     }
+  }
+
+  void setResourceNotFoundException(ResourceNotFoundException e) {
+    this.resourceNotFoundException = MoreObjects.firstNonNull(this.resourceNotFoundException, e);
   }
 
   private void decrementPendingClosures(int count) {
