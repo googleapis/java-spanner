@@ -16,9 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.common.base.Stopwatch;
@@ -125,7 +123,7 @@ public class SpannerRetryHelperTest {
             return 1 + 1;
           }
         };
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable), is(equalTo(2)));
+    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -153,7 +151,7 @@ public class SpannerRetryHelperTest {
             return 1 + 1;
           }
         };
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable), is(equalTo(2)));
+    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test
@@ -169,7 +167,7 @@ public class SpannerRetryHelperTest {
             return 1 + 1;
           }
         };
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable), is(equalTo(2)));
+    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -190,12 +188,13 @@ public class SpannerRetryHelperTest {
 
   @Test
   public void testExceptionWithRetryInfo() {
+    final int RETRY_DELAY_NANOS = 100_000_000;
     Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
     Status status = Status.fromCodeValue(Status.Code.ABORTED.value());
     Metadata trailers = new Metadata();
     RetryInfo retryInfo =
         RetryInfo.newBuilder()
-            .setRetryDelay(Duration.newBuilder().setNanos(100000000).build())
+            .setRetryDelay(Duration.newBuilder().setNanos(RETRY_DELAY_NANOS).build())
             .build();
     trailers.put(key, retryInfo);
     final SpannerException e =
@@ -214,9 +213,9 @@ public class SpannerRetryHelperTest {
     // The following call should take at least 100ms, as that is the retry delay specified in the
     // retry info of the exception.
     Stopwatch watch = Stopwatch.createStarted();
-    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable), is(equalTo(2)));
-    long elapsed = watch.elapsed(TimeUnit.MILLISECONDS);
-    assertThat(elapsed >= 100L, is(true));
+    assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
+    long elapsed = watch.elapsed(TimeUnit.NANOSECONDS);
+    assertThat(elapsed >= RETRY_DELAY_NANOS).isTrue();
   }
 
   private SpannerException abortedWithRetryInfo(int nanos) {
