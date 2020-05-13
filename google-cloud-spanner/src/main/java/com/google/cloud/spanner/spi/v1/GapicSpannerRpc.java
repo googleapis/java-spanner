@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -154,6 +155,7 @@ import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
+@InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
   /**
    * {@link ExecutorProvider} that keeps track of the executors that are created and shuts these
