@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -56,50 +56,17 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientTest {
-  private static class SpannerExecutionExceptionMatcher extends BaseMatcher<Throwable> {
-    private final ErrorCode expectedCode;
-
-    private static SpannerExecutionExceptionMatcher forCode(ErrorCode code) {
-      return new SpannerExecutionExceptionMatcher(code);
-    }
-
-    private SpannerExecutionExceptionMatcher(ErrorCode code) {
-      this.expectedCode = checkNotNull(code);
-    }
-
-    @Override
-    public boolean matches(Object item) {
-      if (item instanceof ExecutionException) {
-        ExecutionException e = (ExecutionException) item;
-        if (e.getCause() instanceof SpannerException) {
-          SpannerException se = (SpannerException) e.getCause();
-          return se.getErrorCode() == expectedCode;
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public void describeTo(Description description) {
-      description.appendText("SpannerException[" + expectedCode + "]");
-    }
-  }
-
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
   private static final String DB_ID = "test-db";
@@ -117,7 +84,6 @@ public class DatabaseAdminClientTest {
 
   private Spanner spanner;
   private DatabaseAdminClient client;
-  @Rule public ExpectedException exception = ExpectedException.none();
   private OperationFuture<Database, CreateDatabaseMetadata> createDatabaseOperation;
   private OperationFuture<Backup, CreateBackupMetadata> createBackupOperation;
   private OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseOperation;
@@ -150,8 +116,8 @@ public class DatabaseAdminClientTest {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     RetrySettings longRunningInitialRetrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(60L))
-            .setMaxRpcTimeout(Duration.ofMillis(600L))
+            .setInitialRpcTimeout(Duration.ofMillis(600L))
+            .setMaxRpcTimeout(Duration.ofMillis(6000L))
             .setInitialRetryDelay(Duration.ofMillis(20L))
             .setMaxRetryDelay(Duration.ofMillis(45L))
             .setRetryDelayMultiplier(1.5)
@@ -348,8 +314,14 @@ public class DatabaseAdminClientTest {
   public void dbAdminCreateBackupAlreadyExists() throws InterruptedException, ExecutionException {
     OperationFuture<Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, after7Days());
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.ALREADY_EXISTS));
-    op.get();
+    try {
+      op.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode())
+          .isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
   }
 
   @Test
@@ -360,9 +332,14 @@ public class DatabaseAdminClientTest {
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .setExpireTime(after7Days())
             .build();
-    OperationFuture<Backup, CreateBackupMetadata> op = backup.create();
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.ALREADY_EXISTS));
-    op.get();
+    try {
+      backup.create().get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode())
+          .isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
   }
 
   @Test
@@ -374,8 +351,14 @@ public class DatabaseAdminClientTest {
                 .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID))
                 .setExpireTime(after7Days())
                 .build());
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.ALREADY_EXISTS));
-    op.get();
+    try {
+      op.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode())
+          .isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
   }
 
   @Test
@@ -383,8 +366,13 @@ public class DatabaseAdminClientTest {
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, backupId, "does-not-exist", after7Days());
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.NOT_FOUND));
-    op.get();
+    try {
+      op.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -396,9 +384,13 @@ public class DatabaseAdminClientTest {
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, "does-not-exist"))
             .setExpireTime(after7Days())
             .build();
-    OperationFuture<Backup, CreateBackupMetadata> op = backup.create();
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.NOT_FOUND));
-    op.get();
+    try {
+      backup.create().get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -413,8 +405,13 @@ public class DatabaseAdminClientTest {
                 .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
                 .setExpireTime(after7Days())
                 .build());
-    exception.expect(SpannerExecutionExceptionMatcher.forCode(ErrorCode.NOT_FOUND));
-    op.get();
+    try {
+      op.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      assertThat(((SpannerException) e.getCause()).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -435,16 +432,24 @@ public class DatabaseAdminClientTest {
 
   @Test
   public void dbAdminDeleteBackupNotFound() {
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.NOT_FOUND));
-    client.deleteBackup(INSTANCE_ID, "does-not-exist");
+    try {
+      client.deleteBackup(INSTANCE_ID, "does-not-exist");
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
   public void backupDeleteNotFound() {
     Backup backup =
         client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, "does-not-exist")).build();
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.NOT_FOUND));
-    backup.delete();
+    try {
+      backup.delete();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -463,16 +468,22 @@ public class DatabaseAdminClientTest {
 
   @Test
   public void dbAdminGetBackupNotFound() {
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.NOT_FOUND));
-    client.getBackup(INSTANCE_ID, "does-not-exist");
+    try {
+      client.getBackup(INSTANCE_ID, "does-not-exist");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
   public void backupReloadNotFound() {
     Backup backup =
         client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, "does-not-exist")).build();
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.NOT_FOUND));
-    backup.reload();
+    try {
+      backup.reload();
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
