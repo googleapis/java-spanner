@@ -1691,7 +1691,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(1)
             .setMaxSessions(2)
             .setMaxIdleSessions(0)
-            .setInitialWaitForSessionTimeoutMillis(20L)
+            .setInitialWaitForSessionTimeoutMillis(50L)
             .build();
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
