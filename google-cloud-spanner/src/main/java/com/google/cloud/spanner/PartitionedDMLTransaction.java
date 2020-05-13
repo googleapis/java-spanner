@@ -29,7 +29,6 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import org.threeten.bp.Duration;
 
 /** Partitioned DML transaction for bulk updates and deletes. */
 class PartitionedDMLTransaction implements SessionTransaction {
@@ -63,7 +62,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
    * Executes the {@link Statement} using a partitioned dml transaction with automatic retry if the
    * transaction was aborted.
    */
-  long executePartitionedUpdate(final Statement statement, final Duration timeout) {
+  long executePartitionedUpdate(final Statement statement) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     Callable<com.google.spanner.v1.ResultSet> callable =
         new Callable<com.google.spanner.v1.ResultSet>() {
@@ -84,7 +83,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
                 builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
               }
             }
-            return rpc.executePartitionedDml(builder.build(), session.getOptions(), timeout);
+            return rpc.executePartitionedDml(builder.build(), session.getOptions());
           }
         };
     com.google.spanner.v1.ResultSet resultSet =
