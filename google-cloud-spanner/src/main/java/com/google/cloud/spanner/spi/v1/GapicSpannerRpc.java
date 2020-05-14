@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -54,6 +55,7 @@ import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -153,6 +155,7 @@ import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
+@InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
   /**
    * {@link ExecutorProvider} that keeps track of the executors that are created and shuts these
@@ -207,6 +210,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
+  private final SpannerStub partitionedDmlStub;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -326,6 +330,22 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .setCredentialsProvider(credentialsProvider)
                   .setStreamWatchdogProvider(watchdogProvider)
                   .build());
+      SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
+      pdmlSettings
+          .setTransportChannelProvider(channelProvider)
+          .setCredentialsProvider(credentialsProvider)
+          .setStreamWatchdogProvider(watchdogProvider)
+          .executeSqlSettings()
+          .setRetrySettings(
+              options
+                  .getSpannerStubSettings()
+                  .executeSqlSettings()
+                  .getRetrySettings()
+                  .toBuilder()
+                  .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
+                  .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
+                  .build());
+      this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
           GrpcInstanceAdminStub.create(
@@ -1029,9 +1049,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executePartitionedDml(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout) {
-    GrpcCallContext context = newCallContext(options, request.getSession(), timeout);
-    return get(spannerStub.executeSqlCallable().futureCall(request, context));
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
   }
 
   @Override
@@ -1191,19 +1211,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @VisibleForTesting
   GrpcCallContext newCallContext(@Nullable Map<Option, ?> options, String resource) {
-    return newCallContext(options, resource, null);
-  }
-
-  private GrpcCallContext newCallContext(
-      @Nullable Map<Option, ?> options, String resource, Duration timeout) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
-    if (timeout != null) {
-      context = context.withTimeout(timeout);
-    }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
       if (callCredentials != null) {
