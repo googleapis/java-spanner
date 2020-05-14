@@ -325,6 +325,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testPartitionedDmlRetriesOnUnavailable() throws Exception {
+    mockSpanner.setExecuteSqlExecutionTime(
+        SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
+      assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    }
+  }
+
+  @Test
   public void testDatabaseOrInstanceDoesNotExistOnPrepareSession() throws Exception {
     StatusRuntimeException[] exceptions =
         new StatusRuntimeException[] {
