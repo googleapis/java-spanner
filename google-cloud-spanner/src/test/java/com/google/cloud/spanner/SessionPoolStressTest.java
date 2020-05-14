@@ -322,7 +322,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
       assertThat(maxAliveSessions).isAtMost(maxSessions);
     }
     stopMaintenance.set(true);
-    pool.closeAsync().get();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get();
     Exception e = getFailedError();
     if (e != null) {
       throw e;

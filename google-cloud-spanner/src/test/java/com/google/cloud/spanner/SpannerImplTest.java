@@ -27,8 +27,11 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -222,11 +225,34 @@ public class SpannerImplTest {
 
       // Get a database client for the same database as the first database. As this goes through a
       // different Spanner instance with potentially different options, it will get a different
-      // client
-      // id.
+      // client id.
       DatabaseClientImpl databaseClient3 = (DatabaseClientImpl) spanner.getDatabaseClient(db);
       assertThat(databaseClient3.clientId).isEqualTo("client-2");
     }
+  }
+
+  @Test
+  public void testClosedException() {
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+    assertThat(spanner.isClosed()).isFalse();
+    // Close the Spanner instance in a different method so we can actually verify that the entire
+    // stacktrace of the method that closed the instance is included in the exception that will be
+    // thrown by the instance after it has been closed.
+    closeSpannerAndIncludeStacktrace(spanner);
+    assertThat(spanner.isClosed()).isTrue();
+    try {
+      spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      fail("missing expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+      StringWriter sw = new StringWriter();
+      e.getCause().printStackTrace(new PrintWriter(sw));
+      assertThat(sw.toString()).contains("closeSpannerAndIncludeStacktrace");
+    }
+  }
+
+  private void closeSpannerAndIncludeStacktrace(Spanner spanner) {
+    spanner.close();
   }
 
   private SpannerOptions createSpannerOptions() {

@@ -42,6 +42,7 @@ import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -1124,6 +1125,9 @@ final class SessionPool {
   private SettableFuture<Void> closureFuture;
 
   @GuardedBy("lock")
+  private ClosedException closedException;
+
+  @GuardedBy("lock")
   private ResourceNotFoundException resourceNotFoundException;
 
   @GuardedBy("lock")
@@ -1428,7 +1432,7 @@ final class SessionPool {
     synchronized (lock) {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed", closedException);
       }
       if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
@@ -1497,7 +1501,7 @@ final class SessionPool {
       synchronized (lock) {
         if (closureFuture != null) {
           span.addAnnotation("Pool has been closed");
-          throw new IllegalStateException("Pool has been closed");
+          throw new IllegalStateException("Pool has been closed", closedException);
         }
         if (resourceNotFoundException != null) {
           span.addAnnotation("Database has been deleted");
@@ -1761,12 +1765,13 @@ final class SessionPool {
    * #getReadWriteSession()} will start throwing {@code IllegalStateException}. The returned future
    * blocks till all the sessions created in this pool have been closed.
    */
-  ListenableFuture<Void> closeAsync() {
+  ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
     synchronized (lock) {
       if (closureFuture != null) {
-        throw new IllegalStateException("Close has already been invoked");
+        throw new IllegalStateException("Close has already been invoked", this.closedException);
       }
+      this.closedException = closedException;
       // Fail all pending waiters.
       Waiter waiter = readWaiters.poll();
       while (waiter != null) {

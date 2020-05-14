@@ -159,18 +159,18 @@ public class SessionPoolIntegrationTest {
 
   @Test
   public void closeQuicklyDoesNotBlockIndefinitely() throws Exception {
-    pool.closeAsync().get();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get();
   }
 
   @Test
   public void closeAfterInitialCreateDoesNotBlockIndefinitely() throws Exception {
     pool.getReadSession().close();
-    pool.closeAsync().get();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get();
   }
 
   @Test
   public void closeWhenSessionsActiveFinishes() throws Exception {
     Session session = pool.getReadSession();
-    pool.closeAsync().get();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get();
   }
 }
