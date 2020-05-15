@@ -191,6 +191,12 @@ public class GapicSpannerRpc implements SpannerRpc {
         executor.shutdown();
       }
     }
+
+    private void awaitTermination() throws InterruptedException {
+      for (ScheduledExecutorService executor : executors) {
+        executor.awaitTermination(10L, TimeUnit.SECONDS);
+      }
+    }
   }
 
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
@@ -1230,10 +1236,22 @@ public class GapicSpannerRpc implements SpannerRpc {
   public void shutdown() {
     this.rpcIsClosed = true;
     this.spannerStub.close();
+    this.partitionedDmlStub.close();
     this.instanceAdminStub.close();
     this.databaseAdminStub.close();
     this.spannerWatchdog.shutdown();
     this.executorProvider.shutdown();
+
+    try {
+      this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.partitionedDmlStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
+      this.executorProvider.awaitTermination();
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
   }
 
   @Override
