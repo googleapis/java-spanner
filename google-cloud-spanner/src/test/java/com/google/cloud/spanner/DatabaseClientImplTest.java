@@ -41,6 +41,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -925,6 +926,37 @@ public class DatabaseClientImplTest {
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+    }
+  }
+
+  @Test
+  public void testClientIdReusedOnDatabaseNotFound() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "my-database",
+                SpannerExceptionFactory.DATABASE_RESOURCE_TYPE,
+                "project/my-project/instances/my-instance/databases/my-database")));
+    Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService();
+    DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+    String prevClientId = null;
+    for (int i = 0; i < 100; i++) {
+      try {
+        DatabaseClientImpl client = (DatabaseClientImpl) spanner.getDatabaseClient(databaseId);
+        if (prevClientId != null) {
+          assertThat(client.clientId).isEqualTo(prevClientId);
+        }
+        prevClientId = client.clientId;
+        client.singleUse().readRow("MyTable", Key.of(0), Arrays.asList("MyColumn"));
+      } catch (Exception e) {
+        // ignore
+      }
     }
   }
 }

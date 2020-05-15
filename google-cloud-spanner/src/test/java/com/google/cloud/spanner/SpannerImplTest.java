@@ -223,6 +223,13 @@ public class SpannerImplTest {
     assertThat(revalidated).isNotSameInstanceAs(databaseClient);
     assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
 
+    // Now invalidate the second client and request a new one.
+    revalidated.pool.setResourceNotFoundException(
+        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
+    DatabaseClientImpl revalidated2 = (DatabaseClientImpl) impl.getDatabaseClient(db);
+    assertThat(revalidated2).isNotSameInstanceAs(revalidated);
+    assertThat(revalidated2.clientId).isEqualTo(revalidated.clientId);
+
     // Create a new Spanner instance. This will generate new database clients with new ids.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
