@@ -29,6 +29,7 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
@@ -217,6 +218,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
   private final SpannerStub partitionedDmlStub;
+  private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -300,7 +302,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
-                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS * 1000))
 
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
@@ -336,21 +338,24 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .setCredentialsProvider(credentialsProvider)
                   .setStreamWatchdogProvider(watchdogProvider)
                   .build());
+      partitionedDmlRetrySettings =
+          options
+              .getSpannerStubSettings()
+              .executeSqlSettings()
+              .getRetrySettings()
+              .toBuilder()
+              .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
+              .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
+              .setTotalTimeout(options.getPartitionedDmlTimeout())
+              .setRpcTimeoutMultiplier(1.0)
+              .build();
       SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
       pdmlSettings
           .setTransportChannelProvider(channelProvider)
           .setCredentialsProvider(credentialsProvider)
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
-          .setRetrySettings(
-              options
-                  .getSpannerStubSettings()
-                  .executeSqlSettings()
-                  .getRetrySettings()
-                  .toBuilder()
-                  .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
-                  .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
-                  .build());
+          .setRetrySettings(partitionedDmlRetrySettings);
       this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
@@ -1058,6 +1063,11 @@ public class GapicSpannerRpc implements SpannerRpc {
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
     return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
+  }
+
+  @Override
+  public RetrySettings getPartitionedDmlRetrySettings() {
+    return partitionedDmlRetrySettings;
   }
 
   @Override
