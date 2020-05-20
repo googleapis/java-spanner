@@ -87,7 +87,8 @@ class PartitionedDMLTransaction implements SessionTransaction {
           }
         };
     com.google.spanner.v1.ResultSet resultSet =
-        SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
+        SpannerRetryHelper.runTxWithRetriesOnAborted(
+            callable, rpc.getPartitionedDmlRetrySettings());
     if (!resultSet.hasStats()) {
       throw new IllegalArgumentException(
           "Partitioned DML response missing stats possibly due to non-DML statement as input");
