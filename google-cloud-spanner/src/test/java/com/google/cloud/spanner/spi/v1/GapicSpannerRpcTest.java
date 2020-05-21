@@ -281,6 +281,7 @@ public class GapicSpannerRpcTest {
   public void testCallCredentialsProviderPreferenceAboveCredentials() {
     SpannerOptions options =
         SpannerOptions.newBuilder()
+            .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
             .setCallCredentialsProvider(
                 new CallCredentialsProvider() {
@@ -302,6 +303,7 @@ public class GapicSpannerRpcTest {
   public void testCallCredentialsProviderReturnsNull() {
     SpannerOptions options =
         SpannerOptions.newBuilder()
+            .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
             .setCallCredentialsProvider(
                 new CallCredentialsProvider() {
@@ -319,7 +321,11 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testNoCallCredentials() {
-    SpannerOptions options = SpannerOptions.newBuilder().setCredentials(STATIC_CREDENTIALS).build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(STATIC_CREDENTIALS)
+            .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
     assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
         .isNull();
