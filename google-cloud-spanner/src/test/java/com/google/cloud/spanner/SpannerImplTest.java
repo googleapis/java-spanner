@@ -103,7 +103,11 @@ public class SpannerImplTest {
 
     // Create a SpannerOptions with and without default query options.
     SpannerOptions optionsWithQueryOptions =
-        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+        new SpannerOptions.Builder(
+            SpannerOptions.newBuilder()
+                .setProjectId("some-project")
+                .setCredentials(NoCredentials.getInstance())
+                .build()) {
           @Override
           QueryOptions getEnvironmentQueryOptions() {
             // Override and return default instance to prevent environment variables from
@@ -112,7 +116,11 @@ public class SpannerImplTest {
           }
         }.setDefaultQueryOptions(db, queryOptions).build();
     SpannerOptions optionsWithoutQueryOptions =
-        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+        new SpannerOptions.Builder(
+            SpannerOptions.newBuilder()
+                .setProjectId("some-project")
+                .setCredentials(NoCredentials.getInstance())
+                .build()) {
           @Override
           QueryOptions getEnvironmentQueryOptions() {
             // Override and return default instance to prevent environment variables from

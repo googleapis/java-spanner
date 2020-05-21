@@ -389,19 +389,36 @@ public class SpannerOptionsTest {
   public void testSetClientLibToken() {
     final String jdbcToken = "sp-jdbc";
     final String hibernateToken = "sp-hib";
-    SpannerOptions options = SpannerOptions.newBuilder().setClientLibToken(jdbcToken).build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(jdbcToken)
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(jdbcToken);
 
-    options = SpannerOptions.newBuilder().setClientLibToken(hibernateToken).build();
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(hibernateToken)
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
 
-    options = SpannerOptions.newBuilder().build();
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(ServiceOptions.getGoogApiClientLibName());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testSetInvalidClientLibToken() {
-    SpannerOptions.newBuilder().setClientLibToken("foo");
+    SpannerOptions.newBuilder()
+        .setProjectId("some-project")
+        .setCredentials(NoCredentials.getInstance())
+        .setClientLibToken("foo");
   }
 
   @Test
@@ -443,6 +460,8 @@ public class SpannerOptionsTest {
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
                 QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .setProjectId("p")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
@@ -464,6 +483,8 @@ public class SpannerOptionsTest {
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
                 QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .setProjectId("p")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
