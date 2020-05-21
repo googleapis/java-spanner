@@ -103,6 +103,12 @@ import javax.annotation.Generated;
 @Generated("by gapic-generator")
 @BetaApi
 public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings> {
+  /** Returns the object with the settings used for calls to listDatabases. */
+  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+      listDatabasesSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabasesSettings();
+  }
+
   /** Returns the object with the settings used for calls to createDatabase. */
   public UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).createDatabaseSettings();
@@ -225,12 +231,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return ((DatabaseAdminStubSettings) getStubSettings()).listBackupOperationsSettings();
   }
 
-  /** Returns the object with the settings used for calls to listDatabases. */
-  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-      listDatabasesSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabasesSettings();
-  }
-
   public static final DatabaseAdminSettings create(DatabaseAdminStubSettings stub)
       throws IOException {
     return new DatabaseAdminSettings.Builder(stub.toBuilder()).build();
@@ -326,6 +326,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       super.applyToAllUnaryMethods(
           getStubSettingsBuilder().unaryMethodSettingsBuilders(), settingsUpdater);
       return this;
+    }
+
+    /** Returns the builder for the settings used for calls to listDatabases. */
+    public PagedCallSettings.Builder<
+            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+        listDatabasesSettings() {
+      return getStubSettingsBuilder().listDatabasesSettings();
     }
 
     /** Returns the builder for the settings used for calls to createDatabase. */
@@ -451,13 +458,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings() {
       return getStubSettingsBuilder().listBackupOperationsSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to listDatabases. */
-    public PagedCallSettings.Builder<
-            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-        listDatabasesSettings() {
-      return getStubSettingsBuilder().listDatabasesSettings();
     }
 
     @Override

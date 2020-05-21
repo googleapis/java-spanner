@@ -212,6 +212,138 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
+   * Lists Cloud Spanner databases.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance whose databases should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabasesPagedResponse listDatabases(InstanceName parent) {
+    ListDatabasesRequest request =
+        ListDatabasesRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listDatabases(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists Cloud Spanner databases.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Database element : databaseAdminClient.listDatabases(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The instance whose databases should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabasesPagedResponse listDatabases(String parent) {
+    ListDatabasesRequest request = ListDatabasesRequest.newBuilder().setParent(parent).build();
+    return listDatabases(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists Cloud Spanner databases.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (Database element : databaseAdminClient.listDatabases(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabasesPagedResponse listDatabases(ListDatabasesRequest request) {
+    return listDatabasesPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists Cloud Spanner databases.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListDatabasesPagedResponse&gt; future = databaseAdminClient.listDatabasesPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (Database element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
+      listDatabasesPagedCallable() {
+    return stub.listDatabasesPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists Cloud Spanner databases.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListDatabasesResponse response = databaseAdminClient.listDatabasesCallable().call(request);
+   *     for (Database element : response.getDatabasesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
+    return stub.listDatabasesCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
    * Creates a new Cloud Spanner database and starts to prepare it for serving. The returned
    * [long-running operation][google.longrunning.Operation] will have a name of the format
    * `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to track preparation of
@@ -2371,138 +2503,6 @@ public class DatabaseAdminClient implements BackgroundResource {
     return stub.listBackupOperationsCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists Cloud Spanner databases.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The instance whose databases should be listed. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListDatabasesPagedResponse listDatabases(InstanceName parent) {
-    ListDatabasesRequest request =
-        ListDatabasesRequest.newBuilder()
-            .setParent(parent == null ? null : parent.toString())
-            .build();
-    return listDatabases(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists Cloud Spanner databases.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   for (Database element : databaseAdminClient.listDatabases(parent.toString()).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The instance whose databases should be listed. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListDatabasesPagedResponse listDatabases(String parent) {
-    ListDatabasesRequest request = ListDatabasesRequest.newBuilder().setParent(parent).build();
-    return listDatabases(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists Cloud Spanner databases.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   for (Database element : databaseAdminClient.listDatabases(request).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListDatabasesPagedResponse listDatabases(ListDatabasesRequest request) {
-    return listDatabasesPagedCallable().call(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists Cloud Spanner databases.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   ApiFuture&lt;ListDatabasesPagedResponse&gt; future = databaseAdminClient.listDatabasesPagedCallable().futureCall(request);
-   *   // Do something
-   *   for (Database element : future.get().iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
-      listDatabasesPagedCallable() {
-    return stub.listDatabasesPagedCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists Cloud Spanner databases.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   ListDatabasesRequest request = ListDatabasesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   while (true) {
-   *     ListDatabasesResponse response = databaseAdminClient.listDatabasesCallable().call(request);
-   *     for (Database element : response.getDatabasesList()) {
-   *       // doThingsWith(element);
-   *     }
-   *     String nextPageToken = response.getNextPageToken();
-   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
-   *       request = request.toBuilder().setPageToken(nextPageToken).build();
-   *     } else {
-   *       break;
-   *     }
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
-    return stub.listDatabasesCallable();
-  }
-
   @Override
   public final void close() {
     stub.close();
@@ -2531,6 +2531,87 @@ public class DatabaseAdminClient implements BackgroundResource {
   @Override
   public boolean awaitTermination(long duration, TimeUnit unit) throws InterruptedException {
     return stub.awaitTermination(duration, unit);
+  }
+
+  public static class ListDatabasesPagedResponse
+      extends AbstractPagedListResponse<
+          ListDatabasesRequest,
+          ListDatabasesResponse,
+          Database,
+          ListDatabasesPage,
+          ListDatabasesFixedSizeCollection> {
+
+    public static ApiFuture<ListDatabasesPagedResponse> createAsync(
+        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
+        ApiFuture<ListDatabasesResponse> futureResponse) {
+      ApiFuture<ListDatabasesPage> futurePage =
+          ListDatabasesPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          new ApiFunction<ListDatabasesPage, ListDatabasesPagedResponse>() {
+            @Override
+            public ListDatabasesPagedResponse apply(ListDatabasesPage input) {
+              return new ListDatabasesPagedResponse(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    private ListDatabasesPagedResponse(ListDatabasesPage page) {
+      super(page, ListDatabasesFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListDatabasesPage
+      extends AbstractPage<
+          ListDatabasesRequest, ListDatabasesResponse, Database, ListDatabasesPage> {
+
+    private ListDatabasesPage(
+        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
+        ListDatabasesResponse response) {
+      super(context, response);
+    }
+
+    private static ListDatabasesPage createEmptyPage() {
+      return new ListDatabasesPage(null, null);
+    }
+
+    @Override
+    protected ListDatabasesPage createPage(
+        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
+        ListDatabasesResponse response) {
+      return new ListDatabasesPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListDatabasesPage> createPageAsync(
+        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
+        ApiFuture<ListDatabasesResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListDatabasesFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListDatabasesRequest,
+          ListDatabasesResponse,
+          Database,
+          ListDatabasesPage,
+          ListDatabasesFixedSizeCollection> {
+
+    private ListDatabasesFixedSizeCollection(List<ListDatabasesPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListDatabasesFixedSizeCollection createEmptyCollection() {
+      return new ListDatabasesFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListDatabasesFixedSizeCollection createCollection(
+        List<ListDatabasesPage> pages, int collectionSize) {
+      return new ListDatabasesFixedSizeCollection(pages, collectionSize);
+    }
   }
 
   public static class ListBackupsPagedResponse
@@ -2784,87 +2865,6 @@ public class DatabaseAdminClient implements BackgroundResource {
     protected ListBackupOperationsFixedSizeCollection createCollection(
         List<ListBackupOperationsPage> pages, int collectionSize) {
       return new ListBackupOperationsFixedSizeCollection(pages, collectionSize);
-    }
-  }
-
-  public static class ListDatabasesPagedResponse
-      extends AbstractPagedListResponse<
-          ListDatabasesRequest,
-          ListDatabasesResponse,
-          Database,
-          ListDatabasesPage,
-          ListDatabasesFixedSizeCollection> {
-
-    public static ApiFuture<ListDatabasesPagedResponse> createAsync(
-        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
-        ApiFuture<ListDatabasesResponse> futureResponse) {
-      ApiFuture<ListDatabasesPage> futurePage =
-          ListDatabasesPage.createEmptyPage().createPageAsync(context, futureResponse);
-      return ApiFutures.transform(
-          futurePage,
-          new ApiFunction<ListDatabasesPage, ListDatabasesPagedResponse>() {
-            @Override
-            public ListDatabasesPagedResponse apply(ListDatabasesPage input) {
-              return new ListDatabasesPagedResponse(input);
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-
-    private ListDatabasesPagedResponse(ListDatabasesPage page) {
-      super(page, ListDatabasesFixedSizeCollection.createEmptyCollection());
-    }
-  }
-
-  public static class ListDatabasesPage
-      extends AbstractPage<
-          ListDatabasesRequest, ListDatabasesResponse, Database, ListDatabasesPage> {
-
-    private ListDatabasesPage(
-        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
-        ListDatabasesResponse response) {
-      super(context, response);
-    }
-
-    private static ListDatabasesPage createEmptyPage() {
-      return new ListDatabasesPage(null, null);
-    }
-
-    @Override
-    protected ListDatabasesPage createPage(
-        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
-        ListDatabasesResponse response) {
-      return new ListDatabasesPage(context, response);
-    }
-
-    @Override
-    public ApiFuture<ListDatabasesPage> createPageAsync(
-        PageContext<ListDatabasesRequest, ListDatabasesResponse, Database> context,
-        ApiFuture<ListDatabasesResponse> futureResponse) {
-      return super.createPageAsync(context, futureResponse);
-    }
-  }
-
-  public static class ListDatabasesFixedSizeCollection
-      extends AbstractFixedSizeCollection<
-          ListDatabasesRequest,
-          ListDatabasesResponse,
-          Database,
-          ListDatabasesPage,
-          ListDatabasesFixedSizeCollection> {
-
-    private ListDatabasesFixedSizeCollection(List<ListDatabasesPage> pages, int collectionSize) {
-      super(pages, collectionSize);
-    }
-
-    private static ListDatabasesFixedSizeCollection createEmptyCollection() {
-      return new ListDatabasesFixedSizeCollection(null, 0);
-    }
-
-    @Override
-    protected ListDatabasesFixedSizeCollection createCollection(
-        List<ListDatabasesPage> pages, int collectionSize) {
-      return new ListDatabasesFixedSizeCollection(pages, collectionSize);
     }
   }
 }

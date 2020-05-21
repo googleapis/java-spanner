@@ -74,6 +74,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
     throw new UnsupportedOperationException("Not implemented: getOperationsStub()");
   }
 
+  public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
+      listDatabasesPagedCallable() {
+    throw new UnsupportedOperationException("Not implemented: listDatabasesPagedCallable()");
+  }
+
+  public UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
+    throw new UnsupportedOperationException("Not implemented: listDatabasesCallable()");
+  }
+
   @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
   public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationCallable() {
@@ -179,15 +188,6 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {
     throw new UnsupportedOperationException("Not implemented: listBackupOperationsCallable()");
-  }
-
-  public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
-      listDatabasesPagedCallable() {
-    throw new UnsupportedOperationException("Not implemented: listDatabasesPagedCallable()");
-  }
-
-  public UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
-    throw new UnsupportedOperationException("Not implemented: listDatabasesCallable()");
   }
 
   @Override
