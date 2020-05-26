@@ -589,7 +589,6 @@ public class ITWriteTest {
   @Test
   public void incorrectType() {
     expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    expectedException.expectMessage("Expected STRING");
     // Attempt to set 'V' to INT64, not STRING.
     // NOTE: an interest effect of not sending type metadata is that BYTES and INT64 are accepted
     // here...

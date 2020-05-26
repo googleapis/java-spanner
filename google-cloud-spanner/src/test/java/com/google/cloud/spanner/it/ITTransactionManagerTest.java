@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -145,6 +146,11 @@ public class ITTransactionManagerTest {
   @SuppressWarnings("resource")
   @Test
   public void abortAndRetry() throws InterruptedException {
+    assumeFalse(
+        "Emulator does not support more than 1 simultanous transaction. "
+            + "This test would therefore loop indefinetly on the emulator.",
+        env.getTestHelper().isEmulator());
+
     client.write(
         Arrays.asList(
             Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));

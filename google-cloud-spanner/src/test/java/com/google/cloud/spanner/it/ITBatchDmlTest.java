@@ -195,7 +195,7 @@ public final class ITBatchDmlTest {
       runner.run(callable);
       Assert.fail("Expecting an exception.");
     } catch (SpannerBatchUpdateException e) {
-      // TODO: Remove if-statement when emulator returns the same error code.
+      // TODO: Remove if-statement when emulator returns the same error code as Cloud Spanner.
       if (!env.getTestHelper().isEmulator()) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
       }

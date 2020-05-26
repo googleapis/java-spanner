@@ -42,6 +42,7 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.base.Strings;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.FileInputStream;
@@ -85,6 +86,7 @@ public class ITVPCNegativeTest {
         "GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT environment variable needs "
             + "to be set to a GCP project that is outside the VPC perimeter",
         OUTSIDE_VPC_PROJECT != null && OUTSIDE_VPC_PROJECT != "");
+    assumeTrue(Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")));
   }
 
   @Before

@@ -29,6 +29,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.base.Strings;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +54,11 @@ public class SpannerOptionsTest {
     // We need to set the project id since in test environment we cannot obtain a default project
     // id.
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
-    assertThat(options.getHost()).isEqualTo("https://spanner.googleapis.com");
+    if (Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"))) {
+      assertThat(options.getHost()).isEqualTo("https://spanner.googleapis.com");
+    } else {
+      assertThat(options.getHost()).isEqualTo("http://" + System.getenv("SPANNER_EMULATOR_HOST"));
+    }
     assertThat(options.getPrefetchChunks()).isEqualTo(4);
     assertThat(options.getSessionLabels()).isNull();
   }
