@@ -140,6 +140,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.admin.instance.v1.InstanceConfig>
       getInstanceConfigsList() {
     return instanceConfigs_;
@@ -153,6 +154,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
       getInstanceConfigsOrBuilderList() {
     return instanceConfigs_;
@@ -166,6 +168,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
+  @java.lang.Override
   public int getInstanceConfigsCount() {
     return instanceConfigs_.size();
   }
@@ -178,6 +181,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfigs(int index) {
     return instanceConfigs_.get(index);
   }
@@ -190,6 +194,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.admin.instance.v1.InstanceConfig instance_configs = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder getInstanceConfigsOrBuilder(
       int index) {
     return instanceConfigs_.get(index);
@@ -210,6 +215,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * @return The nextPageToken.
    */
+  @java.lang.Override
   public java.lang.String getNextPageToken() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
@@ -234,6 +240,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * @return The bytes for nextPageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {

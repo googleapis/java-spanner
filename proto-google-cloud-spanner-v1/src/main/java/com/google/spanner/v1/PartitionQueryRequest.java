@@ -208,6 +208,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -232,6 +233,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -258,6 +260,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -273,6 +276,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelector getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
@@ -288,6 +292,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }
@@ -313,6 +318,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The sql.
    */
+  @java.lang.Override
   public java.lang.String getSql() {
     java.lang.Object ref = sql_;
     if (ref instanceof java.lang.String) {
@@ -343,6 +349,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for sql.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSqlBytes() {
     java.lang.Object ref = sql_;
     if (ref instanceof java.lang.String) {
@@ -375,6 +382,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return Whether the params field is set.
    */
+  @java.lang.Override
   public boolean hasParams() {
     return params_ != null;
   }
@@ -396,6 +404,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The params.
    */
+  @java.lang.Override
   public com.google.protobuf.Struct getParams() {
     return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
   }
@@ -415,6 +424,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>.google.protobuf.Struct params = 4;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
     return getParams();
   }
@@ -462,6 +472,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public boolean containsParamTypes(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -469,6 +480,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     return internalGetParamTypes().getMap().containsKey(key);
   }
   /** Use {@link #getParamTypesMap()} instead. */
+  @java.lang.Override
   @java.lang.Deprecated
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
     return getParamTypesMap();
@@ -488,6 +500,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
     return internalGetParamTypes().getMap();
   }
@@ -506,6 +519,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrDefault(
       java.lang.String key, com.google.spanner.v1.Type defaultValue) {
     if (key == null) {
@@ -530,6 +544,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -555,6 +570,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return Whether the partitionOptions field is set.
    */
+  @java.lang.Override
   public boolean hasPartitionOptions() {
     return partitionOptions_ != null;
   }
@@ -569,6 +585,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The partitionOptions.
    */
+  @java.lang.Override
   public com.google.spanner.v1.PartitionOptions getPartitionOptions() {
     return partitionOptions_ == null
         ? com.google.spanner.v1.PartitionOptions.getDefaultInstance()
@@ -583,6 +600,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    *
    * <code>.google.spanner.v1.PartitionOptions partition_options = 6;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder() {
     return getPartitionOptions();
   }
@@ -1788,6 +1806,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -1795,6 +1814,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       return internalGetParamTypes().getMap().containsKey(key);
     }
     /** Use {@link #getParamTypesMap()} instead. */
+    @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
       return getParamTypesMap();
@@ -1814,6 +1834,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
       return internalGetParamTypes().getMap();
     }
@@ -1832,6 +1853,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrDefault(
         java.lang.String key, com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
@@ -1856,6 +1878,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();

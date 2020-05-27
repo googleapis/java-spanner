@@ -101,6 +101,24 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
 
               break;
             }
+          case 34:
+            {
+              com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder subBuilder =
+                  null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -155,6 +173,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The parent.
    */
+  @java.lang.Override
   public java.lang.String getParent() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -184,6 +203,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for parent.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getParentBytes() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -211,6 +231,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The backupId.
    */
+  @java.lang.Override
   public java.lang.String getBackupId() {
     java.lang.Object ref = backupId_;
     if (ref instanceof java.lang.String) {
@@ -235,6 +256,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for backupId.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getBackupIdBytes() {
     java.lang.Object ref = backupId_;
     if (ref instanceof java.lang.String) {
@@ -262,6 +284,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the backup field is set.
    */
+  @java.lang.Override
   public boolean hasBackup() {
     return backup_ != null;
   }
@@ -278,6 +301,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The backup.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Backup getBackup() {
     return backup_ == null
         ? com.google.spanner.admin.database.v1.Backup.getDefaultInstance()
@@ -294,8 +318,79 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    * .google.spanner.admin.database.v1.Backup backup = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupOrBuilder getBackupOrBuilder() {
     return getBackup();
+  }
+
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
+  private com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt the backup. If no
+   * `encryption_config` is specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * USE_DATABASE_ENCRYPTION.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt the backup. If no
+   * `encryption_config` is specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * USE_DATABASE_ENCRYPTION.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt the backup. If no
+   * `encryption_config` is specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * USE_DATABASE_ENCRYPTION.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -321,6 +416,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     if (backup_ != null) {
       output.writeMessage(3, getBackup());
     }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(4, getEncryptionConfig());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -338,6 +436,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     }
     if (backup_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getBackup());
+    }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEncryptionConfig());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -361,6 +462,10 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     if (hasBackup()) {
       if (!getBackup().equals(other.getBackup())) return false;
     }
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -379,6 +484,10 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     if (hasBackup()) {
       hash = (37 * hash) + BACKUP_FIELD_NUMBER;
       hash = (53 * hash) + getBackup().hashCode();
+    }
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -536,6 +645,12 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         backup_ = null;
         backupBuilder_ = null;
       }
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
       return this;
     }
 
@@ -569,6 +684,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         result.backup_ = backup_;
       } else {
         result.backup_ = backupBuilder_.build();
+      }
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
       }
       onBuilt();
       return result;
@@ -630,6 +750,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
       }
       if (other.hasBackup()) {
         mergeBackup(other.getBackup());
+      }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1119,6 +1242,260 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         backup_ = null;
       }
       return backupBuilder_;
+    }
+
+    private com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig,
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.newBuilder(
+                      encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt the backup. If no
+     * `encryption_config` is specified, the backup will use the same
+     * encryption configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+     * USE_DATABASE_ENCRYPTION.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig,
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig,
+                com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
     }
 
     @java.lang.Override

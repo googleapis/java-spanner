@@ -103,12 +103,6 @@ import javax.annotation.Generated;
 @Generated("by gapic-generator")
 @BetaApi
 public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings> {
-  /** Returns the object with the settings used for calls to listDatabases. */
-  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-      listDatabasesSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabasesSettings();
-  }
-
   /** Returns the object with the settings used for calls to createDatabase. */
   public UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).createDatabaseSettings();
@@ -122,11 +116,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return ((DatabaseAdminStubSettings) getStubSettings()).createDatabaseOperationSettings();
   }
 
-  /** Returns the object with the settings used for calls to getDatabase. */
-  public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).getDatabaseSettings();
-  }
-
   /** Returns the object with the settings used for calls to updateDatabaseDdl. */
   public UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseDdlSettings();
@@ -138,6 +127,43 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   public OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseDdlOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createBackup. */
+  public UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).createBackupSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createBackup. */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).createBackupOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to restoreDatabase. */
+  public UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).restoreDatabaseSettings();
+  }
+
+  /** Returns the object with the settings used for calls to restoreDatabase. */
+  @BetaApi(
+      "The surface for long-running operations is not stable yet and may change in the future.")
+  public OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).restoreDatabaseOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listDatabases. */
+  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+      listDatabasesSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabasesSettings();
+  }
+
+  /** Returns the object with the settings used for calls to getDatabase. */
+  public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).getDatabaseSettings();
   }
 
   /** Returns the object with the settings used for calls to dropDatabase. */
@@ -166,19 +192,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return ((DatabaseAdminStubSettings) getStubSettings()).testIamPermissionsSettings();
   }
 
-  /** Returns the object with the settings used for calls to createBackup. */
-  public UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).createBackupSettings();
-  }
-
-  /** Returns the object with the settings used for calls to createBackup. */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).createBackupOperationSettings();
-  }
-
   /** Returns the object with the settings used for calls to getBackup. */
   public UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).getBackupSettings();
@@ -198,19 +211,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   public PagedCallSettings<ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
       listBackupsSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).listBackupsSettings();
-  }
-
-  /** Returns the object with the settings used for calls to restoreDatabase. */
-  public UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).restoreDatabaseSettings();
-  }
-
-  /** Returns the object with the settings used for calls to restoreDatabase. */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationSettings() {
-    return ((DatabaseAdminStubSettings) getStubSettings()).restoreDatabaseOperationSettings();
   }
 
   /** Returns the object with the settings used for calls to listDatabaseOperations. */
@@ -328,13 +328,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       return this;
     }
 
-    /** Returns the builder for the settings used for calls to listDatabases. */
-    public PagedCallSettings.Builder<
-            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-        listDatabasesSettings() {
-      return getStubSettingsBuilder().listDatabasesSettings();
-    }
-
     /** Returns the builder for the settings used for calls to createDatabase. */
     public UnaryCallSettings.Builder<CreateDatabaseRequest, Operation> createDatabaseSettings() {
       return getStubSettingsBuilder().createDatabaseSettings();
@@ -346,11 +339,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     public OperationCallSettings.Builder<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
         createDatabaseOperationSettings() {
       return getStubSettingsBuilder().createDatabaseOperationSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to getDatabase. */
-    public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
-      return getStubSettingsBuilder().getDatabaseSettings();
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */
@@ -365,6 +353,44 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     public OperationCallSettings.Builder<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
         updateDatabaseDdlOperationSettings() {
       return getStubSettingsBuilder().updateDatabaseDdlOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createBackup. */
+    public UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings() {
+      return getStubSettingsBuilder().createBackupSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createBackup. */
+    @BetaApi(
+        "The surface for long-running operations is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
+        createBackupOperationSettings() {
+      return getStubSettingsBuilder().createBackupOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to restoreDatabase. */
+    public UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
+      return getStubSettingsBuilder().restoreDatabaseSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to restoreDatabase. */
+    @BetaApi(
+        "The surface for long-running operations is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+        restoreDatabaseOperationSettings() {
+      return getStubSettingsBuilder().restoreDatabaseOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listDatabases. */
+    public PagedCallSettings.Builder<
+            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+        listDatabasesSettings() {
+      return getStubSettingsBuilder().listDatabasesSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to getDatabase. */
+    public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
+      return getStubSettingsBuilder().getDatabaseSettings();
     }
 
     /** Returns the builder for the settings used for calls to dropDatabase. */
@@ -394,19 +420,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       return getStubSettingsBuilder().testIamPermissionsSettings();
     }
 
-    /** Returns the builder for the settings used for calls to createBackup. */
-    public UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings() {
-      return getStubSettingsBuilder().createBackupSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to createBackup. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
-        createBackupOperationSettings() {
-      return getStubSettingsBuilder().createBackupOperationSettings();
-    }
-
     /** Returns the builder for the settings used for calls to getBackup. */
     public UnaryCallSettings.Builder<GetBackupRequest, Backup> getBackupSettings() {
       return getStubSettingsBuilder().getBackupSettings();
@@ -427,19 +440,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
         listBackupsSettings() {
       return getStubSettingsBuilder().listBackupsSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to restoreDatabase. */
-    public UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
-      return getStubSettingsBuilder().restoreDatabaseSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to restoreDatabase. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-        restoreDatabaseOperationSettings() {
-      return getStubSettingsBuilder().restoreDatabaseOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to listDatabaseOperations. */

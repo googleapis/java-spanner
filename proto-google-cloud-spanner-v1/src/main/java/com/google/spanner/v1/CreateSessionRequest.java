@@ -141,6 +141,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -165,6 +166,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -190,6 +192,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the session field is set.
    */
+  @java.lang.Override
   public boolean hasSession() {
     return session_ != null;
   }
@@ -204,6 +207,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The session.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Session getSession() {
     return session_ == null ? com.google.spanner.v1.Session.getDefaultInstance() : session_;
   }
@@ -216,6 +220,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.spanner.v1.Session session = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder() {
     return getSession();
   }

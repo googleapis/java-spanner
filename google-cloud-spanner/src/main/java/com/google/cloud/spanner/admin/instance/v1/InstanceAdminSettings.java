@@ -89,29 +89,6 @@ import javax.annotation.Generated;
 @Generated("by gapic-generator")
 @BetaApi
 public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings> {
-  /** Returns the object with the settings used for calls to listInstanceConfigs. */
-  public PagedCallSettings<
-          ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
-      listInstanceConfigsSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).listInstanceConfigsSettings();
-  }
-
-  /** Returns the object with the settings used for calls to getInstanceConfig. */
-  public UnaryCallSettings<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).getInstanceConfigSettings();
-  }
-
-  /** Returns the object with the settings used for calls to listInstances. */
-  public PagedCallSettings<ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
-      listInstancesSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).listInstancesSettings();
-  }
-
-  /** Returns the object with the settings used for calls to getInstance. */
-  public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).getInstanceSettings();
-  }
-
   /** Returns the object with the settings used for calls to createInstance. */
   public UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings() {
     return ((InstanceAdminStubSettings) getStubSettings()).createInstanceSettings();
@@ -136,6 +113,29 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
   public OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
       updateInstanceOperationSettings() {
     return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listInstanceConfigs. */
+  public PagedCallSettings<
+          ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
+      listInstanceConfigsSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).listInstanceConfigsSettings();
+  }
+
+  /** Returns the object with the settings used for calls to getInstanceConfig. */
+  public UnaryCallSettings<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).getInstanceConfigSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listInstances. */
+  public PagedCallSettings<ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
+      listInstancesSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).listInstancesSettings();
+  }
+
+  /** Returns the object with the settings used for calls to getInstance. */
+  public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).getInstanceSettings();
   }
 
   /** Returns the object with the settings used for calls to deleteInstance. */
@@ -256,6 +256,32 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       return this;
     }
 
+    /** Returns the builder for the settings used for calls to createInstance. */
+    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
+      return getStubSettingsBuilder().createInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstance. */
+    @BetaApi(
+        "The surface for long-running operations is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+        createInstanceOperationSettings() {
+      return getStubSettingsBuilder().createInstanceOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
+      return getStubSettingsBuilder().updateInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    @BetaApi(
+        "The surface for long-running operations is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+        updateInstanceOperationSettings() {
+      return getStubSettingsBuilder().updateInstanceOperationSettings();
+    }
+
     /** Returns the builder for the settings used for calls to listInstanceConfigs. */
     public PagedCallSettings.Builder<
             ListInstanceConfigsRequest,
@@ -281,32 +307,6 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     /** Returns the builder for the settings used for calls to getInstance. */
     public UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings() {
       return getStubSettingsBuilder().getInstanceSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
-      return getStubSettingsBuilder().createInstanceSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-        createInstanceOperationSettings() {
-      return getStubSettingsBuilder().createInstanceOperationSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
-      return getStubSettingsBuilder().updateInstanceSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-        updateInstanceOperationSettings() {
-      return getStubSettingsBuilder().updateInstanceOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to deleteInstance. */

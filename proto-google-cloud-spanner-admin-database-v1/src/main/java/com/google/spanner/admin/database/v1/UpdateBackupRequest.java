@@ -151,6 +151,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the backup field is set.
    */
+  @java.lang.Override
   public boolean hasBackup() {
     return backup_ != null;
   }
@@ -170,6 +171,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The backup.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Backup getBackup() {
     return backup_ == null
         ? com.google.spanner.admin.database.v1.Backup.getDefaultInstance()
@@ -189,6 +191,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    * .google.spanner.admin.database.v1.Backup backup = 1 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupOrBuilder getBackupOrBuilder() {
     return getBackup();
   }
@@ -211,6 +214,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the updateMask field is set.
    */
+  @java.lang.Override
   public boolean hasUpdateMask() {
     return updateMask_ != null;
   }
@@ -230,6 +234,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The updateMask.
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMask getUpdateMask() {
     return updateMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : updateMask_;
   }
@@ -247,6 +252,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    * <code>.google.protobuf.FieldMask update_mask = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMaskOrBuilder getUpdateMaskOrBuilder() {
     return getUpdateMask();
   }

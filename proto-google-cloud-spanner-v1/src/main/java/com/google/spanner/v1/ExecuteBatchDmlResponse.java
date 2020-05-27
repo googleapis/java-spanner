@@ -165,6 +165,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.ResultSet> getResultSetsList() {
     return resultSets_;
   }
@@ -182,6 +183,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.ResultSetOrBuilder>
       getResultSetsOrBuilderList() {
     return resultSets_;
@@ -200,6 +202,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
+  @java.lang.Override
   public int getResultSetsCount() {
     return resultSets_.size();
   }
@@ -217,6 +220,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSet getResultSets(int index) {
     return resultSets_.get(index);
   }
@@ -234,6 +238,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetOrBuilder getResultSetsOrBuilder(int index) {
     return resultSets_.get(index);
   }
@@ -252,6 +257,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * @return Whether the status field is set.
    */
+  @java.lang.Override
   public boolean hasStatus() {
     return status_ != null;
   }
@@ -267,6 +273,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * @return The status.
    */
+  @java.lang.Override
   public com.google.rpc.Status getStatus() {
     return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
   }
@@ -280,6 +287,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    * <code>.google.rpc.Status status = 2;</code>
    */
+  @java.lang.Override
   public com.google.rpc.StatusOrBuilder getStatusOrBuilder() {
     return getStatus();
   }

@@ -166,4 +166,51 @@ public interface DatabaseOrBuilder
    * </code>
    */
   com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
 }

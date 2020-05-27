@@ -140,6 +140,23 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
               referencingDatabases_.add(s);
               break;
             }
+          case 66:
+            {
+              com.google.spanner.admin.database.v1.EncryptionInfo.Builder subBuilder = null;
+              if (encryptionInfo_ != null) {
+                subBuilder = encryptionInfo_.toBuilder();
+              }
+              encryptionInfo_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionInfo_);
+                encryptionInfo_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -300,6 +317,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -349,6 +370,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -375,6 +397,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -405,6 +428,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the expireTime field is set.
    */
+  @java.lang.Override
   public boolean hasExpireTime() {
     return expireTime_ != null;
   }
@@ -424,6 +448,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The expireTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getExpireTime() {
     return expireTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : expireTime_;
   }
@@ -441,6 +466,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Timestamp expire_time = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getExpireTimeOrBuilder() {
     return getExpireTime();
   }
@@ -468,6 +494,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -500,6 +527,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -529,6 +557,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the createTime field is set.
    */
+  @java.lang.Override
   public boolean hasCreateTime() {
     return createTime_ != null;
   }
@@ -547,6 +576,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The createTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCreateTime() {
     return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
@@ -563,6 +593,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
     return getCreateTime();
   }
@@ -580,6 +611,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The sizeBytes.
    */
+  @java.lang.Override
   public long getSizeBytes() {
     return sizeBytes_;
   }
@@ -599,6 +631,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for state.
    */
+  @java.lang.Override
   public int getStateValue() {
     return state_;
   }
@@ -615,6 +648,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The state.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Backup.State getState() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.Backup.State result =
@@ -711,6 +745,66 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     return referencingDatabases_.getByteString(index);
   }
 
+  public static final int ENCRYPTION_INFO_FIELD_NUMBER = 8;
+  private com.google.spanner.admin.database.v1.EncryptionInfo encryptionInfo_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionInfo field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionInfo() {
+    return encryptionInfo_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionInfo.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo() {
+    return encryptionInfo_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+        : encryptionInfo_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder() {
+    return getEncryptionInfo();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -747,6 +841,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       com.google.protobuf.GeneratedMessageV3.writeString(
           output, 7, referencingDatabases_.getRaw(i));
     }
+    if (encryptionInfo_ != null) {
+      output.writeMessage(8, getEncryptionInfo());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -782,6 +879,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       size += dataSize;
       size += 1 * getReferencingDatabasesList().size();
     }
+    if (encryptionInfo_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, getEncryptionInfo());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -811,6 +911,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (getSizeBytes() != other.getSizeBytes()) return false;
     if (state_ != other.state_) return false;
     if (!getReferencingDatabasesList().equals(other.getReferencingDatabasesList())) return false;
+    if (hasEncryptionInfo() != other.hasEncryptionInfo()) return false;
+    if (hasEncryptionInfo()) {
+      if (!getEncryptionInfo().equals(other.getEncryptionInfo())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -841,6 +945,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (getReferencingDatabasesCount() > 0) {
       hash = (37 * hash) + REFERENCING_DATABASES_FIELD_NUMBER;
       hash = (53 * hash) + getReferencingDatabasesList().hashCode();
+    }
+    if (hasEncryptionInfo()) {
+      hash = (37 * hash) + ENCRYPTION_INFO_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionInfo().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1009,6 +1117,12 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
 
       referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = null;
+      } else {
+        encryptionInfo_ = null;
+        encryptionInfoBuilder_ = null;
+      }
       return this;
     }
 
@@ -1056,6 +1170,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.referencingDatabases_ = referencingDatabases_;
+      if (encryptionInfoBuilder_ == null) {
+        result.encryptionInfo_ = encryptionInfo_;
+      } else {
+        result.encryptionInfo_ = encryptionInfoBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1134,6 +1253,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
           referencingDatabases_.addAll(other.referencingDatabases_);
         }
         onChanged();
+      }
+      if (other.hasEncryptionInfo()) {
+        mergeEncryptionInfo(other.getEncryptionInfo());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1916,6 +2038,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The sizeBytes.
      */
+    @java.lang.Override
     public long getSizeBytes() {
       return sizeBytes_;
     }
@@ -1969,6 +2092,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for state.
      */
+    @java.lang.Override
     public int getStateValue() {
       return state_;
     }
@@ -1987,6 +2111,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
+
       state_ = value;
       onChanged();
       return this;
@@ -2004,6 +2129,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The state.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.Backup.State getState() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.Backup.State result =
@@ -2284,6 +2410,229 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       referencingDatabases_.add(value);
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.database.v1.EncryptionInfo encryptionInfo_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        encryptionInfoBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the encryptionInfo field is set.
+     */
+    public boolean hasEncryptionInfo() {
+      return encryptionInfoBuilder_ != null || encryptionInfo_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The encryptionInfo.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo() {
+      if (encryptionInfoBuilder_ == null) {
+        return encryptionInfo_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+            : encryptionInfo_;
+      } else {
+        return encryptionInfoBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionInfo_ = value;
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(
+        com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (encryptionInfo_ != null) {
+          encryptionInfo_ =
+              com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder(encryptionInfo_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionInfo_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionInfo() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = null;
+        onChanged();
+      } else {
+        encryptionInfo_ = null;
+        encryptionInfoBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder getEncryptionInfoBuilder() {
+
+      onChanged();
+      return getEncryptionInfoFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder
+        getEncryptionInfoOrBuilder() {
+      if (encryptionInfoBuilder_ != null) {
+        return encryptionInfoBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionInfo_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+            : encryptionInfo_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * If the encryption key protecting this resource is customer managed, then
+     * kms_key_version will be filled.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInfoFieldBuilder() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfoBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionInfo,
+                com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+                com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
+                getEncryptionInfo(), getParentForChildren(), isClean());
+        encryptionInfo_ = null;
+      }
+      return encryptionInfoBuilder_;
     }
 
     @java.lang.Override

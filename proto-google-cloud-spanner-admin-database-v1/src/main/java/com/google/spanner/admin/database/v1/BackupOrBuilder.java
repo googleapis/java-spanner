@@ -318,4 +318,51 @@ public interface BackupOrBuilder
    * @return The bytes of the referencingDatabases at the given index.
    */
   com.google.protobuf.ByteString getReferencingDatabasesBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionInfo field is set.
+   */
+  boolean hasEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionInfo.
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * If the encryption key protecting this resource is customer managed, then
+   * kms_key_version will be filled.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder();
 }

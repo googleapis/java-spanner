@@ -148,10 +148,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The enum numeric value on the wire for code.
    */
+  @java.lang.Override
   public int getCodeValue() {
     return code_;
   }
@@ -162,10 +163,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The code.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TypeCode getCode() {
     @SuppressWarnings("deprecation")
     com.google.spanner.v1.TypeCode result = com.google.spanner.v1.TypeCode.valueOf(code_);
@@ -186,6 +188,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the arrayElementType field is set.
    */
+  @java.lang.Override
   public boolean hasArrayElementType() {
     return arrayElementType_ != null;
   }
@@ -201,6 +204,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The arrayElementType.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Type getArrayElementType() {
     return arrayElementType_ == null
         ? com.google.spanner.v1.Type.getDefaultInstance()
@@ -216,6 +220,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Type array_element_type = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TypeOrBuilder getArrayElementTypeOrBuilder() {
     return getArrayElementType();
   }
@@ -234,6 +239,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the structType field is set.
    */
+  @java.lang.Override
   public boolean hasStructType() {
     return structType_ != null;
   }
@@ -249,6 +255,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The structType.
    */
+  @java.lang.Override
   public com.google.spanner.v1.StructType getStructType() {
     return structType_ == null
         ? com.google.spanner.v1.StructType.getDefaultInstance()
@@ -264,6 +271,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.StructType struct_type = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.StructTypeOrBuilder getStructTypeOrBuilder() {
     return getStructType();
   }
@@ -642,10 +650,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The enum numeric value on the wire for code.
      */
+    @java.lang.Override
     public int getCodeValue() {
       return code_;
     }
@@ -656,12 +665,13 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The enum numeric value on the wire for code to set.
      * @return This builder for chaining.
      */
     public Builder setCodeValue(int value) {
+
       code_ = value;
       onChanged();
       return this;
@@ -673,10 +683,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The code.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TypeCode getCode() {
       @SuppressWarnings("deprecation")
       com.google.spanner.v1.TypeCode result = com.google.spanner.v1.TypeCode.valueOf(code_);
@@ -689,7 +700,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The code to set.
      * @return This builder for chaining.
@@ -710,7 +721,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */

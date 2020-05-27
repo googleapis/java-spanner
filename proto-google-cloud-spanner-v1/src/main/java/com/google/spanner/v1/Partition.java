@@ -124,6 +124,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The partitionToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getPartitionToken() {
     return partitionToken_;
   }
@@ -454,6 +455,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The partitionToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }

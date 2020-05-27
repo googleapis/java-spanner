@@ -66,6 +66,24 @@ import javax.annotation.Generated;
 @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
 public class GrpcInstanceAdminStub extends InstanceAdminStub {
 
+  private static final MethodDescriptor<CreateInstanceRequest, Operation>
+      createInstanceMethodDescriptor =
+          MethodDescriptor.<CreateInstanceRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/CreateInstance")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(CreateInstanceRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+  private static final MethodDescriptor<UpdateInstanceRequest, Operation>
+      updateInstanceMethodDescriptor =
+          MethodDescriptor.<UpdateInstanceRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/UpdateInstance")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(UpdateInstanceRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
   private static final MethodDescriptor<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsMethodDescriptor =
           MethodDescriptor.<ListInstanceConfigsRequest, ListInstanceConfigsResponse>newBuilder()
@@ -103,24 +121,6 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetInstanceRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Instance.getDefaultInstance()))
           .build();
-  private static final MethodDescriptor<CreateInstanceRequest, Operation>
-      createInstanceMethodDescriptor =
-          MethodDescriptor.<CreateInstanceRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/CreateInstance")
-              .setRequestMarshaller(
-                  ProtoUtils.marshaller(CreateInstanceRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
-  private static final MethodDescriptor<UpdateInstanceRequest, Operation>
-      updateInstanceMethodDescriptor =
-          MethodDescriptor.<UpdateInstanceRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/UpdateInstance")
-              .setRequestMarshaller(
-                  ProtoUtils.marshaller(UpdateInstanceRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
   private static final MethodDescriptor<DeleteInstanceRequest, Empty>
       deleteInstanceMethodDescriptor =
           MethodDescriptor.<DeleteInstanceRequest, Empty>newBuilder()
@@ -159,6 +159,12 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
 
+  private final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable;
+  private final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationCallable;
+  private final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable;
+  private final OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -168,12 +174,6 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable;
   private final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable;
-  private final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable;
-  private final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationCallable;
-  private final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable;
-  private final OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationCallable;
   private final UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable;
   private final UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable;
   private final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable;
@@ -220,6 +220,32 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
     this.callableFactory = callableFactory;
     this.operationsStub = GrpcOperationsStub.create(clientContext, callableFactory);
 
+    GrpcCallSettings<CreateInstanceRequest, Operation> createInstanceTransportSettings =
+        GrpcCallSettings.<CreateInstanceRequest, Operation>newBuilder()
+            .setMethodDescriptor(createInstanceMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<CreateInstanceRequest>() {
+                  @Override
+                  public Map<String, String> extract(CreateInstanceRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("parent", String.valueOf(request.getParent()));
+                    return params.build();
+                  }
+                })
+            .build();
+    GrpcCallSettings<UpdateInstanceRequest, Operation> updateInstanceTransportSettings =
+        GrpcCallSettings.<UpdateInstanceRequest, Operation>newBuilder()
+            .setMethodDescriptor(updateInstanceMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<UpdateInstanceRequest>() {
+                  @Override
+                  public Map<String, String> extract(UpdateInstanceRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("instance.name", String.valueOf(request.getInstance().getName()));
+                    return params.build();
+                  }
+                })
+            .build();
     GrpcCallSettings<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
         listInstanceConfigsTransportSettings =
             GrpcCallSettings.<ListInstanceConfigsRequest, ListInstanceConfigsResponse>newBuilder()
@@ -269,32 +295,6 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   public Map<String, String> extract(GetInstanceRequest request) {
                     ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
                     params.put("name", String.valueOf(request.getName()));
-                    return params.build();
-                  }
-                })
-            .build();
-    GrpcCallSettings<CreateInstanceRequest, Operation> createInstanceTransportSettings =
-        GrpcCallSettings.<CreateInstanceRequest, Operation>newBuilder()
-            .setMethodDescriptor(createInstanceMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<CreateInstanceRequest>() {
-                  @Override
-                  public Map<String, String> extract(CreateInstanceRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("parent", String.valueOf(request.getParent()));
-                    return params.build();
-                  }
-                })
-            .build();
-    GrpcCallSettings<UpdateInstanceRequest, Operation> updateInstanceTransportSettings =
-        GrpcCallSettings.<UpdateInstanceRequest, Operation>newBuilder()
-            .setMethodDescriptor(updateInstanceMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<UpdateInstanceRequest>() {
-                  @Override
-                  public Map<String, String> extract(UpdateInstanceRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("instance.name", String.valueOf(request.getInstance().getName()));
                     return params.build();
                   }
                 })
@@ -353,6 +353,24 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                     })
                 .build();
 
+    this.createInstanceCallable =
+        callableFactory.createUnaryCallable(
+            createInstanceTransportSettings, settings.createInstanceSettings(), clientContext);
+    this.createInstanceOperationCallable =
+        callableFactory.createOperationCallable(
+            createInstanceTransportSettings,
+            settings.createInstanceOperationSettings(),
+            clientContext,
+            this.operationsStub);
+    this.updateInstanceCallable =
+        callableFactory.createUnaryCallable(
+            updateInstanceTransportSettings, settings.updateInstanceSettings(), clientContext);
+    this.updateInstanceOperationCallable =
+        callableFactory.createOperationCallable(
+            updateInstanceTransportSettings,
+            settings.updateInstanceOperationSettings(),
+            clientContext,
+            this.operationsStub);
     this.listInstanceConfigsCallable =
         callableFactory.createUnaryCallable(
             listInstanceConfigsTransportSettings,
@@ -377,24 +395,6 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
     this.getInstanceCallable =
         callableFactory.createUnaryCallable(
             getInstanceTransportSettings, settings.getInstanceSettings(), clientContext);
-    this.createInstanceCallable =
-        callableFactory.createUnaryCallable(
-            createInstanceTransportSettings, settings.createInstanceSettings(), clientContext);
-    this.createInstanceOperationCallable =
-        callableFactory.createOperationCallable(
-            createInstanceTransportSettings,
-            settings.createInstanceOperationSettings(),
-            clientContext,
-            this.operationsStub);
-    this.updateInstanceCallable =
-        callableFactory.createUnaryCallable(
-            updateInstanceTransportSettings, settings.updateInstanceSettings(), clientContext);
-    this.updateInstanceOperationCallable =
-        callableFactory.createOperationCallable(
-            updateInstanceTransportSettings,
-            settings.updateInstanceOperationSettings(),
-            clientContext,
-            this.operationsStub);
     this.deleteInstanceCallable =
         callableFactory.createUnaryCallable(
             deleteInstanceTransportSettings, settings.deleteInstanceSettings(), clientContext);
@@ -416,6 +416,26 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
   public GrpcOperationsStub getOperationsStub() {
     return operationsStub;
+  }
+
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationCallable() {
+    return createInstanceOperationCallable;
+  }
+
+  public UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
+    return createInstanceCallable;
+  }
+
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationCallable() {
+    return updateInstanceOperationCallable;
+  }
+
+  public UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
+    return updateInstanceCallable;
   }
 
   public UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -443,26 +463,6 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
 
   public UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return getInstanceCallable;
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationCallable() {
-    return createInstanceOperationCallable;
-  }
-
-  public UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
-    return createInstanceCallable;
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationCallable() {
-    return updateInstanceOperationCallable;
-  }
-
-  public UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
-    return updateInstanceCallable;
   }
 
   public UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable() {

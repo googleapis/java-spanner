@@ -17,7 +17,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>5.7.0</version>
+      <version>7.0.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -43,17 +43,14 @@ If you are using Maven without BOM, add this to your dependencies:
 
 ```
 
-[//]: # ({x-version-update-start:google-cloud-spanner:released})
-
 If you are using Gradle, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:1.56.0'
+compile 'com.google.cloud:google-cloud-spanner:3.0.4'
 ```
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "1.56.0"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "3.0.4"
 ```
-[//]: # ({x-version-update-end})
 
 ## Authentication
 

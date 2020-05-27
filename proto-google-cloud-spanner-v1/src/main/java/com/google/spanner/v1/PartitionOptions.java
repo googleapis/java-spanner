@@ -130,6 +130,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
    *
    * @return The partitionSizeBytes.
    */
+  @java.lang.Override
   public long getPartitionSizeBytes() {
     return partitionSizeBytes_;
   }
@@ -153,6 +154,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
    *
    * @return The maxPartitions.
    */
+  @java.lang.Override
   public long getMaxPartitions() {
     return maxPartitions_;
   }
@@ -503,6 +505,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      *
      * @return The partitionSizeBytes.
      */
+    @java.lang.Override
     public long getPartitionSizeBytes() {
       return partitionSizeBytes_;
     }
@@ -568,6 +571,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      *
      * @return The maxPartitions.
      */
+    @java.lang.Override
     public long getMaxPartitions() {
       return maxPartitions_;
     }

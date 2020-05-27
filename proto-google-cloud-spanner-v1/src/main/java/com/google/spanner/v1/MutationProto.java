@@ -63,11 +63,11 @@ public final class MutationProto {
           + "lues\030\003 \003(\0132\032.google.protobuf.ListValue\032C"
           + "\n\006Delete\022\r\n\005table\030\001 \001(\t\022*\n\007key_set\030\002 \001(\013"
           + "2\031.google.spanner.v1.KeySetB\013\n\toperation"
-          + "B\226\001\n\025com.google.spanner.v1B\rMutationProt"
+          + "B\263\001\n\025com.google.spanner.v1B\rMutationProt"
           + "oP\001Z8google.golang.org/genproto/googleap"
           + "is/spanner/v1;spanner\252\002\027Google.Cloud.Spa"
-          + "nner.V1\312\002\027Google\\Cloud\\Spanner\\V1b\006proto"
-          + "3"
+          + "nner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Goog"
+          + "le::Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

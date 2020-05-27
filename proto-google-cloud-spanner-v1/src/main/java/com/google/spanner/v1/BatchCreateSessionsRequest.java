@@ -146,6 +146,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -170,6 +171,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -195,6 +197,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * @return Whether the sessionTemplate field is set.
    */
+  @java.lang.Override
   public boolean hasSessionTemplate() {
     return sessionTemplate_ != null;
   }
@@ -209,6 +212,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * @return The sessionTemplate.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Session getSessionTemplate() {
     return sessionTemplate_ == null
         ? com.google.spanner.v1.Session.getDefaultInstance()
@@ -223,6 +227,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * <code>.google.spanner.v1.Session session_template = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionTemplateOrBuilder() {
     return getSessionTemplate();
   }
@@ -244,6 +249,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    *
    * @return The sessionCount.
    */
+  @java.lang.Override
   public int getSessionCount() {
     return sessionCount_;
   }
@@ -925,6 +931,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      *
      * @return The sessionCount.
      */
+    @java.lang.Override
     public int getSessionCount() {
       return sessionCount_;
     }
