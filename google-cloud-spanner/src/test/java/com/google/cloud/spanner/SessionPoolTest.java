@@ -16,7 +16,12 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -37,6 +42,7 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
 import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
+import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
@@ -1710,16 +1716,69 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.getMetrics().size()).isEqualTo(6);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.GET_SESSION_TIMEOUTS, 0L);
-    assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 2L);
-    assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 0L);
-    assertThat(record.getMetrics())
-        .containsEntry(
-            MetricRegistryConstants.MAX_ALLOWED_SESSIONS, (long) options.getMaxSessions());
-    assertThat(record.getLabels()).containsEntry(SPANNER_LABEL_KEYS, labelValues);
+
+    List<PointWithFunction> maxInUseSessions =
+        record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+    assertThat(maxInUseSessions.size()).isEqualTo(1);
+    assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
+    assertThat(maxInUseSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(maxInUseSessions.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> getSessionsTimeouts =
+        record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS);
+    assertThat(getSessionsTimeouts.size()).isEqualTo(1);
+    assertThat(getSessionsTimeouts.get(0).value()).isAtMost(1L);
+    assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> numAcquiredSessions =
+        record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+    assertThat(numAcquiredSessions.size()).isEqualTo(1);
+    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
+    assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> numReleasedSessions =
+        record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+    assertThat(numReleasedSessions.size()).isEqualTo(1);
+    assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
+    assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> maxAllowedSessions =
+        record.getMetrics().get(MetricRegistryConstants.MAX_ALLOWED_SESSIONS);
+    assertThat(maxAllowedSessions.size()).isEqualTo(1);
+    assertThat(maxAllowedSessions.get(0).value()).isEqualTo(options.getMaxSessions());
+    assertThat(maxAllowedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(maxAllowedSessions.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> numSessionsInPool =
+        record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+    assertThat(numSessionsInPool.size()).isEqualTo(4);
+    PointWithFunction beingPrepared = numSessionsInPool.get(0);
+    List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
+    labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    assertThat(beingPrepared.value()).isEqualTo(0L);
+    assertThat(beingPrepared.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_TYPE);
+    assertThat(beingPrepared.values()).isEqualTo(labelValuesWithBeingPreparedType);
+    PointWithFunction numSessionsInUse = numSessionsInPool.get(1);
+    List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
+    labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    assertThat(numSessionsInUse.value()).isEqualTo(2L);
+    assertThat(numSessionsInUse.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_TYPE);
+    assertThat(numSessionsInUse.values()).isEqualTo(labelValuesWithInUseType);
+    PointWithFunction readSessions = numSessionsInPool.get(2);
+    List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
+    labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    assertThat(readSessions.value()).isEqualTo(0L);
+    assertThat(readSessions.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_TYPE);
+    assertThat(readSessions.values()).isEqualTo(labelValuesWithReadType);
+    PointWithFunction writePreparedSessions = numSessionsInPool.get(3);
+    List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
+    labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    assertThat(writePreparedSessions.value()).isEqualTo(0L);
+    assertThat(writePreparedSessions.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_TYPE);
+    assertThat(writePreparedSessions.values()).isEqualTo(labelValuesWithWriteType);
 
     final CountDownLatch latch = new CountDownLatch(1);
     // Try asynchronously to take another session. This attempt should time out.
@@ -1750,13 +1809,28 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     executor.shutdown();
 
     session1.close();
-    assertThat(record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS).longValue())
-        .isAtLeast(1L);
-    assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS, 3L);
-    assertThat(record.getMetrics())
-        .containsEntry(MetricRegistryConstants.NUM_RELEASED_SESSIONS, 3L);
-    assertThat(record.getMetrics()).containsEntry(MetricRegistryConstants.MAX_IN_USE_SESSIONS, 2L);
+    numAcquiredSessions = record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+    assertThat(numAcquiredSessions.size()).isEqualTo(1);
+    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
+
+    numReleasedSessions = record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+    assertThat(numReleasedSessions.size()).isEqualTo(1);
+    assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
+
+    maxInUseSessions = record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+    assertThat(maxInUseSessions.size()).isEqualTo(1);
+    assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
+
+    numSessionsInPool = record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+    assertThat(numSessionsInPool.size()).isEqualTo(4);
+    beingPrepared = numSessionsInPool.get(0);
+    assertThat(beingPrepared.value()).isEqualTo(0L);
+    numSessionsInUse = numSessionsInPool.get(1);
+    assertThat(numSessionsInUse.value()).isEqualTo(0L);
+    readSessions = numSessionsInPool.get(2);
+    assertThat(readSessions.value()).isEqualTo(2L);
+    writePreparedSessions = numSessionsInPool.get(3);
+    assertThat(writePreparedSessions.value()).isEqualTo(0L);
   }
 
   private void mockKeepAlive(Session session) {
