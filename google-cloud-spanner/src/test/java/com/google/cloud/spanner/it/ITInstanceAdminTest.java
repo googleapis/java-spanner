@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Instance;
@@ -80,6 +81,9 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstance() throws Exception {
+    assumeFalse(
+        "The emulator does not support updating instances", env.getTestHelper().isEmulator());
+
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
     String rand = new Random().nextInt() + "";
@@ -107,6 +111,9 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstanceViaEntity() throws Exception {
+    assumeFalse(
+        "The emulator does not support updating instances", env.getTestHelper().isEmulator());
+
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
     String rand = new Random().nextInt() + "";

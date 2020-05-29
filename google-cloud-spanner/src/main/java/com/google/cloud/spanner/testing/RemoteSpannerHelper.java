@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.base.Strings;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,10 @@ public class RemoteSpannerHelper {
 
   public SpannerOptions getOptions() {
     return options;
+  }
+
+  public boolean isEmulator() {
+    return !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"));
   }
 
   public Spanner getClient() {

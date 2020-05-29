@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -50,6 +51,8 @@ public class ITQueryOptionsTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    assumeFalse("Emulator ignores query options", env.getTestHelper().isEmulator());
+
     // Empty database.
     db =
         env.getTestHelper()

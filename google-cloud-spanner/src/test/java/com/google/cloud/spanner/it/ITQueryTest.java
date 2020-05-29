@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -492,6 +493,8 @@ public class ITQueryTest {
 
   @Test
   public void unsupportedSelectStructValue() {
+    assumeFalse("The emulator accepts this query", env.getTestHelper().isEmulator());
+
     Struct p = structValue();
     expectedException.expect(isSpannerException(ErrorCode.UNIMPLEMENTED));
     expectedException.expectMessage(
@@ -501,6 +504,10 @@ public class ITQueryTest {
 
   @Test
   public void unsupportedSelectArrayStructValue() {
+    assumeFalse(
+        "Emulator evaluates this expression differently than Cloud Spanner",
+        env.getTestHelper().isEmulator());
+
     Struct p = structValue();
     expectedException.expect(isSpannerException(ErrorCode.UNIMPLEMENTED));
     expectedException.expectMessage(
@@ -714,7 +721,6 @@ public class ITQueryTest {
     ResultSet resultSet =
         Statement.of("SELECT @v").executeQuery(client.singleUse(TimestampBound.strong()));
     expectedException.expect(isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    expectedException.expectMessage("No parameter found for binding: v");
     resultSet.next();
   }
 
@@ -801,6 +807,8 @@ public class ITQueryTest {
 
   @Test
   public void analyzePlan() {
+    assumeFalse("Emulator does not support Analyze Plan", env.getTestHelper().isEmulator());
+
     Statement statement = Statement.of("SELECT 1 AS column UNION ALL SELECT 2");
     ResultSet resultSet =
         statement.analyzeQuery(client.singleUse(TimestampBound.strong()), QueryAnalyzeMode.PLAN);
@@ -814,6 +822,8 @@ public class ITQueryTest {
 
   @Test
   public void analyzeProfile() {
+    assumeFalse("Emulator does not support Analyze Profile", env.getTestHelper().isEmulator());
+
     Statement statement =
         Statement.of("SELECT 1 AS column UNION ALL SELECT 2 AS column ORDER BY column");
     ResultSet resultSet =
