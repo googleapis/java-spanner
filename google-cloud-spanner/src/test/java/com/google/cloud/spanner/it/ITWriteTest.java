@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
@@ -49,10 +50,8 @@ import org.hamcrest.MatcherAssert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -96,7 +95,6 @@ public class ITWriteTest {
     return String.format("k%04d", seq++);
   }
 
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private String lastKey;
 
   private Timestamp write(Mutation m) {
@@ -163,8 +161,12 @@ public class ITWriteTest {
   @Ignore // TODO(user): Fix this - backend currently accepts empty mutation.
   @Test
   public void emptyWrite() {
-    expectedException.expect(isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    client.write(Arrays.<Mutation>asList());
+    try {
+      client.write(Arrays.<Mutation>asList());
+      fail("");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
   }
 
   @Test
@@ -373,9 +375,12 @@ public class ITWriteTest {
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBooleanList(0)).containsExactly(true, null, false).inOrder();
-
-    expectedException.expect(NullPointerException.class);
-    row.getBooleanArray(0);
+    try {
+      row.getBooleanArray(0);
+      fail("");
+    } catch (NullPointerException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -407,9 +412,12 @@ public class ITWriteTest {
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLongList(0)).containsExactly(1L, 2L, null).inOrder();
-
-    expectedException.expect(NullPointerException.class);
-    row.getLongArray(0);
+    try {
+      row.getLongArray(0);
+      fail("");
+    } catch (NullPointerException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -445,9 +453,12 @@ public class ITWriteTest {
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDoubleList(0)).containsExactly(null, 1.0, 2.0).inOrder();
-
-    expectedException.expect(NullPointerException.class);
-    row.getDoubleArray(0);
+    try {
+      row.getDoubleArray(0);
+      fail("");
+    } catch (NullPointerException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -570,29 +581,39 @@ public class ITWriteTest {
   public void tableNotFound() {
     // TODO(user): More precise matchers! Customer code needs to discern table not found, column
     // not found, etc.
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    write(
-        Mutation.newInsertBuilder("TableThatDoesNotExist")
-            .set("K")
-            .to(uniqueString())
-            .set("StringuniqueString(Value")
-            .to("V1")
-            .build());
+    try {
+      write(
+          Mutation.newInsertBuilder("TableThatDoesNotExist")
+              .set("K")
+              .to(uniqueString())
+              .set("StringuniqueString(Value")
+              .to("V1")
+              .build());
+      fail("");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
   public void columnNotFound() {
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    write(baseInsert().set("ColumnThatDoesNotExist").to("V1").build());
+    try {
+      write(baseInsert().set("ColumnThatDoesNotExist").to("V1").build());
+      fail("");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
   public void incorrectType() {
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    // Attempt to set 'V' to INT64, not STRING.
-    // NOTE: an interest effect of not sending type metadata is that BYTES and INT64 are accepted
-    // here...
-    write(baseInsert().set("StringValue").to(1.234).build());
+    try {
+      write(baseInsert().set("StringValue").to(1.234).build());
+      fail("");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      assertThat(ex.getMessage()).contains("Expected STRING");
+    }
   }
 
   @Test

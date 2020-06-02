@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -33,9 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -43,7 +42,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ValueTest {
   private static final String NULL_STRING = "NULL";
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private static ByteArray newByteArray(String data) {
     return ByteArray.copyFrom(data);
@@ -85,10 +83,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bool());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getBool();
+    try {
+      v.getBool();
+      fail("");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("null value");
+    }
   }
 
   @Test
@@ -103,28 +103,34 @@ public class ValueTest {
   @Test
   public void int64TryGetBool() {
     Value value = Value.int64(1234);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: BOOL actual: INT64");
-    value.getBool();
+    try {
+      value.getBool();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
+    }
   }
 
   @Test
   public void int64NullTryGetBool() {
     Value value = Value.int64(null);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: BOOL actual: INT64");
-    value.getBool();
+    try {
+      value.getBool();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
+    }
   }
 
   @Test
   public void int64TryGetInt64Array() {
     Value value = Value.int64(1234);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<INT64> actual: INT64");
-    value.getInt64Array();
+    try {
+      value.getInt64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: INT64");
+    }
   }
 
   @Test
@@ -142,10 +148,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.int64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getInt64();
+    try {
+      v.getInt64();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("null value");
+    }
   }
 
   @Test
@@ -172,10 +180,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.float64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getFloat64();
+    try {
+      v.getFloat64();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("null value");
+    }
   }
 
   @Test
@@ -192,10 +202,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.string());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getString();
+    try {
+      v.getString();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -232,10 +244,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bytes());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getBytes();
+    try {
+      v.getBytes();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -257,9 +271,12 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     assertThat(v.isCommitTimestamp()).isFalse();
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getTimestamp();
+    try {
+      v.getTimestamp();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -274,9 +291,12 @@ public class ValueTest {
             com.google.protobuf.Value.newBuilder()
                 .setStringValue("spanner.commit_timestamp()")
                 .build());
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Commit timestamp value");
-    v.getTimestamp();
+    try {
+      v.getTimestamp();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Commit timestamp value"));
+    }
   }
 
   @Test
@@ -296,10 +316,12 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.date());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getDate();
+    try {
+      v.getDate();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -323,10 +345,12 @@ public class ValueTest {
     Value v = Value.boolArray((boolean[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getBoolArray();
+    try {
+      v.getBoolArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -342,10 +366,12 @@ public class ValueTest {
     Value v = Value.boolArray((Iterable<Boolean>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getBoolArray();
+    try {
+      v.getBoolArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -368,10 +394,12 @@ public class ValueTest {
   @Test
   public void boolArrayTryGetInt64Array() {
     Value value = Value.boolArray(Arrays.asList(true));
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<INT64> actual: ARRAY<BOOL>");
-    value.getInt64Array();
+    try {
+      value.getInt64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<BOOL>"));
+    }
   }
 
   @Test
@@ -395,10 +423,12 @@ public class ValueTest {
     Value v = Value.int64Array((long[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getInt64Array();
+    try {
+      v.getInt64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -414,28 +444,34 @@ public class ValueTest {
     Value v = Value.int64Array((Iterable<Long>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getInt64Array();
+    try {
+      v.getInt64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
   public void int64ArrayTryGetBool() {
     Value value = Value.int64Array(Arrays.asList(1234L));
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: BOOL actual: ARRAY<INT64>");
-    value.getBool();
+    try {
+      value.getBool();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
+    }
   }
 
   @Test
   public void int64ArrayNullTryGetBool() {
     Value value = Value.int64Array((Iterable<Long>) null);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: BOOL actual: ARRAY<INT64>");
-    value.getBool();
+    try {
+      value.getBool();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
+    }
   }
 
   @Test
@@ -459,10 +495,12 @@ public class ValueTest {
     Value v = Value.float64Array((double[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getFloat64Array();
+    try {
+      v.getFloat64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -478,19 +516,23 @@ public class ValueTest {
     Value v = Value.float64Array((Iterable<Double>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getFloat64Array();
+    try {
+      v.getFloat64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
   public void float64ArrayTryGetInt64Array() {
     Value value = Value.float64Array(Arrays.asList(.1));
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>");
-    value.getInt64Array();
+    try {
+      value.getInt64Array();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
+    }
   }
 
   @Test
@@ -506,19 +548,23 @@ public class ValueTest {
     Value v = Value.stringArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getStringArray();
+    try {
+      v.getStringArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
   public void stringArrayTryGetBytesArray() {
     Value value = Value.stringArray(Arrays.asList("a"));
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<BYTES> actual: ARRAY<STRING>");
-    value.getBytesArray();
+    try {
+      value.getBytesArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<STRING>"));
+    }
   }
 
   @Test
@@ -536,19 +582,23 @@ public class ValueTest {
     Value v = Value.bytesArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getBytesArray();
+    try {
+      v.getBytesArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
   public void bytesArrayTryGetStringArray() {
     Value value = Value.bytesArray(Arrays.asList(newByteArray("a")));
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<STRING> actual: ARRAY<BYTES>");
-    value.getStringArray();
+    try {
+      value.getStringArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<BYTES>"));
+    }
   }
 
   @Test
@@ -570,10 +620,12 @@ public class ValueTest {
     Value v = Value.timestampArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getTimestampArray();
+    try {
+      v.getTimestampArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -594,10 +646,12 @@ public class ValueTest {
     Value v = Value.dateArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getDateArray();
+    try {
+      v.getDateArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
   }
 
   @Test
@@ -611,10 +665,12 @@ public class ValueTest {
 
     Value v2 = Value.struct(struct.getType(), struct);
     assertThat(v2).isEqualTo(v1);
-
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Mismatch between struct value and type.");
-    Value.struct(Type.struct(Arrays.asList(StructField.of("f3", Type.string()))), struct);
+    try {
+      Value.struct(Type.struct(Arrays.asList(StructField.of("f3", Type.string()))), struct);
+      fail("");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage().contains("Mismatch between struct value and type."));
+    }
   }
 
   @Test
@@ -627,10 +683,12 @@ public class ValueTest {
     assertThat(v.getType().getStructFields()).isEqualTo(fieldTypes);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(NullPointerException.class);
-    expectedException.expectMessage("Illegal call to create a NULL struct value.");
-    Value.struct(null);
+    try {
+      Value.struct(null);
+      fail("");
+    } catch (NullPointerException e) {
+      assertThat(e.getMessage().contains("Illegal call to create a NULL struct value."));
+    }
   }
 
   @Test
@@ -641,10 +699,12 @@ public class ValueTest {
 
     Value v = Value.struct(Type.struct(fieldTypes), null);
     assertThat(v.isNull()).isTrue();
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Illegal call to getter of null value.");
-    v.getStruct();
+    try {
+      v.getStruct();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("Illegal call to getter of null value.");
+    }
   }
 
   @Test
@@ -726,10 +786,12 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.getType().getArrayElementType()).isEqualTo(elementType);
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Illegal call to getter of null value");
-    v.getStructArray();
+    try {
+      v.getStructArray();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("Illegal call to getter of null value");
+    }
   }
 
   @Test
@@ -744,10 +806,12 @@ public class ValueTest {
         Arrays.asList(
             Struct.newBuilder().set("ff1").to("1").set("ff2").to(1).build(),
             Struct.newBuilder().set("ff1").to(2).set("ff2").to(3).build());
-
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("must have type STRUCT<ff1 STRING, ff2 INT64>");
-    Value.structArray(elementType, arrayElements);
+    try {
+      Value.structArray(elementType, arrayElements);
+      fail("");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).contains("must have type STRUCT<ff1 STRING, ff2 INT64>");
+    }
   }
 
   @Test

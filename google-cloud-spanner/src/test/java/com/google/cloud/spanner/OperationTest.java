@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.longrunning.Operation.newBuilder;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -31,9 +31,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -48,8 +46,6 @@ public class OperationTest {
   @Mock private SpannerRpc rpc;
   @Mock private DatabaseAdminClient dbClient;
   @Mock private ApiClock clock;
-
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private class ParserImpl implements Operation.Parser<Database, String> {
 
@@ -91,8 +87,12 @@ public class OperationTest {
     assertThat(op.isDone()).isTrue();
     assertThat(op.isSuccessful()).isFalse();
     assertThat(op.getMetadata()).isNull();
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    op.getResult();
+    try {
+      op.getResult();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -179,10 +179,13 @@ public class OperationTest {
     Operation<Database, String> op = Operation.create(rpc, proto, new ParserImpl(), clock);
     when(rpc.getOperation("op1")).thenReturn(proto);
     when(clock.nanoTime()).thenReturn(0L, 50_000_000L, 100_000_000L, 150_000_000L);
-
-    expectedException.expect(isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
-    op.waitFor(
-        RetryOption.totalTimeout(Duration.ofMillis(100L)),
-        RetryOption.initialRetryDelay(Duration.ZERO));
+    try {
+      op.waitFor(
+          RetryOption.totalTimeout(Duration.ofMillis(100L)),
+          RetryOption.initialRetryDelay(Duration.ZERO));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+    }
   }
 }

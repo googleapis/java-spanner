@@ -16,13 +16,13 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -31,7 +31,6 @@ import org.junit.runners.Parameterized.Parameters;
 /** Unit tests for {@link com.google.cloud.spanner.SessionPoolOptions} */
 @RunWith(Parameterized.class)
 public class SessionPoolOptionsTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   @Parameter public int minSessions;
 
   @Parameter(1)
@@ -50,16 +49,26 @@ public class SessionPoolOptionsTest {
   @Test
   public void setMinMaxSessions() {
     if (minSessions > maxSessions) {
-      expectedException.expect(IllegalArgumentException.class);
-    }
-    SessionPoolOptions options =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(minSessions)
-            .setMaxSessions(maxSessions)
-            .build();
+      try {
+        SessionPoolOptions options =
+            SessionPoolOptions.newBuilder()
+                .setMinSessions(minSessions)
+                .setMaxSessions(maxSessions)
+                .build();
+        fail("Expected exception");
+      } catch (IllegalArgumentException ex) {
+        assertNotNull(ex.getMessage());
+      }
+    } else {
+      SessionPoolOptions options =
+          SessionPoolOptions.newBuilder()
+              .setMinSessions(minSessions)
+              .setMaxSessions(maxSessions)
+              .build();
 
-    assertThat(minSessions).isEqualTo(options.getMinSessions());
-    assertThat(maxSessions).isEqualTo(options.getMaxSessions());
+      assertThat(minSessions).isEqualTo(options.getMinSessions());
+      assertThat(maxSessions).isEqualTo(options.getMaxSessions());
+    }
   }
 
   /**

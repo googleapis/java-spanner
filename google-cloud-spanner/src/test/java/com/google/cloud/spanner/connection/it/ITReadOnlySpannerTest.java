@@ -20,6 +20,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -30,7 +32,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
-import com.google.cloud.spanner.connection.SpannerExceptionMatcher;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import java.math.BigInteger;
 import java.util.concurrent.ExecutorService;
@@ -38,10 +39,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -54,8 +53,6 @@ import org.junit.runners.JUnit4;
 public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
   private static final Logger logger = Logger.getLogger(ITReadOnlySpannerTest.class.getName());
   private static final long TEST_ROWS_COUNT = 1000L;
-
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   @Override
   protected void appendConnectionUri(StringBuilder url) {
@@ -112,13 +109,16 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
     try (ITConnection connection = createConnection()) {
       connection.beginTransaction();
       connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
       try (ResultSet rs =
           connection.executeQuery(
               Statement.of(
-                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {}
+                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+        fail("Expected exception");
+      }
       // should never be reached
       connection.commit();
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
     }
   }
 
@@ -155,11 +155,14 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
     try (ITConnection connection = createConnection()) {
       assertThat(connection.isAutocommit(), is(true));
       connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
       try (ResultSet rs =
           connection.executeQuery(
               Statement.of(
-                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {}
+                  "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 

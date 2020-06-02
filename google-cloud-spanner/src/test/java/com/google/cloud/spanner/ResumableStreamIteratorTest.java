@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -40,15 +40,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.Whitebox;
 
-/** Unit tests for {@link SpannerImpl.ResumableStreamIterator}. */
+/** Unit tests for {@link AbstractResultSet.ResumableStreamIterator}. */
 @RunWith(JUnit4.class)
 public class ResumableStreamIteratorTest {
   interface Starter {
@@ -111,8 +109,6 @@ public class ResumableStreamIteratorTest {
       stream.close();
     }
   }
-
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   Starter starter = Mockito.mock(Starter.class);
   AbstractResultSet.ResumableStreamIterator resumableStreamIterator;
@@ -237,8 +233,12 @@ public class ResumableStreamIteratorTest {
     Iterator<String> strings = stringIterator(resumableStreamIterator);
     assertThat(strings.next()).isEqualTo("a");
     assertThat(strings.next()).isEqualTo("b");
-    expectedException.expect(isSpannerException(ErrorCode.FAILED_PRECONDITION));
-    assertThat(strings.next()).isNotEqualTo("X");
+    try {
+      assertThat(strings.next()).isNotEqualTo("X");
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    }
   }
 
   @Test
@@ -341,8 +341,12 @@ public class ResumableStreamIteratorTest {
         .thenThrow(new RetryableException(ErrorCode.UNAVAILABLE, "failed by test"));
 
     assertThat(consumeAtMost(3, resumableStreamIterator)).containsExactly("a", "b", "c").inOrder();
-    expectedException.expect(isSpannerException(ErrorCode.UNAVAILABLE));
-    resumableStreamIterator.next();
+    try {
+      resumableStreamIterator.next();
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNAVAILABLE);
+    }
   }
 
   @Test

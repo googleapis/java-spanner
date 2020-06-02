@@ -19,29 +19,27 @@ package com.google.cloud.spanner.connection.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
-import com.google.cloud.spanner.connection.SpannerExceptionMatcher;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import java.util.Arrays;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITTransactionModeTest extends ITAbstractSpannerTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
-
   @Override
   public void appendConnectionUri(StringBuilder uri) {
     uri.append("?autocommit=false");
@@ -142,8 +140,12 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
     try (ITConnection connection = createConnection()) {
       connection.execute(Statement.of("SET TRANSACTION READ ONLY"));
       assertThat(connection.isAutocommit(), is(false));
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-      connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+      try {
+        connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+        fail("");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
     }
   }
 
@@ -152,11 +154,15 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
     try (ITConnection connection = createConnection()) {
       connection.execute(Statement.of("SET TRANSACTION READ ONLY"));
       assertThat(connection.isAutocommit(), is(false));
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-      connection.bufferedWrite(
-          Arrays.asList(
-              Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
-              Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
+      try {
+        connection.bufferedWrite(
+            Arrays.asList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
+                Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
+        fail("");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+      }
     }
   }
 
@@ -166,8 +172,12 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
       connection.startBatchDdl();
       assertThat(connection.isAutocommit(), is(false));
       assertThat(connection.isDdlBatchActive(), is(true));
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-      connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+      try {
+        connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+        fail("");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
     }
   }
 
@@ -177,11 +187,15 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
       connection.startBatchDdl();
       assertThat(connection.isAutocommit(), is(false));
       assertThat(connection.isDdlBatchActive(), is(true));
-      exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-      connection.bufferedWrite(
-          Arrays.asList(
-              Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
-              Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
+      try {
+        connection.bufferedWrite(
+            Arrays.asList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
+                Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
+        fail("");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
     }
   }
 }

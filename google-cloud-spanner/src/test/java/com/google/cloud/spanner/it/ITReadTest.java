@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -50,10 +51,8 @@ import java.util.concurrent.TimeUnit;
 import org.hamcrest.MatcherAssert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -76,7 +75,6 @@ public class ITReadTest {
           StructField.of("Key", Type.string()), StructField.of("StringValue", Type.string()));
 
   private static Database db;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private static DatabaseClient client;
 
   @BeforeClass
@@ -292,26 +290,38 @@ public class ITReadTest {
     RemoteSpannerHelper helper = env.getTestHelper();
     DatabaseClient invalidClient =
         helper.getClient().getDatabaseClient(DatabaseId.of(helper.getInstanceId(), "invalid"));
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    invalidClient
-        .singleUse(TimestampBound.strong())
-        .readRow(TABLE_NAME, Key.of("k99"), ALL_COLUMNS);
+    try {
+      invalidClient
+          .singleUse(TimestampBound.strong())
+          .readRow(TABLE_NAME, Key.of("k99"), ALL_COLUMNS);
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
   public void tableNotFound() {
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    expectedException.expectMessage("BadTableName");
-    client.singleUse(TimestampBound.strong()).readRow("BadTableName", Key.of("k1"), ALL_COLUMNS);
+    try {
+      client.singleUse(TimestampBound.strong()).readRow("BadTableName", Key.of("k1"), ALL_COLUMNS);
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      assertThat(ex.getMessage()).contains("BadTableName");
+    }
   }
 
   @Test
   public void columnNotFound() {
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    expectedException.expectMessage("BadColumnName");
-    client
-        .singleUse(TimestampBound.strong())
-        .readRow(TABLE_NAME, Key.of("k1"), Arrays.asList("Key", "BadColumnName"));
+    try {
+      client
+          .singleUse(TimestampBound.strong())
+          .readRow(TABLE_NAME, Key.of("k1"), Arrays.asList("Key", "BadColumnName"));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      assertThat(ex.getMessage()).contains("BadColumnName");
+    }
   }
 
   @Test
@@ -322,10 +332,13 @@ public class ITReadTest {
         client
             .singleUse(TimestampBound.strong())
             .read("BadTableName", KeySet.singleKey(Key.of("k1")), ALL_COLUMNS);
-
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    expectedException.expectMessage("BadTableName");
-    resultSet.next();
+    try {
+      resultSet.next();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      assertThat(ex.getMessage()).contains("BadTableName");
+    }
   }
 
   @Test

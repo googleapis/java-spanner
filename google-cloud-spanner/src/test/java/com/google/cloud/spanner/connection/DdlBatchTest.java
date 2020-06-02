@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -53,9 +54,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatcher;
@@ -64,8 +63,6 @@ import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class DdlBatchTest {
-
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   private DdlClient createDefaultMockDdlClient() {
     return createDefaultMockDdlClient(false, 0L);
@@ -139,8 +136,12 @@ public class DdlBatchTest {
   @Test
   public void testExecuteQuery() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.executeQuery(mock(ParsedStatement.class), AnalyzeMode.NONE);
+    try {
+      batch.executeQuery(mock(ParsedStatement.class), AnalyzeMode.NONE);
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
@@ -165,38 +166,58 @@ public class DdlBatchTest {
   @Test
   public void testExecuteUpdate() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.executeUpdate(mock(ParsedStatement.class));
+    try {
+      batch.executeUpdate(mock(ParsedStatement.class));
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
   public void testGetCommitTimestamp() {
     DdlBatch batch = createSubject();
     batch.runBatch();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.getCommitTimestamp();
+    try {
+      batch.getCommitTimestamp();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
   public void testGetReadTimestamp() {
     DdlBatch batch = createSubject();
     batch.runBatch();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.getReadTimestamp();
+    try {
+      batch.getReadTimestamp();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
   public void testWrite() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.write(Mutation.newInsertBuilder("foo").build());
+    try {
+      batch.write(Mutation.newInsertBuilder("foo").build());
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
   public void testWriteIterable() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.write(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+    try {
+      batch.write(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
@@ -471,22 +492,34 @@ public class DdlBatchTest {
             },
             100,
             TimeUnit.MILLISECONDS);
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
-    batch.runBatch();
+    try {
+      batch.runBatch();
+      fail("expected CANCELLED");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+    }
   }
 
   @Test
   public void testCommit() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.commit();
+    try {
+      batch.commit();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test
   public void testRollback() {
     DdlBatch batch = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    batch.rollback();
+    try {
+      batch.rollback();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
   }
 
   @Test

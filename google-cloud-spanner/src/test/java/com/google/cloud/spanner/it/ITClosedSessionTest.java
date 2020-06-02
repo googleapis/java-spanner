@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
@@ -37,10 +39,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -57,7 +57,6 @@ public class ITClosedSessionTest {
       new IntegrationTestWithClosedSessionsEnv();
 
   private static Database db;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private static DatabaseClientWithClosedSessionImpl client;
 
   @BeforeClass
@@ -94,9 +93,11 @@ public class ITClosedSessionTest {
     // This should trigger an exception with code NOT_FOUND and the text 'Session not found'.
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
-    expectedException.expect(SessionNotFoundException.class);
     try (ResultSet rs = Statement.of("SELECT 1").executeQuery(client.singleUse())) {
       rs.next();
+      fail("");
+    } catch (SessionNotFoundException ex) {
+      assertNotNull(ex.getMessage());
     }
   }
 
@@ -169,10 +170,11 @@ public class ITClosedSessionTest {
   public void testReadOnlyTransactionNoRecreation() {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
-    expectedException.expect(SessionNotFoundException.class);
     try (ReadOnlyTransaction txn = client.readOnlyTransaction()) {
       try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
+      } catch (SessionNotFoundException ex) {
+        assertNotNull(ex.getMessage());
       }
     }
   }
@@ -221,7 +223,6 @@ public class ITClosedSessionTest {
   public void testReadWriteTransactionNoRecreation() {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
-    expectedException.expect(SessionNotFoundException.class);
     TransactionRunner txn = client.readWriteTransaction();
     txn.run(
         new TransactionCallable<Void>() {
@@ -229,6 +230,8 @@ public class ITClosedSessionTest {
           public Void run(TransactionContext transaction) throws Exception {
             try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
               rs.next();
+            } catch (SessionNotFoundException ex) {
+              assertNotNull(ex.getMessage());
             }
             return null;
           }
@@ -265,7 +268,6 @@ public class ITClosedSessionTest {
   public void testTransactionManagerNoRecreation() throws InterruptedException {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
-    expectedException.expect(SessionNotFoundException.class);
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext txn = manager.begin();
       while (true) {
@@ -273,6 +275,8 @@ public class ITClosedSessionTest {
           rs.next();
         }
       }
+    } catch (SessionNotFoundException ex) {
+      assertNotNull(ex.getMessage());
     }
   }
 }

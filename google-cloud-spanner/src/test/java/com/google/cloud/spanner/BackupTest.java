@@ -17,6 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -29,9 +32,7 @@ import com.google.cloud.spanner.Backup.Builder;
 import com.google.cloud.spanner.BackupInfo.State;
 import java.util.Arrays;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -46,7 +47,6 @@ public class BackupTest {
   private static final String DB = "projects/test-project/instances/test-instance/databases/db-1";
   private static final Timestamp EXP_TIME = Timestamp.ofTimeSecondsAndNanos(1000L, 1000);
 
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   @Mock DatabaseAdminClient dbClient;
 
   @Before
@@ -102,8 +102,12 @@ public class BackupTest {
             .newBackupBuilder(BackupId.of("test-project", "dest-instance", "backup-id"))
             .setExpireTime(expireTime)
             .build();
-    expectedException.expect(IllegalStateException.class);
-    backup.create();
+    try {
+      backup.create();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertNotNull(e.getMessage());
+    }
   }
 
   @Test
@@ -113,8 +117,12 @@ public class BackupTest {
             .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
             .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
             .build();
-    expectedException.expect(IllegalStateException.class);
-    backup.create();
+    try {
+      backup.create();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertNotNull(e.getMessage());
+    }
   }
 
   @Test
@@ -207,8 +215,12 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    expectedException.expect(IllegalStateException.class);
-    backup.updateExpireTime();
+    try {
+      backup.updateExpireTime();
+      fail("");
+    } catch (IllegalStateException e) {
+      assertNotNull(e.getMessage());
+    }
   }
 
   @Test
@@ -228,8 +240,12 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    expectedException.expect(NullPointerException.class);
-    backup.restore(null);
+    try {
+      backup.restore(null);
+      fail("");
+    } catch (NullPointerException e) {
+      assertEquals(NullPointerException.class, e.getClass());
+    }
   }
 
   @Test

@@ -18,18 +18,17 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link com.google.cloud.spanner.PartitionOptions}. */
 @RunWith(JUnit4.class)
 public class PartitionOptionsTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void builder() {
@@ -86,13 +85,21 @@ public class PartitionOptionsTest {
 
   @Test
   public void invalidDesiredBytesPerBatch() {
-    expectedException.expect(IllegalArgumentException.class);
-    PartitionOptions.newBuilder().setPartitionSizeBytes(-1).build();
+    try {
+      PartitionOptions.newBuilder().setPartitionSizeBytes(-1).build();
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void invalidMaxPartitionCount() {
-    expectedException.expect(IllegalArgumentException.class);
-    PartitionOptions.newBuilder().setMaxPartitions(-1).build();
+    try {
+      PartitionOptions.newBuilder().setMaxPartitions(-1).build();
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 }

@@ -17,17 +17,16 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link InstanceConfigId}. */
 @RunWith(JUnit4.class)
 public class InstanceConfigIdTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void basic() {
@@ -43,7 +42,11 @@ public class InstanceConfigIdTest {
 
   @Test
   public void badName() {
-    expectedException.expect(IllegalArgumentException.class);
-    InstanceConfigId.of("bad name");
+    try {
+      InstanceConfigId.of("bad name");
+      fail("Expected exception");
+    } catch (IllegalArgumentException e) {
+      assertNotNull(e.getMessage());
+    }
   }
 }

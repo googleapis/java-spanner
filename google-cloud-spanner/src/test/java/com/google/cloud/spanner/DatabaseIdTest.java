@@ -17,17 +17,15 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link com.google.cloud.spanner.DatabaseId}. */
 @RunWith(JUnit4.class)
 public class DatabaseIdTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void basics() {
@@ -44,8 +42,11 @@ public class DatabaseIdTest {
 
   @Test
   public void badName() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("projects"); // Expect conforming pattern in output.
-    DatabaseId.of("bad name");
+    try {
+      DatabaseId.of("bad name");
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertThat(ex.getMessage()).contains("projects");
+    }
   }
 }

@@ -44,10 +44,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
@@ -118,8 +116,6 @@ public class SpanTest {
       io.grpc.Status.FAILED_PRECONDITION
           .withDescription("Non-retryable test exception.")
           .asRuntimeException();
-
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
@@ -231,23 +227,27 @@ public class SpanTest {
 
   @Test
   public void singleUseNonRetryableErrorOnNext() {
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.FAILED_PRECONDITION));
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
       mockSpanner.addException(FAILED_PRECONDITION);
       while (rs.next()) {
         // Just consume the result set.
+        fail("");
       }
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 
   @Test
   public void singleUseExecuteStreamingSqlTimeout() {
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
       while (rs.next()) {
         // Just consume the result set.
+        fail("");
       }
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
     }
   }
 

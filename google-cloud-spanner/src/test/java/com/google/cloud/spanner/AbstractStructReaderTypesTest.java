@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.runners.Parameterized.Parameter;
 
@@ -33,9 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
@@ -274,7 +273,6 @@ public class AbstractStructReaderTypesTest {
   @Nullable
   public List<String> otherAllowedGetters;
 
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private TestStructReader reader;
 
   @Before
@@ -372,15 +370,23 @@ public class AbstractStructReaderTypesTest {
   public void getterWhenNull() throws Exception {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    expectedException.expect(NullPointerException.class);
-    getterByIndex(0);
+    try {
+      getterByIndex(0);
+      fail("Expected exception");
+    } catch (NullPointerException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void getterByNameWhenNull() throws Exception {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    expectedException.expect(NullPointerException.class);
-    getterByName("F1");
+    try {
+      getterByName("F1");
+      fail("Expected exception");
+    } catch (NullPointerException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 }

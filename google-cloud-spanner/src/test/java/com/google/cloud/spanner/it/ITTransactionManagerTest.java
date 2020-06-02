@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -35,10 +36,8 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -48,7 +47,6 @@ public class ITTransactionManagerTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private static DatabaseClient client;
 
   @BeforeClass
@@ -115,8 +113,12 @@ public class ITTransactionManagerTest {
       }
       assertThat(manager.getState()).isEqualTo(TransactionState.COMMIT_FAILED);
       // We cannot retry for non aborted errors.
-      expectedException.expect(IllegalStateException.class);
-      manager.resetForRetry();
+      try {
+        manager.resetForRetry();
+        fail("");
+      } catch (IllegalStateException ex) {
+        assertNotNull(ex.getMessage());
+      }
     }
   }
 

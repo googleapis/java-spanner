@@ -18,20 +18,18 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link com.google.cloud.spanner.Statement}. */
 @RunWith(JUnit4.class)
 public class StatementTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void basic() {
@@ -103,33 +101,47 @@ public class StatementTest {
   public void incompleteBinding() {
     Statement.Builder builder = Statement.newBuilder("SELECT @v");
     builder.bind("v");
-    expectedException.expect(IllegalStateException.class);
-    builder.build();
+    try {
+      builder.build();
+      fail("");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
   public void bindingInProgress() {
     Statement.Builder builder = Statement.newBuilder("SELECT @v");
     builder.bind("v");
-
-    expectedException.expect(IllegalStateException.class);
-    builder.bind("y");
+    try {
+      builder.bind("y");
+      fail("");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
   public void alreadyBound() {
     ValueBinder<Statement.Builder> binder = Statement.newBuilder("SELECT @v").bind("v");
     binder.to("abc");
-
-    expectedException.expect(IllegalStateException.class);
-    binder.to("xyz");
+    try {
+      binder.to("xyz");
+      fail("");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
   public void bindCommitTimestampFails() {
     ValueBinder<Statement.Builder> binder = Statement.newBuilder("SELECT @v").bind("v");
-    expectedException.expect(IllegalArgumentException.class);
-    binder.to(Value.COMMIT_TIMESTAMP);
+    try {
+      binder.to(Value.COMMIT_TIMESTAMP);
+      fail("");
+    } catch (IllegalArgumentException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
