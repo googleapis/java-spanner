@@ -223,19 +223,21 @@ public class ITClosedSessionTest {
   public void testReadWriteTransactionNoRecreation() {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
-    TransactionRunner txn = client.readWriteTransaction();
-    txn.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
-              rs.next();
-            } catch (SessionNotFoundException ex) {
-              assertNotNull(ex.getMessage());
+    try {
+      TransactionRunner txn = client.readWriteTransaction();
+      txn.run(
+          new TransactionCallable<Void>() {
+            @Override
+            public Void run(TransactionContext transaction) throws Exception {
+              try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
+                rs.next();
+              }
+              return null;
             }
-            return null;
-          }
-        });
+          });
+    } catch (SessionNotFoundException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
