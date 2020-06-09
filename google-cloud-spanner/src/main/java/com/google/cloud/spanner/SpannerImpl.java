@@ -137,7 +137,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /**
    * Returns the {@link ExecutorProvider} to use for async methods that need a background executor.
    */
-  ExecutorProvider getAsyncExecutorProvider() {
+  public ExecutorProvider getAsyncExecutorProvider() {
     return asyncExecutorProvider;
   }
 

@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -66,7 +67,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final DatabaseClient dbClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
-  private Timestamp readTimestamp = null;
+  private ReadOnlyTransaction readOnlyTransaction;
   private volatile TransactionManager txManager;
   private TransactionRunner writeTransaction;
   private boolean used = false;
@@ -168,52 +169,78 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
     checkAndMarkUsed();
 
-    final ReadOnlyTransaction currentTransaction =
-        dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
+    readOnlyTransaction = dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
     Callable<ResultSet> callable =
         new Callable<ResultSet>() {
           @Override
           public ResultSet call() throws Exception {
-            try {
+//            try {
               ResultSet rs;
               if (analyzeMode == AnalyzeMode.NONE) {
-                rs = currentTransaction.executeQuery(statement.getStatement(), options);
+                rs = readOnlyTransaction.executeQuery(statement.getStatement(), options);
               } else {
                 rs =
-                    currentTransaction.analyzeQuery(
+                    readOnlyTransaction.analyzeQuery(
                         statement.getStatement(), analyzeMode.getQueryAnalyzeMode());
               }
               // Return a DirectExecuteResultSet, which will directly do a next() call in order to
               // ensure that the query is actually sent to Spanner.
               return DirectExecuteResultSet.ofResultSet(rs);
-            } finally {
-              currentTransaction.close();
-            }
+//            } catch (Exception e) {
+//              readOnlyTransaction.close();
+//              throw e;
+//            } finally {
+//              readOnlyTransaction.close();
+//              currentTransaction.close();
+//            }
           }
         };
     try {
       ResultSet res = asyncExecuteStatement(statement, callable);
-      readTimestamp = currentTransaction.getReadTimestamp();
+      //      readTimestamp = currentTransaction.getReadTimestamp();
       state = UnitOfWorkState.COMMITTED;
       return res;
     } catch (Throwable e) {
       state = UnitOfWorkState.COMMIT_FAILED;
       throw e;
     } finally {
-      currentTransaction.close();
+      readOnlyTransaction.close();
+    }
+  }
+
+  @Override
+  public AsyncResultSet executeQueryAsync(
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
+    Preconditions.checkNotNull(statement);
+    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
+    checkAndMarkUsed();
+
+    readOnlyTransaction = dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
+    try {
+      AsyncResultSet res = readOnlyTransaction.executeQueryAsync(statement.getStatement(), options);
+      state = UnitOfWorkState.COMMITTED;
+      return res;
+    } catch (Throwable e) {
+      readOnlyTransaction.close();
+      state = UnitOfWorkState.COMMIT_FAILED;
+      throw e;
+      //    } finally {
+      //      currentTransaction.close();
     }
   }
 
   @Override
   public Timestamp getReadTimestamp() {
     ConnectionPreconditions.checkState(
-        readTimestamp != null, "There is no read timestamp available for this transaction.");
-    return readTimestamp;
+        readOnlyTransaction != null && state == UnitOfWorkState.COMMITTED, "There is no read timestamp available for this transaction.");
+    return readOnlyTransaction.getReadTimestamp();
   }
 
   @Override
   public Timestamp getReadTimestampOrNull() {
-    return readTimestamp;
+    return readOnlyTransaction == null || state != UnitOfWorkState.COMMITTED ? null : readOnlyTransaction.getReadTimestamp();
   }
 
   private boolean hasCommitTimestamp() {

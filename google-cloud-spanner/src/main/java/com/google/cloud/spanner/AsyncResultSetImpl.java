@@ -138,10 +138,10 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate, int bufferSize) {
     super(delegate);
-    this.buffer = new LinkedBlockingDeque<>(bufferSize);
-    this.executorProvider = executorProvider;
+    this.executorProvider = Preconditions.checkNotNull(executorProvider);
+    this.delegateResultSet = Preconditions.checkNotNull(delegate);
     this.service = MoreExecutors.listeningDecorator(executorProvider.getExecutor());
-    this.delegateResultSet = delegate;
+    this.buffer = new LinkedBlockingDeque<>(bufferSize);
   }
 
   /**

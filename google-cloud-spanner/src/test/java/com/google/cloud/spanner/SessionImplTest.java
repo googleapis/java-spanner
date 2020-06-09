@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+import com.google.api.core.ApiFutures;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.Timestamp;
@@ -102,15 +102,15 @@ public class SessionImplTest {
         .thenReturn(sessionProto);
     Transaction txn = Transaction.newBuilder().setId(ByteString.copyFromUtf8("TEST")).build();
     Mockito.when(
-            rpc.beginTransaction(
+            rpc.beginTransactionAsync(
                 Mockito.any(BeginTransactionRequest.class), Mockito.any(Map.class)))
-        .thenReturn(txn);
+        .thenReturn(ApiFutures.immediateFuture(txn));
     CommitResponse commitResponse =
         CommitResponse.newBuilder()
             .setCommitTimestamp(com.google.protobuf.Timestamp.getDefaultInstance())
             .build();
-    Mockito.when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.any(Map.class)))
-        .thenReturn(commitResponse);
+    Mockito.when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.any(Map.class)))
+        .thenReturn(ApiFutures.immediateFuture(commitResponse));
     session = spanner.getSessionClient(db).createSession();
     ((SessionImpl) session).setCurrentSpan(mock(Span.class));
     // We expect the same options, "options", on all calls on "session".

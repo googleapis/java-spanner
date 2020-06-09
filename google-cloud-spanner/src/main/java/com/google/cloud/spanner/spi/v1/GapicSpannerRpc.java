@@ -1089,17 +1089,27 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public ApiFuture<CommitResponse> commitAsync(CommitRequest commitRequest, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
+    return spannerStub.commitCallable().futureCall(commitRequest, context);
+  }
+
+  @Override
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
-    return get(spannerStub.commitCallable().futureCall(commitRequest, context));
+    return get(commitAsync(commitRequest, options));
+  }
+
+  @Override
+  public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return spannerStub.rollbackCallable().futureCall(request, context);
   }
 
   @Override
   public void rollback(RollbackRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, request.getSession());
-    get(spannerStub.rollbackCallable().futureCall(request, context));
+    get(rollbackAsync(request, options));
   }
 
   @Override

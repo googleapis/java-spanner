@@ -41,10 +41,14 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.AbstractReadContext.ConsumeSingleRowCallback;
+import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -55,6 +59,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.ForwardingFuture.SimpleForwardingFuture;
+import com.google.common.util.concurrent.ForwardingListenableFuture;
+import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
@@ -700,8 +706,11 @@ final class SessionPool {
 
       @Override
       public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, "not yet implemented");
+        try {
+          return delegate.executeQueryAsync(statement, options);
+        } catch (SessionNotFoundException e) {
+          throw handleSessionNotFound(e);
+        }
       }
 
       @Override
@@ -724,7 +733,6 @@ final class SessionPool {
     AutoClosingTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
       this.session = session;
-      //      this.delegate = session.delegate.transactionManager();
     }
 
     @Override
@@ -946,6 +954,87 @@ final class SessionPool {
     }
   }
 
+  private static class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
+    private final SessionPool sessionPool;
+    private volatile PooledSessionFuture session;
+    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private final SettableApiFuture<AsyncTransactionManager> delegate = SettableApiFuture.create();
+
+    private SessionPoolAsyncTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
+      this.sessionPool = sessionPool;
+      this.session = session;
+      this.session.addListener(new Runnable(){
+        @Override
+        public void run() {
+          try {
+            delegate.set(SessionPoolAsyncTransactionManager.this.session.get().transactionManagerAsync());
+          } catch (Throwable t) {
+            delegate.setException(t);
+          }
+        }
+      }, MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ApiFuture<TransactionContext> beginAsync() {
+      final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
+      delegate.addListener(new Runnable(){
+        @Override
+        public void run() {
+          try {
+            res.set(delegate.get().beginAsync().get());
+          } catch (Throwable t) {
+            res.setException(t);
+          }
+        }
+      }, MoreExecutors.directExecutor());
+      return res;
+    }
+
+    @Override
+    public ApiFuture<Void> commitAsync() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public ApiFuture<Void> rollbackAsync() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public ApiFuture<TransactionContext> resetForRetryAsync() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public TransactionState getState() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public void close() {
+      // TODO Auto-generated method stub
+
+    }
+
+    private void setCommitTimestamp(AsyncTransactionManager delegate) {
+      try {
+        commitTimestamp.set(delegate.getCommitTimestampAsync().get());
+      } catch (Throwable t) {
+        commitTimestamp.setException(t);
+      }
+    }
+
+    @Override
+    public ApiFuture<Timestamp> getCommitTimestampAsync() {
+      return commitTimestamp;
+    }
+  }
+
   // Exception class used just to track the stack trace at the point when a session was handed out
   // from the pool.
   final class LeakedSessionException extends RuntimeException {
@@ -962,17 +1051,17 @@ final class SessionPool {
     CLOSING,
   }
 
-  private PooledSessionFuture createPooledSessionFuture(Future<PooledSession> future, Span span) {
+  private PooledSessionFuture createPooledSessionFuture(ListenableFuture<PooledSession> future, Span span) {
     return new PooledSessionFuture(future, span);
   }
 
-  final class PooledSessionFuture extends SimpleForwardingFuture<PooledSession> implements Session {
+  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession> implements Session {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final Span span;
 
-    private PooledSessionFuture(Future<PooledSession> delegate, Span span) {
+    private PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
       super(delegate);
       this.span = span;
     }
@@ -1115,6 +1204,11 @@ final class SessionPool {
     @Override
     public AsyncRunner runAsync() {
       return new SessionPoolAsyncRunner(SessionPool.this, this);
+    }
+
+    @Override
+    public AsyncTransactionManager transactionManagerAsync() {
+      return new SessionPoolAsyncTransactionManager(SessionPool.this, this);
     }
 
     @Override
@@ -1278,6 +1372,11 @@ final class SessionPool {
     }
 
     @Override
+    public AsyncTransactionManager transactionManagerAsync() {
+      return delegate.transactionManagerAsync();
+    }
+
+    @Override
     public ApiFuture<Empty> asyncClose() {
       close();
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
@@ -1350,12 +1449,12 @@ final class SessionPool {
     }
   }
 
-  private final class WaiterFuture extends ForwardingFuture<PooledSession> {
+  private final class WaiterFuture extends ForwardingListenableFuture<PooledSession> {
     private static final long MAX_SESSION_WAIT_TIMEOUT = 240_000L;
-    private final SettableApiFuture<PooledSession> waiter = SettableApiFuture.create();
+    private final SettableFuture<PooledSession> waiter = SettableFuture.create();
 
     @Override
-    protected Future<? extends PooledSession> delegate() {
+    protected ListenableFuture<? extends PooledSession> delegate() {
       return waiter;
     }
 
@@ -2033,7 +2132,7 @@ final class SessionPool {
       WaiterFuture waiter,
       boolean write,
       final boolean inProcessPrepare) {
-    Future<PooledSession> sessionFuture;
+    ListenableFuture<PooledSession> sessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
@@ -2043,10 +2142,12 @@ final class SessionPool {
               "Waiting for %s session to be available", write ? "read write" : "read only"));
       sessionFuture = waiter;
     } else {
-      sessionFuture = ApiFutures.immediateFuture(readySession);
+      SettableFuture<PooledSession> fut = SettableFuture.create();
+      fut.set(readySession);
+      sessionFuture = fut;
     }
-    SimpleForwardingFuture<PooledSession> forwardingFuture =
-        new SimpleForwardingFuture<SessionPool.PooledSession>(sessionFuture) {
+    SimpleForwardingListenableFuture<PooledSession> forwardingFuture =
+        new SimpleForwardingListenableFuture<SessionPool.PooledSession>(sessionFuture) {
           private volatile boolean initialized = false;
           private final Object prepareLock = new Object();
           private volatile PooledSession result;
@@ -2426,7 +2527,7 @@ final class SessionPool {
             }
           }
         },
-        executor);
+        MoreExecutors.directExecutor());
     return res;
   }
 

@@ -54,6 +54,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,8 +84,7 @@ public class DatabaseClientImplTest {
   private static final long UPDATE_COUNT = 1L;
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
-
-  //  @Rule public Timeout globalTimeout = new Timeout(5L, TimeUnit.SECONDS);
+  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -113,6 +113,7 @@ public class DatabaseClientImplTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
+    executor.shutdown();
   }
 
   @Before
@@ -191,6 +192,37 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void singleUseAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    ApiFuture<Void> res;
+    try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1)) {
+      res =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                    }
+                  }
+                }
+              });
+    }
+    res.get();
+    assertThat(rowCount.get()).isEqualTo(1);
+  }
+
+  @Test
   public void singleUseBound() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -219,6 +251,40 @@ public class DatabaseClientImplTest {
       assertThat(rs.getLong(0)).isEqualTo(1L);
       assertThat(rs.next()).isFalse();
     }
+  }
+
+  @Test
+  public void singleUseBoundAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    ApiFuture<Void> res;
+    try (AsyncResultSet rs =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQueryAsync(SELECT1)) {
+      res =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                    }
+                  }
+                }
+              });
+    }
+    res.get();
+    assertThat(rowCount.get()).isEqualTo(1);
   }
 
   @Test
@@ -478,6 +544,44 @@ public class DatabaseClientImplTest {
         }
       }
     }
+  }
+
+  @Test
+  public void transactionManagerExecuteQueryAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    try (TransactionManager txManager = client.transactionManager()) {
+      while (true) {
+        TransactionContext tx = txManager.begin();
+        try {
+          try(AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
+            rs.setCallback(executor, new ReadyCallback(){
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                while(true) {
+                  switch(resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                  }
+                }
+              }
+            });
+          }
+          txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
+    assertThat(rowCount.get()).isEqualTo(1);
   }
 
   /**

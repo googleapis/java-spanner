@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-
+import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
@@ -219,26 +219,26 @@ public class TransactionManagerImplTest {
                         .build());
               }
             });
-    when(rpc.beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<Transaction>() {
+            new Answer<ApiFuture<Transaction>>() {
               @Override
-              public Transaction answer(InvocationOnMock invocation) throws Throwable {
-                return Transaction.newBuilder()
+              public ApiFuture<Transaction> answer(InvocationOnMock invocation) throws Throwable {
+                return ApiFutures.immediateFuture(Transaction.newBuilder()
                     .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                    .build();
+                    .build());
               }
             });
-    when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.anyMap()))
+    when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<CommitResponse>() {
+            new Answer<ApiFuture<CommitResponse>>() {
               @Override
-              public CommitResponse answer(InvocationOnMock invocation) throws Throwable {
-                return CommitResponse.newBuilder()
+              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation) throws Throwable {
+                return ApiFutures.immediateFuture(CommitResponse.newBuilder()
                     .setCommitTimestamp(
                         com.google.protobuf.Timestamp.newBuilder()
                             .setSeconds(System.currentTimeMillis() * 1000))
-                    .build();
+                    .build());
               }
             });
     DatabaseId db = DatabaseId.of("test", "test", "test");
@@ -249,7 +249,7 @@ public class TransactionManagerImplTest {
         mgr.commit();
       }
       verify(rpc, times(1))
-          .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
     }
   }
 }

@@ -751,6 +751,7 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubjectWithTimeout(1L);
     try {
       subject.executeQuery(createParsedQuery(SLOW_QUERY), AnalyzeMode.NONE);
+      fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
         throw e;

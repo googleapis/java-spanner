@@ -311,6 +311,8 @@ public interface DatabaseClient {
    */
   AsyncRunner runAsync();
 
+  AsyncTransactionManager transactionManagerAsync();
+
   /**
    * Returns the lower bound of rows modified by this DML statement.
    *

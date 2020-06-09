@@ -53,6 +53,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -1296,7 +1298,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .thenThrow(sessionNotFound);
         when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
             .thenThrow(sessionNotFound);
-        when(rpc.commit(any(CommitRequest.class), any(Map.class))).thenThrow(sessionNotFound);
+        when(rpc.commitAsync(any(CommitRequest.class), any(Map.class))).thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
         doThrow(sessionNotFound).when(rpc).rollback(any(RollbackRequest.class), any(Map.class));
         final SessionImpl closedSession = mock(SessionImpl.class);
         when(closedSession.getName())
@@ -1312,7 +1314,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.asyncClose())
             .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
-        when(closedSession.beginTransaction()).thenThrow(sessionNotFound);
+        when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
             new TransactionRunnerImpl(closedSession, rpc, 10);
         closedTransactionRunner.setSpan(mock(Span.class));
@@ -1325,7 +1327,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
         final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
         when(openSession.newTransaction()).thenReturn(openTransactionContext);
-        when(openSession.beginTransaction()).thenReturn(ByteString.copyFromUtf8("open-txn"));
+        when(openSession.beginTransactionAsync()).thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
         TransactionRunnerImpl openTransactionRunner =
             new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
         openTransactionRunner.setSpan(mock(Span.class));

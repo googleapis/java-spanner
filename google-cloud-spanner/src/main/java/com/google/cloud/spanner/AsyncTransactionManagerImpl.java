@@ -16,16 +16,23 @@
 
 package com.google.cloud.spanner;
 
+import java.util.concurrent.ExecutionException;
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 
-/** Implementation of {@link TransactionManager}. */
-final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
+/** Implementation of {@link AsyncTransactionManager}. */
+final class AsyncTransactionManagerImpl implements AsyncTransactionManager, SessionTransaction {
   private static final Tracer tracer = Tracing.getTracer();
 
   private final SessionImpl session;
@@ -34,13 +41,9 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span) {
     this.session = session;
     this.span = span;
-  }
-
-  Span getSpan() {
-    return span;
   }
 
   @Override
@@ -49,41 +52,55 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   }
 
   @Override
-  public TransactionContext begin() {
+  public ApiFuture<? extends TransactionContext> beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    try (Scope s = tracer.withSpan(span)) {
-      txn = session.newTransaction();
-      session.setActive(this);
-      txn.ensureTxn();
-      txnState = TransactionState.STARTED;
-      return txn;
-    }
+    txnState = TransactionState.STARTED;
+    txn = session.newTransaction();
+    session.setActive(this);
+    final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
+    final ApiFuture<Void> fut = txn.ensureTxnAsync();
+    fut.addListener(tracer.withSpan(span, new Runnable(){
+      @Override
+      public void run() {
+        try {
+          fut.get();
+          res.set(txn);
+        } catch (ExecutionException e) {
+          res.setException(e.getCause() == null ? e : e.getCause());
+        } catch (InterruptedException e) {
+          res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+        }
+      }
+    }), MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override
-  public void commit() {
+  public ApiFuture<Void> commitAsync() {
     Preconditions.checkState(
         txnState == TransactionState.STARTED,
-        "commit can only be invoked if" + " the transaction is in progress");
+        "commit can only be invoked if the transaction is in progress");
+    SettableApiFuture<Void> res = SettableApiFuture.create();
     if (txn.isAborted()) {
       txnState = TransactionState.ABORTED;
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, "Transaction already aborted");
+      res.setException(SpannerExceptionFactory.newSpannerException(
+          ErrorCode.ABORTED, "Transaction already aborted"));
     }
     try {
       txn.commit();
       txnState = TransactionState.COMMITTED;
+      return ApiFutures.immediateFuture(null);
     } catch (AbortedException e1) {
       txnState = TransactionState.ABORTED;
-      throw e1;
+      return ApiFutures.immediateFailedFuture(e1);
     } catch (SpannerException e2) {
       txnState = TransactionState.COMMIT_FAILED;
-      throw e2;
+      return ApiFutures.immediateFailedFuture(e2);
     }
   }
 
   @Override
-  public void rollback() {
+  public ApiFuture<Void> rollbackAsync() {
     Preconditions.checkState(
         txnState == TransactionState.STARTED,
         "rollback can only be called if the transaction is in progress");
@@ -92,10 +109,11 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     } finally {
       txnState = TransactionState.ROLLED_BACK;
     }
+    return ApiFutures.immediateFuture(null);
   }
 
   @Override
-  public TransactionContext resetForRetry() {
+  public ApiFuture<? extends TransactionContext> resetForRetryAsync() {
     if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt" + " aborted");
@@ -104,16 +122,16 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       txn = session.newTransaction();
       txn.ensureTxn();
       txnState = TransactionState.STARTED;
-      return txn;
+      return ApiFutures.immediateFuture(txn);
     }
   }
 
   @Override
-  public Timestamp getCommitTimestamp() {
+  public ApiFuture<Timestamp> getCommitTimestampAsync() {
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,
         "getCommitTimestamp can only be invoked if the transaction committed successfully");
-    return txn.commitTimestamp();
+    return ApiFutures.immediateFuture(txn.commitTimestamp());
   }
 
   @Override

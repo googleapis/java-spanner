@@ -202,6 +202,17 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public AsyncTransactionManager transactionManagerAsync() {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return getReadWriteSession().transactionManagerAsync();
+    } catch (RuntimeException e) {
+      TraceUtil.endSpanWithFailure(span, e);
+      throw e;
+    }
+  }
+
+  @Override
   public long executePartitionedUpdate(final Statement stmt) {
     Span span = tracer.spanBuilder(PARTITION_DML_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {

@@ -17,12 +17,14 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -682,6 +684,11 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
+    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options);
+  }
+
+  @Override
   public ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode) {
     Preconditions.checkNotNull(queryMode);
     return parseAndExecuteQuery(query, AnalyzeMode.of(queryMode));
@@ -706,6 +713,38 @@ class ConnectionImpl implements Connection {
               .getResultSet();
         case QUERY:
           return internalExecuteQuery(parsedStatement, analyzeMode, options);
+        case UPDATE:
+        case DDL:
+        case UNKNOWN:
+        default:
+      }
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT,
+        "Statement is not a query: " + parsedStatement.getSqlWithoutComments());
+  }
+
+  /**
+   * Parses the given statement as a query and executes it asynchronously. Throws a {@link
+   * SpannerException} if the statement is not a query.
+   */
+  private AsyncResultSet parseAndExecuteQueryAsync(
+      Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
+    Preconditions.checkNotNull(query);
+    Preconditions.checkNotNull(analyzeMode);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    if (parsedStatement.isQuery()) {
+      switch (parsedStatement.getType()) {
+        case CLIENT_SIDE:
+          return ResultSets.toAsyncResultSet(
+              parsedStatement
+                  .getClientSideStatement()
+                  .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
+                  .getResultSet(),
+              spanner.getAsyncExecutorProvider());
+        case QUERY:
+          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
         case DDL:
         case UNKNOWN:
@@ -785,6 +824,16 @@ class ConnectionImpl implements Connection {
       }
       throw e;
     }
+  }
+
+  private AsyncResultSet internalExecuteQueryAsync(
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
+    Preconditions.checkArgument(
+        statement.getType() == StatementType.QUERY, "Statement must be a query");
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    return transaction.executeQueryAsync(statement, analyzeMode, options);
   }
 
   private long internalExecuteUpdate(final ParsedStatement update) {

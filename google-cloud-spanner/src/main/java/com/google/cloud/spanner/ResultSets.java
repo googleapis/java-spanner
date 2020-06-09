@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -56,6 +57,15 @@ public final class ResultSets {
             .build(),
         delegate,
         100);
+  }
+
+  /**
+   * Converts the given {@link ResultSet} to an {@link AsyncResultSet} using the given {@link
+   * ExecutorProvider}.
+   */
+  public static AsyncResultSet toAsyncResultSet(
+      ResultSet delegate, ExecutorProvider executorProvider) {
+    return new AsyncResultSetImpl(executorProvider, delegate, 100);
   }
 
   private static class PrePopulatedResultSet implements ResultSet {

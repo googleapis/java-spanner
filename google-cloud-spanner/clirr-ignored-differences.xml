@@ -159,6 +159,16 @@
   </difference>
   <difference>
     <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>* transactionManagerAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>* getAsyncExecutorProvider(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/ReadContext</className>
     <method>* executeQueryAsync(*)</method>
   </difference>
