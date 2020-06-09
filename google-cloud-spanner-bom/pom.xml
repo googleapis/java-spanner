@@ -87,6 +87,12 @@
         <version>1.55.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-spanner</artifactId>
+        <type>test-jar</type>
+        <version>1.55.1</version><!-- {x-version-update:google-cloud-spanner:current} -->
+      </dependency>
+      <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-admin-instance-v1</artifactId>
         <version>1.55.1</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-instance-v1:current} -->
