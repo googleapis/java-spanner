@@ -63,7 +63,7 @@ class SpannerRetryHelper {
   static <T> T runTxWithRetriesOnAborted(Callable<T> callable, RetrySettings retrySettings) {
     try {
       return RetryHelper.runWithRetries(
-          callable, txRetrySettings, new TxRetryAlgorithm<>(), NanoClock.getDefaultClock());
+          callable, retrySettings, new TxRetryAlgorithm<>(), NanoClock.getDefaultClock());
     } catch (RetryHelperException e) {
       if (e.getCause() != null) {
         Throwables.throwIfUnchecked(e.getCause());

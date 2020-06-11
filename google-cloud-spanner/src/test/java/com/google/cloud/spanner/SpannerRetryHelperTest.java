@@ -188,13 +188,18 @@ public class SpannerRetryHelperTest {
 
   @Test
   public void testExceptionWithRetryInfo() {
-    final int RETRY_DELAY_NANOS = 100_000_000;
+    final int RETRY_DELAY_MILLIS = 100;
     Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
     Status status = Status.fromCodeValue(Status.Code.ABORTED.value());
     Metadata trailers = new Metadata();
     RetryInfo retryInfo =
         RetryInfo.newBuilder()
-            .setRetryDelay(Duration.newBuilder().setNanos(RETRY_DELAY_NANOS).build())
+            .setRetryDelay(
+                Duration.newBuilder()
+                    .setNanos(
+                        (int)
+                            TimeUnit.NANOSECONDS.convert(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
+                    .build())
             .build();
     trailers.put(key, retryInfo);
     final SpannerException e =
@@ -214,8 +219,8 @@ public class SpannerRetryHelperTest {
     // retry info of the exception.
     Stopwatch watch = Stopwatch.createStarted();
     assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
-    long elapsed = watch.elapsed(TimeUnit.NANOSECONDS);
-    assertThat(elapsed >= RETRY_DELAY_NANOS).isTrue();
+    long elapsed = watch.elapsed(TimeUnit.MILLISECONDS);
+    assertThat(elapsed >= RETRY_DELAY_MILLIS).isTrue();
   }
 
   private SpannerException abortedWithRetryInfo(int nanos) {
