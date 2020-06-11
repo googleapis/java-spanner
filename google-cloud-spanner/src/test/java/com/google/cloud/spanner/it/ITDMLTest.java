@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -136,6 +137,8 @@ public final class ITDMLTest {
 
   @Test
   public void partitionedDML() {
+    assumeFalse("The emulator does not support partitioned DML", env.getTestHelper().isEmulator());
+
     executeUpdate(DML_COUNT, insertDml());
     assertThat(
             client

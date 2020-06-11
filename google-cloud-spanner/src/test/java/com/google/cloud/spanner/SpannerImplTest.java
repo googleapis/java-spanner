@@ -27,8 +27,12 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,7 +103,11 @@ public class SpannerImplTest {
 
     // Create a SpannerOptions with and without default query options.
     SpannerOptions optionsWithQueryOptions =
-        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+        new SpannerOptions.Builder(
+            SpannerOptions.newBuilder()
+                .setProjectId("some-project")
+                .setCredentials(NoCredentials.getInstance())
+                .build()) {
           @Override
           QueryOptions getEnvironmentQueryOptions() {
             // Override and return default instance to prevent environment variables from
@@ -108,7 +116,11 @@ public class SpannerImplTest {
           }
         }.setDefaultQueryOptions(db, queryOptions).build();
     SpannerOptions optionsWithoutQueryOptions =
-        new SpannerOptions.Builder(SpannerOptions.getDefaultInstance()) {
+        new SpannerOptions.Builder(
+            SpannerOptions.newBuilder()
+                .setProjectId("some-project")
+                .setCredentials(NoCredentials.getInstance())
+                .build()) {
           @Override
           QueryOptions getEnvironmentQueryOptions() {
             // Override and return default instance to prevent environment variables from
@@ -187,7 +199,7 @@ public class SpannerImplTest {
   }
 
   @Test
-  public void testClientId() {
+  public void testClientId() throws Exception {
     // Create a unique database id to be sure it has not yet been used in the lifetime of this JVM.
     String dbName =
         String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());
@@ -212,6 +224,20 @@ public class SpannerImplTest {
     DatabaseClientImpl databaseClient2 = (DatabaseClientImpl) impl.getDatabaseClient(db2);
     assertThat(databaseClient2.clientId).isEqualTo("client-1");
 
+    // Getting a new database client for an invalidated database should use the same client id.
+    databaseClient.pool.setResourceNotFoundException(
+        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
+    DatabaseClientImpl revalidated = (DatabaseClientImpl) impl.getDatabaseClient(db);
+    assertThat(revalidated).isNotSameInstanceAs(databaseClient);
+    assertThat(revalidated.clientId).isEqualTo(databaseClient.clientId);
+
+    // Now invalidate the second client and request a new one.
+    revalidated.pool.setResourceNotFoundException(
+        new DatabaseNotFoundException(DoNotConstructDirectly.ALLOWED, "not found", null, null));
+    DatabaseClientImpl revalidated2 = (DatabaseClientImpl) impl.getDatabaseClient(db);
+    assertThat(revalidated2).isNotSameInstanceAs(revalidated);
+    assertThat(revalidated2.clientId).isEqualTo(revalidated.clientId);
+
     // Create a new Spanner instance. This will generate new database clients with new ids.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -222,11 +248,34 @@ public class SpannerImplTest {
 
       // Get a database client for the same database as the first database. As this goes through a
       // different Spanner instance with potentially different options, it will get a different
-      // client
-      // id.
+      // client id.
       DatabaseClientImpl databaseClient3 = (DatabaseClientImpl) spanner.getDatabaseClient(db);
       assertThat(databaseClient3.clientId).isEqualTo("client-2");
     }
+  }
+
+  @Test
+  public void testClosedException() {
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+    assertThat(spanner.isClosed()).isFalse();
+    // Close the Spanner instance in a different method so we can actually verify that the entire
+    // stacktrace of the method that closed the instance is included in the exception that will be
+    // thrown by the instance after it has been closed.
+    closeSpannerAndIncludeStacktrace(spanner);
+    assertThat(spanner.isClosed()).isTrue();
+    try {
+      spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      fail("missing expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+      StringWriter sw = new StringWriter();
+      e.getCause().printStackTrace(new PrintWriter(sw));
+      assertThat(sw.toString()).contains("closeSpannerAndIncludeStacktrace");
+    }
+  }
+
+  private void closeSpannerAndIncludeStacktrace(Spanner spanner) {
+    spanner.close();
   }
 
   private SpannerOptions createSpannerOptions() {

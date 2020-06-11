@@ -18,19 +18,24 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
 import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
-import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
@@ -47,6 +52,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -77,6 +83,7 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1805,6 +1812,9 @@ final class SessionPool {
   private SettableFuture<Void> closureFuture;
 
   @GuardedBy("lock")
+  private ClosedException closedException;
+
+  @GuardedBy("lock")
   private ResourceNotFoundException resourceNotFoundException;
 
   @GuardedBy("lock")
@@ -2118,7 +2128,7 @@ final class SessionPool {
     synchronized (lock) {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed", closedException);
       }
       if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
@@ -2174,7 +2184,7 @@ final class SessionPool {
     synchronized (lock) {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed", closedException);
       }
       if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
@@ -2379,10 +2389,7 @@ final class SessionPool {
         }
       }
       if (isDatabaseOrInstanceNotFound(e)) {
-        this.resourceNotFoundException =
-            MoreObjects.firstNonNull(
-                this.resourceNotFoundException,
-                isDatabaseOrInstanceNotFound(e) ? (ResourceNotFoundException) e : null);
+        setResourceNotFoundException((ResourceNotFoundException) e);
       }
     }
   }
@@ -2406,10 +2413,11 @@ final class SessionPool {
         }
         if (isDatabaseOrInstanceNotFound(e)) {
           // Remove the session from the pool.
-          removeFromPool(session);
-          this.resourceNotFoundException =
-              MoreObjects.firstNonNull(
-                  this.resourceNotFoundException, (ResourceNotFoundException) e);
+          if (isClosed()) {
+            decrementPendingClosures(1);
+          }
+          allSessions.remove(session);
+          setResourceNotFoundException((ResourceNotFoundException) e);
         } else {
           releaseSession(session, Position.FIRST);
         }
@@ -2420,6 +2428,10 @@ final class SessionPool {
         releaseSession(session, Position.FIRST);
       }
     }
+  }
+
+  void setResourceNotFoundException(ResourceNotFoundException e) {
+    this.resourceNotFoundException = MoreObjects.firstNonNull(this.resourceNotFoundException, e);
   }
 
   private void decrementPendingClosures(int count) {
@@ -2434,12 +2446,13 @@ final class SessionPool {
    * #getReadWriteSession()} will start throwing {@code IllegalStateException}. The returned future
    * blocks till all the sessions created in this pool have been closed.
    */
-  ListenableFuture<Void> closeAsync() {
+  ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
     synchronized (lock) {
       if (closureFuture != null) {
-        throw new IllegalStateException("Close has already been invoked");
+        throw new IllegalStateException("Close has already been invoked", this.closedException);
       }
+      this.closedException = closedException;
       // Fail all pending waiters.
       WaiterFuture waiter = readWaiters.poll();
       while (waiter != null) {
@@ -2703,15 +2716,6 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
-    DerivedLongGauge numInUseSessionsMetric =
-        metricRegistry.addDerivedLongGauge(
-            IN_USE_SESSIONS,
-            MetricOptions.builder()
-                .setDescription(IN_USE_SESSIONS_DESCRIPTION)
-                .setUnit(COUNT)
-                .setLabelKeys(SPANNER_LABEL_KEYS)
-                .build());
-
     DerivedLongCumulative sessionsTimeouts =
         metricRegistry.addDerivedLongCumulative(
             GET_SESSION_TIMEOUTS,
@@ -2739,6 +2743,15 @@ final class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS)
                 .build());
 
+    DerivedLongGauge numSessionsInPoolMetric =
+        metricRegistry.addDerivedLongGauge(
+            NUM_SESSIONS_IN_POOL,
+            MetricOptions.builder()
+                .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS_WITH_TYPE)
+                .build());
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.createTimeSeries(
@@ -2760,18 +2773,6 @@ final class SessionPool {
           @Override
           public long applyAsLong(SessionPoolOptions options) {
             return options.getMaxSessions();
-          }
-        });
-
-    // The value of a numSessionsInUse is observed from a callback function. This function is
-    // invoked whenever metrics are collected.
-    numInUseSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
           }
         });
 
@@ -2804,6 +2805,54 @@ final class SessionPool {
           @Override
           public long applyAsLong(SessionPool sessionPool) {
             return sessionPool.numSessionsReleased;
+          }
+        });
+
+    List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
+    labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    numSessionsInPoolMetric.createTimeSeries(
+        labelValuesWithBeingPreparedType,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsBeingPrepared;
+          }
+        });
+
+    List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
+    labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    numSessionsInPoolMetric.createTimeSeries(
+        labelValuesWithInUseType,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.numSessionsInUse;
+          }
+        });
+
+    List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
+    labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    numSessionsInPoolMetric.createTimeSeries(
+        labelValuesWithReadType,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.readSessions.size();
+          }
+        });
+
+    List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
+    labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    numSessionsInPoolMetric.createTimeSeries(
+        labelValuesWithWriteType,
+        this,
+        new ToLongFunction<SessionPool>() {
+          @Override
+          public long applyAsLong(SessionPool sessionPool) {
+            return sessionPool.writePreparedSessions.size();
           }
         });
   }

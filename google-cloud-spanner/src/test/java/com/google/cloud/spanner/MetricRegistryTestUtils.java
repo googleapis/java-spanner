@@ -29,6 +29,7 @@ import io.opencensus.metrics.LongCumulative;
 import io.opencensus.metrics.LongGauge;
 import io.opencensus.metrics.MetricOptions;
 import io.opencensus.metrics.MetricRegistry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,36 +38,39 @@ class MetricRegistryTestUtils {
   static class PointWithFunction<T> {
     private final T ref;
     private final ToLongFunction<T> function;
+    private final List<LabelKey> key;
+    private final List<LabelValue> values;
 
-    PointWithFunction(T obj, ToLongFunction<T> function) {
+    PointWithFunction(
+        T obj, ToLongFunction<T> function, List<LabelKey> keys, List<LabelValue> values) {
       this.ref = obj;
       this.function = function;
+      this.key = keys;
+      this.values = values;
     }
 
-    long get() {
+    long value() {
       return function.applyAsLong(ref);
+    }
+
+    List<LabelKey> keys() {
+      return key;
+    }
+
+    List<LabelValue> values() {
+      return values;
     }
   }
 
   static class MetricsRecord {
-    private final Map<String, PointWithFunction> metrics;
-    private final Map<List<LabelKey>, List<LabelValue>> labels;
+    private final Map<String, List<PointWithFunction>> metrics;
 
     private MetricsRecord() {
       this.metrics = Maps.newHashMap();
-      this.labels = Maps.newHashMap();
     }
 
-    Map<String, Number> getMetrics() {
-      Map<String, Number> copy = Maps.newHashMap();
-      for (Map.Entry<String, PointWithFunction> entry : metrics.entrySet()) {
-        copy.put(entry.getKey(), entry.getValue().get());
-      }
-      return copy;
-    }
-
-    Map<List<LabelKey>, List<LabelValue>> getLabels() {
-      return this.labels;
+    Map<String, List<PointWithFunction>> getMetrics() {
+      return metrics;
     }
   }
 
@@ -85,8 +89,13 @@ class MetricRegistryTestUtils {
     @Override
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
-      this.record.metrics.put(this.name, new PointWithFunction(t, toLongFunction));
-      this.record.labels.put(this.labelKeys, labelValues);
+      if (!this.record.metrics.containsKey(this.name)) {
+        this.record.metrics.put(this.name, new ArrayList<PointWithFunction>());
+      }
+      this.record
+          .metrics
+          .get(this.name)
+          .add(new PointWithFunction(t, toLongFunction, labelKeys, labelValues));
     }
 
     @Override
@@ -111,8 +120,13 @@ class MetricRegistryTestUtils {
     @Override
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
-      this.record.metrics.put(this.name, new PointWithFunction(t, toLongFunction));
-      this.record.labels.put(this.labelKeys, labelValues);
+      if (!this.record.metrics.containsKey(this.name)) {
+        this.record.metrics.put(this.name, new ArrayList<PointWithFunction>());
+      }
+      this.record
+          .metrics
+          .get(this.name)
+          .add(new PointWithFunction(t, toLongFunction, labelKeys, labelValues));
     }
 
     @Override

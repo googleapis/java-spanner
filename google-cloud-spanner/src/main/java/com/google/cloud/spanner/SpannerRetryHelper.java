@@ -53,9 +53,17 @@ class SpannerRetryHelper {
 
   /** Executes the {@link Callable} and retries if it fails with an {@link AbortedException}. */
   static <T> T runTxWithRetriesOnAborted(Callable<T> callable) {
+    return runTxWithRetriesOnAborted(callable, txRetrySettings);
+  }
+
+  /**
+   * Executes the {@link Callable} and retries if it fails with an {@link AbortedException} using
+   * the specific {@link RetrySettings}.
+   */
+  static <T> T runTxWithRetriesOnAborted(Callable<T> callable, RetrySettings retrySettings) {
     try {
       return RetryHelper.runWithRetries(
-          callable, txRetrySettings, new TxRetryAlgorithm<>(), NanoClock.getDefaultClock());
+          callable, retrySettings, new TxRetryAlgorithm<>(), NanoClock.getDefaultClock());
     } catch (RetryHelperException e) {
       if (e.getCause() != null) {
         Throwables.throwIfUnchecked(e.getCause());

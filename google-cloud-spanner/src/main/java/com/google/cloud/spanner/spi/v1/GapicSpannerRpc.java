@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -28,6 +29,7 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
@@ -54,6 +56,7 @@ import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -153,6 +156,7 @@ import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
+@InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
   /**
    * {@link ExecutorProvider} that keeps track of the executors that are created and shuts these
@@ -188,6 +192,12 @@ public class GapicSpannerRpc implements SpannerRpc {
         executor.shutdown();
       }
     }
+
+    private void awaitTermination() throws InterruptedException {
+      for (ScheduledExecutorService executor : executors) {
+        executor.awaitTermination(10L, TimeUnit.SECONDS);
+      }
+    }
   }
 
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
@@ -207,6 +217,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
+  private final SpannerStub partitionedDmlStub;
+  private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -290,7 +302,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
-                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS * 1000))
 
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
@@ -326,6 +338,25 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .setCredentialsProvider(credentialsProvider)
                   .setStreamWatchdogProvider(watchdogProvider)
                   .build());
+      partitionedDmlRetrySettings =
+          options
+              .getSpannerStubSettings()
+              .executeSqlSettings()
+              .getRetrySettings()
+              .toBuilder()
+              .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
+              .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
+              .setTotalTimeout(options.getPartitionedDmlTimeout())
+              .setRpcTimeoutMultiplier(1.0)
+              .build();
+      SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
+      pdmlSettings
+          .setTransportChannelProvider(channelProvider)
+          .setCredentialsProvider(credentialsProvider)
+          .setStreamWatchdogProvider(watchdogProvider)
+          .executeSqlSettings()
+          .setRetrySettings(partitionedDmlRetrySettings);
+      this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
           GrpcInstanceAdminStub.create(
@@ -853,7 +884,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       final String databaseInstanceName, final String databaseId, String backupName) {
     RestoreDatabaseRequest request =
         RestoreDatabaseRequest.newBuilder()
@@ -905,7 +936,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final Backup updateBackup(Backup backup, FieldMask updateMask) {
+  public Backup updateBackup(Backup backup, FieldMask updateMask) {
     acquireAdministrativeRequestsRateLimiter();
     UpdateBackupRequest request =
         UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
@@ -914,7 +945,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public final void deleteBackup(String backupName) {
+  public void deleteBackup(String backupName) {
     acquireAdministrativeRequestsRateLimiter();
     DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(backupName).build();
     GrpcCallContext context = newCallContext(null, backupName);
@@ -1035,9 +1066,14 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executePartitionedDml(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout) {
-    GrpcCallContext context = newCallContext(options, request.getSession(), timeout);
-    return get(spannerStub.executeSqlCallable().futureCall(request, context));
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
+  }
+
+  @Override
+  public RetrySettings getPartitionedDmlRetrySettings() {
+    return partitionedDmlRetrySettings;
   }
 
   @Override
@@ -1219,19 +1255,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @VisibleForTesting
   GrpcCallContext newCallContext(@Nullable Map<Option, ?> options, String resource) {
-    return newCallContext(options, resource, null);
-  }
-
-  private GrpcCallContext newCallContext(
-      @Nullable Map<Option, ?> options, String resource, Duration timeout) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
-    if (timeout != null) {
-      context = context.withTimeout(timeout);
-    }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
       if (callCredentials != null) {
@@ -1246,10 +1274,22 @@ public class GapicSpannerRpc implements SpannerRpc {
   public void shutdown() {
     this.rpcIsClosed = true;
     this.spannerStub.close();
+    this.partitionedDmlStub.close();
     this.instanceAdminStub.close();
     this.databaseAdminStub.close();
     this.spannerWatchdog.shutdown();
     this.executorProvider.shutdown();
+
+    try {
+      this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.partitionedDmlStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+      this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
+      this.executorProvider.awaitTermination();
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
   }
 
   @Override

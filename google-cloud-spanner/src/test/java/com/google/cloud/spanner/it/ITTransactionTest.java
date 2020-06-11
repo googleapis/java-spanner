@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
@@ -43,6 +44,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,6 +153,10 @@ public class ITTransactionTest {
 
   @Test
   public void basicsUsingRead() throws InterruptedException {
+    assumeFalse(
+        "Emulator does not support multiple parallel transactions",
+        env.getTestHelper().isEmulator());
+
     doBasicsTest(
         new ReadStrategy() {
           @Override
@@ -162,6 +168,10 @@ public class ITTransactionTest {
 
   @Test
   public void basicsUsingQuery() throws InterruptedException {
+    assumeFalse(
+        "Emulator does not support multiple parallel transactions",
+        env.getTestHelper().isEmulator());
+
     doBasicsTest(
         new ReadStrategy() {
           @Override
@@ -240,7 +250,11 @@ public class ITTransactionTest {
   }
 
   @Test
-  public void readAbort() throws InterruptedException {
+  public void readAbort() throws Exception {
+    assumeFalse(
+        "Emulator does not support multiple parallel transactions",
+        env.getTestHelper().isEmulator());
+
     final String key1 = uniqueKey();
     final String key2 = uniqueKey();
 
@@ -254,6 +268,9 @@ public class ITTransactionTest {
     final CountDownLatch t2Running = new CountDownLatch(1);
     final CountDownLatch t2Done = new CountDownLatch(1);
 
+    final SettableFuture<Void> t1Result = SettableFuture.create();
+    final SettableFuture<Void> t2Result = SettableFuture.create();
+
     // Thread 1 performs a read before notifying that it has started and allowing
     // thread 2 to start.  This ensures that it establishes a senior lock priority relative to
     // thread 2.  It then waits for thread 2 to read, so that both threads have shared locks on
@@ -265,71 +282,83 @@ public class ITTransactionTest {
         new Thread() {
           @Override
           public void run() {
-            client
-                .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Void>() {
-                      @Override
-                      public Void run(TransactionContext transaction) throws SpannerException {
-                        try {
-                          Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
-                          t1Started.countDown();
-                          Uninterruptibles.awaitUninterruptibly(t2Running);
-                          transaction.buffer(
-                              Mutation.newUpdateBuilder("T")
-                                  .set("K")
-                                  .to(key1)
-                                  .set("V")
-                                  .to(row.getLong(0) + 1)
-                                  .build());
-                          return null;
-                        } catch (SpannerException e) {
-                          if (e.getErrorCode() == ErrorCode.ABORTED) {
-                            assertThat(e).isInstanceOf(AbortedException.class);
-                            assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                .isNotEqualTo(-1L);
+            try {
+              client
+                  .readWriteTransaction()
+                  .run(
+                      new TransactionCallable<Void>() {
+                        @Override
+                        public Void run(TransactionContext transaction) throws SpannerException {
+                          try {
+                            Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            t1Started.countDown();
+                            Uninterruptibles.awaitUninterruptibly(t2Running);
+                            transaction.buffer(
+                                Mutation.newUpdateBuilder("T")
+                                    .set("K")
+                                    .to(key1)
+                                    .set("V")
+                                    .to(row.getLong(0) + 1)
+                                    .build());
+                            return null;
+                          } catch (SpannerException e) {
+                            if (e.getErrorCode() == ErrorCode.ABORTED) {
+                              assertThat(e).isInstanceOf(AbortedException.class);
+                              assertThat(((AbortedException) e).getRetryDelayInMillis())
+                                  .isNotEqualTo(-1L);
+                            }
+                            throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                          throw new RuntimeException("Swallowed exception: " + e.getMessage());
                         }
-                      }
-                    });
-            t1Done.countDown();
+                      });
+              t1Result.set(null);
+            } catch (Throwable t) {
+              t1Result.setException(t);
+            } finally {
+              t1Done.countDown();
+            }
           }
         };
     Thread t2 =
         new Thread() {
           @Override
           public void run() {
-            client
-                .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Void>() {
-                      @Override
-                      public Void run(TransactionContext transaction) throws SpannerException {
-                        try {
-                          Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
-                          t2Running.countDown();
-                          Uninterruptibles.awaitUninterruptibly(t1Done);
-                          Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
-                          transaction.buffer(
-                              Mutation.newUpdateBuilder("T")
-                                  .set("K")
-                                  .to(key2)
-                                  .set("V")
-                                  .to(r1.getLong(0) + r2.getLong(0))
-                                  .build());
-                          return null;
-                        } catch (SpannerException e) {
-                          if (e.getErrorCode() == ErrorCode.ABORTED) {
-                            assertThat(e).isInstanceOf(AbortedException.class);
-                            assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                .isNotEqualTo(-1L);
+            try {
+              client
+                  .readWriteTransaction()
+                  .run(
+                      new TransactionCallable<Void>() {
+                        @Override
+                        public Void run(TransactionContext transaction) throws SpannerException {
+                          try {
+                            Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            t2Running.countDown();
+                            Uninterruptibles.awaitUninterruptibly(t1Done);
+                            Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
+                            transaction.buffer(
+                                Mutation.newUpdateBuilder("T")
+                                    .set("K")
+                                    .to(key2)
+                                    .set("V")
+                                    .to(r1.getLong(0) + r2.getLong(0))
+                                    .build());
+                            return null;
+                          } catch (SpannerException e) {
+                            if (e.getErrorCode() == ErrorCode.ABORTED) {
+                              assertThat(e).isInstanceOf(AbortedException.class);
+                              assertThat(((AbortedException) e).getRetryDelayInMillis())
+                                  .isNotEqualTo(-1L);
+                            }
+                            throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                          throw new RuntimeException("Swallowed exception: " + e.getMessage());
                         }
-                      }
-                    });
-            t2Done.countDown();
+                      });
+              t2Result.set(null);
+            } catch (Throwable t) {
+              t2Result.setException(t);
+            } finally {
+              t2Done.countDown();
+            }
           }
         };
 
@@ -340,6 +369,8 @@ public class ITTransactionTest {
     assertThat(t2Done.await(1, TimeUnit.MINUTES)).isTrue();
 
     // Check that both transactions effects are visible.
+    assertThat(t1Result.get()).isNull();
+    assertThat(t2Result.get()).isNull();
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
@@ -465,6 +496,10 @@ public class ITTransactionTest {
 
   @Test
   public void nestedTxnSucceedsWhenAllowed() {
+    assumeFalse(
+        "Emulator does not support multiple parallel transactions",
+        env.getTestHelper().isEmulator());
+
     client
         .readWriteTransaction()
         .allowNestedTransaction()

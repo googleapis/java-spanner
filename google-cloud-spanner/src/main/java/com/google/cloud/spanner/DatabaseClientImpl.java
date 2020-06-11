@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -247,7 +248,7 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  ListenableFuture<Void> closeAsync() {
-    return pool.closeAsync();
+  ListenableFuture<Void> closeAsync(ClosedException closedException) {
+    return pool.closeAsync(closedException);
   }
 }

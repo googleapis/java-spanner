@@ -93,7 +93,6 @@ public final class ITBatchDmlTest {
             } catch (SpannerException e) {
               assertThat(e instanceof SpannerBatchUpdateException).isFalse();
               assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-              assertThat(e.getMessage()).contains("No statements in batch DML request.");
               rowCounts = new long[0];
             }
             return rowCounts;
@@ -196,8 +195,10 @@ public final class ITBatchDmlTest {
       runner.run(callable);
       Assert.fail("Expecting an exception.");
     } catch (SpannerBatchUpdateException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
-      assertThat(e.getMessage()).contains("already exists");
+      // TODO: Remove if-statement when emulator returns the same error code as Cloud Spanner.
+      if (!env.getTestHelper().isEmulator()) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+      }
       long[] rowCounts = e.getUpdateCounts();
       assertThat(rowCounts.length).isEqualTo(1);
       for (long rc : rowCounts) {

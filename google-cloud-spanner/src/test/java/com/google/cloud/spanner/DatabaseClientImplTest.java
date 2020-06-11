@@ -18,9 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -595,7 +592,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
-    assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
+    assertThat(updateCount).isEqualTo(UPDATE_COUNT);
   }
 
   /** {@link AbortedException} should automatically be retried. */
@@ -605,7 +602,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     mockSpanner.abortNextTransaction();
     long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
-    assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
+    assertThat(updateCount).isEqualTo(UPDATE_COUNT);
   }
 
   /**
@@ -648,12 +645,11 @@ public class DatabaseClientImplTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-      assertThat(
-          spanner.getOptions().getPartitionedDmlTimeout(), is(equalTo(Duration.ofHours(2L))));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofHours(2L));
 
       // PDML should not timeout with these settings.
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
-      assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
+      assertThat(updateCount).isEqualTo(UPDATE_COUNT);
 
       // Normal DML should timeout.
       try {
@@ -677,7 +673,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlWithTimeout() throws Exception {
+  public void testPartitionedDmlWithLowerTimeout() throws Exception {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
@@ -689,8 +685,8 @@ public class DatabaseClientImplTest {
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(
-          spanner.getOptions().getPartitionedDmlTimeout(), is(equalTo(Duration.ofMillis(100L))));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout())
+          .isEqualTo(Duration.ofMillis(100L));
       // PDML should timeout with these settings.
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
@@ -713,7 +709,76 @@ public class DatabaseClientImplTest {
                       return transaction.executeUpdate(UPDATE_STATEMENT);
                     }
                   });
-      assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
+      assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    }
+  }
+
+  @Test
+  public void testPartitionedDmlWithHigherTimeout() throws Exception {
+    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    // Set PDML timeout value to a value that should allow the statement to be executed.
+    builder.setPartitionedDmlTimeout(Duration.ofMillis(5000L));
+    // Set the ExecuteSql RPC timeout value to a value lower than the time needed to execute the
+    // statement. The higher timeout value that is set above should be respected, and the value for
+    // the ExecuteSQL RPC should be ignored specifically for Partitioned DML.
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeSqlSettings()
+        .setRetrySettings(
+            builder
+                .getSpannerStubSettingsBuilder()
+                .executeSqlSettings()
+                .getRetrySettings()
+                .toBuilder()
+                .setInitialRpcTimeout(Duration.ofMillis(10L))
+                .setMaxRpcTimeout(Duration.ofMillis(10L))
+                .setInitialRetryDelay(Duration.ofMillis(1L))
+                .setMaxRetryDelay(Duration.ofMillis(1L))
+                .build());
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      // PDML should not timeout with these settings.
+      long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
+
+      // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
+      try {
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    return transaction.executeUpdate(UPDATE_STATEMENT);
+                  }
+                });
+        fail("missing expected DEADLINE_EXCEEDED exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+      }
+      assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    }
+  }
+
+  @Test
+  public void testPartitionedDmlRetriesOnUnavailable() throws Exception {
+    mockSpanner.setExecuteSqlExecutionTime(
+        SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
+      assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     }
   }
 
@@ -753,8 +818,8 @@ public class DatabaseClientImplTest {
             && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
           Thread.sleep(1L);
         }
-        assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
-        assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
+        assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions()).isEqualTo(0);
         int currentNumRequest = mockSpanner.getRequests().size();
         try {
           dbClient
@@ -806,8 +871,8 @@ public class DatabaseClientImplTest {
           Thread.sleep(1L);
         }
         // All session creation should fail and stop trying.
-        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsInPool()).isEqualTo(0);
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated()).isEqualTo(0);
         mockSpanner.reset();
         mockSpanner.removeAllExecutionTimes();
       }
@@ -890,8 +955,8 @@ public class DatabaseClientImplTest {
           Thread.sleep(1L);
         }
         // All session creation should fail and stop trying.
-        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsInPool()).isEqualTo(0);
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated()).isEqualTo(0);
         // Force a maintainer run. This should schedule new session creation.
         dbClient.pool.poolMaintainer.maintainPool();
         // Wait until the replenish has finished.
@@ -901,8 +966,8 @@ public class DatabaseClientImplTest {
           Thread.sleep(1L);
         }
         // All session creation from replenishPool should fail and stop trying.
-        assertThat(dbClient.pool.getNumberOfSessionsInPool(), is(equalTo(0)));
-        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated(), is(equalTo(0)));
+        assertThat(dbClient.pool.getNumberOfSessionsInPool()).isEqualTo(0);
+        assertThat(dbClient.pool.getNumberOfSessionsBeingCreated()).isEqualTo(0);
       }
       mockSpanner.reset();
       mockSpanner.removeAllExecutionTimes();
@@ -946,8 +1011,8 @@ public class DatabaseClientImplTest {
         && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
       Thread.sleep(1L);
     }
-    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
-    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions(), is(equalTo(0)));
+    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
+    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions()).isEqualTo(0);
     try {
       dbClient
           .readWriteTransaction()
@@ -960,7 +1025,7 @@ public class DatabaseClientImplTest {
               });
       fail(String.format("missing expected %s exception", exception.getStatus().getCode().name()));
     } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.fromGrpcStatus(exception.getStatus()))));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.fromGrpcStatus(exception.getStatus()));
     }
     // Remove the semi-permanent error condition. Getting a read/write transaction should now
     // succeed, and the automatic preparing of sessions should be restarted.
@@ -987,10 +1052,9 @@ public class DatabaseClientImplTest {
         && dbClient.pool.getNumberOfAvailableWritePreparedSessions() < expectedPreparedSessions) {
       Thread.sleep(1L);
     }
-    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared(), is(equalTo(0)));
-    assertThat(
-        dbClient.pool.getNumberOfAvailableWritePreparedSessions(),
-        is(equalTo(expectedPreparedSessions)));
+    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
+    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions())
+        .isEqualTo(expectedPreparedSessions);
   }
 
   /**
@@ -1106,7 +1170,7 @@ public class DatabaseClientImplTest {
         && client.pool.getNumberOfSessionsInPool() < minSessions) {
       Thread.sleep(1L);
     }
-    assertThat(client.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
     Long res =
         client
             .readWriteTransaction()
@@ -1115,13 +1179,12 @@ public class DatabaseClientImplTest {
                 new TransactionCallable<Long>() {
                   @Override
                   public Long run(TransactionContext transaction) throws Exception {
-                    assertThat(
-                        client.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions - 1)));
+                    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
-    assertThat(res, is(equalTo(UPDATE_COUNT)));
-    assertThat(client.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+    assertThat(res).isEqualTo(UPDATE_COUNT);
+    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
   }
 
   @Test
@@ -1141,8 +1204,8 @@ public class DatabaseClientImplTest {
             || client2.pool.getNumberOfSessionsInPool() < minSessions)) {
       Thread.sleep(1L);
     }
-    assertThat(client1.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
-    assertThat(client2.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+    assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
     Long res =
         client1
             .readWriteTransaction()
@@ -1153,9 +1216,8 @@ public class DatabaseClientImplTest {
                   public Long run(TransactionContext transaction) throws Exception {
                     // Client1 should have 1 session checked out.
                     // Client2 should have 0 sessions checked out.
-                    assertThat(
-                        client1.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions - 1)));
-                    assertThat(client2.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+                    assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                    assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
                     Long add =
                         client2
                             .readWriteTransaction()
@@ -1164,12 +1226,10 @@ public class DatabaseClientImplTest {
                                   @Override
                                   public Long run(TransactionContext transaction) throws Exception {
                                     // Both clients should now have 1 session checked out.
-                                    assertThat(
-                                        client1.pool.getNumberOfSessionsInPool(),
-                                        is(equalTo(minSessions - 1)));
-                                    assertThat(
-                                        client2.pool.getNumberOfSessionsInPool(),
-                                        is(equalTo(minSessions - 1)));
+                                    assertThat(client1.pool.getNumberOfSessionsInPool())
+                                        .isEqualTo(minSessions - 1);
+                                    assertThat(client2.pool.getNumberOfSessionsInPool())
+                                        .isEqualTo(minSessions - 1);
                                     try (ResultSet rs = transaction.executeQuery(SELECT1)) {
                                       if (rs.next()) {
                                         return rs.getLong(0);
@@ -1186,10 +1246,10 @@ public class DatabaseClientImplTest {
                     }
                   }
                 });
-    assertThat(res, is(equalTo(2L)));
+    assertThat(res).isEqualTo(2L);
     // All sessions should now be checked back in to the pools.
-    assertThat(client1.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
-    assertThat(client2.pool.getNumberOfSessionsInPool(), is(equalTo(minSessions)));
+    assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+    assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
   }
 
   @Test
@@ -1353,5 +1413,37 @@ public class DatabaseClientImplTest {
     }
     assertThat(finished.get()).isTrue();
     assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);
+  }
+
+  @Test
+  public void testClientIdReusedOnDatabaseNotFound() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "my-database",
+                SpannerExceptionFactory.DATABASE_RESOURCE_TYPE,
+                "project/my-project/instances/my-instance/databases/my-database")));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      String prevClientId = null;
+      for (int i = 0; i < 100; i++) {
+        try {
+          DatabaseClientImpl client = (DatabaseClientImpl) spanner.getDatabaseClient(databaseId);
+          if (prevClientId != null) {
+            assertThat(client.clientId).isEqualTo(prevClientId);
+          }
+          prevClientId = client.clientId;
+          client.singleUse().readRow("MyTable", Key.of(0), Arrays.asList("MyColumn"));
+        } catch (Exception e) {
+          // ignore
+        }
+      }
+    }
   }
 }

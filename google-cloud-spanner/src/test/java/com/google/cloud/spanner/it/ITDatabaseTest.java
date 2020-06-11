@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -60,6 +61,12 @@ public class ITDatabaseTest {
 
   @Test
   public void databaseDeletedTest() throws Exception {
+    // TODO: Remove the following line once the emulator returns ResourceInfo for Database not found
+    // errors.
+    assumeFalse(
+        "Emulator does not return ResourceInfo for Database not found errors",
+        env.getTestHelper().isEmulator());
+
     // Create a test db, do a query, then delete it and verify that it returns
     // DatabaseNotFoundExceptions.
     Database db = env.getTestHelper().createTestDatabase();
@@ -125,6 +132,12 @@ public class ITDatabaseTest {
 
   @Test
   public void instanceNotFound() {
+    // TODO: Remove the following line when the emulator returns ResourceInfo for Instance not found
+    // errors.
+    assumeFalse(
+        "Emulator does not return ResourceInfo for Instance not found errors",
+        env.getTestHelper().isEmulator());
+
     InstanceId testId = env.getTestHelper().getInstanceId();
     InstanceId nonExistingInstanceId =
         InstanceId.of(testId.getProject(), testId.getInstance() + "-na");

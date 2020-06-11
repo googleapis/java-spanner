@@ -17,7 +17,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>5.1.0</version>
+      <version>5.4.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -38,7 +38,7 @@ If you are using Maven without BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>1.52.0</version>
+  <version>1.55.0</version>
 </dependency>
 
 ```
@@ -47,11 +47,11 @@ If you are using Maven without BOM, add this to your dependencies:
 
 If you are using Gradle, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:1.54.0'
+compile 'com.google.cloud:google-cloud-spanner:1.55.1'
 ```
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "1.54.0"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "1.55.1"
 ```
 [//]: # ({x-version-update-end})
 
@@ -130,6 +130,85 @@ try {
 #### Complete source code
 
 In [DatabaseSelect.java](https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-examples/src/main/java/com/google/cloud/examples/spanner/snippets/DatabaseSelect.java) we put together all the code shown above in a single program.
+
+## OpenCensus Metrics
+
+Cloud Spanner client supports [Opencensus Metrics](https://opencensus.io/stats/),
+which gives insight into the client internals and aids in debugging/troubleshooting
+production issues. OpenCensus metrics will provide you with enough data to enable you to
+spot, and investigate the cause of any unusual deviations from normal behavior.
+
+All Cloud Spanner Metrics are prefixed with `cloud.google.com/java/spanner/`. The
+metrics will be tagged with:
+* `database`: the target database name.
+* `instance_id`: the instance id of the target Spanner instance.
+* `client_id`: the user defined database client id.
+* `library_version`: the version of the library that you're using.
+
+> Note: RPC level metrics can be gleaned from gRPC’s metrics, which are prefixed
+with `grpc.io/client/`.
+### Available client-side metrics:
+
+* `cloud.google.com/java/spanner/max_in_use_sessions`: This returns the maximum
+  number of sessions that have been in use during the last maintenance window
+  interval, so as to provide an indication of the amount of activity currently
+  in the database.
+
+* `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
+  number of sessions allowed.
+
+* `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
+   see instance-level and database-level data for the total number of sessions in
+   use (or checked out from the pool) at this very moment.
+
+* `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
+  users to see the total number of acquired sessions.
+
+* `cloud.google.com/java/spanner/num_released_sessions`: This metric allows
+  users to see the total number of released (destroyed) sessions.
+
+* `cloud.google.com/java/spanner/get_session_timeouts`: This gives you an
+  indication of the total number of get session timed-out instead of being
+  granted (the thread that requested the session is placed in a wait queue where
+  it waits until a session is released into the pool by another thread) due to
+  pool exhaustion since the server process started.
+
+If you are using Maven, add this to your pom.xml file
+```xml
+<dependency>
+  <groupId>io.opencensus</groupId>
+  <artifactId>opencensus-impl</artifactId>
+  <version>0.26.0</version>
+  <scope>runtime</scope>
+</dependency>
+<dependency>
+  <groupId>io.opencensus</groupId>
+  <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+  <version>0.26.0</version>
+</dependency>
+```
+If you are using Gradle, add this to your dependencies
+```Groovy
+compile 'io.opencensus:opencensus-impl:0.26.0'
+compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.26.0'
+```
+
+At the start of your application configure the exporter:
+
+```java
+import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
+// Enable OpenCensus exporters to export metrics to Stackdriver Monitoring.
+// Exporters use Application Default Credentials to authenticate.
+// See https://developers.google.com/identity/protocols/application-default-credentials
+// for more details.
+// The minimum reporting period for Stackdriver is 1 minute.
+StackdriverStatsExporter.createAndRegister();
+```
+
+By default, the functionality is disabled. You need to include opencensus-impl
+dependency to collect the data and exporter dependency to export to backend.
+
+[Click here](https://medium.com/google-cloud/troubleshooting-cloud-spanner-applications-with-opencensus-2cf424c4c590) for more information.
 
 
 

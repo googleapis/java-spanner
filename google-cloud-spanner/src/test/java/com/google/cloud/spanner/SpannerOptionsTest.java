@@ -29,6 +29,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.base.Strings;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +54,11 @@ public class SpannerOptionsTest {
     // We need to set the project id since in test environment we cannot obtain a default project
     // id.
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
-    assertThat(options.getHost()).isEqualTo("https://spanner.googleapis.com");
+    if (Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"))) {
+      assertThat(options.getHost()).isEqualTo("https://spanner.googleapis.com");
+    } else {
+      assertThat(options.getHost()).isEqualTo("http://" + System.getenv("SPANNER_EMULATOR_HOST"));
+    }
     assertThat(options.getPrefetchChunks()).isEqualTo(4);
     assertThat(options.getSessionLabels()).isNull();
   }
@@ -389,19 +394,36 @@ public class SpannerOptionsTest {
   public void testSetClientLibToken() {
     final String jdbcToken = "sp-jdbc";
     final String hibernateToken = "sp-hib";
-    SpannerOptions options = SpannerOptions.newBuilder().setClientLibToken(jdbcToken).build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(jdbcToken)
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(jdbcToken);
 
-    options = SpannerOptions.newBuilder().setClientLibToken(hibernateToken).build();
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(hibernateToken)
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
 
-    options = SpannerOptions.newBuilder().build();
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
     assertThat(options.getClientLibToken()).isEqualTo(ServiceOptions.getGoogApiClientLibName());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testSetInvalidClientLibToken() {
-    SpannerOptions.newBuilder().setClientLibToken("foo");
+    SpannerOptions.newBuilder()
+        .setProjectId("some-project")
+        .setCredentials(NoCredentials.getInstance())
+        .setClientLibToken("foo");
   }
 
   @Test
@@ -443,6 +465,8 @@ public class SpannerOptionsTest {
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
                 QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .setProjectId("p")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
@@ -464,6 +488,8 @@ public class SpannerOptionsTest {
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
                 QueryOptions.newBuilder().setOptimizerVersion("1").build())
+            .setProjectId("p")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());

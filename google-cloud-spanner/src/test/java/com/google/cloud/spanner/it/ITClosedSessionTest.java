@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -61,6 +62,10 @@ public class ITClosedSessionTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    // TODO: Enable when the emulator returns ResourceInfo for Session not found errors.
+    assumeFalse(
+        "Emulator does not return ResourceInfo for Session not found errors",
+        env.getTestHelper().isEmulator());
     // Empty database.
     db = env.getTestHelper().createTestDatabase();
     client = (DatabaseClientWithClosedSessionImpl) env.getTestHelper().getDatabaseClient(db);

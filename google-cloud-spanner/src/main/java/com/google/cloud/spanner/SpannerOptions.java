@@ -647,6 +647,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    @Override
+    public Builder setHost(String host) {
+      super.setHost(host);
+      // Setting a host should override any SPANNER_EMULATOR_HOST setting.
+      setEmulatorHost(null);
+      return this;
+    }
+
     /**
      * Sets the host of an emulator to use. By default the value is read from an environment
      * variable. If the environment variable is not set, this will be <code>null</code>.

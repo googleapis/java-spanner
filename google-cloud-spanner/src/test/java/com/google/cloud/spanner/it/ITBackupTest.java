@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
@@ -63,6 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,6 +93,11 @@ public class ITBackupTest {
   private List<String> databases = new ArrayList<>();
   private List<String> backups = new ArrayList<>();
   private final Random random = new Random();
+
+  @BeforeClass
+  public static void doNotRunOnEmulator() {
+    assumeFalse("backups are not supported on the emulator", env.getTestHelper().isEmulator());
+  }
 
   @Before
   public void setUp() throws Exception {

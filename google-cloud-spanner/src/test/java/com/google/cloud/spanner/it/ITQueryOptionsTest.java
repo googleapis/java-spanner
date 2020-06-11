@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -50,6 +51,8 @@ public class ITQueryOptionsTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    assumeFalse("Emulator ignores query options", env.getTestHelper().isEmulator());
+
     // Empty database.
     db =
         env.getTestHelper()
@@ -104,8 +107,7 @@ public class ITQueryOptionsTest {
 
   @Test
   public void executeUpdate() {
-    // Query optimizer version is ignored for DML statements by the backend, but setting it does not
-    // cause an error.
+    // Optimizer version 1 should work.
     assertThat(
             client
                 .readWriteTransaction()
@@ -147,35 +149,38 @@ public class ITQueryOptionsTest {
                     }))
         .isEqualTo(1L);
 
-    // Version '100000' is an invalid value, but is ignored by the backend.
-    assertThat(
-            client
-                .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) throws Exception {
-                        return transaction.executeUpdate(
-                            Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
-                                .bind("id")
-                                .to(3L)
-                                .bind("name")
-                                .to("Three")
-                                .withQueryOptions(
-                                    QueryOptions.newBuilder().setOptimizerVersion("10000").build())
-                                .build());
-                      }
-                    }))
-        .isEqualTo(1L);
+    // Version '100000' is an invalid value and should cause an error.
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  return transaction.executeUpdate(
+                      Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
+                          .bind("id")
+                          .to(3L)
+                          .bind("name")
+                          .to("Three")
+                          .withQueryOptions(
+                              QueryOptions.newBuilder().setOptimizerVersion("100000").build())
+                          .build());
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Query optimizer version: 100000 is not supported");
+    }
 
-    // Verify that query options are ignored with Partitioned DML as well, and that all the above
-    // DML INSERT statements succeeded.
+    // Setting an optimizer version for PDML should also be allowed.
     assertThat(
             client.executePartitionedUpdate(
                 Statement.newBuilder("UPDATE TEST SET NAME='updated' WHERE 1=1")
                     .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
                     .build()))
-        .isEqualTo(3L);
+        .isEqualTo(2L);
   }
 
   @Test
