@@ -121,6 +121,54 @@ public class DatabaseAdminClientTest {
 
   @Test
   @SuppressWarnings("all")
+  public void listDatabasesTest() {
+    String nextPageToken = "";
+    Database databasesElement = Database.newBuilder().build();
+    List<Database> databases = Arrays.asList(databasesElement);
+    ListDatabasesResponse expectedResponse =
+        ListDatabasesResponse.newBuilder()
+            .setNextPageToken(nextPageToken)
+            .addAllDatabases(databases)
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListDatabasesPagedResponse pagedListResponse = client.listDatabases(parent);
+
+    List<Database> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getDatabasesList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListDatabasesRequest actualRequest = (ListDatabasesRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void listDatabasesExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+      client.listDatabases(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
   public void createDatabaseTest() throws Exception {
     DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     Database expectedResponse = Database.newBuilder().setName(name.toString()).build();
@@ -840,54 +888,6 @@ public class DatabaseAdminClientTest {
       InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
 
       client.listBackupOperations(parent);
-      Assert.fail("No exception raised");
-    } catch (InvalidArgumentException e) {
-      // Expected exception
-    }
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void listDatabasesTest() {
-    String nextPageToken = "";
-    Database databasesElement = Database.newBuilder().build();
-    List<Database> databases = Arrays.asList(databasesElement);
-    ListDatabasesResponse expectedResponse =
-        ListDatabasesResponse.newBuilder()
-            .setNextPageToken(nextPageToken)
-            .addAllDatabases(databases)
-            .build();
-    mockDatabaseAdmin.addResponse(expectedResponse);
-
-    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-
-    ListDatabasesPagedResponse pagedListResponse = client.listDatabases(parent);
-
-    List<Database> resources = Lists.newArrayList(pagedListResponse.iterateAll());
-    Assert.assertEquals(1, resources.size());
-    Assert.assertEquals(expectedResponse.getDatabasesList().get(0), resources.get(0));
-
-    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    ListDatabasesRequest actualRequest = (ListDatabasesRequest) actualRequests.get(0);
-
-    Assert.assertEquals(parent, InstanceName.parse(actualRequest.getParent()));
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void listDatabasesExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
-    mockDatabaseAdmin.addException(exception);
-
-    try {
-      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-
-      client.listDatabases(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception
