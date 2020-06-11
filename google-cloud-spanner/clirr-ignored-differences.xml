@@ -210,7 +210,22 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>* commitAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>* rollbackAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>* executeBatchDmlAsync(*)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>* executeQueryAsync(*)</method>
   </difference>
   
   <!-- Adding operation RPCs to InstanceAdminClient. -->
