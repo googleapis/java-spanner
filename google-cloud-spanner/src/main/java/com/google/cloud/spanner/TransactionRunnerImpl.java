@@ -138,9 +138,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-    //    @GuardedBy("lock")
-    //    private volatile CountDownLatch finishedAsyncOperations = new CountDownLatch(0);
-
     @GuardedBy("lock")
     private List<Mutation> mutations = new ArrayList<>();
 
@@ -175,35 +172,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         if (runningAsyncOperations == 0) {
           finishedAsyncOperations.set(null);
         }
-      }
-    }
-
-    void ensureTxn_old() {
-      if (transactionId == null || isAborted()) {
-        span.addAnnotation("Creating Transaction");
-        try {
-          transactionId = session.beginTransaction();
-          span.addAnnotation(
-              "Transaction Creation Done",
-              ImmutableMap.of(
-                  "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-          txnLogger.log(
-              Level.FINER,
-              "Started transaction {0}",
-              txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
-        } catch (SpannerException e) {
-          span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e));
-          throw e;
-        }
-      } else {
-        span.addAnnotation(
-            "Transaction Initialized",
-            ImmutableMap.of(
-                "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-        txnLogger.log(
-            Level.FINER,
-            "Using prepared transaction {0}",
-            txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
       }
     }
 
@@ -262,51 +230,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         res.set(null);
       }
       return res;
-    }
-
-    void commit_old() {
-      SettableApiFuture<Void> latch;
-      synchronized (lock) {
-        latch = finishedAsyncOperations;
-      }
-      try {
-        latch.get();
-      } catch (InterruptedException e) {
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
-      }
-      span.addAnnotation("Starting Commit");
-      CommitRequest.Builder builder =
-          CommitRequest.newBuilder().setSession(session.getName()).setTransactionId(transactionId);
-      synchronized (lock) {
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
-      }
-      final CommitRequest commitRequest = builder.build();
-      Span opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-      try (Scope s = tracer.withSpan(opSpan)) {
-        CommitResponse commitResponse = rpc.commit(commitRequest, session.getOptions());
-        if (!commitResponse.hasCommitTimestamp()) {
-          throw newSpannerException(
-              ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-        }
-        commitTimestamp = Timestamp.fromProto(commitResponse.getCommitTimestamp());
-        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-      } catch (RuntimeException e) {
-        span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-        TraceUtil.endSpanWithFailure(opSpan, e);
-        if (e instanceof SpannerException) {
-          onError((SpannerException) e);
-        }
-        throw e;
-      }
-      span.addAnnotation("Commit Done");
     }
 
     void commit() {
