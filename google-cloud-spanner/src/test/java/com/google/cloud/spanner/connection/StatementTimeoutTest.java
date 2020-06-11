@@ -1154,6 +1154,7 @@ public class StatementTimeoutTest {
                 .build())) {
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
       connection.execute(Statement.of(SLOW_DDL));
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
     }

@@ -174,9 +174,10 @@ public class ITClosedSessionTest {
       try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
         fail("Expected exception");
-      } catch (SessionNotFoundException ex) {
-        assertNotNull(ex.getMessage());
       }
+      fail("Expected exception");
+    } catch (SessionNotFoundException ex) {
+      assertNotNull(ex.getMessage());
     }
   }
 
