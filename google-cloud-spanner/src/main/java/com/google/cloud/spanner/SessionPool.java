@@ -1324,6 +1324,13 @@ final class SessionPool {
   }
 
   @VisibleForTesting
+  int getNumberOfWriteSessionsInPool() {
+    synchronized (lock) {
+      return writePreparedSessions.size() + numSessionsBeingPrepared;
+    }
+  }
+
+  @VisibleForTesting
   int getNumberOfSessionsBeingCreated() {
     synchronized (lock) {
       return numSessionsBeingCreated;
