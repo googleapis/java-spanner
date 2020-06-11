@@ -25,16 +25,8 @@ import java.util.concurrent.Executor;
 /** Interface for result sets returned by async query methods. */
 public interface AsyncResultSet extends ResultSet {
 
-  /**
-   * Interface for receiving asynchronous callbacks when new data is ready. See {@link
-   * AsyncResultSet#setCallback(Executor, ReadyCallback)}.
-   */
-  public static interface ReadyCallback {
-    CallbackResponse cursorReady(AsyncResultSet resultSet);
-  }
-
   /** Response code from {@code tryNext()}. */
-  public enum CursorState {
+  enum CursorState {
     /** Cursor has been moved to a new row. */
     OK,
     /** Read is complete, all rows have been consumed, and there are no more. */
@@ -59,6 +51,40 @@ public interface AsyncResultSet extends ResultSet {
    *     will get no further callbacks. You should return CallbackResponse.DONE back from callback.
    */
   CursorState tryNext() throws SpannerException;
+
+  enum CallbackResponse {
+    /**
+     * Tell the cursor to continue issuing callbacks when data is available. This is the standard
+     * "I'm ready for more" response. If cursor is not completely drained of all ready results the
+     * callback will be called again immediately.
+     */
+    CONTINUE,
+
+    /**
+     * Tell the cursor to suspend all callbacks until application calls {@link RowCursor#resume()}.
+     */
+    PAUSE,
+
+    /**
+     * Tell the cursor you are done receiving results, even if there are more results sitting in the
+     * buffer. Once you return DONE, you will receive no further callbacks.
+     *
+     * <p>Approximately equivalent to calling {@link RowCursor#cancel()}, and then returning {@code
+     * PAUSE}, but more clear, immediate, and idiomatic.
+     *
+     * <p>It is legal to commit a transaction that owns this read before actually returning {@code
+     * DONE}.
+     */
+    DONE,
+  }
+
+  /**
+   * Interface for receiving asynchronous callbacks when new data is ready. See {@link
+   * AsyncResultSet#setCallback(Executor, ReadyCallback)}.
+   */
+  interface ReadyCallback {
+    CallbackResponse cursorReady(AsyncResultSet resultSet);
+  }
 
   /**
    * Register a callback with the ResultSet to be made aware when more data is available, changing
@@ -145,32 +171,6 @@ public interface AsyncResultSet extends ResultSet {
    * child row cursors and does not cancel the parent cursor.
    */
   void cancel();
-
-  public enum CallbackResponse {
-    /**
-     * Tell the cursor to continue issuing callbacks when data is available. This is the standard
-     * "I'm ready for more" response. If cursor is not completely drained of all ready results the
-     * callback will be called again immediately.
-     */
-    CONTINUE,
-
-    /**
-     * Tell the cursor to suspend all callbacks until application calls {@link RowCursor#resume()}.
-     */
-    PAUSE,
-
-    /**
-     * Tell the cursor you are done receiving results, even if there are more results sitting in the
-     * buffer. Once you return DONE, you will receive no further callbacks.
-     *
-     * <p>Approximately equivalent to calling {@link RowCursor#cancel()}, and then returning {@code
-     * PAUSE}, but more clear, immediate, and idiomatic.
-     *
-     * <p>It is legal to commit a transaction that owns this read before actually returning {@code
-     * DONE}.
-     */
-    DONE,
-  }
 
   /**
    * Resume callbacks from the cursor. If there is more data available, a callback will be

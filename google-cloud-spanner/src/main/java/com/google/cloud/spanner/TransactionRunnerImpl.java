@@ -52,7 +52,6 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -135,11 +134,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @GuardedBy("lock")
     private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
+
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-//    @GuardedBy("lock")
-//    private volatile CountDownLatch finishedAsyncOperations = new CountDownLatch(0);
+    //    @GuardedBy("lock")
+    //    private volatile CountDownLatch finishedAsyncOperations = new CountDownLatch(0);
 
     @GuardedBy("lock")
     private List<Mutation> mutations = new ArrayList<>();
@@ -222,28 +222,34 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       if (transactionId == null || isAborted()) {
         span.addAnnotation("Creating Transaction");
         final ApiFuture<ByteString> fut = session.beginTransactionAsync();
-        fut.addListener(new Runnable(){
-          @Override
-          public void run() {
-            try {
-              transactionId = fut.get();
-              span.addAnnotation(
-                  "Transaction Creation Done",
-                  ImmutableMap.of(
-                      "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-              txnLogger.log(
-                  Level.FINER,
-                  "Started transaction {0}",
-                  txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
-              res.set(null);
-            } catch (ExecutionException e) {
-              span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
-              res.setException(e.getCause() == null ? e : e.getCause());
-            } catch (InterruptedException e) {
-              res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-            }
-          }
-        }, MoreExecutors.directExecutor());
+        fut.addListener(
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  transactionId = fut.get();
+                  span.addAnnotation(
+                      "Transaction Creation Done",
+                      ImmutableMap.of(
+                          "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+                  txnLogger.log(
+                      Level.FINER,
+                      "Started transaction {0}",
+                      txnLogger.isLoggable(Level.FINER)
+                          ? transactionId.asReadOnlyByteBuffer()
+                          : null);
+                  res.set(null);
+                } catch (ExecutionException e) {
+                  span.addAnnotation(
+                      "Transaction Creation Failed",
+                      TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+                  res.setException(e.getCause() == null ? e : e.getCause());
+                } catch (InterruptedException e) {
+                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                }
+              }
+            },
+            MoreExecutors.directExecutor());
       } else {
         span.addAnnotation(
             "Transaction Initialized",
@@ -331,49 +337,66 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       synchronized (lock) {
         latch = finishedAsyncOperations;
       }
-      latch.addListener(new Runnable(){
-        @Override
-        public void run() {
-          try {
-            latch.get();
-            span.addAnnotation("Starting Commit");
-            final Span opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-            final ApiFuture<CommitResponse> commitFuture = rpc.commitAsync(commitRequest, session.getOptions());
-            commitFuture.addListener(tracer.withSpan(opSpan, new Runnable(){
-              @Override
-              public void run() {
-                try {
-                  CommitResponse commitResponse = commitFuture.get();
-                  if (!commitResponse.hasCommitTimestamp()) {
-                    throw newSpannerException(
-                        ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-                  }
-                  commitTimestamp = Timestamp.fromProto(commitResponse.getCommitTimestamp());
-                  span.addAnnotation("Commit Done");
-                  opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                  res.set(null);
-                } catch (Throwable e) {
-                  if (e instanceof ExecutionException) {
-                    e = SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
-                  } else if (e instanceof InterruptedException) {
-                    e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
-                  } else {
-                    e = SpannerExceptionFactory.newSpannerException(e);
-                  }
-                  span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-                  TraceUtil.endSpanWithFailure(opSpan, e);
-                  onError((SpannerException) e);
-                  res.setException(e);
-                }
+      latch.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                latch.get();
+                span.addAnnotation("Starting Commit");
+                final Span opSpan =
+                    tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
+                final ApiFuture<CommitResponse> commitFuture =
+                    rpc.commitAsync(commitRequest, session.getOptions());
+                commitFuture.addListener(
+                    tracer.withSpan(
+                        opSpan,
+                        new Runnable() {
+                          @Override
+                          public void run() {
+                            try {
+                              CommitResponse commitResponse = commitFuture.get();
+                              if (!commitResponse.hasCommitTimestamp()) {
+                                throw newSpannerException(
+                                    ErrorCode.INTERNAL,
+                                    "Missing commitTimestamp:\n" + session.getName());
+                              }
+                              commitTimestamp =
+                                  Timestamp.fromProto(commitResponse.getCommitTimestamp());
+                              span.addAnnotation("Commit Done");
+                              opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                              res.set(null);
+                            } catch (Throwable e) {
+                              if (e instanceof ExecutionException) {
+                                e =
+                                    SpannerExceptionFactory.newSpannerException(
+                                        e.getCause() == null ? e : e.getCause());
+                              } else if (e instanceof InterruptedException) {
+                                e =
+                                    SpannerExceptionFactory.propagateInterrupt(
+                                        (InterruptedException) e);
+                              } else {
+                                e = SpannerExceptionFactory.newSpannerException(e);
+                              }
+                              span.addAnnotation(
+                                  "Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                              TraceUtil.endSpanWithFailure(opSpan, e);
+                              onError((SpannerException) e);
+                              res.setException(e);
+                            }
+                          }
+                        }),
+                    MoreExecutors.directExecutor());
+              } catch (InterruptedException e) {
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              } catch (ExecutionException e) {
+                res.setException(
+                    SpannerExceptionFactory.newSpannerException(
+                        e.getCause() == null ? e : e.getCause()));
               }
-            }), MoreExecutors.directExecutor());
-          } catch (InterruptedException e) {
-            res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-          } catch (ExecutionException e) {
-            res.setException(SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
-          }
-        }
-      }, MoreExecutors.directExecutor());
+            }
+          },
+          MoreExecutors.directExecutor());
       return res;
     }
 

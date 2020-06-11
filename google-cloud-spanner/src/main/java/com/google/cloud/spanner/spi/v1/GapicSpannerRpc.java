@@ -1089,7 +1089,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public ApiFuture<CommitResponse> commitAsync(CommitRequest commitRequest, @Nullable Map<Option, ?> options) {
+  public ApiFuture<CommitResponse> commitAsync(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, commitRequest.getSession());
     return spannerStub.commitCallable().futureCall(commitRequest, context);
   }

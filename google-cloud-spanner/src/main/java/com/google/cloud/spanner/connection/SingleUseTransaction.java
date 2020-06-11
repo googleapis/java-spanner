@@ -174,25 +174,25 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<ResultSet>() {
           @Override
           public ResultSet call() throws Exception {
-//            try {
-              ResultSet rs;
-              if (analyzeMode == AnalyzeMode.NONE) {
-                rs = readOnlyTransaction.executeQuery(statement.getStatement(), options);
-              } else {
-                rs =
-                    readOnlyTransaction.analyzeQuery(
-                        statement.getStatement(), analyzeMode.getQueryAnalyzeMode());
-              }
-              // Return a DirectExecuteResultSet, which will directly do a next() call in order to
-              // ensure that the query is actually sent to Spanner.
-              return DirectExecuteResultSet.ofResultSet(rs);
-//            } catch (Exception e) {
-//              readOnlyTransaction.close();
-//              throw e;
-//            } finally {
-//              readOnlyTransaction.close();
-//              currentTransaction.close();
-//            }
+            //            try {
+            ResultSet rs;
+            if (analyzeMode == AnalyzeMode.NONE) {
+              rs = readOnlyTransaction.executeQuery(statement.getStatement(), options);
+            } else {
+              rs =
+                  readOnlyTransaction.analyzeQuery(
+                      statement.getStatement(), analyzeMode.getQueryAnalyzeMode());
+            }
+            // Return a DirectExecuteResultSet, which will directly do a next() call in order to
+            // ensure that the query is actually sent to Spanner.
+            return DirectExecuteResultSet.ofResultSet(rs);
+            //            } catch (Exception e) {
+            //              readOnlyTransaction.close();
+            //              throw e;
+            //            } finally {
+            //              readOnlyTransaction.close();
+            //              currentTransaction.close();
+            //            }
           }
         };
     try {
@@ -234,13 +234,16 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   @Override
   public Timestamp getReadTimestamp() {
     ConnectionPreconditions.checkState(
-        readOnlyTransaction != null && state == UnitOfWorkState.COMMITTED, "There is no read timestamp available for this transaction.");
+        readOnlyTransaction != null && state == UnitOfWorkState.COMMITTED,
+        "There is no read timestamp available for this transaction.");
     return readOnlyTransaction.getReadTimestamp();
   }
 
   @Override
   public Timestamp getReadTimestampOrNull() {
-    return readOnlyTransaction == null || state != UnitOfWorkState.COMMITTED ? null : readOnlyTransaction.getReadTimestamp();
+    return readOnlyTransaction == null || state != UnitOfWorkState.COMMITTED
+        ? null
+        : readOnlyTransaction.getReadTimestamp();
   }
 
   private boolean hasCommitTimestamp() {

@@ -39,21 +39,7 @@ class AsyncRunnerImpl implements AsyncRunner {
           @Override
           public void run() {
             try {
-              R r =
-                  delegate.run(
-                      new TransactionCallable<R>() {
-                        @Override
-                        public R run(TransactionContext transaction) throws Exception {
-                          try {
-                            return work.doWorkAsync(transaction).get();
-                          } catch (ExecutionException e) {
-                            throw SpannerExceptionFactory.newSpannerException(e.getCause());
-                          } catch (InterruptedException e) {
-                            throw SpannerExceptionFactory.propagateInterrupt(e);
-                          }
-                        }
-                      });
-              res.set(r);
+              res.set(runTransaction(work));
             } catch (Throwable t) {
               res.setException(t);
             } finally {
@@ -62,6 +48,22 @@ class AsyncRunnerImpl implements AsyncRunner {
           }
         });
     return res;
+  }
+
+  private <R> R runTransaction(final AsyncWork<R> work) {
+    return delegate.run(
+        new TransactionCallable<R>() {
+          @Override
+          public R run(TransactionContext transaction) throws Exception {
+            try {
+              return work.doWorkAsync(transaction).get();
+            } catch (ExecutionException e) {
+              throw SpannerExceptionFactory.newSpannerException(e.getCause());
+            } catch (InterruptedException e) {
+              throw SpannerExceptionFactory.propagateInterrupt(e);
+            }
+          }
+        });
   }
 
   private void setCommitTimestamp() {

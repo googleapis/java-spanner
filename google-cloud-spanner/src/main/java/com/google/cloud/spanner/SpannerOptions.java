@@ -194,7 +194,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @VisibleForTesting
   static CloseableExecutorProvider createAsyncExecutorProvider(
       int poolSize, long keepAliveTime, TimeUnit unit) {
-    String format = String.format("async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
+    String format =
+        String.format("spanner-async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
     ThreadFactory threadFactory =
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat(format).build();
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(poolSize, threadFactory);

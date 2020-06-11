@@ -23,6 +23,10 @@ import java.util.concurrent.Executor;
 
 public interface AsyncRunner {
 
+  /**
+   * Functional interface for executing a read/write transaction asynchronously that returns a
+   * result of type R.
+   */
   interface AsyncWork<R> {
     /**
      * Performs a single transaction attempt. All reads/writes should be performed using {@code
@@ -34,17 +38,9 @@ public interface AsyncRunner {
      *
      * <p>In most cases, the implementation will not need to catch {@code SpannerException}s from
      * Spanner operations, instead letting these propagate to the framework. The transaction runner
-     *
-     * <p>will take appropriate action based on the type of exception. In particular,
-     * implementations should never catch an exception of type {@link SpannerErrors#isAborted}:
-     * these indicate that some reads may have returned inconsistent data and the transaction
-     * attempt must be aborted.
-     *
-     * <p>If any exception is thrown, the runner will validate the reads performed in the current
-     * transaction attempt using {@link Transaction#commitReadsOnly}: if validation succeeds, the
-     * exception is propagated to the caller; if validation aborts, the exception is thrown away and
-     * the work is retried; if the commit fails for some other reason, the corresponding {@code
-     * SpannerException} is returned to the caller. Any buffered mutations will be ignored.
+     * will take appropriate action based on the type of exception. In particular, implementations
+     * should never catch an exception of type {@link SpannerErrors#isAborted}: these indicate that
+     * some reads may have returned inconsistent data and the transaction attempt must be aborted.
      *
      * @param txn the transaction
      * @return future over the result of the work
@@ -52,6 +48,7 @@ public interface AsyncRunner {
     ApiFuture<R> doWorkAsync(TransactionContext txn);
   }
 
+  /** Executes a read/write transaction asynchronously using the given executor. */
   <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor);
 
   /**

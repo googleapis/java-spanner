@@ -103,6 +103,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
     isValid = false;
   }
 
+  // No-op method needed to implement SessionTransaction interface.
   @Override
   public void setSpan(Span span) {}
 }

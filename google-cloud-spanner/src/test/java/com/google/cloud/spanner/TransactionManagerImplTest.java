@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
@@ -224,21 +225,24 @@ public class TransactionManagerImplTest {
             new Answer<ApiFuture<Transaction>>() {
               @Override
               public ApiFuture<Transaction> answer(InvocationOnMock invocation) throws Throwable {
-                return ApiFutures.immediateFuture(Transaction.newBuilder()
-                    .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                    .build());
+                return ApiFutures.immediateFuture(
+                    Transaction.newBuilder()
+                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                        .build());
               }
             });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
             new Answer<ApiFuture<CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation) throws Throwable {
-                return ApiFutures.immediateFuture(CommitResponse.newBuilder()
-                    .setCommitTimestamp(
-                        com.google.protobuf.Timestamp.newBuilder()
-                            .setSeconds(System.currentTimeMillis() * 1000))
-                    .build());
+              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
+                  throws Throwable {
+                return ApiFutures.immediateFuture(
+                    CommitResponse.newBuilder()
+                        .setCommitTimestamp(
+                            com.google.protobuf.Timestamp.newBuilder()
+                                .setSeconds(System.currentTimeMillis() * 1000))
+                        .build());
               }
             });
     DatabaseId db = DatabaseId.of("test", "test", "test");

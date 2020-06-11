@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import java.util.concurrent.ExecutionException;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -25,11 +24,11 @@ import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.concurrent.ExecutionException;
 
 /** Implementation of {@link AsyncTransactionManager}. */
 final class AsyncTransactionManagerImpl implements AsyncTransactionManager, SessionTransaction {
@@ -59,19 +58,23 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
     session.setActive(this);
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
     final ApiFuture<Void> fut = txn.ensureTxnAsync();
-    fut.addListener(tracer.withSpan(span, new Runnable(){
-      @Override
-      public void run() {
-        try {
-          fut.get();
-          res.set(txn);
-        } catch (ExecutionException e) {
-          res.setException(e.getCause() == null ? e : e.getCause());
-        } catch (InterruptedException e) {
-          res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-        }
-      }
-    }), MoreExecutors.directExecutor());
+    fut.addListener(
+        tracer.withSpan(
+            span,
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  fut.get();
+                  res.set(txn);
+                } catch (ExecutionException e) {
+                  res.setException(e.getCause() == null ? e : e.getCause());
+                } catch (InterruptedException e) {
+                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                }
+              }
+            }),
+        MoreExecutors.directExecutor());
     return res;
   }
 
@@ -83,8 +86,9 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
     SettableApiFuture<Void> res = SettableApiFuture.create();
     if (txn.isAborted()) {
       txnState = TransactionState.ABORTED;
-      res.setException(SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, "Transaction already aborted"));
+      res.setException(
+          SpannerExceptionFactory.newSpannerException(
+              ErrorCode.ABORTED, "Transaction already aborted"));
     }
     try {
       txn.commit();

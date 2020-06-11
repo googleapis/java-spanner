@@ -32,7 +32,6 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -612,7 +611,7 @@ public class AsyncRunnerTest {
         runner.runAsync(
             new AsyncWork<Void>() {
               @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn)  {
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
                 try (AsyncResultSet rs =
                     txn.readAsync(
                         READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
@@ -646,7 +645,8 @@ public class AsyncRunnerTest {
                   dataReceived.await();
                   return ApiFutures.immediateFuture(null);
                 } catch (InterruptedException e) {
-                  return ApiFutures.immediateFailedFuture(SpannerExceptionFactory.propagateInterrupt(e));
+                  return ApiFutures.immediateFailedFuture(
+                      SpannerExceptionFactory.propagateInterrupt(e));
                 }
               }
             },

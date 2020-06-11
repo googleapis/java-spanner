@@ -36,9 +36,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Default implementation for {@link AsyncResultSet}. */
 class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsyncResultSet {
+  private static final Logger log = Logger.getLogger(AsyncResultSetImpl.class.getName());
 
   /** State of an {@link AsyncResultSetImpl}. */
   private enum State {
@@ -84,6 +87,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   private Struct currentRow;
   /** The underlying synchronous {@link ResultSet} that is producing the rows. */
   private final ResultSet delegateResultSet;
+
   /**
    * Any exception that occurs while executing the query and iterating over the result set will be
    * stored in this variable and propagated to the user through {@link #tryNext()}.
@@ -357,6 +361,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         try {
           delegateResultSet.close();
         } catch (Throwable t) {
+          log.log(Level.INFO, "Ignoring error from closing delegate result set", t);
         } finally {
           for (Runnable listener : listeners) {
             listener.run();

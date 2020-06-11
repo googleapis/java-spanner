@@ -41,14 +41,13 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.AbstractReadContext.ConsumeSingleRowCallback;
-import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
-import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -57,8 +56,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ForwardingFuture;
-import com.google.common.util.concurrent.ForwardingFuture.SimpleForwardingFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -92,7 +89,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -182,11 +178,9 @@ final class SessionPool {
               @Override
               public void run() {
                 synchronized (lock) {
-                  if (asyncOperationsCount.decrementAndGet() == 0) {
-                    if (closed) {
-                      // All async operations for this read context have finished.
-                      AutoClosingReadContext.this.close();
-                    }
+                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                    // All async operations for this read context have finished.
+                    AutoClosingReadContext.this.close();
                   }
                 }
               }
@@ -960,34 +954,43 @@ final class SessionPool {
     private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
     private final SettableApiFuture<AsyncTransactionManager> delegate = SettableApiFuture.create();
 
-    private SessionPoolAsyncTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
+    private SessionPoolAsyncTransactionManager(
+        SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
       this.session = session;
-      this.session.addListener(new Runnable(){
-        @Override
-        public void run() {
-          try {
-            delegate.set(SessionPoolAsyncTransactionManager.this.session.get().transactionManagerAsync());
-          } catch (Throwable t) {
-            delegate.setException(t);
-          }
-        }
-      }, MoreExecutors.directExecutor());
+      this.session.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                delegate.set(
+                    SessionPoolAsyncTransactionManager.this
+                        .session
+                        .get()
+                        .transactionManagerAsync());
+              } catch (Throwable t) {
+                delegate.setException(t);
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
     public ApiFuture<TransactionContext> beginAsync() {
       final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
-      delegate.addListener(new Runnable(){
-        @Override
-        public void run() {
-          try {
-            res.set(delegate.get().beginAsync().get());
-          } catch (Throwable t) {
-            res.setException(t);
-          }
-        }
-      }, MoreExecutors.directExecutor());
+      delegate.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                res.set(delegate.get().beginAsync().get());
+              } catch (Throwable t) {
+                res.setException(t);
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
       return res;
     }
 
@@ -1051,11 +1054,116 @@ final class SessionPool {
     CLOSING,
   }
 
-  private PooledSessionFuture createPooledSessionFuture(ListenableFuture<PooledSession> future, Span span) {
+  /**
+   * Forwarding future that will return a {@link PooledSession}. If {@link #inProcessPrepare} has
+   * been set to true, the returned session will be prepared with a read/write session using the
+   * thread of the caller to {@link #get()}. This ensures that the executor that is responsible for
+   * background preparing of read/write transactions is not overwhelmed by requests in case of a
+   * large burst of write requests. Instead of filling up the queue of the background executor, the
+   * caller threads will be used for the BeginTransaction call.
+   */
+  private final class ForwardingListenablePooledSessionFuture
+      extends SimpleForwardingListenableFuture<SessionPool.PooledSession> {
+    private final boolean inProcessPrepare;
+    private final Span span;
+    private volatile boolean initialized = false;
+    private final Object prepareLock = new Object();
+    private volatile PooledSession result;
+    private volatile SpannerException error;
+
+    private ForwardingListenablePooledSessionFuture(
+        ListenableFuture<PooledSession> delegate, boolean inProcessPrepare, Span span) {
+      super(delegate);
+      this.inProcessPrepare = inProcessPrepare;
+      this.span = span;
+    }
+
+    @Override
+    public PooledSession get() throws InterruptedException, ExecutionException {
+      try {
+        return initialize(super.get());
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+
+    @Override
+    public PooledSession get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
+      try {
+        return initialize(super.get(timeout, unit));
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (TimeoutException e) {
+        throw SpannerExceptionFactory.propagateTimeout(e);
+      }
+    }
+
+    private PooledSession initialize(PooledSession sess) {
+      if (!initialized) {
+        synchronized (prepareLock) {
+          if (!initialized) {
+            try {
+              result = prepare(sess);
+            } catch (Throwable t) {
+              error = SpannerExceptionFactory.newSpannerException(t);
+            } finally {
+              initialized = true;
+            }
+          }
+        }
+      }
+      if (error != null) {
+        throw error;
+      }
+      return result;
+    }
+
+    private PooledSession prepare(PooledSession sess) {
+      if (inProcessPrepare && !sess.delegate.hasReadyTransaction()) {
+        while (true) {
+          try {
+            sess.prepareReadWriteTransaction();
+            synchronized (lock) {
+              stopAutomaticPrepare = false;
+            }
+            break;
+          } catch (Throwable t) {
+            if (isClosed()) {
+              span.addAnnotation("Pool has been closed");
+              throw new IllegalStateException("Pool has been closed");
+            }
+            SpannerException e = newSpannerException(t);
+            WaiterFuture waiter = new WaiterFuture();
+            synchronized (lock) {
+              handlePrepareSessionFailure(e, sess, false);
+              if (!isSessionNotFound(e)) {
+                throw e;
+              }
+              readWaiters.add(waiter);
+            }
+            sess = waiter.get();
+            if (sess.delegate.hasReadyTransaction()) {
+              break;
+            }
+          }
+        }
+      }
+      return sess;
+    }
+  }
+
+  private PooledSessionFuture createPooledSessionFuture(
+      ListenableFuture<PooledSession> future, Span span) {
     return new PooledSessionFuture(future, span);
   }
 
-  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession> implements Session {
+  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
+      implements Session {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
@@ -1251,19 +1359,21 @@ final class SessionPool {
     @Override
     public PooledSession get() {
       if (inUse.compareAndSet(false, true)) {
+        PooledSession res = null;
         try {
-          PooledSession res = super.get();
+          res = super.get();
+        } catch (Throwable e) {
+          // ignore the exception as it will be handled by the call to super.get() below.
+        }
+        if (res != null) {
           synchronized (lock) {
             res.markBusy(span);
             span.addAnnotation(sessionAnnotation(res));
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
           }
-          initialized.countDown();
-        } catch (Throwable e) {
-          initialized.countDown();
-          // ignore and fallthrough.
         }
+        initialized.countDown();
       }
       try {
         initialized.await();
@@ -2146,91 +2256,8 @@ final class SessionPool {
       fut.set(readySession);
       sessionFuture = fut;
     }
-    SimpleForwardingListenableFuture<PooledSession> forwardingFuture =
-        new SimpleForwardingListenableFuture<SessionPool.PooledSession>(sessionFuture) {
-          private volatile boolean initialized = false;
-          private final Object prepareLock = new Object();
-          private volatile PooledSession result;
-          private volatile SpannerException error;
-
-          @Override
-          public PooledSession get() throws InterruptedException, ExecutionException {
-            try {
-              return initialize(super.get());
-            } catch (ExecutionException e) {
-              throw SpannerExceptionFactory.newSpannerException(e.getCause());
-            } catch (InterruptedException e) {
-              throw SpannerExceptionFactory.propagateInterrupt(e);
-            }
-          }
-
-          @Override
-          public PooledSession get(long timeout, TimeUnit unit)
-              throws InterruptedException, ExecutionException, TimeoutException {
-            try {
-              return initialize(super.get(timeout, unit));
-            } catch (ExecutionException e) {
-              throw SpannerExceptionFactory.newSpannerException(e.getCause());
-            } catch (InterruptedException e) {
-              throw SpannerExceptionFactory.propagateInterrupt(e);
-            } catch (TimeoutException e) {
-              throw SpannerExceptionFactory.propagateTimeout(e);
-            }
-          }
-
-          private PooledSession initialize(PooledSession sess) {
-            if (!initialized) {
-              synchronized (prepareLock) {
-                if (!initialized) {
-                  try {
-                    result = prepare(sess);
-                  } catch (Throwable t) {
-                    error = SpannerExceptionFactory.newSpannerException(t);
-                  } finally {
-                    initialized = true;
-                  }
-                }
-              }
-            }
-            if (error != null) {
-              throw error;
-            }
-            return result;
-          }
-
-          private PooledSession prepare(PooledSession sess) {
-            if (inProcessPrepare && !sess.delegate.hasReadyTransaction()) {
-              while (true) {
-                try {
-                  sess.prepareReadWriteTransaction();
-                  synchronized (lock) {
-                    stopAutomaticPrepare = false;
-                  }
-                  break;
-                } catch (Throwable t) {
-                  if (isClosed()) {
-                    span.addAnnotation("Pool has been closed");
-                    throw new IllegalStateException("Pool has been closed");
-                  }
-                  SpannerException e = newSpannerException(t);
-                  WaiterFuture waiter = new WaiterFuture();
-                  synchronized (lock) {
-                    handlePrepareSessionFailure(e, sess, false);
-                    if (!isSessionNotFound(e)) {
-                      throw e;
-                    }
-                    readWaiters.add(waiter);
-                  }
-                  sess = waiter.get();
-                  if (sess.delegate.hasReadyTransaction()) {
-                    break;
-                  }
-                }
-              }
-            }
-            return sess;
-          }
-        };
+    ForwardingListenablePooledSessionFuture forwardingFuture =
+        new ForwardingListenablePooledSessionFuture(sessionFuture, inProcessPrepare, span);
     PooledSessionFuture res = createPooledSessionFuture(forwardingFuture, span);
     res.markCheckedOut();
     return res;

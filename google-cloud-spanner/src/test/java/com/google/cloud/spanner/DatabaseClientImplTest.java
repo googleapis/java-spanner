@@ -555,23 +555,25 @@ public class DatabaseClientImplTest {
       while (true) {
         TransactionContext tx = txManager.begin();
         try {
-          try(AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
-            rs.setCallback(executor, new ReadyCallback(){
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while(true) {
-                  switch(resultSet.tryNext()) {
-                    case OK:
-                      rowCount.incrementAndGet();
-                      break;
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
+          try (AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
+            rs.setCallback(
+                executor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          rowCount.incrementAndGet();
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                      }
+                    }
                   }
-                }
-              }
-            });
+                });
           }
           txManager.commit();
           break;

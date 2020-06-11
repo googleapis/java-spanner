@@ -31,8 +31,8 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
  * successfully, or is rolled back or commit fails with any error other than {@code ABORTED}, the
  * manager is considered complete and no further transactions are allowed to be created in it.
  *
- * <p>Every {@code AsyncTransactionManager} should either be committed or rolled back. Failure to do so
- * can cause resources to be leaked and deadlocks. Easiest way to guarantee this is by calling
+ * <p>Every {@code AsyncTransactionManager} should either be committed or rolled back. Failure to do
+ * so can cause resources to be leaked and deadlocks. Easiest way to guarantee this is by calling
  * {@link #close()} in a finally block.
  *
  * @see DatabaseClient#transactionManager()

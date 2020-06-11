@@ -779,20 +779,21 @@ abstract class AbstractReadContext
     @Override
     public CallbackResponse cursorReady(AsyncResultSet resultSet) {
       try {
-        while (true) {
-          switch (resultSet.tryNext()) {
-            case DONE:
-              result.set(row);
-              return CallbackResponse.DONE;
-            case NOT_READY:
-              return CallbackResponse.CONTINUE;
-            case OK:
-              if (row != null) {
-                throw newSpannerException(
-                    ErrorCode.INTERNAL, "Multiple rows returned for single key");
-              }
-              row = resultSet.getCurrentRowAsStruct();
-          }
+        switch (resultSet.tryNext()) {
+          case DONE:
+            result.set(row);
+            return CallbackResponse.DONE;
+          case NOT_READY:
+            return CallbackResponse.CONTINUE;
+          case OK:
+            if (row != null) {
+              throw newSpannerException(
+                  ErrorCode.INTERNAL, "Multiple rows returned for single key");
+            }
+            row = resultSet.getCurrentRowAsStruct();
+            return CallbackResponse.CONTINUE;
+          default:
+            throw new IllegalStateException();
         }
       } catch (Throwable t) {
         result.setException(t);

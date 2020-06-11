@@ -305,7 +305,8 @@ public interface SpannerRpc extends ServiceRpc {
   CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException;
 
-  ApiFuture<CommitResponse> commitAsync(CommitRequest commitRequest, @Nullable Map<Option, ?> options);
+  ApiFuture<CommitResponse> commitAsync(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options);
 
   void rollback(RollbackRequest request, @Nullable Map<Option, ?> options) throws SpannerException;
 

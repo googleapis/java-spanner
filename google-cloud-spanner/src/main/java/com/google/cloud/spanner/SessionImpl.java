@@ -18,9 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.api.core.ApiFunction;
+
 import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
@@ -38,7 +37,6 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import io.grpc.Context;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
@@ -291,29 +289,37 @@ class SessionImpl implements Session {
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
             .build();
-    final ApiFuture<Transaction> requestFuture = spanner.getRpc().beginTransactionAsync(request, options);
-    requestFuture.addListener(tracer.withSpan(span, new Runnable(){
-      @Override
-      public void run() {
-        try {
-          Transaction txn = requestFuture.get();
-          if (txn.getId().isEmpty()) {
-            throw newSpannerException(ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-          }
-          span.end(TraceUtil.END_SPAN_OPTIONS);
-          res.set(txn.getId());
-        } catch (ExecutionException e) {
-          TraceUtil.endSpanWithFailure(span, e);
-          res.setException(SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
-        } catch (InterruptedException e) {
-          TraceUtil.endSpanWithFailure(span, e);
-          res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-        } catch (Exception e) {
-          TraceUtil.endSpanWithFailure(span, e);
-          res.setException(e);
-        }
-      }
-    }), MoreExecutors.directExecutor());
+    final ApiFuture<Transaction> requestFuture =
+        spanner.getRpc().beginTransactionAsync(request, options);
+    requestFuture.addListener(
+        tracer.withSpan(
+            span,
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  Transaction txn = requestFuture.get();
+                  if (txn.getId().isEmpty()) {
+                    throw newSpannerException(
+                        ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+                  }
+                  span.end(TraceUtil.END_SPAN_OPTIONS);
+                  res.set(txn.getId());
+                } catch (ExecutionException e) {
+                  TraceUtil.endSpanWithFailure(span, e);
+                  res.setException(
+                      SpannerExceptionFactory.newSpannerException(
+                          e.getCause() == null ? e : e.getCause()));
+                } catch (InterruptedException e) {
+                  TraceUtil.endSpanWithFailure(span, e);
+                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                } catch (Exception e) {
+                  TraceUtil.endSpanWithFailure(span, e);
+                  res.setException(e);
+                }
+              }
+            }),
+        MoreExecutors.directExecutor());
     return res;
   }
 

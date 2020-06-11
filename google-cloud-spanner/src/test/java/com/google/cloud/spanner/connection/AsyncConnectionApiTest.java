@@ -22,8 +22,6 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.common.base.Function;
 import java.util.concurrent.ExecutorService;
@@ -45,46 +43,49 @@ public class AsyncConnectionApiTest extends AbstractMockServerTest {
 
   @Test
   public void testSimpleSelectAutocommit() throws Exception {
-    testSimpleSelect(new Function<Connection, Void>(){
-      @Override
-      public Void apply(Connection input) {
-        input.setAutocommit(true);
-        return null;
-      }
-    });
+    testSimpleSelect(
+        new Function<Connection, Void>() {
+          @Override
+          public Void apply(Connection input) {
+            input.setAutocommit(true);
+            return null;
+          }
+        });
   }
 
   @Test
   public void testSimpleSelectReadOnly() throws Exception {
-    testSimpleSelect(new Function<Connection, Void>(){
-      @Override
-      public Void apply(Connection input) {
-        input.setReadOnly(true);
-        return null;
-      }
-    });
+    testSimpleSelect(
+        new Function<Connection, Void>() {
+          @Override
+          public Void apply(Connection input) {
+            input.setReadOnly(true);
+            return null;
+          }
+        });
   }
 
   @Test
   public void testSimpleSelectReadWrite() throws Exception {
-    testSimpleSelect(new Function<Connection, Void>(){
-      @Override
-      public Void apply(Connection input) {
-        return null;
-      }
-    });
+    testSimpleSelect(
+        new Function<Connection, Void>() {
+          @Override
+          public Void apply(Connection input) {
+            return null;
+          }
+        });
   }
 
-  private void testSimpleSelect(Function<Connection, Void> connectionConfigurator) throws Exception {
+  private void testSimpleSelect(Function<Connection, Void> connectionConfigurator)
+      throws Exception {
     final AtomicInteger rowCount = new AtomicInteger();
     ApiFuture<Void> res;
     try (ITConnection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       // Verify that the call is non-blocking.
-//      mockSpanner.freeze();
-      try (AsyncResultSet rs =
-          connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
-//        mockSpanner.unfreeze();
+      //      mockSpanner.freeze();
+      try (AsyncResultSet rs = connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
+        //        mockSpanner.unfreeze();
         res =
             rs.setCallback(
                 executor,
