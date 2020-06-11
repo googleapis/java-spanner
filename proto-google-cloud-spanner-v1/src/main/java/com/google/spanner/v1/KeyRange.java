@@ -327,6 +327,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the startClosed field is set.
    */
+  @java.lang.Override
   public boolean hasStartClosed() {
     return startKeyTypeCase_ == 1;
   }
@@ -342,6 +343,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The startClosed.
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getStartClosed() {
     if (startKeyTypeCase_ == 1) {
       return (com.google.protobuf.ListValue) startKeyType_;
@@ -358,6 +360,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.ListValue start_closed = 1;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getStartClosedOrBuilder() {
     if (startKeyTypeCase_ == 1) {
       return (com.google.protobuf.ListValue) startKeyType_;
@@ -378,6 +381,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the startOpen field is set.
    */
+  @java.lang.Override
   public boolean hasStartOpen() {
     return startKeyTypeCase_ == 2;
   }
@@ -393,6 +397,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The startOpen.
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getStartOpen() {
     if (startKeyTypeCase_ == 2) {
       return (com.google.protobuf.ListValue) startKeyType_;
@@ -409,6 +414,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.ListValue start_open = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getStartOpenOrBuilder() {
     if (startKeyTypeCase_ == 2) {
       return (com.google.protobuf.ListValue) startKeyType_;
@@ -429,6 +435,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the endClosed field is set.
    */
+  @java.lang.Override
   public boolean hasEndClosed() {
     return endKeyTypeCase_ == 3;
   }
@@ -444,6 +451,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The endClosed.
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getEndClosed() {
     if (endKeyTypeCase_ == 3) {
       return (com.google.protobuf.ListValue) endKeyType_;
@@ -460,6 +468,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.ListValue end_closed = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getEndClosedOrBuilder() {
     if (endKeyTypeCase_ == 3) {
       return (com.google.protobuf.ListValue) endKeyType_;
@@ -480,6 +489,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the endOpen field is set.
    */
+  @java.lang.Override
   public boolean hasEndOpen() {
     return endKeyTypeCase_ == 4;
   }
@@ -495,6 +505,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The endOpen.
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getEndOpen() {
     if (endKeyTypeCase_ == 4) {
       return (com.google.protobuf.ListValue) endKeyType_;
@@ -511,6 +522,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.ListValue end_open = 4;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getEndOpenOrBuilder() {
     if (endKeyTypeCase_ == 4) {
       return (com.google.protobuf.ListValue) endKeyType_;
@@ -1061,6 +1073,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the startClosed field is set.
      */
+    @java.lang.Override
     public boolean hasStartClosed() {
       return startKeyTypeCase_ == 1;
     }
@@ -1076,6 +1089,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The startClosed.
      */
+    @java.lang.Override
     public com.google.protobuf.ListValue getStartClosed() {
       if (startClosedBuilder_ == null) {
         if (startKeyTypeCase_ == 1) {
@@ -1213,6 +1227,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.protobuf.ListValue start_closed = 1;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValueOrBuilder getStartClosedOrBuilder() {
       if ((startKeyTypeCase_ == 1) && (startClosedBuilder_ != null)) {
         return startClosedBuilder_.getMessageOrBuilder();
@@ -1273,6 +1288,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the startOpen field is set.
      */
+    @java.lang.Override
     public boolean hasStartOpen() {
       return startKeyTypeCase_ == 2;
     }
@@ -1288,6 +1304,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The startOpen.
      */
+    @java.lang.Override
     public com.google.protobuf.ListValue getStartOpen() {
       if (startOpenBuilder_ == null) {
         if (startKeyTypeCase_ == 2) {
@@ -1425,6 +1442,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.protobuf.ListValue start_open = 2;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValueOrBuilder getStartOpenOrBuilder() {
       if ((startKeyTypeCase_ == 2) && (startOpenBuilder_ != null)) {
         return startOpenBuilder_.getMessageOrBuilder();
@@ -1485,6 +1503,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the endClosed field is set.
      */
+    @java.lang.Override
     public boolean hasEndClosed() {
       return endKeyTypeCase_ == 3;
     }
@@ -1500,6 +1519,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The endClosed.
      */
+    @java.lang.Override
     public com.google.protobuf.ListValue getEndClosed() {
       if (endClosedBuilder_ == null) {
         if (endKeyTypeCase_ == 3) {
@@ -1636,6 +1656,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.protobuf.ListValue end_closed = 3;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValueOrBuilder getEndClosedOrBuilder() {
       if ((endKeyTypeCase_ == 3) && (endClosedBuilder_ != null)) {
         return endClosedBuilder_.getMessageOrBuilder();
@@ -1696,6 +1717,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the endOpen field is set.
      */
+    @java.lang.Override
     public boolean hasEndOpen() {
       return endKeyTypeCase_ == 4;
     }
@@ -1711,6 +1733,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The endOpen.
      */
+    @java.lang.Override
     public com.google.protobuf.ListValue getEndOpen() {
       if (endOpenBuilder_ == null) {
         if (endKeyTypeCase_ == 4) {
@@ -1847,6 +1870,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.protobuf.ListValue end_open = 4;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValueOrBuilder getEndOpenOrBuilder() {
       if ((endKeyTypeCase_ == 4) && (endOpenBuilder_ != null)) {
         return endOpenBuilder_.getMessageOrBuilder();

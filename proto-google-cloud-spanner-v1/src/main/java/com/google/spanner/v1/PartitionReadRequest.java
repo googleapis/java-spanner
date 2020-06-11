@@ -203,6 +203,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -227,6 +228,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -253,6 +255,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -268,6 +271,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelector getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
@@ -283,6 +287,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }
@@ -300,6 +305,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The table.
    */
+  @java.lang.Override
   public java.lang.String getTable() {
     java.lang.Object ref = table_;
     if (ref instanceof java.lang.String) {
@@ -322,6 +328,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for table.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getTableBytes() {
     java.lang.Object ref = table_;
     if (ref instanceof java.lang.String) {
@@ -349,6 +356,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The index.
    */
+  @java.lang.Override
   public java.lang.String getIndex() {
     java.lang.Object ref = index_;
     if (ref instanceof java.lang.String) {
@@ -373,6 +381,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for index.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getIndexBytes() {
     java.lang.Object ref = index_;
     if (ref instanceof java.lang.String) {
@@ -468,6 +477,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the keySet field is set.
    */
+  @java.lang.Override
   public boolean hasKeySet() {
     return keySet_ != null;
   }
@@ -487,6 +497,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The keySet.
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeySet getKeySet() {
     return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
@@ -504,6 +515,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
     return getKeySet();
   }
@@ -521,6 +533,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the partitionOptions field is set.
    */
+  @java.lang.Override
   public boolean hasPartitionOptions() {
     return partitionOptions_ != null;
   }
@@ -535,6 +548,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * @return The partitionOptions.
    */
+  @java.lang.Override
   public com.google.spanner.v1.PartitionOptions getPartitionOptions() {
     return partitionOptions_ == null
         ? com.google.spanner.v1.PartitionOptions.getDefaultInstance()
@@ -549,6 +563,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.spanner.v1.PartitionOptions partition_options = 9;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder() {
     return getPartitionOptions();
   }

@@ -137,6 +137,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.Session> getSessionsList() {
     return sessions_;
   }
@@ -149,6 +150,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.SessionOrBuilder>
       getSessionsOrBuilderList() {
     return sessions_;
@@ -162,6 +164,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
+  @java.lang.Override
   public int getSessionsCount() {
     return sessions_.size();
   }
@@ -174,6 +177,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Session getSessions(int index) {
     return sessions_.get(index);
   }
@@ -186,6 +190,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionsOrBuilder(int index) {
     return sessions_.get(index);
   }
@@ -205,6 +210,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * @return The nextPageToken.
    */
+  @java.lang.Override
   public java.lang.String getNextPageToken() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
@@ -229,6 +235,7 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for nextPageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {

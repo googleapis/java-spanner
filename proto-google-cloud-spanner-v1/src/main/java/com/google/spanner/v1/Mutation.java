@@ -498,6 +498,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The table.
      */
+    @java.lang.Override
     public java.lang.String getTable() {
       java.lang.Object ref = table_;
       if (ref instanceof java.lang.String) {
@@ -520,6 +521,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for table.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getTableBytes() {
       java.lang.Object ref = table_;
       if (ref instanceof java.lang.String) {
@@ -623,6 +625,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
+    @java.lang.Override
     public java.util.List<com.google.protobuf.ListValue> getValuesList() {
       return values_;
     }
@@ -642,6 +645,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
+    @java.lang.Override
     public java.util.List<? extends com.google.protobuf.ListValueOrBuilder>
         getValuesOrBuilderList() {
       return values_;
@@ -662,6 +666,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
+    @java.lang.Override
     public int getValuesCount() {
       return values_.size();
     }
@@ -681,6 +686,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValue getValues(int index) {
       return values_.get(index);
     }
@@ -700,6 +706,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue values = 3;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.ListValueOrBuilder getValuesOrBuilder(int index) {
       return values_.get(index);
     }
@@ -2141,6 +2148,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The table.
      */
+    @java.lang.Override
     public java.lang.String getTable() {
       java.lang.Object ref = table_;
       if (ref instanceof java.lang.String) {
@@ -2163,6 +2171,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for table.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getTableBytes() {
       java.lang.Object ref = table_;
       if (ref instanceof java.lang.String) {
@@ -2193,6 +2202,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the keySet field is set.
      */
+    @java.lang.Override
     public boolean hasKeySet() {
       return keySet_ != null;
     }
@@ -2212,6 +2222,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The keySet.
      */
+    @java.lang.Override
     public com.google.spanner.v1.KeySet getKeySet() {
       return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
     }
@@ -2229,6 +2240,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.KeySet key_set = 2;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
       return getKeySet();
     }
@@ -3031,6 +3043,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the insert field is set.
    */
+  @java.lang.Override
   public boolean hasInsert() {
     return operationCase_ == 1;
   }
@@ -3046,6 +3059,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The insert.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.Write getInsert() {
     if (operationCase_ == 1) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3062,6 +3076,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Mutation.Write insert = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrBuilder() {
     if (operationCase_ == 1) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3082,6 +3097,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the update field is set.
    */
+  @java.lang.Override
   public boolean hasUpdate() {
     return operationCase_ == 2;
   }
@@ -3097,6 +3113,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The update.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.Write getUpdate() {
     if (operationCase_ == 2) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3113,6 +3130,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Mutation.Write update = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.WriteOrBuilder getUpdateOrBuilder() {
     if (operationCase_ == 2) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3137,6 +3155,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the insertOrUpdate field is set.
    */
+  @java.lang.Override
   public boolean hasInsertOrUpdate() {
     return operationCase_ == 3;
   }
@@ -3156,6 +3175,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The insertOrUpdate.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.Write getInsertOrUpdate() {
     if (operationCase_ == 3) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3176,6 +3196,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Mutation.Write insert_or_update = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrUpdateOrBuilder() {
     if (operationCase_ == 3) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3202,6 +3223,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the replace field is set.
    */
+  @java.lang.Override
   public boolean hasReplace() {
     return operationCase_ == 4;
   }
@@ -3223,6 +3245,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The replace.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.Write getReplace() {
     if (operationCase_ == 4) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3245,6 +3268,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Mutation.Write replace = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.WriteOrBuilder getReplaceOrBuilder() {
     if (operationCase_ == 4) {
       return (com.google.spanner.v1.Mutation.Write) operation_;
@@ -3265,6 +3289,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the delete field is set.
    */
+  @java.lang.Override
   public boolean hasDelete() {
     return operationCase_ == 5;
   }
@@ -3280,6 +3305,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The delete.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.Delete getDelete() {
     if (operationCase_ == 5) {
       return (com.google.spanner.v1.Mutation.Delete) operation_;
@@ -3296,6 +3322,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.Mutation.Delete delete = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation.DeleteOrBuilder getDeleteOrBuilder() {
     if (operationCase_ == 5) {
       return (com.google.spanner.v1.Mutation.Delete) operation_;
@@ -3785,6 +3812,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the insert field is set.
      */
+    @java.lang.Override
     public boolean hasInsert() {
       return operationCase_ == 1;
     }
@@ -3800,6 +3828,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The insert.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.Write getInsert() {
       if (insertBuilder_ == null) {
         if (operationCase_ == 1) {
@@ -3937,6 +3966,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Mutation.Write insert = 1;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrBuilder() {
       if ((operationCase_ == 1) && (insertBuilder_ != null)) {
         return insertBuilder_.getMessageOrBuilder();
@@ -3999,6 +4029,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the update field is set.
      */
+    @java.lang.Override
     public boolean hasUpdate() {
       return operationCase_ == 2;
     }
@@ -4014,6 +4045,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The update.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.Write getUpdate() {
       if (updateBuilder_ == null) {
         if (operationCase_ == 2) {
@@ -4151,6 +4183,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Mutation.Write update = 2;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.WriteOrBuilder getUpdateOrBuilder() {
       if ((operationCase_ == 2) && (updateBuilder_ != null)) {
         return updateBuilder_.getMessageOrBuilder();
@@ -4217,6 +4250,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the insertOrUpdate field is set.
      */
+    @java.lang.Override
     public boolean hasInsertOrUpdate() {
       return operationCase_ == 3;
     }
@@ -4236,6 +4270,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The insertOrUpdate.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.Write getInsertOrUpdate() {
       if (insertOrUpdateBuilder_ == null) {
         if (operationCase_ == 3) {
@@ -4397,6 +4432,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Mutation.Write insert_or_update = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrUpdateOrBuilder() {
       if ((operationCase_ == 3) && (insertOrUpdateBuilder_ != null)) {
         return insertOrUpdateBuilder_.getMessageOrBuilder();
@@ -4469,6 +4505,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the replace field is set.
      */
+    @java.lang.Override
     public boolean hasReplace() {
       return operationCase_ == 4;
     }
@@ -4490,6 +4527,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The replace.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.Write getReplace() {
       if (replaceBuilder_ == null) {
         if (operationCase_ == 4) {
@@ -4663,6 +4701,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Mutation.Write replace = 4;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.WriteOrBuilder getReplaceOrBuilder() {
       if ((operationCase_ == 4) && (replaceBuilder_ != null)) {
         return replaceBuilder_.getMessageOrBuilder();
@@ -4731,6 +4770,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the delete field is set.
      */
+    @java.lang.Override
     public boolean hasDelete() {
       return operationCase_ == 5;
     }
@@ -4746,6 +4786,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The delete.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.Delete getDelete() {
       if (deleteBuilder_ == null) {
         if (operationCase_ == 5) {
@@ -4883,6 +4924,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Mutation.Delete delete = 5;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Mutation.DeleteOrBuilder getDeleteOrBuilder() {
       if ((operationCase_ == 5) && (deleteBuilder_ != null)) {
         return deleteBuilder_.getMessageOrBuilder();

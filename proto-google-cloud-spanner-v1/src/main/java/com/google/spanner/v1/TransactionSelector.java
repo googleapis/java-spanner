@@ -207,6 +207,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the singleUse field is set.
    */
+  @java.lang.Override
   public boolean hasSingleUse() {
     return selectorCase_ == 1;
   }
@@ -223,6 +224,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The singleUse.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions getSingleUse() {
     if (selectorCase_ == 1) {
       return (com.google.spanner.v1.TransactionOptions) selector_;
@@ -240,6 +242,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseOrBuilder() {
     if (selectorCase_ == 1) {
       return (com.google.spanner.v1.TransactionOptions) selector_;
@@ -259,6 +262,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The id.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getId() {
     if (selectorCase_ == 2) {
       return (com.google.protobuf.ByteString) selector_;
@@ -280,6 +284,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the begin field is set.
    */
+  @java.lang.Override
   public boolean hasBegin() {
     return selectorCase_ == 3;
   }
@@ -296,6 +301,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The begin.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions getBegin() {
     if (selectorCase_ == 3) {
       return (com.google.spanner.v1.TransactionOptions) selector_;
@@ -313,6 +319,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder() {
     if (selectorCase_ == 3) {
       return (com.google.spanner.v1.TransactionOptions) selector_;
@@ -750,6 +757,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return Whether the singleUse field is set.
      */
+    @java.lang.Override
     public boolean hasSingleUse() {
       return selectorCase_ == 1;
     }
@@ -766,6 +774,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return The singleUse.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions getSingleUse() {
       if (singleUseBuilder_ == null) {
         if (selectorCase_ == 1) {
@@ -909,6 +918,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseOrBuilder() {
       if ((selectorCase_ == 1) && (singleUseBuilder_ != null)) {
         return singleUseBuilder_.getMessageOrBuilder();
@@ -1031,6 +1041,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return Whether the begin field is set.
      */
+    @java.lang.Override
     public boolean hasBegin() {
       return selectorCase_ == 3;
     }
@@ -1047,6 +1058,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return The begin.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions getBegin() {
       if (beginBuilder_ == null) {
         if (selectorCase_ == 3) {
@@ -1190,6 +1202,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder() {
       if ((selectorCase_ == 3) && (beginBuilder_ != null)) {
         return beginBuilder_.getMessageOrBuilder();

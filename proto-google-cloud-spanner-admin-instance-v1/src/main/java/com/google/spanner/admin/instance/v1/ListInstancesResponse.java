@@ -139,6 +139,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.admin.instance.v1.Instance> getInstancesList() {
     return instances_;
   }
@@ -151,6 +152,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceOrBuilder>
       getInstancesOrBuilderList() {
     return instances_;
@@ -164,6 +166,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
    */
+  @java.lang.Override
   public int getInstancesCount() {
     return instances_.size();
   }
@@ -176,6 +179,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.Instance getInstances(int index) {
     return instances_.get(index);
   }
@@ -188,6 +192,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstancesOrBuilder(int index) {
     return instances_.get(index);
   }
@@ -207,6 +212,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * @return The nextPageToken.
    */
+  @java.lang.Override
   public java.lang.String getNextPageToken() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
@@ -231,6 +237,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for nextPageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {

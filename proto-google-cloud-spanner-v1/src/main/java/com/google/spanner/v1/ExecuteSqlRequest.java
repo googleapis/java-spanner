@@ -345,6 +345,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -549,6 +553,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The optimizerVersion.
      */
+    @java.lang.Override
     public java.lang.String getOptimizerVersion() {
       java.lang.Object ref = optimizerVersion_;
       if (ref instanceof java.lang.String) {
@@ -583,6 +588,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The bytes for optimizerVersion.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getOptimizerVersionBytes() {
       java.lang.Object ref = optimizerVersion_;
       if (ref instanceof java.lang.String) {
@@ -1151,6 +1157,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -1175,6 +1182,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -1206,6 +1214,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -1226,6 +1235,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelector getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
@@ -1246,6 +1256,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }
@@ -1263,6 +1274,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The sql.
    */
+  @java.lang.Override
   public java.lang.String getSql() {
     java.lang.Object ref = sql_;
     if (ref instanceof java.lang.String) {
@@ -1285,6 +1297,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The bytes for sql.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSqlBytes() {
     java.lang.Object ref = sql_;
     if (ref instanceof java.lang.String) {
@@ -1317,6 +1330,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return Whether the params field is set.
    */
+  @java.lang.Override
   public boolean hasParams() {
     return params_ != null;
   }
@@ -1338,6 +1352,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The params.
    */
+  @java.lang.Override
   public com.google.protobuf.Struct getParams() {
     return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
   }
@@ -1357,6 +1372,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>.google.protobuf.Struct params = 4;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
     return getParams();
   }
@@ -1404,6 +1420,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public boolean containsParamTypes(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -1411,6 +1428,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return internalGetParamTypes().getMap().containsKey(key);
   }
   /** Use {@link #getParamTypesMap()} instead. */
+  @java.lang.Override
   @java.lang.Deprecated
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
     return getParamTypesMap();
@@ -1430,6 +1448,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
     return internalGetParamTypes().getMap();
   }
@@ -1448,6 +1467,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrDefault(
       java.lang.String key, com.google.spanner.v1.Type defaultValue) {
     if (key == null) {
@@ -1472,6 +1492,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -1502,6 +1523,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The resumeToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getResumeToken() {
     return resumeToken_;
   }
@@ -1521,6 +1543,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The enum numeric value on the wire for queryMode.
    */
+  @java.lang.Override
   public int getQueryModeValue() {
     return queryMode_;
   }
@@ -1537,6 +1560,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The queryMode.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ExecuteSqlRequest.QueryMode getQueryMode() {
     @SuppressWarnings("deprecation")
     com.google.spanner.v1.ExecuteSqlRequest.QueryMode result =
@@ -1560,6 +1584,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The partitionToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getPartitionToken() {
     return partitionToken_;
   }
@@ -1584,6 +1609,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The seqno.
    */
+  @java.lang.Override
   public long getSeqno() {
     return seqno_;
   }
@@ -1601,6 +1627,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return Whether the queryOptions field is set.
    */
+  @java.lang.Override
   public boolean hasQueryOptions() {
     return queryOptions_ != null;
   }
@@ -1615,6 +1642,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The queryOptions.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ExecuteSqlRequest.QueryOptions getQueryOptions() {
     return queryOptions_ == null
         ? com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.getDefaultInstance()
@@ -1629,6 +1657,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <code>.google.spanner.v1.ExecuteSqlRequest.QueryOptions query_options = 10;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder getQueryOptionsOrBuilder() {
     return getQueryOptions();
   }
@@ -2899,6 +2928,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -2906,6 +2936,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       return internalGetParamTypes().getMap().containsKey(key);
     }
     /** Use {@link #getParamTypesMap()} instead. */
+    @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
       return getParamTypesMap();
@@ -2925,6 +2956,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
       return internalGetParamTypes().getMap();
     }
@@ -2943,6 +2975,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrDefault(
         java.lang.String key, com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
@@ -2967,6 +3000,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -3073,6 +3107,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The resumeToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
@@ -3139,6 +3174,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The enum numeric value on the wire for queryMode.
      */
+    @java.lang.Override
     public int getQueryModeValue() {
       return queryMode_;
     }
@@ -3157,6 +3193,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * @return This builder for chaining.
      */
     public Builder setQueryModeValue(int value) {
+
       queryMode_ = value;
       onChanged();
       return this;
@@ -3174,6 +3211,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The queryMode.
      */
+    @java.lang.Override
     public com.google.spanner.v1.ExecuteSqlRequest.QueryMode getQueryMode() {
       @SuppressWarnings("deprecation")
       com.google.spanner.v1.ExecuteSqlRequest.QueryMode result =
@@ -3240,6 +3278,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The partitionToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }
@@ -3307,6 +3346,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The seqno.
      */
+    @java.lang.Override
     public long getSeqno() {
       return seqno_;
     }

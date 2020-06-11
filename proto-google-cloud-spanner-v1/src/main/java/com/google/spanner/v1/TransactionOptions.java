@@ -1765,6 +1765,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The strong.
      */
+    @java.lang.Override
     public boolean getStrong() {
       if (timestampBoundCase_ == 1) {
         return (java.lang.Boolean) timestampBound_;
@@ -1790,6 +1791,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the minReadTimestamp field is set.
      */
+    @java.lang.Override
     public boolean hasMinReadTimestamp() {
       return timestampBoundCase_ == 2;
     }
@@ -1810,6 +1812,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The minReadTimestamp.
      */
+    @java.lang.Override
     public com.google.protobuf.Timestamp getMinReadTimestamp() {
       if (timestampBoundCase_ == 2) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1831,6 +1834,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Timestamp min_read_timestamp = 2;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.TimestampOrBuilder getMinReadTimestampOrBuilder() {
       if (timestampBoundCase_ == 2) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1860,6 +1864,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the maxStaleness field is set.
      */
+    @java.lang.Override
     public boolean hasMaxStaleness() {
       return timestampBoundCase_ == 3;
     }
@@ -1884,6 +1889,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The maxStaleness.
      */
+    @java.lang.Override
     public com.google.protobuf.Duration getMaxStaleness() {
       if (timestampBoundCase_ == 3) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -1909,6 +1915,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Duration max_staleness = 3;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.DurationOrBuilder getMaxStalenessOrBuilder() {
       if (timestampBoundCase_ == 3) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -1937,6 +1944,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readTimestamp field is set.
      */
+    @java.lang.Override
     public boolean hasReadTimestamp() {
       return timestampBoundCase_ == 4;
     }
@@ -1960,6 +1968,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readTimestamp.
      */
+    @java.lang.Override
     public com.google.protobuf.Timestamp getReadTimestamp() {
       if (timestampBoundCase_ == 4) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1984,6 +1993,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Timestamp read_timestamp = 4;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
       if (timestampBoundCase_ == 4) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -2011,6 +2021,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the exactStaleness field is set.
      */
+    @java.lang.Override
     public boolean hasExactStaleness() {
       return timestampBoundCase_ == 5;
     }
@@ -2033,6 +2044,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The exactStaleness.
      */
+    @java.lang.Override
     public com.google.protobuf.Duration getExactStaleness() {
       if (timestampBoundCase_ == 5) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -2056,6 +2068,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Duration exact_staleness = 5;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.DurationOrBuilder getExactStalenessOrBuilder() {
       if (timestampBoundCase_ == 5) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -2077,6 +2090,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The returnReadTimestamp.
      */
+    @java.lang.Override
     public boolean getReturnReadTimestamp() {
       return returnReadTimestamp_;
     }
@@ -2645,6 +2659,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the minReadTimestamp field is set.
        */
+      @java.lang.Override
       public boolean hasMinReadTimestamp() {
         return timestampBoundCase_ == 2;
       }
@@ -2665,6 +2680,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The minReadTimestamp.
        */
+      @java.lang.Override
       public com.google.protobuf.Timestamp getMinReadTimestamp() {
         if (minReadTimestampBuilder_ == null) {
           if (timestampBoundCase_ == 2) {
@@ -2832,6 +2848,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Timestamp min_read_timestamp = 2;</code>
        */
+      @java.lang.Override
       public com.google.protobuf.TimestampOrBuilder getMinReadTimestampOrBuilder() {
         if ((timestampBoundCase_ == 2) && (minReadTimestampBuilder_ != null)) {
           return minReadTimestampBuilder_.getMessageOrBuilder();
@@ -2908,6 +2925,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the maxStaleness field is set.
        */
+      @java.lang.Override
       public boolean hasMaxStaleness() {
         return timestampBoundCase_ == 3;
       }
@@ -2932,6 +2950,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The maxStaleness.
        */
+      @java.lang.Override
       public com.google.protobuf.Duration getMaxStaleness() {
         if (maxStalenessBuilder_ == null) {
           if (timestampBoundCase_ == 3) {
@@ -3123,6 +3142,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Duration max_staleness = 3;</code>
        */
+      @java.lang.Override
       public com.google.protobuf.DurationOrBuilder getMaxStalenessOrBuilder() {
         if ((timestampBoundCase_ == 3) && (maxStalenessBuilder_ != null)) {
           return maxStalenessBuilder_.getMessageOrBuilder();
@@ -3202,6 +3222,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the readTimestamp field is set.
        */
+      @java.lang.Override
       public boolean hasReadTimestamp() {
         return timestampBoundCase_ == 4;
       }
@@ -3225,6 +3246,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The readTimestamp.
        */
+      @java.lang.Override
       public com.google.protobuf.Timestamp getReadTimestamp() {
         if (readTimestampBuilder_ == null) {
           if (timestampBoundCase_ == 4) {
@@ -3410,6 +3432,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Timestamp read_timestamp = 4;</code>
        */
+      @java.lang.Override
       public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
         if ((timestampBoundCase_ == 4) && (readTimestampBuilder_ != null)) {
           return readTimestampBuilder_.getMessageOrBuilder();
@@ -3487,6 +3510,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the exactStaleness field is set.
        */
+      @java.lang.Override
       public boolean hasExactStaleness() {
         return timestampBoundCase_ == 5;
       }
@@ -3509,6 +3533,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The exactStaleness.
        */
+      @java.lang.Override
       public com.google.protobuf.Duration getExactStaleness() {
         if (exactStalenessBuilder_ == null) {
           if (timestampBoundCase_ == 5) {
@@ -3688,6 +3713,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Duration exact_staleness = 5;</code>
        */
+      @java.lang.Override
       public com.google.protobuf.DurationOrBuilder getExactStalenessOrBuilder() {
         if ((timestampBoundCase_ == 5) && (exactStalenessBuilder_ != null)) {
           return exactStalenessBuilder_.getMessageOrBuilder();
@@ -3753,6 +3779,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The returnReadTimestamp.
        */
+      @java.lang.Override
       public boolean getReturnReadTimestamp() {
         return returnReadTimestamp_;
       }
@@ -3911,6 +3938,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the readWrite field is set.
    */
+  @java.lang.Override
   public boolean hasReadWrite() {
     return modeCase_ == 1;
   }
@@ -3928,6 +3956,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The readWrite.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite() {
     if (modeCase_ == 1) {
       return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
@@ -3946,6 +3975,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder() {
     if (modeCase_ == 1) {
       return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
@@ -3968,6 +3998,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the partitionedDml field is set.
    */
+  @java.lang.Override
   public boolean hasPartitionedDml() {
     return modeCase_ == 3;
   }
@@ -3985,6 +4016,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The partitionedDml.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml() {
     if (modeCase_ == 3) {
       return (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_;
@@ -4003,6 +4035,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder
       getPartitionedDmlOrBuilder() {
     if (modeCase_ == 3) {
@@ -4026,6 +4059,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the readOnly field is set.
    */
+  @java.lang.Override
   public boolean hasReadOnly() {
     return modeCase_ == 2;
   }
@@ -4043,6 +4077,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The readOnly.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly() {
     if (modeCase_ == 2) {
       return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
@@ -4061,6 +4096,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder() {
     if (modeCase_ == 2) {
       return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
@@ -4713,6 +4749,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readWrite field is set.
      */
+    @java.lang.Override
     public boolean hasReadWrite() {
       return modeCase_ == 1;
     }
@@ -4730,6 +4767,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readWrite.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite() {
       if (readWriteBuilder_ == null) {
         if (modeCase_ == 1) {
@@ -4880,6 +4918,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder() {
       if ((modeCase_ == 1) && (readWriteBuilder_ != null)) {
         return readWriteBuilder_.getMessageOrBuilder();
@@ -4946,6 +4985,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the partitionedDml field is set.
      */
+    @java.lang.Override
     public boolean hasPartitionedDml() {
       return modeCase_ == 3;
     }
@@ -4963,6 +5003,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The partitionedDml.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml() {
       if (partitionedDmlBuilder_ == null) {
         if (modeCase_ == 3) {
@@ -5117,6 +5158,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder
         getPartitionedDmlOrBuilder() {
       if ((modeCase_ == 3) && (partitionedDmlBuilder_ != null)) {
@@ -5184,6 +5226,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readOnly field is set.
      */
+    @java.lang.Override
     public boolean hasReadOnly() {
       return modeCase_ == 2;
     }
@@ -5201,6 +5244,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readOnly.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly() {
       if (readOnlyBuilder_ == null) {
         if (modeCase_ == 2) {
@@ -5351,6 +5395,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder() {
       if ((modeCase_ == 2) && (readOnlyBuilder_ != null)) {
         return readOnlyBuilder_.getMessageOrBuilder();

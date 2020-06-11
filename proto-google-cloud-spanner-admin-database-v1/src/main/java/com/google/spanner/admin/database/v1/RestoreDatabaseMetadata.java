@@ -234,6 +234,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -256,6 +257,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -281,6 +283,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The enum numeric value on the wire for sourceType.
    */
+  @java.lang.Override
   public int getSourceTypeValue() {
     return sourceType_;
   }
@@ -295,6 +298,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The sourceType.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.RestoreSourceType result =
@@ -316,6 +320,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return Whether the backupInfo field is set.
    */
+  @java.lang.Override
   public boolean hasBackupInfo() {
     return sourceInfoCase_ == 3;
   }
@@ -330,6 +335,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The backupInfo.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupInfo getBackupInfo() {
     if (sourceInfoCase_ == 3) {
       return (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_;
@@ -345,6 +351,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * <code>.google.spanner.admin.database.v1.BackupInfo backup_info = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupInfoOrBuilder getBackupInfoOrBuilder() {
     if (sourceInfoCase_ == 3) {
       return (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_;
@@ -367,6 +374,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return Whether the progress field is set.
    */
+  @java.lang.Override
   public boolean hasProgress() {
     return progress_ != null;
   }
@@ -383,6 +391,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The progress.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgress getProgress() {
     return progress_ == null
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
@@ -399,6 +408,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder() {
     return getProgress();
   }
@@ -426,6 +436,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return Whether the cancelTime field is set.
    */
+  @java.lang.Override
   public boolean hasCancelTime() {
     return cancelTime_ != null;
   }
@@ -450,6 +461,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The cancelTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
@@ -472,6 +484,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * <code>.google.protobuf.Timestamp cancel_time = 5;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
     return getCancelTime();
   }
@@ -499,6 +512,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The optimizeDatabaseOperationName.
    */
+  @java.lang.Override
   public java.lang.String getOptimizeDatabaseOperationName() {
     java.lang.Object ref = optimizeDatabaseOperationName_;
     if (ref instanceof java.lang.String) {
@@ -531,6 +545,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
    *
    * @return The bytes for optimizeDatabaseOperationName.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getOptimizeDatabaseOperationNameBytes() {
     java.lang.Object ref = optimizeDatabaseOperationName_;
     if (ref instanceof java.lang.String) {
@@ -1134,6 +1149,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      *
      * @return The enum numeric value on the wire for sourceType.
      */
+    @java.lang.Override
     public int getSourceTypeValue() {
       return sourceType_;
     }
@@ -1150,6 +1166,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      * @return This builder for chaining.
      */
     public Builder setSourceTypeValue(int value) {
+
       sourceType_ = value;
       onChanged();
       return this;
@@ -1165,6 +1182,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      *
      * @return The sourceType.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.RestoreSourceType result =
@@ -1228,6 +1246,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      *
      * @return Whether the backupInfo field is set.
      */
+    @java.lang.Override
     public boolean hasBackupInfo() {
       return sourceInfoCase_ == 3;
     }
@@ -1242,6 +1261,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      *
      * @return The backupInfo.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.BackupInfo getBackupInfo() {
       if (backupInfoBuilder_ == null) {
         if (sourceInfoCase_ == 3) {
@@ -1375,6 +1395,7 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
      *
      * <code>.google.spanner.admin.database.v1.BackupInfo backup_info = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.BackupInfoOrBuilder getBackupInfoOrBuilder() {
       if ((sourceInfoCase_ == 3) && (backupInfoBuilder_ != null)) {
         return backupInfoBuilder_.getMessageOrBuilder();

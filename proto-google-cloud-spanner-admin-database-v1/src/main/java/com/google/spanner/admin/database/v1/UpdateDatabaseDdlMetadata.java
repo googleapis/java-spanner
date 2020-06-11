@@ -154,6 +154,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -176,6 +177,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -266,6 +268,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.protobuf.Timestamp> getCommitTimestampsList() {
     return commitTimestamps_;
   }
@@ -280,6 +283,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.TimestampOrBuilder>
       getCommitTimestampsOrBuilderList() {
     return commitTimestamps_;
@@ -295,6 +299,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
+  @java.lang.Override
   public int getCommitTimestampsCount() {
     return commitTimestamps_.size();
   }
@@ -309,6 +314,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCommitTimestamps(int index) {
     return commitTimestamps_.get(index);
   }
@@ -323,6 +329,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCommitTimestampsOrBuilder(int index) {
     return commitTimestamps_.get(index);
   }

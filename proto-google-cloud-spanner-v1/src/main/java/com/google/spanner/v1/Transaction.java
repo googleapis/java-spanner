@@ -143,6 +143,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The id.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getId() {
     return id_;
   }
@@ -164,6 +165,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the readTimestamp field is set.
    */
+  @java.lang.Override
   public boolean hasReadTimestamp() {
     return readTimestamp_ != null;
   }
@@ -182,6 +184,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The readTimestamp.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getReadTimestamp() {
     return readTimestamp_ == null
         ? com.google.protobuf.Timestamp.getDefaultInstance()
@@ -200,6 +203,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Timestamp read_timestamp = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
     return getReadTimestamp();
   }
@@ -562,6 +566,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The id.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getId() {
       return id_;
     }

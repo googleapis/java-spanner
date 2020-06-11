@@ -210,6 +210,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -234,6 +235,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -258,6 +260,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The transactionId.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getTransactionId() {
     if (transactionCase_ == 2) {
       return (com.google.protobuf.ByteString) transaction_;
@@ -285,6 +288,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the singleUseTransaction field is set.
    */
+  @java.lang.Override
   public boolean hasSingleUseTransaction() {
     return transactionCase_ == 3;
   }
@@ -307,6 +311,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The singleUseTransaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions getSingleUseTransaction() {
     if (transactionCase_ == 3) {
       return (com.google.spanner.v1.TransactionOptions) transaction_;
@@ -330,6 +335,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.TransactionOptions single_use_transaction = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseTransactionOrBuilder() {
     if (transactionCase_ == 3) {
       return (com.google.spanner.v1.TransactionOptions) transaction_;
@@ -350,6 +356,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.Mutation> getMutationsList() {
     return mutations_;
   }
@@ -364,6 +371,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.MutationOrBuilder>
       getMutationsOrBuilderList() {
     return mutations_;
@@ -379,6 +387,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
+  @java.lang.Override
   public int getMutationsCount() {
     return mutations_.size();
   }
@@ -393,6 +402,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Mutation getMutations(int index) {
     return mutations_.get(index);
   }
@@ -407,6 +417,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index) {
     return mutations_.get(index);
   }
@@ -1062,6 +1073,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the singleUseTransaction field is set.
      */
+    @java.lang.Override
     public boolean hasSingleUseTransaction() {
       return transactionCase_ == 3;
     }
@@ -1084,6 +1096,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The singleUseTransaction.
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptions getSingleUseTransaction() {
       if (singleUseTransactionBuilder_ == null) {
         if (transactionCase_ == 3) {
@@ -1264,6 +1277,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.TransactionOptions single_use_transaction = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseTransactionOrBuilder() {
       if ((transactionCase_ == 3) && (singleUseTransactionBuilder_ != null)) {
         return singleUseTransactionBuilder_.getMessageOrBuilder();

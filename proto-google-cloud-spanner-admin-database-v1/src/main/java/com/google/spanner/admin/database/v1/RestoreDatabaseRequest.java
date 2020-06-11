@@ -190,6 +190,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    * @return The parent.
    */
+  @java.lang.Override
   public java.lang.String getParent() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -218,6 +219,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    * @return The bytes for parent.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getParentBytes() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -246,6 +248,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    * @return The databaseId.
    */
+  @java.lang.Override
   public java.lang.String getDatabaseId() {
     java.lang.Object ref = databaseId_;
     if (ref instanceof java.lang.String) {
@@ -271,6 +274,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    * @return The bytes for databaseId.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseIdBytes() {
     java.lang.Object ref = databaseId_;
     if (ref instanceof java.lang.String) {
@@ -1001,6 +1005,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      * @return The backup.
      */
+    @java.lang.Override
     public java.lang.String getBackup() {
       java.lang.Object ref = "";
       if (sourceCase_ == 3) {
@@ -1029,6 +1034,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      * @return The bytes for backup.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getBackupBytes() {
       java.lang.Object ref = "";
       if (sourceCase_ == 3) {
