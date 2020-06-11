@@ -95,7 +95,7 @@ public class ITClosedSessionTest {
     client.invalidateNextSession();
     try (ResultSet rs = Statement.of("SELECT 1").executeQuery(client.singleUse())) {
       rs.next();
-      fail("");
+      fail("Expected exception");
     } catch (SessionNotFoundException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -173,6 +173,7 @@ public class ITClosedSessionTest {
     try (ReadOnlyTransaction txn = client.readOnlyTransaction()) {
       try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
+        fail("Expected exception");
       } catch (SessionNotFoundException ex) {
         assertNotNull(ex.getMessage());
       }
@@ -231,10 +232,12 @@ public class ITClosedSessionTest {
             public Void run(TransactionContext transaction) throws Exception {
               try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
                 rs.next();
+                fail("Expected exception");
               }
               return null;
             }
           });
+      fail("Expected exception");
     } catch (SessionNotFoundException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -275,6 +278,7 @@ public class ITClosedSessionTest {
       while (true) {
         try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
           rs.next();
+          fail("Expected exception");
         }
       }
     } catch (SessionNotFoundException ex) {

@@ -163,7 +163,7 @@ public class ITWriteTest {
   public void emptyWrite() {
     try {
       client.write(Arrays.<Mutation>asList());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     }
@@ -377,7 +377,7 @@ public class ITWriteTest {
     assertThat(row.getBooleanList(0)).containsExactly(true, null, false).inOrder();
     try {
       row.getBooleanArray(0);
-      fail("");
+      fail("Expected exception");
     } catch (NullPointerException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -414,7 +414,7 @@ public class ITWriteTest {
     assertThat(row.getLongList(0)).containsExactly(1L, 2L, null).inOrder();
     try {
       row.getLongArray(0);
-      fail("");
+      fail("Expected exception");
     } catch (NullPointerException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -455,7 +455,7 @@ public class ITWriteTest {
     assertThat(row.getDoubleList(0)).containsExactly(null, 1.0, 2.0).inOrder();
     try {
       row.getDoubleArray(0);
-      fail("");
+      fail("Expected exception");
     } catch (NullPointerException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -589,7 +589,7 @@ public class ITWriteTest {
               .set("StringuniqueString(Value")
               .to("V1")
               .build());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
@@ -599,7 +599,7 @@ public class ITWriteTest {
   public void columnNotFound() {
     try {
       write(baseInsert().set("ColumnThatDoesNotExist").to("V1").build());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
     }
@@ -609,7 +609,7 @@ public class ITWriteTest {
   public void incorrectType() {
     try {
       write(baseInsert().set("StringValue").to(1.234).build());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
       assertThat(ex.getMessage()).contains("Expected STRING");

@@ -78,7 +78,7 @@ public class ITQueryTest {
   public void badQuery() {
     try {
       execute(Statement.of("SELECT Apples AND Oranges"), Type.int64());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(ex.getMessage()).contains("Unrecognized name: Apples");
@@ -499,7 +499,7 @@ public class ITQueryTest {
     Struct p = structValue();
     try {
       execute(Statement.newBuilder("SELECT @p").bind("p").to(p).build(), p.getType());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNIMPLEMENTED);
       assertThat(ex.getMessage())

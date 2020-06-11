@@ -91,7 +91,7 @@ public class TimestampBoundTest {
   public void exactStalenessNegative() {
     try {
       TimestampBound.ofExactStaleness(-1, TimeUnit.SECONDS);
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -124,7 +124,7 @@ public class TimestampBoundTest {
   public void maxStalenessNegative() {
     try {
       TimestampBound.ofMaxStaleness(-1, TimeUnit.SECONDS);
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }

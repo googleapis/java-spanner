@@ -17,8 +17,8 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -104,7 +104,7 @@ public class BackupTest {
             .build();
     try {
       backup.create();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException e) {
       assertNotNull(e.getMessage());
     }
@@ -119,7 +119,7 @@ public class BackupTest {
             .build();
     try {
       backup.create();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException e) {
       assertNotNull(e.getMessage());
     }
@@ -217,7 +217,7 @@ public class BackupTest {
             .build();
     try {
       backup.updateExpireTime();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException e) {
       assertNotNull(e.getMessage());
     }
@@ -242,9 +242,9 @@ public class BackupTest {
             .build();
     try {
       backup.restore(null);
-      fail("");
+      fail("Expected exception");
     } catch (NullPointerException e) {
-      assertEquals(NullPointerException.class, e.getClass());
+      assertNull(e.getMessage());
     }
   }
 

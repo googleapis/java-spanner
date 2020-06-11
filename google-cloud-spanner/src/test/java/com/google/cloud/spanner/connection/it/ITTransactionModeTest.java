@@ -142,7 +142,7 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
       assertThat(connection.isAutocommit(), is(false));
       try {
         connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-        fail("");
+        fail("Expected exception");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }
@@ -159,7 +159,7 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
             Arrays.asList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
                 Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
-        fail("");
+        fail("Expected exception");
       } catch (SpannerException ex) {
         assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
       }
@@ -174,7 +174,7 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
       assertThat(connection.isDdlBatchActive(), is(true));
       try {
         connection.bufferedWrite(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-        fail("");
+        fail("Expected exception");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }
@@ -192,7 +192,7 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
             Arrays.asList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
                 Mutation.newInsertBuilder("FOO").set("ID").to(2L).build()));
-        fail("");
+        fail("Expected exception");
       } catch (SpannerException e) {
         assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }

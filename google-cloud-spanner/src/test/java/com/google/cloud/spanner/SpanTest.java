@@ -231,8 +231,9 @@ public class SpanTest {
       mockSpanner.addException(FAILED_PRECONDITION);
       while (rs.next()) {
         // Just consume the result set.
-        fail("");
+        fail("Expected exception");
       }
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
@@ -244,8 +245,9 @@ public class SpanTest {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
       while (rs.next()) {
         // Just consume the result set.
-        fail("");
+        fail("Expected exception");
       }
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
     }

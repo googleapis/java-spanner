@@ -115,7 +115,7 @@ public class ITTransactionManagerTest {
       // We cannot retry for non aborted errors.
       try {
         manager.resetForRetry();
-        fail("");
+        fail("Expected exception");
       } catch (IllegalStateException ex) {
         assertNotNull(ex.getMessage());
       }

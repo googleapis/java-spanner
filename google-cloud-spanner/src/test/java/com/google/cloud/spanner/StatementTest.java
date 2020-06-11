@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
@@ -103,7 +104,7 @@ public class StatementTest {
     builder.bind("v");
     try {
       builder.build();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).isNotNull();
     }
@@ -115,7 +116,7 @@ public class StatementTest {
     builder.bind("v");
     try {
       builder.bind("y");
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).isNotNull();
     }
@@ -127,7 +128,7 @@ public class StatementTest {
     binder.to("abc");
     try {
       binder.to("xyz");
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).isNotNull();
     }
@@ -138,9 +139,9 @@ public class StatementTest {
     ValueBinder<Statement.Builder> binder = Statement.newBuilder("SELECT @v").bind("v");
     try {
       binder.to(Value.COMMIT_TIMESTAMP);
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage()).isNotNull();
+      assertNotNull(ex.getMessage());
     }
   }
 

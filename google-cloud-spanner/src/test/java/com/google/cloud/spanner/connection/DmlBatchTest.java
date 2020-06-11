@@ -64,7 +64,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.executeQuery(mock(ParsedStatement.class), AnalyzeMode.NONE);
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -75,7 +75,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.executeDdl(mock(ParsedStatement.class));
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -87,7 +87,7 @@ public class DmlBatchTest {
     batch.runBatch();
     try {
       batch.getReadTimestamp();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -105,7 +105,7 @@ public class DmlBatchTest {
     batch.runBatch();
     try {
       batch.getCommitTimestamp();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -116,7 +116,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.write(Mutation.newInsertBuilder("foo").build());
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -127,7 +127,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.write(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -175,7 +175,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.commit();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -186,7 +186,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     try {
       batch.rollback();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }

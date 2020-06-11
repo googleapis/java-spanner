@@ -290,7 +290,7 @@ public class TypeTest {
     Type t = Type.struct(StructField.of("f1", Type.int64()));
     try {
       t.getFieldIndex("f2");
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertThat(ex.getMessage().contains("Field not found: f2"));
     }
@@ -301,7 +301,7 @@ public class TypeTest {
     Type t = Type.struct(StructField.of("f1", Type.int64()), StructField.of("f1", Type.string()));
     try {
       t.getFieldIndex("f1");
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertThat(ex.getMessage().contains("Ambiguous field name: f1"));
     }
@@ -312,7 +312,7 @@ public class TypeTest {
     com.google.spanner.v1.Type proto = com.google.spanner.v1.Type.newBuilder().build();
     try {
       Type.fromProto(proto);
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -324,7 +324,7 @@ public class TypeTest {
         com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.ARRAY).build();
     try {
       Type.fromProto(proto);
-      fail("");
+      fail("Expected exception");
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }

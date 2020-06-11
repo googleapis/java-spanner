@@ -516,7 +516,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException());
     try {
       pool.getReadSession();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -563,7 +563,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool();
     try {
       pool.getReadSession();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
     }
@@ -594,7 +594,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool();
     try {
       pool.getReadWriteSession();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
     }
@@ -627,7 +627,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool();
     try {
       pool.getReadWriteSession();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
     }
@@ -866,7 +866,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     Session session1 = pool.getReadSession();
     try {
       pool.getReadSession();
-      fail("");
+      fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
     }

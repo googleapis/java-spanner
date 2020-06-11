@@ -85,7 +85,7 @@ public class TransactionManagerImplTest {
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
     try {
       manager.begin();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -95,7 +95,7 @@ public class TransactionManagerImplTest {
   public void commitBeforeBeginFails() {
     try {
       manager.commit();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -105,7 +105,7 @@ public class TransactionManagerImplTest {
   public void rollbackBeforeBeginFails() {
     try {
       manager.rollback();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -115,7 +115,7 @@ public class TransactionManagerImplTest {
   public void resetBeforeBeginFails() {
     try {
       manager.resetForRetry();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -148,7 +148,7 @@ public class TransactionManagerImplTest {
     manager.commit();
     try {
       manager.resetForRetry();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -184,7 +184,7 @@ public class TransactionManagerImplTest {
     }
     try {
       manager.resetForRetry();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -197,7 +197,7 @@ public class TransactionManagerImplTest {
     manager.commit();
     try {
       manager.rollback();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -210,7 +210,7 @@ public class TransactionManagerImplTest {
     manager.rollback();
     try {
       manager.commit();
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }

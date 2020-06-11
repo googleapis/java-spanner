@@ -280,7 +280,7 @@ public class SessionImplTest {
     session.singleUseReadOnlyTransaction(TimestampBound.strong());
     try {
       ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
     }
@@ -292,7 +292,7 @@ public class SessionImplTest {
     session.readOnlyTransaction(TimestampBound.strong());
     try {
       ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("");
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
     }
@@ -345,6 +345,7 @@ public class SessionImplTest {
               return null;
             }
           });
+      fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
     }
