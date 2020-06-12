@@ -48,26 +48,22 @@ public class SessionPoolOptionsTest {
 
   @Test
   public void setMinMaxSessions() {
-    if (minSessions > maxSessions) {
-      try {
-        SessionPoolOptions options =
-            SessionPoolOptions.newBuilder()
-                .setMinSessions(minSessions)
-                .setMaxSessions(maxSessions)
-                .build();
-        fail("Expected exception");
-      } catch (IllegalArgumentException ex) {
-        assertNotNull(ex.getMessage());
-      }
-    } else {
+    try {
       SessionPoolOptions options =
           SessionPoolOptions.newBuilder()
               .setMinSessions(minSessions)
               .setMaxSessions(maxSessions)
               .build();
-
+      if (minSessions > maxSessions) {
+        fail("Expected exception");
+      }
       assertThat(minSessions).isEqualTo(options.getMinSessions());
       assertThat(maxSessions).isEqualTo(options.getMaxSessions());
+    } catch (IllegalArgumentException ex) {
+      if (minSessions <= maxSessions) {
+        throw ex;
+      }
+      assertNotNull(ex.getMessage());
     }
   }
 
