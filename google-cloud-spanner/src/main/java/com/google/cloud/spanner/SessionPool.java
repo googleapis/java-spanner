@@ -38,6 +38,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEY
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -303,9 +304,12 @@ final class SessionPool {
 
         @Override
         public void close() {
-          super.close();
-          if (isSingleUse) {
-            AutoClosingReadContext.this.close();
+          try {
+            super.close();
+          } finally {
+            if (isSingleUse) {
+              AutoClosingReadContext.this.close();
+            }
           }
         }
       };
@@ -945,14 +949,11 @@ final class SessionPool {
   }
 
   private static class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
-    private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
-    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
     private final SettableApiFuture<AsyncTransactionManager> delegate = SettableApiFuture.create();
+    private volatile ApiFuture<Timestamp> commitTimestamp;
 
-    private SessionPoolAsyncTransactionManager(
-        SessionPool sessionPool, PooledSessionFuture session) {
-      this.sessionPool = sessionPool;
+    private SessionPoolAsyncTransactionManager(PooledSessionFuture session) {
       this.session = session;
       this.session.addListener(
           new Runnable() {
@@ -974,63 +975,85 @@ final class SessionPool {
 
     @Override
     public ApiFuture<TransactionContext> beginAsync() {
-      final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
-      delegate.addListener(
-          new Runnable() {
+      return ApiFutures.transformAsync(
+          delegate,
+          new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
             @Override
-            public void run() {
-              try {
-                res.set(delegate.get().beginAsync().get());
-              } catch (Throwable t) {
-                res.setException(t);
-              }
+            public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
+                throws Exception {
+              return input.beginAsync();
             }
           },
           MoreExecutors.directExecutor());
-      return res;
     }
 
     @Override
-    public ApiFuture<Void> commitAsync() {
-      // TODO Auto-generated method stub
-      return null;
+    public ApiFuture<Timestamp> commitAsync() {
+      return ApiFutures.transformAsync(
+          delegate,
+          new ApiAsyncFunction<AsyncTransactionManager, Timestamp>() {
+            @Override
+            public ApiFuture<Timestamp> apply(AsyncTransactionManager input) throws Exception {
+              ApiFuture<Timestamp> res = input.commitAsync();
+              res.addListener(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      session.close();
+                    }
+                  },
+                  MoreExecutors.directExecutor());
+              return res;
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
     public ApiFuture<Void> rollbackAsync() {
-      // TODO Auto-generated method stub
-      return null;
+      return ApiFutures.transformAsync(
+          delegate,
+          new ApiAsyncFunction<AsyncTransactionManager, Void>() {
+            @Override
+            public ApiFuture<Void> apply(AsyncTransactionManager input) throws Exception {
+              ApiFuture<Void> res = input.rollbackAsync();
+              res.addListener(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      session.close();
+                    }
+                  },
+                  MoreExecutors.directExecutor());
+              return res;
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
     public ApiFuture<TransactionContext> resetForRetryAsync() {
-      // TODO Auto-generated method stub
-      return null;
+      return ApiFutures.transformAsync(
+          delegate,
+          new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
+            @Override
+            public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
+                throws Exception {
+              return input.resetForRetryAsync();
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
     public TransactionState getState() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    @Override
-    public void close() {
-      // TODO Auto-generated method stub
-
-    }
-
-    private void setCommitTimestamp(AsyncTransactionManager delegate) {
       try {
-        commitTimestamp.set(delegate.getCommitTimestampAsync().get());
-      } catch (Throwable t) {
-        commitTimestamp.setException(t);
+        return delegate.get().getState();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       }
-    }
-
-    @Override
-    public ApiFuture<Timestamp> getCommitTimestampAsync() {
-      return commitTimestamp;
     }
   }
 
@@ -1312,7 +1335,7 @@ final class SessionPool {
 
     @Override
     public AsyncTransactionManager transactionManagerAsync() {
-      return new SessionPoolAsyncTransactionManager(SessionPool.this, this);
+      return new SessionPoolAsyncTransactionManager(this);
     }
 
     @Override
@@ -1362,9 +1385,9 @@ final class SessionPool {
           // ignore the exception as it will be handled by the call to super.get() below.
         }
         if (res != null) {
+          res.markBusy(span);
+          span.addAnnotation(sessionAnnotation(res));
           synchronized (lock) {
-            res.markBusy(span);
-            span.addAnnotation(sessionAnnotation(res));
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
           }

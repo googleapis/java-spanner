@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -34,6 +35,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -234,7 +236,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     void commit() {
       try {
-        commitAsync().get();
+        commitTimestamp = commitAsync().get();
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       } catch (ExecutionException e) {
@@ -242,8 +244,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    ApiFuture<Void> commitAsync() {
-      final SettableApiFuture<Void> res = SettableApiFuture.create();
+    ApiFuture<Timestamp> commitAsync() {
+      final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
       CommitRequest.Builder builder =
           CommitRequest.newBuilder().setSession(session.getName()).setTransactionId(transactionId);
       synchronized (lock) {
@@ -284,11 +286,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                                     ErrorCode.INTERNAL,
                                     "Missing commitTimestamp:\n" + session.getName());
                               }
-                              commitTimestamp =
+                              Timestamp ts =
                                   Timestamp.fromProto(commitResponse.getCommitTimestamp());
                               span.addAnnotation("Commit Done");
                               opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                              res.set(null);
+                              res.set(ts);
                             } catch (Throwable e) {
                               if (e instanceof ExecutionException) {
                                 e =
@@ -354,6 +356,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         txnLogger.log(Level.FINE, "Exception during rollback", e);
         span.addAnnotation("Rollback Failed", TraceUtil.getExceptionAnnotations(e));
       }
+    }
+
+    ApiFuture<Void> rollbackAsync() {
+      span.addAnnotation("Starting Rollback");
+      return ApiFutures.transformAsync(
+          rpc.rollbackAsync(
+              RollbackRequest.newBuilder()
+                  .setSession(session.getName())
+                  .setTransactionId(transactionId)
+                  .build(),
+              session.getOptions()),
+          new ApiAsyncFunction<Empty, Void>() {
+            @Override
+            public ApiFuture<Void> apply(Empty input) throws Exception {
+              span.addAnnotation("Rollback Done");
+              return ApiFutures.immediateFuture(null);
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Nullable
@@ -433,7 +454,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         decreaseAsyncOperations();
         throw t;
       }
-      final ApiFuture<Long> updateCount =
+      ApiFuture<Long> updateCount =
           ApiFutures.transform(
               resultSet,
               new ApiFunction<com.google.spanner.v1.ResultSet, Long>() {
@@ -449,19 +470,24 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
               },
               MoreExecutors.directExecutor());
+      updateCount =
+          ApiFutures.catching(
+              updateCount,
+              Throwable.class,
+              new ApiFunction<Throwable, Long>() {
+                @Override
+                public Long apply(Throwable input) {
+                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
+                  onError(e);
+                  throw e;
+                }
+              },
+              MoreExecutors.directExecutor());
       updateCount.addListener(
           new Runnable() {
             @Override
             public void run() {
-              try {
-                updateCount.get();
-              } catch (ExecutionException e) {
-                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
-              } catch (InterruptedException e) {
-                onError(SpannerExceptionFactory.propagateInterrupt(e));
-              } finally {
-                decreaseAsyncOperations();
-              }
+              decreaseAsyncOperations();
             }
           },
           MoreExecutors.directExecutor());

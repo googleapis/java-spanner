@@ -37,19 +37,19 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
  *
  * @see DatabaseClient#transactionManager()
  */
-public interface AsyncTransactionManager extends AutoCloseable {
+public interface AsyncTransactionManager {
   /**
    * Creates a new read write transaction. This must be called before doing any other operation and
    * can only be called once. To create a new transaction for subsequent retries, see {@link
    * #resetForRetry()}.
    */
-  ApiFuture<? extends TransactionContext> beginAsync();
+  ApiFuture<TransactionContext> beginAsync();
 
   /**
    * Commits the currently active transaction. If the transaction was already aborted, then this
    * would throw an {@link AbortedException}.
    */
-  ApiFuture<Void> commitAsync();
+  ApiFuture<Timestamp> commitAsync();
 
   /**
    * Rolls back the currently active transaction. In most cases there should be no need to call this
@@ -64,13 +64,7 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * specified by {@link SpannerException#getRetryDelayInMillis()} on the {@code SpannerException}
    * throw by the previous commit call.
    */
-  ApiFuture<? extends TransactionContext> resetForRetryAsync();
-
-  /**
-   * Returns the commit timestamp if the transaction committed successfully otherwise it will throw
-   * {@code IllegalStateException}.
-   */
-  ApiFuture<Timestamp> getCommitTimestampAsync();
+  ApiFuture<TransactionContext> resetForRetryAsync();
 
   /** Returns the state of the transaction. */
   TransactionState getState();
@@ -79,6 +73,6 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * Closes the manager. If there is an active transaction, it will be rolled back. Underlying
    * session will be released back to the session pool.
    */
-  @Override
-  void close();
+  //  @Override
+  //  void close();
 }

@@ -123,34 +123,35 @@ public class ReadAsyncTest {
   @Test
   public void emptyReadAsync() throws Exception {
     final SettableFuture<Boolean> result = SettableFuture.create();
-    AsyncResultSet resultSet =
+    try (AsyncResultSet resultSet =
         client
             .singleUse(TimestampBound.strong())
-            .readAsync(EMPTY_READ_TABLE_NAME, KeySet.singleKey(Key.of("k99")), READ_COLUMN_NAMES);
-    resultSet.setCallback(
-        executor,
-        new ReadyCallback() {
-          @Override
-          public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-            try {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case OK:
-                    fail("received unexpected data");
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  case DONE:
-                    assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
-                    result.set(true);
-                    return CallbackResponse.DONE;
+            .readAsync(EMPTY_READ_TABLE_NAME, KeySet.singleKey(Key.of("k99")), READ_COLUMN_NAMES)) {
+      resultSet.setCallback(
+          executor,
+          new ReadyCallback() {
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      fail("received unexpected data");
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case DONE:
+                      assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
+                      result.set(true);
+                      return CallbackResponse.DONE;
+                  }
                 }
+              } catch (Throwable t) {
+                result.setException(t);
+                return CallbackResponse.DONE;
               }
-            } catch (Throwable t) {
-              result.setException(t);
-              return CallbackResponse.DONE;
             }
-          }
-        });
+          });
+    }
     assertThat(result.get()).isTrue();
   }
 

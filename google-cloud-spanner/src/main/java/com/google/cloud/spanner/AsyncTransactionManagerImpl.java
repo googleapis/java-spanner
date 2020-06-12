@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
@@ -39,6 +40,7 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
+  private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
 
   AsyncTransactionManagerImpl(SessionImpl session, Span span) {
     this.session = session;
@@ -51,7 +53,7 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   }
 
   @Override
-  public ApiFuture<? extends TransactionContext> beginAsync() {
+  public ApiFuture<TransactionContext> beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     txnState = TransactionState.STARTED;
     txn = session.newTransaction();
@@ -79,28 +81,38 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
+  public ApiFuture<Timestamp> commitAsync() {
     Preconditions.checkState(
         txnState == TransactionState.STARTED,
         "commit can only be invoked if the transaction is in progress");
-    SettableApiFuture<Void> res = SettableApiFuture.create();
     if (txn.isAborted()) {
       txnState = TransactionState.ABORTED;
-      res.setException(
+      return ApiFutures.immediateFailedFuture(
           SpannerExceptionFactory.newSpannerException(
               ErrorCode.ABORTED, "Transaction already aborted"));
     }
-    try {
-      txn.commit();
-      txnState = TransactionState.COMMITTED;
-      return ApiFutures.immediateFuture(null);
-    } catch (AbortedException e1) {
-      txnState = TransactionState.ABORTED;
-      return ApiFutures.immediateFailedFuture(e1);
-    } catch (SpannerException e2) {
-      txnState = TransactionState.COMMIT_FAILED;
-      return ApiFutures.immediateFailedFuture(e2);
-    }
+    ApiFuture<Timestamp> res = txn.commitAsync();
+    txnState = TransactionState.COMMITTED;
+    ApiFutures.addCallback(
+        res,
+        new ApiFutureCallback<Timestamp>() {
+          @Override
+          public void onFailure(Throwable t) {
+            if (t instanceof AbortedException) {
+              txnState = TransactionState.ABORTED;
+            } else {
+              txnState = TransactionState.COMMIT_FAILED;
+              commitTimestamp.setException(t);
+            }
+          }
+
+          @Override
+          public void onSuccess(Timestamp result) {
+            commitTimestamp.set(result);
+          }
+        },
+        MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override
@@ -109,15 +121,14 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
         txnState == TransactionState.STARTED,
         "rollback can only be called if the transaction is in progress");
     try {
-      txn.rollback();
+      return txn.rollbackAsync();
     } finally {
       txnState = TransactionState.ROLLED_BACK;
     }
-    return ApiFutures.immediateFuture(null);
   }
 
   @Override
-  public ApiFuture<? extends TransactionContext> resetForRetryAsync() {
+  public ApiFuture<TransactionContext> resetForRetryAsync() {
     if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt" + " aborted");
@@ -126,27 +137,7 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
       txn = session.newTransaction();
       txn.ensureTxn();
       txnState = TransactionState.STARTED;
-      return ApiFutures.immediateFuture(txn);
-    }
-  }
-
-  @Override
-  public ApiFuture<Timestamp> getCommitTimestampAsync() {
-    Preconditions.checkState(
-        txnState == TransactionState.COMMITTED,
-        "getCommitTimestamp can only be invoked if the transaction committed successfully");
-    return ApiFutures.immediateFuture(txn.commitTimestamp());
-  }
-
-  @Override
-  public void close() {
-    try {
-      if (txnState == TransactionState.STARTED && !txn.isAborted()) {
-        txn.rollback();
-        txnState = TransactionState.ROLLED_BACK;
-      }
-    } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      return ApiFutures.immediateFuture((TransactionContext) txn);
     }
   }
 
@@ -157,6 +148,8 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
 
   @Override
   public void invalidate() {
-    close();
+    if (txnState == TransactionState.STARTED || txnState == null) {
+      txnState = TransactionState.ROLLED_BACK;
+    }
   }
 }

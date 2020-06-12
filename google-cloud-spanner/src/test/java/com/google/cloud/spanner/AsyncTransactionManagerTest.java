@@ -20,8 +20,10 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
@@ -46,57 +48,114 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
+public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
+
   @Test
-  public void asyncRunnerUpdate() throws Exception {
-    AsyncRunner runner = client().runAsync();
+  public void asyncTransactionManagerUpdate() throws Exception {
+    final SettableApiFuture<ApiFuture<Timestamp>> commitTimestamp = SettableApiFuture.create();
+    final AsyncTransactionManager manager = client().transactionManagerAsync();
+    ApiFuture<TransactionContext> txn = manager.beginAsync();
     ApiFuture<Long> updateCount =
-        runner.runAsync(
-            new AsyncWork<Long>() {
+        ApiFutures.transformAsync(
+            txn,
+            new ApiAsyncFunction<TransactionContext, Long>() {
               @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return txn.executeUpdateAsync(UPDATE_STATEMENT);
+              public ApiFuture<Long> apply(TransactionContext input) throws Exception {
+                ApiFuture<Long> res = input.executeUpdateAsync(UPDATE_STATEMENT);
+                commitTimestamp.set(
+                    ApiFutures.transformAsync(
+                        res,
+                        new ApiAsyncFunction<Long, Timestamp>() {
+                          @Override
+                          public ApiFuture<Timestamp> apply(Long input) throws Exception {
+                            return manager.commitAsync();
+                          }
+                        },
+                        executor));
+                return res;
               }
             },
             executor);
     assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+    assertThat(commitTimestamp.get().get()).isNotNull();
   }
 
   @Test
-  public void asyncRunnerIsNonBlocking() throws Exception {
+  public void asyncTransactionManagerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
-    AsyncRunner runner = clientWithEmptySessionPool().runAsync();
-    ApiFuture<Void> res =
-        runner.runAsync(
-            new AsyncWork<Void>() {
+    final SettableApiFuture<ApiFuture<Timestamp>> commitTimestamp = SettableApiFuture.create();
+    final AsyncTransactionManager manager = client().transactionManagerAsync();
+    ApiFuture<TransactionContext> txn = manager.beginAsync();
+    ApiFuture<Long> updateCount =
+        ApiFutures.transformAsync(
+            txn,
+            new ApiAsyncFunction<TransactionContext, Long>() {
               @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.executeUpdateAsync(UPDATE_STATEMENT);
-                return ApiFutures.immediateFuture(null);
+              public ApiFuture<Long> apply(TransactionContext input) throws Exception {
+                ApiFuture<Long> res = input.executeUpdateAsync(UPDATE_STATEMENT);
+                commitTimestamp.set(
+                    ApiFutures.transformAsync(
+                        res,
+                        new ApiAsyncFunction<Long, Timestamp>() {
+                          @Override
+                          public ApiFuture<Timestamp> apply(Long input) throws Exception {
+                            return manager.commitAsync();
+                          }
+                        },
+                        executor));
+                return res;
               }
             },
             executor);
-    ApiFuture<Timestamp> ts = runner.getCommitTimestamp();
     mockSpanner.unfreeze();
-    assertThat(res.get()).isNull();
-    assertThat(ts.get()).isNotNull();
+    assertThat(updateCount.get(10L, TimeUnit.SECONDS)).isEqualTo(UPDATE_COUNT);
+    assertThat(commitTimestamp.get().get(10L, TimeUnit.SECONDS)).isNotNull();
   }
 
   @Test
-  public void asyncRunnerInvalidUpdate() throws Exception {
-    AsyncRunner runner = client().runAsync();
+  public void asyncTransactionManagerInvalidUpdate() throws Exception {
+    final AsyncTransactionManager manager = client().transactionManagerAsync();
+    final SettableApiFuture<Void> rollbacked = SettableApiFuture.create();
+    ApiFuture<TransactionContext> txnFut = manager.beginAsync();
     ApiFuture<Long> updateCount =
-        runner.runAsync(
-            new AsyncWork<Long>() {
+        ApiFutures.transformAsync(
+            txnFut,
+            new ApiAsyncFunction<TransactionContext, Long>() {
               @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+              public ApiFuture<Long> apply(TransactionContext txn) throws Exception {
+                ApiFuture<Long> res = txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                ApiFutures.addCallback(
+                    res,
+                    new ApiFutureCallback<Long>() {
+                      @Override
+                      public void onFailure(Throwable t) {
+                        manager
+                            .rollbackAsync()
+                            .addListener(
+                                new Runnable() {
+                                  @Override
+                                  public void run() {
+                                    rollbacked.set(null);
+                                  }
+                                },
+                                executor);
+                        ;
+                      }
+
+                      @Override
+                      public void onSuccess(Long result) {
+                        fail("update should not succeed");
+                      }
+                    },
+                    MoreExecutors.directExecutor());
+                return res;
               }
             },
             executor);
@@ -108,6 +167,53 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(se.getMessage()).contains("invalid statement");
+    }
+    // This is to ensure that the test case does not end before the session has been returned to the
+    // pool.
+    rollbacked.get();
+  }
+
+  @Test
+  public void asyncTransactionManagerCommitAborted() throws Exception {
+    final AtomicInteger attempt = new AtomicInteger();
+    final AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync();
+    ApiFuture<TransactionContext> txn = manager.beginAsync();
+    while (true) {
+      try {
+        final SettableApiFuture<ApiFuture<Timestamp>> commitTimestamp = SettableApiFuture.create();
+        ApiFuture<Long> updateCount =
+            ApiFutures.transformAsync(
+                txn,
+                new ApiAsyncFunction<TransactionContext, Long>() {
+                  @Override
+                  public ApiFuture<Long> apply(TransactionContext input) throws Exception {
+                    ApiFuture<Long> res = input.executeUpdateAsync(UPDATE_STATEMENT);
+                    commitTimestamp.set(
+                        ApiFutures.transformAsync(
+                            res,
+                            new ApiAsyncFunction<Long, Timestamp>() {
+                              @Override
+                              public ApiFuture<Timestamp> apply(Long input) throws Exception {
+                                if (attempt.incrementAndGet() == 1) {
+                                  mockSpanner.abortAllTransactions();
+                                }
+                                return manager.commitAsync();
+                              }
+                            },
+                            executor));
+                    return res;
+                  }
+                },
+                executor);
+        assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+        assertThat(commitTimestamp.get().get()).isNotNull();
+        assertThat(attempt.get()).isEqualTo(2);
+        break;
+      } catch (ExecutionException e) {
+        assertThat(e.getCause()).isInstanceOf(AbortedException.class);
+        assertThat(attempt.get()).isEqualTo(1);
+        txn = manager.resetForRetryAsync();
+      }
     }
   }
 
