@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -40,16 +40,13 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private AbstractResultSet.GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
@@ -107,16 +104,24 @@ public class GrpcResultSetTest {
     SpannerException t =
         SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED, "outatime");
     consumer.onError(t);
-    expectedException.expect(isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
-    expectedException.expectMessage("outatime");
-    resultSet.next();
+    try {
+      resultSet.next();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+      assertThat(ex.getMessage()).contains("outatime");
+    }
   }
 
   @Test
   public void noMetadata() {
     consumer.onCompleted();
-    expectedException.expect(isSpannerException(ErrorCode.INTERNAL));
-    resultSet.next();
+    try {
+      resultSet.next();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -195,8 +200,12 @@ public class GrpcResultSetTest {
             .setChunkedValue(true)
             .build());
     consumer.onCompleted();
-    expectedException.expect(isSpannerException(ErrorCode.INTERNAL));
-    resultSet.next();
+    try {
+      resultSet.next();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test

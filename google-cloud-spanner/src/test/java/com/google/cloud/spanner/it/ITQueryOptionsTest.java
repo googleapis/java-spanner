@@ -34,10 +34,8 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -46,7 +44,6 @@ import org.junit.runners.JUnit4;
 public class ITQueryOptionsTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private static DatabaseClient client;
 
   @BeforeClass

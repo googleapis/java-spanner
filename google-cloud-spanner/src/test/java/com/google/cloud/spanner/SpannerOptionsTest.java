@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ServerStreamingCallSettings;
@@ -35,9 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -46,8 +45,6 @@ import org.threeten.bp.Duration;
 /** Unit tests for {@link com.google.cloud.spanner.SpannerOptions}. */
 @RunWith(JUnit4.class)
 public class SpannerOptionsTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void defaultBuilder() {
@@ -346,22 +343,34 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInvalidTransport() {
-    thrown.expect(IllegalArgumentException.class);
-    SpannerOptions.newBuilder().setTransportOptions(Mockito.mock(TransportOptions.class));
+    try {
+      SpannerOptions.newBuilder().setTransportOptions(Mockito.mock(TransportOptions.class));
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
   public void testInvalidSessionLabels() {
-    thrown.expect(NullPointerException.class);
     Map<String, String> labels = new HashMap<>();
     labels.put("env", null);
-    SpannerOptions.newBuilder().setSessionLabels(labels);
+    try {
+      SpannerOptions.newBuilder().setSessionLabels(labels);
+      fail("Expected exception");
+    } catch (NullPointerException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test
   public void testNullSessionLabels() {
-    thrown.expect(NullPointerException.class);
-    SpannerOptions.newBuilder().setSessionLabels(null);
+    try {
+      SpannerOptions.newBuilder().setSessionLabels(null);
+      fail("Expected exception");
+    } catch (NullPointerException ex) {
+      assertThat(ex.getMessage()).isNotNull();
+    }
   }
 
   @Test

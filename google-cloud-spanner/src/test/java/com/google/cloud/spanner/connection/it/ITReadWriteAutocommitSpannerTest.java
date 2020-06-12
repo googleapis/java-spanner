@@ -34,10 +34,8 @@ import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
@@ -46,8 +44,6 @@ import org.junit.runners.MethodSorters;
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
-
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   @Override
   protected void appendConnectionUri(StringBuilder uri) {

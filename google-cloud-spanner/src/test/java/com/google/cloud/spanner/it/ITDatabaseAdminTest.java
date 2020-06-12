@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -45,7 +45,6 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
-import io.grpc.ClientCall.Listener;
 import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
@@ -63,10 +62,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -75,7 +72,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITDatabaseAdminTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private DatabaseAdminClient dbAdminClient;
   private RemoteSpannerHelper testHelper;
   private List<Database> dbs = new ArrayList<>();
@@ -128,8 +124,12 @@ public class ITDatabaseAdminTest {
 
     dbAdminClient.dropDatabase(instanceId, dbId);
     dbs.clear();
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    db = dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
+    try {
+      db = dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test
@@ -170,11 +170,14 @@ public class ITDatabaseAdminTest {
     op2.get();
     Iterable<String> statementsInDb = db.getDdl();
     assertThat(statementsInDb).containsExactly(statement1, statement2);
-
     db.drop();
     dbs.clear();
-    expectedException.expect(isSpannerException(ErrorCode.NOT_FOUND));
-    db.reload();
+    try {
+      db.reload();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
   }
 
   @Test

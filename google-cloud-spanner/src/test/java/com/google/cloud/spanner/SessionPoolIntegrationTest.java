@@ -28,10 +28,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -48,7 +46,6 @@ public class SessionPoolIntegrationTest {
   private static final String TABLE_NAME = "TestTable";
 
   private static Database db;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private SessionPool pool;
 
   @BeforeClass

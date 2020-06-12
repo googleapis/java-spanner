@@ -17,40 +17,55 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link Options}. */
 @RunWith(JUnit4.class)
 public class OptionsTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void negativeLimitsNotAllowed() {
-    expectedException.expect(IllegalArgumentException.class);
-    Options.limit(-1);
+    try {
+      Options.limit(-1);
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void zeroLimitNotAllowed() {
-    expectedException.expect(IllegalArgumentException.class);
-    Options.limit(0);
+    try {
+      Options.limit(0);
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void negativePrefetchChunksNotAllowed() {
-    expectedException.expect(IllegalArgumentException.class);
-    Options.prefetchChunks(-1);
+    try {
+      Options.prefetchChunks(-1);
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void zeroPrefetchChunksNotAllowed() {
-    expectedException.expect(IllegalArgumentException.class);
-    Options.prefetchChunks(0);
+    try {
+      Options.prefetchChunks(0);
+      fail("Expected exception");
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test

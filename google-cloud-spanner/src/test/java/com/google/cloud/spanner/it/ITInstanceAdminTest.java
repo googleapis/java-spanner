@@ -34,10 +34,8 @@ import java.util.List;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -46,7 +44,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITInstanceAdminTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   InstanceAdminClient instanceClient;
 
   @Before
