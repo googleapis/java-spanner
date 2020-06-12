@@ -51,6 +51,7 @@ import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -753,18 +754,36 @@ abstract class AbstractReadContext
     return row;
   }
 
-  private ApiFuture<Struct> consumeSingleRowAsync(AsyncResultSet resultSet) {
-    SettableApiFuture<Struct> result = SettableApiFuture.create();
+  static ApiFuture<Struct> consumeSingleRowAsync(AsyncResultSet resultSet) {
+    final SettableApiFuture<Struct> result = SettableApiFuture.create();
     // We can safely use a directExecutor here, as we will only be consuming one row, and we will
     // not be doing any blocking stuff in the handler.
-    resultSet.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+    final SettableApiFuture<Struct> row = SettableApiFuture.create();
+    resultSet
+        .setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(row))
+        .addListener(
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  result.set(row.get());
+                } catch (ExecutionException e) {
+                  result.setException(
+                      SpannerExceptionFactory.newSpannerException(
+                          e.getCause() == null ? e : e.getCause()));
+                } catch (InterruptedException e) {
+                  result.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                }
+              }
+            },
+            MoreExecutors.directExecutor());
     return result;
   }
 
   /**
    * {@link ReadyCallback} for returning the first row in a result set as a future {@link Struct}.
    */
-  static class ConsumeSingleRowCallback implements ReadyCallback {
+  private static class ConsumeSingleRowCallback implements ReadyCallback {
     private final SettableApiFuture<Struct> result;
     private Struct row;
 

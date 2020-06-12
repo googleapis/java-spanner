@@ -361,11 +361,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         try {
           delegateResultSet.close();
         } catch (Throwable t) {
-          log.log(Level.INFO, "Ignoring error from closing delegate result set", t);
-        } finally {
-          for (Runnable listener : listeners) {
-            listener.run();
-          }
+          log.log(Level.FINE, "Ignoring error from closing delegate result set", t);
         }
 
         // Ensure that the callback has been called at least once, even if the result set was
@@ -387,6 +383,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       } finally {
         if (executorProvider.shouldAutoClose()) {
           service.shutdown();
+        }
+        for (Runnable listener : listeners) {
+          listener.run();
         }
         synchronized (monitor) {
           if (executionException != null) {

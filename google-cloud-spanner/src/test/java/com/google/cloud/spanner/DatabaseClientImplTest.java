@@ -558,16 +558,20 @@ public class DatabaseClientImplTest {
                 new ReadyCallback() {
                   @Override
                   public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case OK:
-                          rowCount.incrementAndGet();
-                          break;
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
+                    try {
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            rowCount.incrementAndGet();
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                        }
                       }
+                    } catch (Throwable t) {
+                      return CallbackResponse.DONE;
                     }
                   }
                 });

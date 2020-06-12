@@ -45,12 +45,9 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
-import com.google.cloud.spanner.AbstractReadContext.ConsumeSingleRowCallback;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
@@ -432,11 +429,9 @@ final class SessionPool {
 
     @Override
     public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-      SettableApiFuture<Struct> result = SettableApiFuture.create();
       try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
-        rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+        return AbstractReadContext.consumeSingleRowAsync(rs);
       }
-      return result;
     }
 
     @Override
@@ -466,11 +461,9 @@ final class SessionPool {
     @Override
     public ApiFuture<Struct> readRowUsingIndexAsync(
         String table, String index, Key key, Iterable<String> columns) {
-      SettableApiFuture<Struct> result = SettableApiFuture.create();
       try (AsyncResultSet rs = readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
-        rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+        return AbstractReadContext.consumeSingleRowAsync(rs);
       }
-      return result;
     }
 
     @Override
@@ -626,11 +619,9 @@ final class SessionPool {
 
       @Override
       public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-        SettableApiFuture<Struct> result = SettableApiFuture.create();
         try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
-          rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+          return AbstractReadContext.consumeSingleRowAsync(rs);
         }
-        return result;
       }
 
       @Override
@@ -651,12 +642,10 @@ final class SessionPool {
       @Override
       public ApiFuture<Struct> readRowUsingIndexAsync(
           String table, String index, Key key, Iterable<String> columns) {
-        SettableApiFuture<Struct> result = SettableApiFuture.create();
         try (AsyncResultSet rs =
             readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
-          rs.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(result));
+          return AbstractReadContext.consumeSingleRowAsync(rs);
         }
-        return result;
       }
 
       @Override
