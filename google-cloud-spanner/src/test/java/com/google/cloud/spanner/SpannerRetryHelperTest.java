@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Duration;
 import com.google.rpc.RetryInfo;
 import io.grpc.Context;
@@ -188,6 +189,24 @@ public class SpannerRetryHelperTest {
 
   @Test
   public void testExceptionWithRetryInfo() {
+    // Workaround from https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6435126.
+    // See also https://stackoverflow.com/questions/824110/accurate-sleep-for-java-on-windows
+    // Note that this is a daemon thread, so it will not prevent the JVM from shutting down.
+    new ThreadFactoryBuilder()
+        .setDaemon(true)
+        .build()
+        .newThread(
+            new Runnable() {
+              @Override
+              public void run() {
+                while (true) {
+                  try {
+                    Thread.sleep(Long.MAX_VALUE);
+                  } catch (InterruptedException e) {
+                  }
+                }
+              }
+            });
     final int RETRY_DELAY_MILLIS = 100;
     Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
     Status status = Status.fromCodeValue(Status.Code.ABORTED.value());
@@ -220,7 +239,8 @@ public class SpannerRetryHelperTest {
     Stopwatch watch = Stopwatch.createStarted();
     assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
     long elapsed = watch.elapsed(TimeUnit.MILLISECONDS);
-    assertThat(elapsed >= RETRY_DELAY_MILLIS).isTrue();
+    // Allow 1ms difference as that should be the accuracy of the sleep method.
+    assertThat(elapsed).isAtLeast(RETRY_DELAY_MILLIS - 1);
   }
 
   private SpannerException abortedWithRetryInfo(int nanos) {

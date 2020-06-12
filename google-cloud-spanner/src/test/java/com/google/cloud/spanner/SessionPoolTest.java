@@ -1072,9 +1072,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
     // Verify that all sessions are still in the pool, and that the write fraction is maintained.
     assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
-    assertThat(
-            pool.getNumberOfAvailableWritePreparedSessions()
-                + pool.getNumberOfSessionsBeingPrepared())
+    assertThat(pool.getNumberOfWriteSessionsInPool())
         .isEqualTo(
             (int) Math.ceil(pool.getNumberOfSessionsInPool() * options.getWriteSessionsFraction()));
 
