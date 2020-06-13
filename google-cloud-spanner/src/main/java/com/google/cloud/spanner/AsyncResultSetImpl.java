@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.ListenableFutureToApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
@@ -520,10 +522,18 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       Preconditions.checkState(!closed, "This AsyncResultSet has been closed");
       Preconditions.checkState(
           this.state == State.INITIALIZED, "This AsyncResultSet has already been used.");
-      SettableApiFuture<ImmutableList<T>> res = SettableApiFuture.<ImmutableList<T>>create();
+      final SettableApiFuture<ImmutableList<T>> res = SettableApiFuture.<ImmutableList<T>>create();
       CreateListCallback<T> callback = new CreateListCallback<T>(res, transformer);
-      setCallback(executor, callback);
-      return res;
+      ApiFuture<Void> finished = setCallback(executor, callback);
+      return ApiFutures.transformAsync(
+          finished,
+          new ApiAsyncFunction<Void, ImmutableList<T>>() {
+            @Override
+            public ApiFuture<ImmutableList<T>> apply(Void input) throws Exception {
+              return res;
+            }
+          },
+          MoreExecutors.directExecutor());
     }
   }
 

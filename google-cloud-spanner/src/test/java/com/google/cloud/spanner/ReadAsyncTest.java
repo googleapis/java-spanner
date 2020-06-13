@@ -35,7 +35,6 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.SettableFuture;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -121,38 +120,62 @@ public class ReadAsyncTest {
   }
 
   @Test
-  public void emptyReadAsync() throws Exception {
-    final SettableFuture<Boolean> result = SettableFuture.create();
+  public void readAsyncPropagatesError() throws Exception {
+    ApiFuture<Void> result;
     try (AsyncResultSet resultSet =
         client
             .singleUse(TimestampBound.strong())
             .readAsync(EMPTY_READ_TABLE_NAME, KeySet.singleKey(Key.of("k99")), READ_COLUMN_NAMES)) {
-      resultSet.setCallback(
-          executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case OK:
-                      fail("received unexpected data");
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case DONE:
-                      assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
-                      result.set(true);
-                      return CallbackResponse.DONE;
+      result =
+          resultSet.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  throw SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.CANCELLED, "Don't want the data");
+                }
+              });
+    }
+    try {
+      result.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+      assertThat(se.getMessage()).contains("Don't want the data");
+    }
+  }
+
+  @Test
+  public void emptyReadAsync() throws Exception {
+    ApiFuture<Void> result;
+    try (AsyncResultSet resultSet =
+        client
+            .singleUse(TimestampBound.strong())
+            .readAsync(EMPTY_READ_TABLE_NAME, KeySet.singleKey(Key.of("k99")), READ_COLUMN_NAMES)) {
+      result =
+          resultSet.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        fail("received unexpected data");
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case DONE:
+                        assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
+                        return CallbackResponse.DONE;
+                    }
                   }
                 }
-              } catch (Throwable t) {
-                result.setException(t);
-                return CallbackResponse.DONE;
-              }
-            }
-          });
+              });
     }
-    assertThat(result.get()).isTrue();
+    assertThat(result.get()).isNull();
   }
 
   @Test
@@ -225,6 +248,7 @@ public class ReadAsyncTest {
   public void closeTransactionBeforeEndOfAsyncQuery() throws Exception {
     final BlockingQueue<String> results = new SynchronousQueue<>();
     final SettableApiFuture<Boolean> finished = SettableApiFuture.create();
+    ApiFuture<Void> closed;
     DatabaseClientImpl clientImpl = (DatabaseClientImpl) client;
 
     // There should currently not be any sessions checked out of the pool.
@@ -234,30 +258,31 @@ public class ReadAsyncTest {
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet rs =
           tx.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
-        rs.setCallback(
-            executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        finished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        dataReceived.countDown();
-                        results.put(resultSet.getString(0));
+        closed =
+            rs.setCallback(
+                executor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    try {
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case DONE:
+                            finished.set(true);
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                          case OK:
+                            dataReceived.countDown();
+                            results.put(resultSet.getString(0));
+                        }
+                      }
+                    } catch (Throwable t) {
+                      finished.setException(t);
+                      return CallbackResponse.DONE;
                     }
                   }
-                } catch (Throwable t) {
-                  finished.setException(t);
-                  return CallbackResponse.DONE;
-                }
-              }
-            });
+                });
       }
       // Wait until at least one row has been fetched. At that moment there should be one session
       // checked out.
@@ -278,7 +303,7 @@ public class ReadAsyncTest {
     assertThat(resultList).containsExactly("k1", "k2", "k3");
     // The session will be released back into the pool by the asynchronous result set when it has
     // returned all rows. As this is done in the background, it could take a couple of milliseconds.
-    Thread.sleep(10L);
+    closed.get();
     assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
   }
 
@@ -354,69 +379,64 @@ public class ReadAsyncTest {
             evenStatement, generateKeyValueResultSet(ImmutableSet.of(2, 4, 6, 8, 10))));
 
     final Object lock = new Object();
-    final SettableApiFuture<Boolean> evenFinished = SettableApiFuture.create();
-    final SettableApiFuture<Boolean> unevenFinished = SettableApiFuture.create();
+    ApiFuture<Void> evenFinished;
+    ApiFuture<Void> unevenFinished;
     final CountDownLatch unevenReturnedFirstRow = new CountDownLatch(1);
     final Deque<String> allValues = new ConcurrentLinkedDeque<>();
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet evenRs = tx.executeQueryAsync(evenStatement);
           AsyncResultSet unevenRs = tx.executeQueryAsync(unevenStatement)) {
-        unevenRs.setCallback(
-            executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        unevenFinished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        synchronized (lock) {
-                          allValues.add(resultSet.getString("Value"));
-                        }
-                        unevenReturnedFirstRow.countDown();
-                        return CallbackResponse.PAUSE;
+        unevenFinished =
+            unevenRs.setCallback(
+                executor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          synchronized (lock) {
+                            allValues.add(resultSet.getString("Value"));
+                          }
+                          unevenReturnedFirstRow.countDown();
+                          return CallbackResponse.PAUSE;
+                      }
                     }
                   }
-                } catch (Throwable t) {
-                  unevenFinished.setException(t);
-                  return CallbackResponse.DONE;
-                }
-              }
-            });
-        evenRs.setCallback(
-            executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  // Make sure the uneven result set has returned the first before we start the even
-                  // results.
-                  unevenReturnedFirstRow.await();
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        evenFinished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        synchronized (lock) {
-                          allValues.add(resultSet.getString("Value"));
+                });
+        evenFinished =
+            evenRs.setCallback(
+                executor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    try {
+                      // Make sure the uneven result set has returned the first before we start the
+                      // even
+                      // results.
+                      unevenReturnedFirstRow.await();
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                          case OK:
+                            synchronized (lock) {
+                              allValues.add(resultSet.getString("Value"));
+                            }
+                            return CallbackResponse.PAUSE;
                         }
-                        return CallbackResponse.PAUSE;
+                      }
+                    } catch (InterruptedException e) {
+                      throw SpannerExceptionFactory.propagateInterrupt(e);
                     }
                   }
-                } catch (Throwable t) {
-                  evenFinished.setException(t);
-                  return CallbackResponse.DONE;
-                }
-              }
-            });
+                });
         while (!(evenFinished.isDone() && unevenFinished.isDone())) {
           synchronized (lock) {
             if (allValues.peekLast() != null) {
@@ -435,7 +455,7 @@ public class ReadAsyncTest {
       }
     }
     assertThat(ApiFutures.allAsList(Arrays.asList(evenFinished, unevenFinished)).get())
-        .containsExactly(Boolean.TRUE, Boolean.TRUE);
+        .containsExactly(null, null);
     assertThat(allValues)
         .containsExactly("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10");
   }

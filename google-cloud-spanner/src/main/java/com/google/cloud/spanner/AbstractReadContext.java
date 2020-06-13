@@ -22,6 +22,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
@@ -51,7 +53,6 @@ import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -759,24 +760,24 @@ abstract class AbstractReadContext
     // We can safely use a directExecutor here, as we will only be consuming one row, and we will
     // not be doing any blocking stuff in the handler.
     final SettableApiFuture<Struct> row = SettableApiFuture.create();
-    resultSet
-        .setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(row))
-        .addListener(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  result.set(row.get());
-                } catch (ExecutionException e) {
-                  result.setException(
-                      SpannerExceptionFactory.newSpannerException(
-                          e.getCause() == null ? e : e.getCause()));
-                } catch (InterruptedException e) {
-                  result.setException(SpannerExceptionFactory.propagateInterrupt(e));
-                }
-              }
-            },
-            MoreExecutors.directExecutor());
+    ApiFutures.addCallback(
+        resultSet.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(row)),
+        new ApiFutureCallback<Void>() {
+          @Override
+          public void onFailure(Throwable t) {
+            result.setException(t);
+          }
+
+          @Override
+          public void onSuccess(Void input) {
+            try {
+              result.set(row.get());
+            } catch (Throwable t) {
+              result.setException(t);
+            }
+          }
+        },
+        MoreExecutors.directExecutor());
     return result;
   }
 
