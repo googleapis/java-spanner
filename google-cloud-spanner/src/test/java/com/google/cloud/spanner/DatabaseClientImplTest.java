@@ -1384,11 +1384,12 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
+    ApiFuture<Void> resultSetClosed;
     final SettableFuture<Boolean> finished = SettableFuture.create();
     final List<Struct> receivedResults = new ArrayList<>();
     try (AsyncResultSet rs =
         client.singleUse().executeQueryAsync(Statement.of("SELECT * FROM RANDOM"))) {
-      rs.setCallback(
+       resultSetClosed = rs.setCallback(
           executor,
           new ReadyCallback() {
             @Override
@@ -1417,6 +1418,7 @@ public class DatabaseClientImplTest {
     }
     assertThat(finished.get()).isTrue();
     assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);
+    resultSetClosed.get();
   }
 
   @Test

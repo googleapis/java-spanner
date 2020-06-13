@@ -20,18 +20,16 @@ import static com.google.cloud.spanner.KeyRange.Endpoint.CLOSED;
 import static com.google.cloud.spanner.KeyRange.Endpoint.OPEN;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link com.google.cloud.spanner.KeyRange}. */
 @RunWith(JUnit4.class)
 public class KeyRangeTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void basics() {
@@ -104,16 +102,22 @@ public class KeyRangeTest {
 
   @Test
   public void builderRequiresStart() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("start(Key)");
-    KeyRange.newBuilder().setEnd(Key.of("z")).build();
+    try {
+      KeyRange.newBuilder().setEnd(Key.of("z")).build();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("start(Key)");
+    }
   }
 
   @Test
   public void builderRequiresEnd() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("end(Key)");
-    KeyRange.newBuilder().setStart(Key.of("a")).build();
+    try {
+      KeyRange.newBuilder().setStart(Key.of("a")).build();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("end(Key)");
+    }
   }
 
   @Test

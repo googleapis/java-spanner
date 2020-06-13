@@ -20,37 +20,45 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class StatementResultImplTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
 
   @Test
   public void testNoResultGetResultSet() {
     StatementResult subject = StatementResultImpl.noResult();
     assertThat(subject.getResultType(), is(equalTo(ResultType.NO_RESULT)));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getResultSet();
+    try {
+      subject.getResultSet();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
   public void testNoResultGetUpdateCount() {
     StatementResult subject = StatementResultImpl.noResult();
     assertThat(subject.getResultType(), is(equalTo(ResultType.NO_RESULT)));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getUpdateCount();
+    try {
+      subject.getUpdateCount();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
@@ -64,16 +72,24 @@ public class StatementResultImplTest {
   public void testResultSetGetUpdateCount() {
     StatementResult subject = StatementResultImpl.of(mock(ResultSet.class));
     assertThat(subject.getResultType(), is(equalTo(ResultType.RESULT_SET)));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getUpdateCount();
+    try {
+      subject.getUpdateCount();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
   public void testUpdateCountGetResultSet() {
     StatementResult subject = StatementResultImpl.of(1L);
     assertThat(subject.getResultType(), is(equalTo(ResultType.UPDATE_COUNT)));
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.getResultSet();
+    try {
+      subject.getResultSet();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test

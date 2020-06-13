@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -33,14 +32,13 @@ import com.google.cloud.spanner.InstanceNotFoundException;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.Collections;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -49,14 +47,16 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITDatabaseTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void badDdl() {
-    expectedException.expect(isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    expectedException.expectMessage("Syntax error on line 1");
-
-    env.getTestHelper().createTestDatabase("CREATE TABLE T ( Illegal Way To Define A Table )");
+    try {
+      env.getTestHelper().createTestDatabase("CREATE TABLE T ( Illegal Way To Define A Table )");
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(ex.getMessage()).contains("Syntax error on line 1");
+    }
   }
 
   @Test

@@ -22,6 +22,8 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -49,9 +51,7 @@ import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.invocation.InvocationOnMock;
@@ -59,8 +59,6 @@ import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class ReadWriteTransactionTest {
-
-  @Rule public final ExpectedException exception = ExpectedException.none();
 
   private enum CommitBehavior {
     SUCCEED,
@@ -173,22 +171,34 @@ public class ReadWriteTransactionTest {
     when(statement.getType()).thenReturn(StatementType.DDL);
 
     ReadWriteTransaction transaction = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    transaction.executeDdl(statement);
+    try {
+      transaction.executeDdl(statement);
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
   public void testRunBatch() {
     ReadWriteTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.runBatch();
+    try {
+      subject.runBatch();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
   public void testAbortBatch() {
     ReadWriteTransaction subject = createSubject();
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    subject.abortBatch();
+    try {
+      subject.abortBatch();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
@@ -261,9 +271,12 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     assertThat(transaction.executeUpdate(parsedStatement), is(1L));
-
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    transaction.getCommitTimestamp();
+    try {
+      transaction.getCommitTimestamp();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test
@@ -291,9 +304,12 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE), is(notNullValue()));
-
-    exception.expect(SpannerExceptionMatcher.matchCode(ErrorCode.FAILED_PRECONDITION));
-    transaction.getReadTimestamp();
+    try {
+      transaction.getReadTimestamp();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
   }
 
   @Test

@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
@@ -27,17 +28,13 @@ import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link ResultSets} */
 @RunWith(JUnit4.class)
 public class ResultSetsTest {
-
-  @Rule public ExpectedException expected = ExpectedException.none();
 
   @Test
   public void resultSetIteration() {
@@ -234,10 +231,13 @@ public class ResultSetsTest {
     Struct value1 = Struct.newBuilder().set("g1").to("abc").build();
 
     Struct struct1 = Struct.newBuilder().set("f1").to(value1).set("f2").to((Long) null).build();
-
-    expected.expect(UnsupportedOperationException.class);
-    expected.expectMessage("STRUCT-typed columns are not supported inside ResultSets.");
-    ResultSets.forRows(type, Arrays.asList(struct1));
+    try {
+      ResultSets.forRows(type, Arrays.asList(struct1));
+      fail("Expected exception");
+    } catch (UnsupportedOperationException ex) {
+      assertThat(ex.getMessage())
+          .contains("STRUCT-typed columns are not supported inside ResultSets.");
+    }
   }
 
   @Test
@@ -306,8 +306,12 @@ public class ResultSetsTest {
             Type.struct(Type.StructField.of("f1", Type.string())),
             Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
     rs.close();
-    expected.expect(IllegalStateException.class);
-    rs.getCurrentRowAsStruct();
+    try {
+      rs.getCurrentRowAsStruct();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -316,7 +320,11 @@ public class ResultSetsTest {
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
             Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
-    expected.expect(IllegalStateException.class);
-    rs.getCurrentRowAsStruct();
+    try {
+      rs.getCurrentRowAsStruct();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 }

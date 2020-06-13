@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,9 +53,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
@@ -65,11 +64,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.SessionImpl}. */
+/** Unit tests for {@link com.google.cloud.spanner.SessionImpl}. */
 @RunWith(JUnit4.class)
 public class SessionImplTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
-
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
   private com.google.cloud.spanner.Session session;
@@ -248,50 +245,60 @@ public class SessionImplTest {
   public void newSingleUseContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
   public void newSingleUseContextClosesOldSingleUseReadOnlyTransactionContext() {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
   public void newSingleUseContextClosesOldMultiUseReadOnlyTransactionContext() {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
   public void newSingleUseReadOnlyTransactionContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUseReadOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
   public void newMultiUseReadOnlyTransactionContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.readOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
@@ -304,10 +311,12 @@ public class SessionImplTest {
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
                 .build());
     session.writeAtLeastOnce(Arrays.<Mutation>asList());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
@@ -316,10 +325,12 @@ public class SessionImplTest {
 
     // Note that we don't even run the transaction - just preparing the runner is sufficient.
     session.readWriteTransaction();
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
@@ -327,18 +338,20 @@ public class SessionImplTest {
     TransactionRunner runner = session.readWriteTransaction();
 
     session.singleUse(TimestampBound.strong());
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    runner.run(
-        new TransactionRunner.TransactionCallable<Void>() {
-          @Nullable
-          @Override
-          public Void run(TransactionContext transaction) throws SpannerException {
-            fail("Unexpected call to transaction body");
-            return null;
-          }
-        });
+    try {
+      runner.run(
+          new TransactionRunner.TransactionCallable<Void>() {
+            @Nullable
+            @Override
+            public Void run(TransactionContext transaction) throws SpannerException {
+              fail("Unexpected call to transaction body");
+              return null;
+            }
+          });
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   @Test
@@ -348,10 +361,12 @@ public class SessionImplTest {
     Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
         .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
     session.prepareReadWriteTransaction();
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("invalidated");
-    ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+    try {
+      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertThat(ex.getMessage()).contains("invalidated");
+    }
   }
 
   private static ResultSetMetadata newMetadata(Type type) {
@@ -373,8 +388,12 @@ public class SessionImplTest {
     // be better for the read to fail with an INTERNAL error, but we can't do that until txn
     // metadata is returned for failed reads (e.g., table-not-found) as well as successful ones.
     // TODO(user): Fix this.
-    expectedException.expect(IllegalStateException.class);
-    txn.getReadTimestamp();
+    try {
+      txn.getReadTimestamp();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -389,9 +408,12 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.singleUseReadOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.INTERNAL));
-    txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+    try {
+      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   private static class NoOpStreamingCall implements SpannerRpc.StreamingCall {
@@ -429,9 +451,12 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.INTERNAL));
-    txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+    try {
+      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -446,9 +471,12 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.INTERNAL));
-    txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+    try {
+      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -464,8 +492,11 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-
-    expectedException.expect(SpannerMatchers.isSpannerException(ErrorCode.INTERNAL));
-    txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+    try {
+      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 }

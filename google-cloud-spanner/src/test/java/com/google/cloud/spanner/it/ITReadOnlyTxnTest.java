@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -41,10 +43,8 @@ import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -62,7 +62,6 @@ public class ITReadOnlyTxnTest {
   private static final String TABLE_NAME = "TestTable";
   private static DatabaseClient sharedClient;
   private static List<History> sharedHistory;
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private List<History> history;
   private DatabaseClient client;
 
@@ -311,12 +310,14 @@ public class ITReadOnlyTxnTest {
   @Test
   public void multiMinReadTimestamp() {
     // Cannot use bounded modes with multi-read transactions.
-    expectedException.expect(IllegalArgumentException.class);
     try (ReadOnlyTransaction tx =
         client.readOnlyTransaction(TimestampBound.ofMinReadTimestamp(history.get(2).timestamp))) {
       try (ResultSet rs = tx.executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
+        fail("Expected exception");
       }
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
     }
   }
 
@@ -343,12 +344,14 @@ public class ITReadOnlyTxnTest {
   @Test
   public void multiMaxStaleness() {
     // Cannot use bounded modes with multi-read transactions.
-    expectedException.expect(IllegalArgumentException.class);
     try (ReadOnlyTransaction tx =
         client.readOnlyTransaction(TimestampBound.ofMaxStaleness(1, TimeUnit.SECONDS))) {
       try (ResultSet rs = tx.executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
+        fail("Expected exception");
       }
+    } catch (IllegalArgumentException ex) {
+      assertNotNull(ex.getMessage());
     }
   }
 }
