@@ -1389,32 +1389,33 @@ public class DatabaseClientImplTest {
     final List<Struct> receivedResults = new ArrayList<>();
     try (AsyncResultSet rs =
         client.singleUse().executeQueryAsync(Statement.of("SELECT * FROM RANDOM"))) {
-       resultSetClosed = rs.setCallback(
-          executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                while (true) {
-                  switch (rs.tryNext()) {
-                    case DONE:
-                      finished.set(true);
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      receivedResults.add(resultSet.getCurrentRowAsStruct());
-                      break;
-                    default:
-                      throw new IllegalStateException("Unknown cursor state");
+      resultSetClosed =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  try {
+                    while (true) {
+                      switch (rs.tryNext()) {
+                        case DONE:
+                          finished.set(true);
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          receivedResults.add(resultSet.getCurrentRowAsStruct());
+                          break;
+                        default:
+                          throw new IllegalStateException("Unknown cursor state");
+                      }
+                    }
+                  } catch (Throwable t) {
+                    finished.setException(t);
+                    return CallbackResponse.DONE;
                   }
                 }
-              } catch (Throwable t) {
-                finished.setException(t);
-                return CallbackResponse.DONE;
-              }
-            }
-          });
+              });
     }
     assertThat(finished.get()).isTrue();
     assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);

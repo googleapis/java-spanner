@@ -223,6 +223,14 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     return CursorState.NOT_READY;
   }
 
+  private void closeDelegateResultSet() {
+    try {
+      delegateResultSet.close();
+    } catch (Throwable t) {
+      log.log(Level.FINE, "Ignoring error from closing delegate result set", t);
+    }
+  }
+
   /**
    * {@link CallbackRunnable} calls the {@link ReadyCallback} registered for this {@link
    * AsyncResultSet}.
@@ -264,6 +272,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
               switch (response) {
                 case DONE:
                   state = State.DONE;
+                  closeDelegateResultSet();
                   return;
                 case PAUSE:
                   state = State.PAUSED;
@@ -347,8 +356,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
             if (!stop) {
               buffer.put(delegateResultSet.getCurrentRowAsStruct());
               startCallbackIfNecessary();
+              hasNext = delegateResultSet.next();
             }
-            hasNext = delegateResultSet.next();
           } catch (Throwable e) {
             synchronized (monitor) {
               executionException = SpannerExceptionFactory.newSpannerException(e);
@@ -358,11 +367,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         }
         // We don't need any more data from the underlying result set, so we close it as soon as
         // possible. Any error that might occur during this will be ignored.
-        try {
-          delegateResultSet.close();
-        } catch (Throwable t) {
-          log.log(Level.FINE, "Ignoring error from closing delegate result set", t);
-        }
+        closeDelegateResultSet();
 
         // Ensure that the callback has been called at least once, even if the result set was
         // cancelled.
