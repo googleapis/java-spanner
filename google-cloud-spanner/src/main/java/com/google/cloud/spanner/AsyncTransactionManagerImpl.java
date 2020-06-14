@@ -29,7 +29,6 @@ import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
-import java.util.concurrent.ExecutionException;
 
 /** Implementation of {@link AsyncTransactionManager}. */
 final class AsyncTransactionManagerImpl implements AsyncTransactionManager, SessionTransaction {
@@ -53,29 +52,41 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   }
 
   @Override
-  public ApiFuture<TransactionContext> beginAsync() {
+  public void close() {
+    txn.close();
+  }
+
+  @Override
+  public TransactionContextFuture beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    txnState = TransactionState.STARTED;
-    txn = session.newTransaction();
+    TransactionContextFuture begin = new TransactionContextFutureImpl(this, internalBeginAsync());
     session.setActive(this);
+    return begin;
+  }
+
+  private ApiFuture<TransactionContext> internalBeginAsync() {
+    final Scope s = tracer.withSpan(span);
+    txn = session.newTransaction();
+    txnState = TransactionState.STARTED;
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
     final ApiFuture<Void> fut = txn.ensureTxnAsync();
-    fut.addListener(
-        tracer.withSpan(
-            span,
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  fut.get();
-                  res.set(txn);
-                } catch (ExecutionException e) {
-                  res.setException(e.getCause() == null ? e : e.getCause());
-                } catch (InterruptedException e) {
-                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-                }
-              }
-            }),
+    ApiFutures.addCallback(
+        fut,
+        new ApiFutureCallback<Void>() {
+          @Override
+          public void onFailure(Throwable t) {
+            s.close();
+            TraceUtil.endSpanWithFailure(span, t);
+            res.setException(SpannerExceptionFactory.newSpannerException(t));
+          }
+
+          @Override
+          public void onSuccess(Void result) {
+            s.close();
+            span.end();
+            res.set(txn);
+          }
+        },
         MoreExecutors.directExecutor());
     return res;
   }
@@ -128,17 +139,12 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   }
 
   @Override
-  public ApiFuture<TransactionContext> resetForRetryAsync() {
+  public TransactionContextFuture resetForRetryAsync() {
     if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
       throw new IllegalStateException(
-          "resetForRetry can only be called if the previous attempt" + " aborted");
+          "resetForRetry can only be called if the previous attempt aborted");
     }
-    try (Scope s = tracer.withSpan(span)) {
-      txn = session.newTransaction();
-      txn.ensureTxn();
-      txnState = TransactionState.STARTED;
-      return ApiFutures.immediateFuture((TransactionContext) txn);
-    }
+    return new TransactionContextFutureImpl(this, internalBeginAsync());
   }
 
   @Override

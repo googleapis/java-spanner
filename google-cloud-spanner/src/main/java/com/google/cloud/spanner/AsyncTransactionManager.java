@@ -18,7 +18,11 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * An interface for managing the life cycle of a read write transaction including all its retries.
@@ -37,13 +41,36 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
  *
  * @see DatabaseClient#transactionManager()
  */
-public interface AsyncTransactionManager {
+public interface AsyncTransactionManager extends AutoCloseable {
+  interface TransactionContextFuture extends ApiFuture<TransactionContext> {
+    <O> AsyncTransactionStep<Void, O> then(AsyncTransactionFunction<Void, O> function);
+  }
+
+  interface CommitTimestampFuture extends ApiFuture<Timestamp> {
+    @Override
+    Timestamp get() throws AbortedException, InterruptedException, ExecutionException;
+
+    @Override
+    Timestamp get(long timeout, TimeUnit unit)
+        throws AbortedException, InterruptedException, ExecutionException, TimeoutException;
+  }
+
+  interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
+    <RES> AsyncTransactionStep<O, RES> then(AsyncTransactionFunction<O, RES> next);
+
+    CommitTimestampFuture commitAsync();
+  }
+
+  interface AsyncTransactionFunction<I, O> {
+    ApiFuture<O> apply(TransactionContext txn, I input) throws Exception;
+  }
+
   /**
    * Creates a new read write transaction. This must be called before doing any other operation and
    * can only be called once. To create a new transaction for subsequent retries, see {@link
    * #resetForRetry()}.
    */
-  ApiFuture<TransactionContext> beginAsync();
+  TransactionContextFuture beginAsync();
 
   /**
    * Commits the currently active transaction. If the transaction was already aborted, then this
@@ -64,7 +91,7 @@ public interface AsyncTransactionManager {
    * specified by {@link SpannerException#getRetryDelayInMillis()} on the {@code SpannerException}
    * throw by the previous commit call.
    */
-  ApiFuture<TransactionContext> resetForRetryAsync();
+  TransactionContextFuture resetForRetryAsync();
 
   /** Returns the state of the transaction. */
   TransactionState getState();
@@ -73,6 +100,6 @@ public interface AsyncTransactionManager {
    * Closes the manager. If there is an active transaction, it will be rolled back. Underlying
    * session will be released back to the session pool.
    */
-  //  @Override
-  //  void close();
+  @Override
+  void close();
 }

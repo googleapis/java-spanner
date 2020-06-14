@@ -974,17 +974,30 @@ final class SessionPool {
     }
 
     @Override
-    public ApiFuture<TransactionContext> beginAsync() {
-      return ApiFutures.transformAsync(
-          delegate,
-          new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
+    public void close() {
+      delegate.addListener(
+          new Runnable() {
             @Override
-            public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
-                throws Exception {
-              return input.beginAsync();
+            public void run() {
+              session.close();
             }
           },
           MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public TransactionContextFuture beginAsync() {
+      return new TransactionContextFutureImpl(
+          this,
+          ApiFutures.transformAsync(
+              delegate,
+              new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
+                @Override
+                public ApiFuture<TransactionContext> apply(AsyncTransactionManager input) {
+                  return input.beginAsync();
+                }
+              },
+              MoreExecutors.directExecutor()));
     }
 
     @Override
@@ -1032,17 +1045,19 @@ final class SessionPool {
     }
 
     @Override
-    public ApiFuture<TransactionContext> resetForRetryAsync() {
-      return ApiFutures.transformAsync(
-          delegate,
-          new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
-            @Override
-            public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
-                throws Exception {
-              return input.resetForRetryAsync();
-            }
-          },
-          MoreExecutors.directExecutor());
+    public TransactionContextFuture resetForRetryAsync() {
+      return new TransactionContextFutureImpl(
+          this,
+          ApiFutures.transformAsync(
+              delegate,
+              new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
+                @Override
+                public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
+                    throws Exception {
+                  return input.resetForRetryAsync();
+                }
+              },
+              MoreExecutors.directExecutor()));
     }
 
     @Override

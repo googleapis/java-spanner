@@ -87,9 +87,9 @@ public abstract class AbstractAsyncTransactionTest {
 
   @AfterClass
   public static void teardown() throws Exception {
-    executor.shutdown();
     server.shutdown();
     server.awaitTermination();
+    executor.shutdown();
   }
 
   @Before

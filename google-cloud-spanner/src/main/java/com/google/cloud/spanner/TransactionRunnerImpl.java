@@ -246,18 +246,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     ApiFuture<Timestamp> commitAsync() {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
-      CommitRequest.Builder builder =
-          CommitRequest.newBuilder().setSession(session.getName()).setTransactionId(transactionId);
-      synchronized (lock) {
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
-      }
-      final CommitRequest commitRequest = builder.build();
       final SettableApiFuture<Void> latch;
       synchronized (lock) {
         latch = finishedAsyncOperations;
@@ -268,6 +256,20 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             public void run() {
               try {
                 latch.get();
+                CommitRequest.Builder builder =
+                    CommitRequest.newBuilder()
+                        .setSession(session.getName())
+                        .setTransactionId(transactionId);
+                synchronized (lock) {
+                  if (!mutations.isEmpty()) {
+                    List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+                    Mutation.toProto(mutations, mutationsProto);
+                    builder.addAllMutations(mutationsProto);
+                  }
+                  // Ensure that no call to buffer mutations that would be lost can succeed.
+                  mutations = null;
+                }
+                final CommitRequest commitRequest = builder.build();
                 span.addAnnotation("Starting Commit");
                 final Span opSpan =
                     tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
