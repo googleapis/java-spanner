@@ -735,15 +735,14 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                         mockSpanner.abortTransaction(txn);
                       }
                       // This update statement will be aborted, but the error will not propagated to
-                      // the
-                      // transaction runner and cause the transaction to retry. Instead, the commit
-                      // call
-                      // will do that.
+                      // the transaction manager and cause the transaction to retry. Instead, the
+                      // commit call will do that.
                       txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                      // Wait for the request to arrive at the server.
+                      mockSpanner.waitForLastRequestToBe(ExecuteBatchDmlRequest.class, 1000L);
                       // Resolving this future will not resolve the result of the entire
-                      // transaction. The
-                      // transaction result will be resolved when the commit has actually finished
-                      // successfully.
+                      // transaction. The transaction result will be resolved when the commit has
+                      // actually finished successfully.
                       return ApiFutures.immediateFuture(null);
                     }
                   })

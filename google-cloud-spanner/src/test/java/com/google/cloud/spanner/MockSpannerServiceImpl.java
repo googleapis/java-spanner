@@ -23,6 +23,7 @@ import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
@@ -90,10 +91,12 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -493,7 +496,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private double abortProbability = 0.0010D;
 
   private final Object lock = new Object();
-  private final Queue<AbstractMessage> requests = new ConcurrentLinkedQueue<>();
+  private final Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
   private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
@@ -1818,6 +1821,19 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
     }
     return c;
+  }
+
+  public void waitForLastRequestToBe(Class<? extends AbstractMessage> type, long timeoutMillis)
+      throws InterruptedException, TimeoutException {
+    Stopwatch watch = Stopwatch.createStarted();
+    while (!(this.requests.peekLast() != null
+        && this.requests.peekLast().getClass().equals(type))) {
+      Thread.sleep(10L);
+      if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
+        throw new TimeoutException(
+            "Timeout while waiting for last request to become " + type.getName());
+      }
+    }
   }
 
   @Override

@@ -45,7 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -54,6 +56,9 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class AsyncResultSetImplStressTest {
   private static final int TEST_RUNS = 1000;
+
+  /** Timeout is applied to each test case individually. */
+  @Rule public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
 
   @Parameter(0)
   public int resultSetSize;
