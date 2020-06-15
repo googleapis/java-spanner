@@ -496,23 +496,22 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private double abortProbability = 0.0010D;
 
   private final Object lock = new Object();
-  private final Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
+  private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
   private volatile CountDownLatch freezeLock = new CountDownLatch(0);
-  private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
+  private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
-  private final ConcurrentMap<Statement, StatementResult> statementResults =
-      new ConcurrentHashMap<>();
-  private final ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
+  private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
+  private ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
   private ConcurrentMap<String, Instant> sessionLastUsed = new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
+  private ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
+  private ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
       new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
+  private ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
   private final AtomicBoolean abortNextTransaction = new AtomicBoolean();
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
-  private final ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
@@ -1639,7 +1638,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
-                      "This transaction has been invalidated by a later transaction in the same session.",
+                      "This transaction has been invalidated by a later transaction in the same session.\nTransaction id: "
+                          + id
+                          + "\nExpected: "
+                          + counter.get(),
                       session.getName()))
               .asRuntimeException();
         }
@@ -1862,17 +1864,19 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   /** Removes all sessions and transactions. Mocked results are not removed. */
   @Override
   public void reset() {
-    requests.clear();
-    sessions.clear();
+    requests = new ConcurrentLinkedDeque<>();
+    exceptions = new ConcurrentLinkedQueue<>();
+    statementGetCounts = new ConcurrentHashMap<>();
+    sessions = new ConcurrentHashMap<>();
+    sessionLastUsed = new ConcurrentHashMap<>();
+    transactions = new ConcurrentHashMap<>();
+    isPartitionedDmlTransaction = new ConcurrentHashMap<>();
+    abortedTransactions = new ConcurrentHashMap<>();
+    transactionCounters = new ConcurrentHashMap<>();
+    partitionTokens = new ConcurrentHashMap<>();
+    transactionLastUsed = new ConcurrentHashMap<>();
+
     numSessionsCreated.set(0);
-    sessionLastUsed.clear();
-    transactions.clear();
-    isPartitionedDmlTransaction.clear();
-    abortedTransactions.clear();
-    transactionCounters.clear();
-    partitionTokens.clear();
-    transactionLastUsed.clear();
-    exceptions.clear();
     stickyGlobalExceptions = false;
     freezeLock.countDown();
   }

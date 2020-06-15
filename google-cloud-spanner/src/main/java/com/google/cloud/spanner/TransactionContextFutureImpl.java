@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -35,6 +34,13 @@ import java.util.concurrent.TimeoutException;
 
 class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContext>
     implements TransactionContextFuture {
+
+  /**
+   * {@link ApiFuture} that returns a commit timestamp. Any {@link AbortedException} that is thrown
+   * by either the commit call or any other rpc during the transaction will be thrown by the {@link
+   * #get()} method of this future as an {@link AbortedException} and not as an {@link
+   * ExecutionException} with an {@link AbortedException} as its cause.
+   */
   static class CommitTimestampFutureImpl extends ForwardingApiFuture<Timestamp>
       implements CommitTimestampFuture {
     CommitTimestampFutureImpl(ApiFuture<Timestamp> delegate) {
@@ -172,36 +178,21 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
   @Override
   public <O> AsyncTransactionStatementImpl<Void, O> then(
       AsyncTransactionFunction<Void, O> function) {
-    return new AsyncTransactionStatementImpl<>(
-        this,
-        ApiFutures.transform(
-            this,
-            new ApiFunction<TransactionContext, Void>() {
-              @Override
-              public Void apply(TransactionContext input) {
-                return null;
-              }
-            },
-            MoreExecutors.directExecutor()),
-        function);
-  }
-
-  ApiFuture<Timestamp> commitAsync() {
-    ApiFuture<Timestamp> res = mgr.commitAsync();
+    final SettableApiFuture<Void> input = SettableApiFuture.create();
     ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Timestamp>() {
+        this,
+        new ApiFutureCallback<TransactionContext>() {
           @Override
           public void onFailure(Throwable t) {
-            txnResult.setException(t);
+            input.setException(t);
           }
 
           @Override
-          public void onSuccess(Timestamp result) {
-            txnResult.set(result);
+          public void onSuccess(TransactionContext result) {
+            input.set(null);
           }
         },
         MoreExecutors.directExecutor());
-    return txnResult;
+    return new AsyncTransactionStatementImpl<>(this, input, function);
   }
 }

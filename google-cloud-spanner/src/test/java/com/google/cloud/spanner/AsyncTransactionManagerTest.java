@@ -38,7 +38,10 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -55,7 +58,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
-
   /**
    * Static helper methods that simplifies creating {@link AsyncTransactionFunction}s for Java7.
    * Java8 and higher can use lambda expressions.
@@ -736,13 +738,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       }
                       // This update statement will be aborted, but the error will not propagated to
                       // the transaction manager and cause the transaction to retry. Instead, the
-                      // commit call will do that.
+                      // commit call will do that. Depending on the timing, that will happen
+                      // directly in the transaction manager if the ABORTED error has already been
+                      // returned by the batch update call before the commit call starts. Otherwise,
+                      // the backend will return an ABORTED error for the commit call.
                       txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                      // Wait for the request to arrive at the server.
-                      mockSpanner.waitForLastRequestToBe(ExecuteBatchDmlRequest.class, 1000L);
-                      // Resolving this future will not resolve the result of the entire
-                      // transaction. The transaction result will be resolved when the commit has
-                      // actually finished successfully.
                       return ApiFutures.immediateFuture(null);
                     }
                   })
@@ -755,15 +755,29 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       }
     }
     assertThat(attempt.get()).isEqualTo(2);
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    Iterable<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    int size = Iterables.size(requests);
+    assertThat(size).isIn(Range.closed(6, 7));
+    if (size == 6) {
+      assertThat(requests)
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(requests)
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test

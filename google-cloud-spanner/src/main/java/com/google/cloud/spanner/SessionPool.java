@@ -38,7 +38,6 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEY
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
-import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -809,7 +808,9 @@ final class SessionPool {
       }
       closed = true;
       try {
-        delegate.close();
+        if (delegate != null) {
+          delegate.close();
+        }
       } finally {
         session.close();
       }
@@ -945,130 +946,6 @@ final class SessionPool {
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
       return commitTimestamp;
-    }
-  }
-
-  private static class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
-    private volatile PooledSessionFuture session;
-    private final SettableApiFuture<AsyncTransactionManager> delegate = SettableApiFuture.create();
-    private volatile ApiFuture<Timestamp> commitTimestamp;
-
-    private SessionPoolAsyncTransactionManager(PooledSessionFuture session) {
-      this.session = session;
-      this.session.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                delegate.set(
-                    SessionPoolAsyncTransactionManager.this
-                        .session
-                        .get()
-                        .transactionManagerAsync());
-              } catch (Throwable t) {
-                delegate.setException(t);
-              }
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public void close() {
-      delegate.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              session.close();
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public TransactionContextFuture beginAsync() {
-      return new TransactionContextFutureImpl(
-          this,
-          ApiFutures.transformAsync(
-              delegate,
-              new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
-                @Override
-                public ApiFuture<TransactionContext> apply(AsyncTransactionManager input) {
-                  return input.beginAsync();
-                }
-              },
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ApiFuture<Timestamp> commitAsync() {
-      return ApiFutures.transformAsync(
-          delegate,
-          new ApiAsyncFunction<AsyncTransactionManager, Timestamp>() {
-            @Override
-            public ApiFuture<Timestamp> apply(AsyncTransactionManager input) throws Exception {
-              ApiFuture<Timestamp> res = input.commitAsync();
-              res.addListener(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      session.close();
-                    }
-                  },
-                  MoreExecutors.directExecutor());
-              return res;
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public ApiFuture<Void> rollbackAsync() {
-      return ApiFutures.transformAsync(
-          delegate,
-          new ApiAsyncFunction<AsyncTransactionManager, Void>() {
-            @Override
-            public ApiFuture<Void> apply(AsyncTransactionManager input) throws Exception {
-              ApiFuture<Void> res = input.rollbackAsync();
-              res.addListener(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      session.close();
-                    }
-                  },
-                  MoreExecutors.directExecutor());
-              return res;
-            }
-          },
-          MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public TransactionContextFuture resetForRetryAsync() {
-      return new TransactionContextFutureImpl(
-          this,
-          ApiFutures.transformAsync(
-              delegate,
-              new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
-                @Override
-                public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
-                    throws Exception {
-                  return input.resetForRetryAsync();
-                }
-              },
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public TransactionState getState() {
-      try {
-        return delegate.get().getState();
-      } catch (InterruptedException e) {
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
-      }
     }
   }
 

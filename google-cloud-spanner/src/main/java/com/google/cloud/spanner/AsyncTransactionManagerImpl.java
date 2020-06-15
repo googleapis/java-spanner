@@ -25,7 +25,6 @@ import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -59,15 +58,17 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   @Override
   public TransactionContextFuture beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    TransactionContextFuture begin = new TransactionContextFutureImpl(this, internalBeginAsync());
-    session.setActive(this);
+    TransactionContextFuture begin =
+        new TransactionContextFutureImpl(this, internalBeginAsync(true));
     return begin;
   }
 
-  private ApiFuture<TransactionContext> internalBeginAsync() {
-    final Scope s = tracer.withSpan(span);
-    txn = session.newTransaction();
+  private ApiFuture<TransactionContext> internalBeginAsync(boolean setActive) {
     txnState = TransactionState.STARTED;
+    txn = session.newTransaction();
+    if (setActive) {
+      session.setActive(this);
+    }
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
     final ApiFuture<Void> fut = txn.ensureTxnAsync();
     ApiFutures.addCallback(
@@ -75,15 +76,11 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
         new ApiFutureCallback<Void>() {
           @Override
           public void onFailure(Throwable t) {
-            s.close();
-            TraceUtil.endSpanWithFailure(span, t);
             res.setException(SpannerExceptionFactory.newSpannerException(t));
           }
 
           @Override
           public void onSuccess(Void result) {
-            s.close();
-            span.end();
             res.set(txn);
           }
         },
@@ -95,7 +92,7 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   public ApiFuture<Timestamp> commitAsync() {
     Preconditions.checkState(
         txnState == TransactionState.STARTED,
-        "commit can only be invoked if the transaction is in progress");
+        "commit can only be invoked if the transaction is in progress. Current state: " + txnState);
     if (txn.isAborted()) {
       txnState = TransactionState.ABORTED;
       return ApiFutures.immediateFailedFuture(
@@ -144,7 +141,7 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt aborted");
     }
-    return new TransactionContextFutureImpl(this, internalBeginAsync());
+    return new TransactionContextFutureImpl(this, internalBeginAsync(false));
   }
 
   @Override

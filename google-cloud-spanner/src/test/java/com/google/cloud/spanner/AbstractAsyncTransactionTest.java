@@ -30,15 +30,16 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 
-import com.google.api.gax.grpc.testing.LocalChannelProvider;
+import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.Status;
-import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -48,7 +49,7 @@ import org.junit.BeforeClass;
 public abstract class AbstractAsyncTransactionTest {
   static MockSpannerServiceImpl mockSpanner;
   private static Server server;
-  private static LocalChannelProvider channelProvider;
+  private static InetSocketAddress address;
   static ExecutorService executor;
 
   Spanner spanner;
@@ -74,14 +75,9 @@ public abstract class AbstractAsyncTransactionTest {
         StatementResult.exception(
             UPDATE_ABORTED_STATEMENT,
             Status.ABORTED.withDescription("Transaction was aborted").asRuntimeException()));
-    String uniqueName = InProcessServerBuilder.generateName();
-    server =
-        InProcessServerBuilder.forName(uniqueName)
-            .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
-            .addService(mockSpanner)
-            .build()
-            .start();
-    channelProvider = LocalChannelProvider.create(uniqueName);
+
+    address = new InetSocketAddress("localhost", 0);
+    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).build().start();
     executor = Executors.newSingleThreadExecutor();
   }
 
@@ -93,11 +89,20 @@ public abstract class AbstractAsyncTransactionTest {
   }
 
   @Before
-  public void before() {
+  public void before() throws Exception {
+    String endpoint = address.getHostString() + ":" + server.getPort();
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelProvider(channelProvider)
+            .setChannelConfigurator(
+                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
+                  @Override
+                  public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
+                    input.usePlaintext();
+                    return input;
+                  }
+                })
+            .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
             .build()
@@ -116,6 +121,14 @@ public abstract class AbstractAsyncTransactionTest {
             .getService();
   }
 
+  @After
+  public void after() throws Exception {
+    spanner.close();
+    spannerWithEmptySessionPool.close();
+    mockSpanner.removeAllExecutionTimes();
+    mockSpanner.reset();
+  }
+
   DatabaseClient client() {
     return spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
   }
@@ -123,13 +136,5 @@ public abstract class AbstractAsyncTransactionTest {
   DatabaseClient clientWithEmptySessionPool() {
     return spannerWithEmptySessionPool.getDatabaseClient(
         DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-  }
-
-  @After
-  public void after() {
-    spanner.close();
-    spannerWithEmptySessionPool.close();
-    mockSpanner.removeAllExecutionTimes();
-    mockSpanner.reset();
   }
 }
