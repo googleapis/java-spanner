@@ -312,9 +312,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
                 .setInterceptorProvider(
-                    MoreObjects.firstNonNull(
-                        options.getInterceptorProvider(),
-                        SpannerInterceptorProvider.createDefault()))
+                    SpannerInterceptorProvider.create(
+                            MoreObjects.firstNonNull(
+                                options.getInterceptorProvider(),
+                                SpannerInterceptorProvider.createDefault()))
+                        .withEncoding(compressorName))
                 .setHeaderProvider(mergedHeaderProvider)
                 .build());
 
@@ -1243,9 +1245,6 @@ public class GapicSpannerRpc implements SpannerRpc {
         context =
             context.withCallOptions(context.getCallOptions().withCallCredentials(callCredentials));
       }
-    }
-    if (compressorName != null) {
-      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     return context.withStreamWaitTimeout(waitTimeout).withStreamIdleTimeout(idleTimeout);
   }
