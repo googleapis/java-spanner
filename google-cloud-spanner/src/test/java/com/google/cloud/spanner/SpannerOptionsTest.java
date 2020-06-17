@@ -508,12 +508,26 @@ public class SpannerOptionsTest {
 
   @Test
   public void testCompressorName() {
-    assertThat(SpannerOptions.newBuilder().setCompressorName("gzip").build().getCompressorName())
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("gzip")
+                .build()
+                .getCompressorName())
         .isEqualTo("gzip");
     assertThat(
-            SpannerOptions.newBuilder().setCompressorName("identity").build().getCompressorName())
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("identity")
+                .build()
+                .getCompressorName())
         .isEqualTo("identity");
-    assertThat(SpannerOptions.newBuilder().setCompressorName(null).build().getCompressorName())
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName(null)
+                .build()
+                .getCompressorName())
         .isNull();
     try {
       SpannerOptions.newBuilder().setCompressorName("foo");
