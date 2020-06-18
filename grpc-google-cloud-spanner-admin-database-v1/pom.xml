@@ -73,7 +73,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies>com.google.auto.value:auto-value-annotations</ignoredDependencies>
+            <ignoredDependencies>com.google.auto.value:auto-value-annotations,javax.annotation:javax.annotation-api</ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
