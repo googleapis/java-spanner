@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
@@ -285,6 +286,9 @@ public interface SpannerRpc extends ServiceRpc {
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
   RetrySettings getPartitionedDmlRetrySettings();
+
+  ServerStream<PartialResultSet> executeStreamingPartitionedDml(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
   StreamingCall executeQuery(
       ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
