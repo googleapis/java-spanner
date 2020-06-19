@@ -198,7 +198,10 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
-      String instanceName, String createDatabaseStatement, Iterable<String> additionalStatements)
+      String instanceName,
+      String createDatabaseStatement,
+      Iterable<String> additionalStatements,
+      com.google.cloud.spanner.Database database)
       throws SpannerException;
 
   OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(

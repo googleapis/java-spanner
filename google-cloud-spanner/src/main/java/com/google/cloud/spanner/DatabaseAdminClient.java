@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
@@ -67,6 +68,47 @@ public interface DatabaseAdminClient {
    */
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException;
+
+  /**
+   * Creates a database in a Cloud Spanner instance. Any configuration options in the {@link
+   * Database} instance will be included in the {@link CreateDatabaseRequest}.
+   *
+   * <p>Example to create an encrypted database.
+   *
+   * <pre>{@code
+   * Database dbInfo =
+   *     dbClient
+   *         .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+   *         .setEncryptionConfigInfo(
+   *             EncryptionConfigInfo.ofKey(
+   *                 "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+   *         .build();
+   * Operation<Database, CreateDatabaseMetadata> op = dbAdminClient
+   *     .createDatabase(
+   *         dbInfo,
+   *         Arrays.asList(
+   *             "CREATE TABLE Singers (\n"
+   *                 + "  SingerId   INT64 NOT NULL,\n"
+   *                 + "  FirstName  STRING(1024),\n"
+   *                 + "  LastName   STRING(1024),\n"
+   *                 + "  SingerInfo BYTES(MAX)\n"
+   *                 + ") PRIMARY KEY (SingerId)",
+   *             "CREATE TABLE Albums (\n"
+   *                 + "  SingerId     INT64 NOT NULL,\n"
+   *                 + "  AlbumId      INT64 NOT NULL,\n"
+   *                 + "  AlbumTitle   STRING(MAX)\n"
+   *                 + ") PRIMARY KEY (SingerId, AlbumId),\n"
+   *                 + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"));
+   * Database db = op.waitFor().getResult();
+   * }</pre>
+   *
+   * @see also #createDatabase(String, String, Iterable)
+   */
+  OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      Database database, Iterable<String> statements) throws SpannerException;
+
+  /** Returns a builder for a {@code Database} object with the given id. */
+  Database.Builder newDatabaseBuilder(DatabaseId id);
 
   /** Returns a builder for a {@code Backup} object with the given id. */
   Backup.Builder newBackupBuilder(BackupId id);

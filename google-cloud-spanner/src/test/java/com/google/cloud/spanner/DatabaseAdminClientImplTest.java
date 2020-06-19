@@ -25,6 +25,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.collect.ImmutableList;
@@ -43,6 +44,7 @@ import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
@@ -72,6 +74,8 @@ public class DatabaseAdminClientImplTest {
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
   private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
   private static final String VERSION_RETENTION_PERIOD = "7d";
+  private static final String KMS_KEY_NAME =
+      "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -88,6 +92,13 @@ public class DatabaseAdminClientImplTest {
         .setState(Database.State.READY)
         .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
         .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .build();
+  }
+
+  private Database getEncryptedDatabaseProto() {
+    return getDatabaseProto()
+        .toBuilder()
+        .setEncryptionConfig(EncryptionConfig.newBuilder().setKmsKeyName(KMS_KEY_NAME).build())
         .build();
   }
 
@@ -134,10 +145,39 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "createDatabase", getDatabaseProto(), CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
-            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.<String>emptyList()))
+            INSTANCE_NAME,
+            "CREATE DATABASE `" + DB_ID + "`",
+            Collections.<String>emptyList(),
+            new com.google.cloud.spanner.Database(
+                DatabaseId.of(DB_NAME), State.UNSPECIFIED, client)))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
         client.createDatabase(INSTANCE_ID, DB_ID, Collections.<String>emptyList());
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+  }
+
+  @Test
+  public void createEncryptedDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client
+            .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
+            .build();
+
+    OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createDatabase",
+            getEncryptedDatabaseProto(),
+            CreateDatabaseMetadata.getDefaultInstance());
+    when(rpc.createDatabase(
+            INSTANCE_NAME,
+            "CREATE DATABASE `" + DB_ID + "`",
+            Collections.<String>emptyList(),
+            database))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
+        client.createDatabase(database, Collections.<String>emptyList());
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
   }
