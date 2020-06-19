@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.RetryAbortedStrategy.Type.FORCE_RETRY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -23,6 +24,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -593,5 +595,68 @@ public class ReadWriteTransactionTest {
     rs1.next();
     rs2.next();
     assertThat(rs1.getChecksum(), is(not(equalTo(rs2.getChecksum()))));
+  }
+
+  @Test
+  public void testTransactionStrategyAsForceRetry() {
+    // given
+    TransactionManager txManager = mock(TransactionManager.class);
+    TransactionContext txContext = mock(TransactionContext.class);
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    DatabaseClient client = mock(DatabaseClient.class);
+
+    Statement fooStatement = Statement.of("SELECT * FROM FOO");
+    Statement barStatement = Statement.of("SELECT * FROM BAR");
+
+    ResultSet rsFoo =
+        ResultSets.forRows(
+            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Arrays.asList(
+                Struct.newBuilder().set("ID").to(1L).set("NAME").to("FOO 1").build(),
+                Struct.newBuilder().set("ID").to(2L).set("NAME").to("FOO 2").build()));
+
+    ResultSet rsBar =
+        ResultSets.forRows(
+            Type.struct(StructField.of("ID", Type.int64()), StructField.of("NAME", Type.string())),
+            Arrays.asList(
+                Struct.newBuilder().set("ID").to(1L).set("NAME").to("BAR 1").build(),
+                Struct.newBuilder().set("ID").to(2L).set("NAME").to("BAR 2").build()));
+
+    // when
+    when(parsedStatement.isQuery()).thenReturn(true);
+    when(parsedStatement.getType()).thenReturn(StatementType.QUERY);
+    when(parsedStatement.getStatement()).thenReturn(fooStatement).thenReturn(barStatement);
+
+    when(client.transactionManager()).thenReturn(txManager);
+
+    when(txManager.begin()).thenReturn(txContext);
+    when(txManager.getState()).thenReturn(null, TransactionState.STARTED);
+    when(txManager.resetForRetry()).thenReturn(txContext);
+
+    when(txContext.executeQuery(any(Statement.class)))
+        .thenReturn(rsFoo)
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED, "transaction was aborted due to conflicts keys"))
+        .thenReturn(rsFoo)
+        .thenReturn(rsBar);
+
+    ReadWriteTransaction transaction =
+        ReadWriteTransaction.newBuilder()
+            .setDatabaseClient(client)
+            .setRetryAbortsInternally(true)
+            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .withStatementExecutor(new StatementExecutor())
+            .setRetryAbortedStrategyType(FORCE_RETRY)
+            .build();
+
+    ResultSet expectedFoo = transaction.executeQuery(parsedStatement, AnalyzeMode.NONE);
+    ResultSet expectedBar = transaction.executeQuery(parsedStatement, AnalyzeMode.NONE);
+
+    // then
+    assertTrue(expectedFoo.next());
+    assertTrue(expectedBar.next());
+    assertThat(expectedFoo.getCurrentRowAsStruct(), is(rsFoo.getCurrentRowAsStruct()));
+    assertThat(expectedBar.getCurrentRowAsStruct(), is(rsBar.getCurrentRowAsStruct()));
   }
 }

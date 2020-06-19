@@ -84,6 +84,11 @@ public class ConnectionOptions {
       return new ConnectionProperty(name, description, "", null);
     }
 
+    private static ConnectionProperty createStringProperty(
+        String name, String description, String defaultValue, String[] validValues) {
+      return new ConnectionProperty(name, description, defaultValue, validValues);
+    }
+
     private static ConnectionProperty createBooleanProperty(
         String name, String description, boolean defaultValue) {
       return new ConnectionProperty(
@@ -152,6 +157,8 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final RetryAbortedStrategy.Type DEFAULT_RETRY_ABORTED_STRATEGY_TYPE =
+      RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -176,6 +183,8 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Strategy for resolving aborted exception */
+  private static final String RETRY_ABORTED_STRATEGY_TYPE_PROPERTY_NAME = "retryStrategy";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -194,7 +203,15 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty(
                       USE_PLAIN_TEXT_PROPERTY_NAME, "", DEFAULT_USE_PLAIN_TEXT),
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""))));
+                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""),
+                  ConnectionProperty.createStringProperty(
+                      RETRY_ABORTED_STRATEGY_TYPE_PROPERTY_NAME,
+                      "",
+                      DEFAULT_RETRY_ABORTED_STRATEGY_TYPE.name(),
+                      new String[] {
+                        RetryAbortedStrategy.Type.FORCE_RETRY.name(),
+                        RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET.name()
+                      }))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -400,6 +417,7 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
+  private final RetryAbortedStrategy.Type retryAbortedStrategyType;
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
@@ -472,6 +490,7 @@ public class ConnectionOptions {
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
+    this.retryAbortedStrategyType = parseRetryAbortedStrategyType(this.uri);
   }
 
   @VisibleForTesting
@@ -570,6 +589,20 @@ public class ConnectionOptions {
       res.add(matcher.group("PROPERTY"));
     }
     return res;
+  }
+
+  @VisibleForTesting
+  static RetryAbortedStrategy.Type parseRetryAbortedStrategyType(String uri) {
+    String strategy = parseUriProperty(uri, RETRY_ABORTED_STRATEGY_TYPE_PROPERTY_NAME);
+    try {
+      if (strategy == null) {
+        return RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET;
+      }
+      return RetryAbortedStrategy.Type.valueOf(strategy.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Invalid retry strategy value specified: " + strategy, e);
+    }
   }
 
   /**
@@ -678,6 +711,10 @@ public class ConnectionOptions {
   /** Interceptors that should be executed after each statement */
   List<StatementExecutionInterceptor> getStatementExecutionInterceptors() {
     return statementExecutionInterceptors;
+  }
+
+  RetryAbortedStrategy.Type getRetryAbortedStrategyType() {
+    return retryAbortedStrategyType;
   }
 
   @Override

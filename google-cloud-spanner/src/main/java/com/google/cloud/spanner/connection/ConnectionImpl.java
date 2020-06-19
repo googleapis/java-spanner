@@ -194,6 +194,7 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
+  private RetryAbortedStrategy.Type retryAbortedStrategyType;
 
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
@@ -208,6 +209,7 @@ class ConnectionImpl implements Connection {
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
     this.ddlClient = createDdlClient();
+    this.retryAbortedStrategyType = options.getRetryAbortedStrategyType();
     setDefaultTransactionOptions();
   }
 
@@ -229,6 +231,7 @@ class ConnectionImpl implements Connection {
     this.spanner = spannerPool.getSpanner(options, this);
     this.ddlClient = ddlClient;
     this.dbClient = dbClient;
+    this.retryAbortedStrategyType = options.getRetryAbortedStrategyType();
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setDefaultTransactionOptions();
@@ -857,6 +860,7 @@ class ConnectionImpl implements Connection {
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setRetryAbortsInternally(retryAbortsInternally)
+              .setRetryAbortedStrategyType(retryAbortedStrategyType)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

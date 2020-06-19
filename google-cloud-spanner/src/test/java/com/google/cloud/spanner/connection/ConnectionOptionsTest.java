@@ -17,13 +17,17 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -385,5 +389,63 @@ public class ConnectionOptionsTest {
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
     }
+  }
+
+  @Test
+  public void testParseRetryAbortedStrategyForce() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?retryStrategy=FORCE_RETRY")
+            .build();
+    assertNotNull(options.getRetryAbortedStrategyType());
+    assertThat(options.getRetryAbortedStrategyType())
+        .isEqualTo(RetryAbortedStrategy.Type.FORCE_RETRY);
+  }
+
+  @Test
+  public void testParseRetryAbortedStrategyDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .build();
+    assertNotNull(options.getRetryAbortedStrategyType());
+    assertThat(options.getRetryAbortedStrategyType())
+        .isEqualTo(RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET);
+  }
+
+  @Test
+  public void testParseRetryAbortedStrategyChecksum() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?retryStrategy=checksum_result_set")
+            .build();
+    assertNotNull(options.getRetryAbortedStrategyType());
+    assertThat(options.getRetryAbortedStrategyType())
+        .isEqualTo(RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET);
+  }
+
+  @Test
+  public void testThrowIllegalArgumentException() {
+    final String type = "unknown";
+    assertThrows(
+        "Invalid retry strategy value specified: " + type,
+        SpannerException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() {
+            ConnectionOptions.newBuilder()
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?retryStrategy="
+                        + type)
+                .build();
+          }
+        });
   }
 }

@@ -58,6 +58,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
       "Internal transaction retry maximum exceeded";
   private static final int MAX_INTERNAL_RETRIES = 50;
+  private final RetryAbortedStrategy defaultRetryAbortedStrategy =
+      new RetryAbortedStrategy() {
+        @Override
+        public RetryStatementResultSet createRetriableStarement(
+            ResultSet delegate,
+            ParsedStatement statement,
+            AnalyzeMode analyzeMode,
+            QueryOption... options) {
+          return createChecksumResultSet(delegate, statement, analyzeMode, options);
+        }
+      };
   private final long transactionId;
   private final DatabaseClient dbClient;
   private TransactionManager txManager;
@@ -71,10 +82,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
+  private final RetryAbortedStrategy strategy;
 
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
+    private RetryAbortedStrategy.Type type;
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
@@ -93,6 +106,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     Builder setTransactionRetryListeners(List<TransactionRetryListener> listeners) {
       Preconditions.checkNotNull(listeners);
       this.transactionRetryListeners = listeners;
+      return this;
+    }
+
+    Builder setRetryAbortedStrategyType(RetryAbortedStrategy.Type type) {
+      this.type = type == null ? RetryAbortedStrategy.Type.CHECKSUM_RESULT_SET : type;
       return this;
     }
 
@@ -118,6 +136,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.txManager = dbClient.transactionManager();
+    this.strategy = resolveByType(builder.type);
+  }
+
+  private RetryAbortedStrategy resolveByType(RetryAbortedStrategy.Type type) {
+    if (type == null) {
+      return defaultRetryAbortedStrategy;
+    }
+    switch (type) {
+      case FORCE_RETRY:
+        return new ForceRetryStrategy(this);
+      case CHECKSUM_RESULT_SET:
+      default:
+        return defaultRetryAbortedStrategy;
+    }
   }
 
   @Override
@@ -534,10 +566,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       AnalyzeMode analyzeMode,
       QueryOption... options) {
     if (retryAbortsInternally) {
-      ChecksumResultSet checksumResultSet =
-          createChecksumResultSet(resultSet, statement, analyzeMode, options);
-      addRetryStatement(checksumResultSet);
-      return checksumResultSet;
+      RetryStatementResultSet rss =
+          strategy.createRetriableStarement(resultSet, statement, analyzeMode, options);
+      addRetryStatement(rss);
+      return rss;
     }
     return resultSet;
   }
@@ -749,6 +781,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
      */
     void retry(AbortedException aborted) throws AbortedException;
   }
+
+  interface RetryStatementResultSet extends RetriableStatement, ResultSet {}
 
   /** Creates a {@link ChecksumResultSet} for this {@link ReadWriteTransaction}. */
   @VisibleForTesting

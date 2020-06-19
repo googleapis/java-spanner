@@ -26,7 +26,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type.Code;
-import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -64,7 +63,8 @@ import java.util.concurrent.ExecutionException;
  * {@link ResultSet#next()} will slow down in order to allow the calculation to catch up.
  */
 @VisibleForTesting
-class ChecksumResultSet extends ReplaceableForwardingResultSet implements RetriableStatement {
+class ChecksumResultSet extends ReplaceableForwardingResultSet
+    implements ReadWriteTransaction.RetryStatementResultSet {
   private final ReadWriteTransaction transaction;
   private long numberOfNextCalls;
   private final ParsedStatement statement;
