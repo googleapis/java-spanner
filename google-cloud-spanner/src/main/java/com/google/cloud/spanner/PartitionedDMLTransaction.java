@@ -111,9 +111,9 @@ class PartitionedDMLTransaction implements SessionTransaction {
     boolean foundStats = false;
     long updateCount = 0L;
     long streams = 0L;
-    ByteString resumeToken = ByteString.EMPTY;
     // Loop to catch AbortedExceptions.
     while (true) {
+      ByteString resumeToken = ByteString.EMPTY;
       try {
         ByteString transactionId = initTransaction();
         final ExecuteSqlRequest.Builder builder =
