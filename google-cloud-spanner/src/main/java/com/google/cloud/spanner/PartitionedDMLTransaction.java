@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
-import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
@@ -32,7 +31,6 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,114 +66,85 @@ class PartitionedDMLTransaction implements SessionTransaction {
 
   /**
    * Executes the {@link Statement} using a partitioned dml transaction with automatic retry if the
-   * transaction was aborted.
+   * transaction was aborted. The update method uses the ExecuteStreamingSql RPC to execute the
+   * statement, and will retry the stream if an {@link UnavailableException} is thrown, using the
+   * last seen resume token if the server returns any.
    */
-  long executePartitionedUpdate(final Statement statement) {
-    checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
-    Callable<com.google.spanner.v1.ResultSet> callable =
-        new Callable<com.google.spanner.v1.ResultSet>() {
-          @Override
-          public com.google.spanner.v1.ResultSet call() throws Exception {
-            ByteString transactionId = initTransaction();
-            final ExecuteSqlRequest.Builder builder =
-                ExecuteSqlRequest.newBuilder()
-                    .setSql(statement.getSql())
-                    .setQueryMode(QueryMode.NORMAL)
-                    .setSession(session.getName())
-                    .setTransaction(TransactionSelector.newBuilder().setId(transactionId).build());
-            Map<String, Value> stmtParameters = statement.getParameters();
-            if (!stmtParameters.isEmpty()) {
-              com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
-              for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-                paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-                builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
-              }
-            }
-            return rpc.executePartitionedDml(builder.build(), session.getOptions());
-          }
-        };
-    com.google.spanner.v1.ResultSet resultSet =
-        SpannerRetryHelper.runTxWithRetriesOnAborted(
-            callable, rpc.getPartitionedDmlRetrySettings());
-    if (!resultSet.hasStats()) {
-      throw new IllegalArgumentException(
-          "Partitioned DML response missing stats possibly due to non-DML statement as input");
-    }
-    // For partitioned DML, using the row count lower bound.
-    return resultSet.getStats().getRowCountLowerBound();
-  }
-
   long executeStreamingPartitionedUpdate(final Statement statement) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
-    log.info("Starting PartitionedUpdate statement");
+    log.log(Level.FINER, "Starting PartitionedUpdate statement");
     boolean foundStats = false;
     long updateCount = 0L;
     long streams = 0L;
-    // Loop to catch AbortedExceptions.
-    while (true) {
-      ByteString resumeToken = ByteString.EMPTY;
-      try {
-        ByteString transactionId = initTransaction();
-        final ExecuteSqlRequest.Builder builder =
-            ExecuteSqlRequest.newBuilder()
-                .setSql(statement.getSql())
-                .setQueryMode(QueryMode.NORMAL)
-                .setSession(session.getName())
-                .setTransaction(TransactionSelector.newBuilder().setId(transactionId).build());
-        Map<String, Value> stmtParameters = statement.getParameters();
-        if (!stmtParameters.isEmpty()) {
-          com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
-          for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-            paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-            builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
-          }
-        }
-        while (true) {
-          try {
-            builder.setResumeToken(resumeToken);
-            ServerStream<PartialResultSet> stream =
-                rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
-            for (PartialResultSet rs : stream) {
-              if (rs.getResumeToken() != null && ByteString.EMPTY.equals(rs.getResumeToken())) {
-                resumeToken = rs.getResumeToken();
-              }
-              streams++;
-              log.info(
-                  "processing stream #"
-                      + streams
-                      + ", current resume token is "
-                      + resumeToken.toStringUtf8());
-              if (rs.hasStats()) {
-                foundStats = true;
-                updateCount += rs.getStats().getRowCountLowerBound();
-              }
+    try {
+      // Loop to catch AbortedExceptions.
+      while (true) {
+        ByteString resumeToken = ByteString.EMPTY;
+        try {
+          ByteString transactionId = initTransaction();
+          final ExecuteSqlRequest.Builder builder =
+              ExecuteSqlRequest.newBuilder()
+                  .setSql(statement.getSql())
+                  .setQueryMode(QueryMode.NORMAL)
+                  .setSession(session.getName())
+                  .setTransaction(TransactionSelector.newBuilder().setId(transactionId).build());
+          Map<String, Value> stmtParameters = statement.getParameters();
+          if (!stmtParameters.isEmpty()) {
+            com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
+            for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
+              paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
+              builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
             }
-            break;
-          } catch (UnavailableException | WatchdogTimeoutException e) {
-            System.out.println("Stream error: " + e.getMessage());
-            // Retry the stream in the same transaction if the stream breaks with
-            // UnavailableException or WatchdogTimeoutException.
-            log.log(
-                Level.INFO,
-                "Retrying PartitionedDml stream using resume token '"
-                    + resumeToken.toStringUtf8()
-                    + "' because of broken stream",
-                e);
           }
+          while (true) {
+            try {
+              builder.setResumeToken(resumeToken);
+              ServerStream<PartialResultSet> stream =
+                  rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
+              for (PartialResultSet rs : stream) {
+                if (rs.getResumeToken() != null && ByteString.EMPTY.equals(rs.getResumeToken())) {
+                  resumeToken = rs.getResumeToken();
+                }
+                streams++;
+                log.log(
+                    Level.FINEST,
+                    "processing stream #"
+                        + streams
+                        + ", current resume token is "
+                        + resumeToken.toStringUtf8());
+                if (rs.hasStats()) {
+                  foundStats = true;
+                  updateCount += rs.getStats().getRowCountLowerBound();
+                }
+              }
+              break;
+            } catch (UnavailableException e) {
+              // Retry the stream in the same transaction if the stream breaks with
+              // UnavailableException.
+              log.log(
+                  Level.FINER,
+                  "Retrying PartitionedDml stream using resume token '"
+                      + resumeToken.toStringUtf8()
+                      + "' because of broken stream",
+                  e);
+            }
+          }
+          break;
+        } catch (com.google.api.gax.rpc.AbortedException e) {
+          // Retry using a new transaction but with the same session if the transaction is aborted.
+          log.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
         }
-        break;
-      } catch (com.google.api.gax.rpc.AbortedException e) {
-        System.out.println("Aborted: " + e.getMessage());
-        // Retry using a new transaction but with the same session if the transaction is aborted.
-        log.log(Level.INFO, "Retrying PartitionedDml transaction after AbortedException", e);
       }
+      if (!foundStats) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Partitioned DML response missing stats possibly due to non-DML statement as input");
+      }
+      log.log(Level.FINER, "Finished PartitionedUpdate statement");
+      return updateCount;
+    } catch (Exception e) {
+      throw SpannerExceptionFactory.newSpannerException(e);
     }
-    if (!foundStats) {
-      throw new IllegalArgumentException(
-          "Partitioned DML response missing stats possibly due to non-DML statement as input");
-    }
-    log.info("Finished PartitionedUpdate statement");
-    return updateCount;
   }
 
   @Override

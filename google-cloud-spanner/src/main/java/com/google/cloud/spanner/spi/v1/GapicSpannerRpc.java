@@ -358,6 +358,18 @@ public class GapicSpannerRpc implements SpannerRpc {
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
           .setRetrySettings(partitionedDmlRetrySettings);
+      if (options
+              .getPartitionedDmlTimeout()
+              .dividedBy(10L)
+              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+          < 0) {
+        pdmlSettings.setStreamWatchdogCheckInterval(
+            options.getPartitionedDmlTimeout().dividedBy(10));
+        pdmlSettings.setStreamWatchdogProvider(
+            pdmlSettings
+                .getStreamWatchdogProvider()
+                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+      }
       this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
@@ -1076,6 +1088,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
+    context = context.withStreamWaitTimeout(partitionedDmlRetrySettings.getTotalTimeout());
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 

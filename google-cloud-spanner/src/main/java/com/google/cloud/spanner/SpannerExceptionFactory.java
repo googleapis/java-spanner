@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
@@ -212,7 +213,14 @@ public final class SpannerExceptionFactory {
   }
 
   private static SpannerException fromApiException(ApiException exception) {
-    Status.Code code = ((GrpcStatusCode) exception.getStatusCode()).getTransportCode();
+    Status.Code code;
+    if (exception.getStatusCode() instanceof GrpcStatusCode) {
+      code = ((GrpcStatusCode) exception.getStatusCode()).getTransportCode();
+    } else if (exception instanceof WatchdogTimeoutException) {
+      code = Status.Code.DEADLINE_EXCEEDED;
+    } else {
+      code = Status.Code.UNKNOWN;
+    }
     ErrorCode errorCode = ErrorCode.fromGrpcStatus(Status.fromCode(code));
     if (exception.getCause() != null) {
       return SpannerExceptionFactory.newSpannerException(

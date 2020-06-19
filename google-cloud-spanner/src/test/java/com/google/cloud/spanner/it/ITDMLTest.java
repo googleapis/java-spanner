@@ -23,7 +23,6 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -32,10 +31,8 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
@@ -170,55 +167,6 @@ public final class ITDMLTest {
                 .singleUse(TimestampBound.strong())
                 .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
         .isNull();
-  }
-
-  public static void main_pdml(String[] args) {
-    //    for (int run = 1; run <= 1000; run++) {
-    //      log.info("Starting run #" + run);
-    final long from = 1L;
-    final long to = 100_000_000L;
-    try (Spanner spanner = SpannerOptions.newBuilder().build().getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(
-              DatabaseId.of(
-                  spanner.getOptions().getProjectId(), "test-instance", "testdb_941233300_0000"));
-
-      long count = 0L;
-      try (ResultSet rs =
-          client
-              .singleUse()
-              .executeQuery(
-                  Statement.newBuilder(
-                          "SELECT COUNT(*)\n"
-                              + "FROM TableWithAllColumnTypes\n"
-                              + "WHERE ColInt64 BETWEEN @from AND @to")
-                      .bind("from")
-                      .to(from)
-                      .bind("to")
-                      .to(to)
-                      .build())) {
-        while (rs.next()) {
-          count = rs.getLong(0);
-        }
-      }
-      long updateCount =
-          client.executePartitionedUpdate(
-              Statement.newBuilder(
-                      "UPDATE TableWithAllColumnTypes\n"
-                          + "SET ColStringMax=CONCAT(ColStringMax, ' - Updated'),\n"
-                          + "    ColCommitTS=PENDING_COMMIT_TIMESTAMP()\n"
-                          + "WHERE ColInt64 BETWEEN @from AND @to")
-                  .bind("from")
-                  .to(from)
-                  .bind("to")
-                  .to(to)
-                  .build());
-      //      assertThat(updateCount).isEqualTo(count);
-      System.out.println("Read count: " + count);
-      System.out.println("Update count: " + updateCount);
-      System.out.println();
-    }
-    //    }
   }
 
   @Test

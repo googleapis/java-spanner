@@ -49,7 +49,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -170,7 +169,7 @@ public class DatabaseClientImplTest {
    * A valid query that returns a {@link ResultSet} should not be accepted by a partitioned dml
    * transaction.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithQuery() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -178,7 +177,6 @@ public class DatabaseClientImplTest {
   }
 
   /** Server side exceptions that are not {@link AbortedException}s should propagate to the user. */
-  @Ignore("refactor test to support streaming pdml")
   @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithException() {
     DatabaseClient client =
@@ -234,22 +232,21 @@ public class DatabaseClientImplTest {
     }
   }
 
-  @Ignore("refactor test to support streaming pdml")
   @Test
   public void testPartitionedDmlWithLowerTimeout() throws Exception {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(100L));
+    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout())
-          .isEqualTo(Duration.ofMillis(100L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
       // PDML should timeout with these settings.
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
@@ -279,6 +276,8 @@ public class DatabaseClientImplTest {
   @Test
   public void testPartitionedDmlWithHigherTimeout() throws Exception {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
