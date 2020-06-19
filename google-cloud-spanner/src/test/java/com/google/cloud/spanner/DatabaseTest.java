@@ -26,6 +26,7 @@ import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.spanner.admin.database.v1.EncryptionConfig;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +56,14 @@ public class DatabaseTest {
                 return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
               }
             });
+    when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
+        .thenAnswer(
+            new Answer<Database.Builder>() {
+              @Override
+              public Database.Builder answer(InvocationOnMock invocation) throws Throwable {
+                return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
+              }
+            });
   }
 
   @Test
@@ -82,6 +91,34 @@ public class DatabaseTest {
     Database db = createDatabase();
     assertThat(db.getId().getName()).isEqualTo(NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
+    assertThat(db.getEncryptionConfigInfo()).isNull();
+  }
+
+  @Test
+  public void testFromProtoWithEncryptionConfig() {
+    com.google.spanner.admin.database.v1.Database proto =
+        com.google.spanner.admin.database.v1.Database.newBuilder()
+            .setName(NAME)
+            .setEncryptionConfig(EncryptionConfig.newBuilder().setKmsKeyName("some-key").build())
+            .build();
+    Database db = Database.fromProto(proto, dbClient);
+    assertThat(db.getEncryptionConfigInfo()).isNotNull();
+    assertThat(db.getEncryptionConfigInfo().getKmsKeyName()).isEqualTo("some-key");
+  }
+
+  @Test
+  public void testBuildWithEncryptionConfig() {
+    Database db =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setEncryptionConfigInfo(
+                EncryptionConfigInfo.ofKey(
+                    "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+            .build();
+    assertThat(db.getEncryptionConfigInfo()).isNotNull();
+    assertThat(db.getEncryptionConfigInfo().getKmsKeyName())
+        .isEqualTo(
+            "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key");
   }
 
   @Test

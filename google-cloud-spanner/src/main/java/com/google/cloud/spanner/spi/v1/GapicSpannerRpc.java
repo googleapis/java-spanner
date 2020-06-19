@@ -85,6 +85,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
@@ -710,16 +711,22 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       final String instanceName,
       String createDatabaseStatement,
-      Iterable<String> additionalStatements)
+      Iterable<String> additionalStatements,
+      com.google.cloud.spanner.Database databaseInfo)
       throws SpannerException {
     final String databaseId =
         createDatabaseStatement.substring(
             "CREATE DATABASE `".length(), createDatabaseStatement.length() - 1);
+
     CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(instanceName)
             .setCreateStatement(createDatabaseStatement)
             .addAllExtraStatements(additionalStatements)
+            .setEncryptionConfig(
+                databaseInfo.getEncryptionConfigInfo() == null
+                    ? EncryptionConfig.getDefaultInstance()
+                    : databaseInfo.getEncryptionConfigInfo().toProto())
             .build();
 
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =

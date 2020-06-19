@@ -177,6 +177,8 @@ public class Database extends DatabaseInfo {
         .setState(fromProtoState(proto.getState()))
         .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
         .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
+        .setEncryptionConfigInfo(
+            EncryptionConfigInfo.fromProtoOrNullIfDefaultInstance(proto.getEncryptionConfig()))
         .setProto(proto)
         .build();
   }

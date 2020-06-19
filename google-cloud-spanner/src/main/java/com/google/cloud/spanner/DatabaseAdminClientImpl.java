@@ -25,6 +25,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -70,6 +71,11 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   private static String randomOperationId() {
     UUID uuid = UUID.randomUUID();
     return ("r" + uuid.toString()).replace("-", "_");
+  }
+
+  @Override
+  public Database.Builder newDatabaseBuilder(DatabaseId databaseId) {
+    return new Database.Builder(this, databaseId);
   }
 
   @Override
@@ -265,11 +271,19 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   @Override
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException {
-    // CreateDatabase() is not idempotent, so we're not retrying this request.
-    String instanceName = getInstanceName(instanceId);
-    String createStatement = "CREATE DATABASE `" + databaseId + "`";
+    return createDatabase(
+        new Database(DatabaseId.of(projectId, instanceId, databaseId), State.UNSPECIFIED, this),
+        statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      Database database, Iterable<String> statements) throws SpannerException {
+    String createStatement = "CREATE DATABASE `" + database.getId().getDatabase() + "`";
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
-        rawOperationFuture = rpc.createDatabase(instanceName, createStatement, statements);
+        rawOperationFuture =
+            rpc.createDatabase(
+                database.getId().getInstanceId().getName(), createStatement, statements, database);
     return new OperationFutureImpl<Database, CreateDatabaseMetadata>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
