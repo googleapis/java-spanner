@@ -78,7 +78,6 @@ class PartitionedDMLTransaction implements SessionTransaction {
     boolean foundStats = false;
     long updateCount = 0L;
     long streams = 0L;
-    int attempt = 0;
     try {
       // Loop to catch AbortedExceptions.
       while (true) {
@@ -102,10 +101,8 @@ class PartitionedDMLTransaction implements SessionTransaction {
           while (true) {
             try {
               builder.setResumeToken(resumeToken);
-              attempt++;
               ServerStream<PartialResultSet> stream =
-                  rpc.executeStreamingPartitionedDml(
-                      builder.build(), attempt, session.getOptions());
+                  rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
               for (PartialResultSet rs : stream) {
                 if (rs.getResumeToken() != null && ByteString.EMPTY.equals(rs.getResumeToken())) {
                   resumeToken = rs.getResumeToken();

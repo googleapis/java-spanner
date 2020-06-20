@@ -1086,11 +1086,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
-      ExecuteSqlRequest request, int attempt, Map<Option, ?> options) {
+      ExecuteSqlRequest request, Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    context =
-        context.withStreamWaitTimeout(
-            partitionedDmlRetrySettings.getTotalTimeout().multipliedBy(attempt));
+    context = context.withStreamWaitTimeout(partitionedDmlRetrySettings.getTotalTimeout());
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 

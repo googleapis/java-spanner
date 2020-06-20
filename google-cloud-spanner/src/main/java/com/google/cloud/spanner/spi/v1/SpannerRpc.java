@@ -288,7 +288,7 @@ public interface SpannerRpc extends ServiceRpc {
   RetrySettings getPartitionedDmlRetrySettings();
 
   ServerStream<PartialResultSet> executeStreamingPartitionedDml(
-      ExecuteSqlRequest request, int attempt, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
   StreamingCall executeQuery(
       ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
