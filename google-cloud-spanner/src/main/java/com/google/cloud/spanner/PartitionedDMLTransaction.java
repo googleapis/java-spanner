@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
@@ -30,6 +31,7 @@ import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
+import io.grpc.Status.Code;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +78,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
     boolean foundStats = false;
     long updateCount = 0L;
     long streams = 0L;
+    int attempt = 0;
     try {
       // Loop to catch AbortedExceptions.
       while (true) {
@@ -99,8 +102,10 @@ class PartitionedDMLTransaction implements SessionTransaction {
           while (true) {
             try {
               builder.setResumeToken(resumeToken);
+              attempt++;
               ServerStream<PartialResultSet> stream =
-                  rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
+                  rpc.executeStreamingPartitionedDml(
+                      builder.build(), attempt, session.getOptions());
               for (PartialResultSet rs : stream) {
                 if (rs.getResumeToken() != null && ByteString.EMPTY.equals(rs.getResumeToken())) {
                   resumeToken = rs.getResumeToken();
@@ -120,19 +125,25 @@ class PartitionedDMLTransaction implements SessionTransaction {
               break;
             } catch (UnavailableException e) {
               // Retry the stream in the same transaction if the stream breaks with
-              // UnavailableException.
-              log.log(
-                  Level.FINER,
-                  "Retrying PartitionedDml stream using resume token '"
-                      + resumeToken.toStringUtf8()
-                      + "' because of broken stream",
-                  e);
+              // UnavailableException and we have a resume token. Otherwise, we just retry the
+              // entire transaction.
+              if (resumeToken != null && !ByteString.EMPTY.equals(resumeToken)) {
+                log.log(
+                    Level.WARNING,
+                    "Retrying PartitionedDml stream using resume token '"
+                        + resumeToken.toStringUtf8()
+                        + "' because of broken stream",
+                    e);
+              } else {
+                throw new com.google.api.gax.rpc.AbortedException(
+                    e, GrpcStatusCode.of(Code.ABORTED), true);
+              }
             }
           }
           break;
         } catch (com.google.api.gax.rpc.AbortedException e) {
           // Retry using a new transaction but with the same session if the transaction is aborted.
-          log.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
+          log.log(Level.WARNING, "Retrying PartitionedDml transaction after AbortedException", e);
         }
       }
       if (!foundStats) {
