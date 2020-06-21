@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -89,13 +88,6 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public ResultSet executeQuery(
-      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DML batches.");
-  }
-
-  @Override
-  public AsyncResultSet executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DML batches.");

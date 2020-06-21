@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 /** Implementation of {@link StatementResult} */
 class StatementResultImpl implements StatementResult {
+
   /** {@link StatementResult} containing a {@link ResultSet} returned by Cloud Spanner. */
   static StatementResult of(ResultSet resultSet) {
     return new StatementResultImpl(resultSet, null);

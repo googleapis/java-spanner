@@ -20,7 +20,6 @@ import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
-import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -619,8 +618,6 @@ public interface Connection extends AutoCloseable {
    * @return a {@link ResultSet} with the results of the query
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
-
-  AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
    * Analyzes a query and returns query plan and/or query execution statistics information.

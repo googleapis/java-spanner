@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
-import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -277,21 +276,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } catch (SpannerException e) {
       handlePossibleInvalidatingException(e);
       throw e;
-    }
-  }
-
-  @Override
-  public AsyncResultSet executeQueryAsync(
-      final ParsedStatement statement,
-      final AnalyzeMode analyzeMode,
-      final QueryOption... options) {
-    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkValidTransaction();
-    if (retryAbortsInternally) {
-      AsyncResultSet delegate = super.executeQueryAsync(statement, analyzeMode, options);
-      return createAndAddAsyncRetryResultSet(delegate, statement, analyzeMode, options);
-    } else {
-      return super.executeQueryAsync(statement, analyzeMode, options);
     }
   }
 
@@ -558,24 +542,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return resultSet;
   }
 
-  /**
-   * Registers a {@link AsyncResultSet} on this transaction that must be checked during a retry, and
-   * returns a retryable {@link AsyncResultSet}.
-   */
-  private AsyncResultSet createAndAddAsyncRetryResultSet(
-      AsyncResultSet resultSet,
-      ParsedStatement statement,
-      AnalyzeMode analyzeMode,
-      QueryOption... options) {
-    if (retryAbortsInternally) {
-      AsyncChecksumResultSet checksumResultSet =
-          createAsyncChecksumResultSet(resultSet, statement, analyzeMode, options);
-      addRetryStatement(checksumResultSet);
-      return checksumResultSet;
-    }
-    return resultSet;
-  }
-
   /** Registers the statement as a query that should return an error during a retry. */
   private void createAndAddFailedQuery(
       SpannerException e,
@@ -792,15 +758,5 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       AnalyzeMode analyzeMode,
       QueryOption... options) {
     return new ChecksumResultSet(this, delegate, statement, analyzeMode, options);
-  }
-
-  /** Creates a {@link AsyncChecksumResultSet} for this {@link ReadWriteTransaction}. */
-  @VisibleForTesting
-  AsyncChecksumResultSet createAsyncChecksumResultSet(
-      AsyncResultSet delegate,
-      ParsedStatement statement,
-      AnalyzeMode analyzeMode,
-      QueryOption... options) {
-    return new AsyncChecksumResultSet(this, delegate, statement, analyzeMode, options);
   }
 }

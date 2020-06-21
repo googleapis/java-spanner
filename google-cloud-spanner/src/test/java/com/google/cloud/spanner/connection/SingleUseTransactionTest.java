@@ -23,7 +23,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
@@ -236,29 +235,29 @@ public class SingleUseTransactionTest {
     @Override
     public AsyncResultSet readAsync(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public AsyncResultSet readUsingIndexAsync(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public ApiFuture<Struct> readRowUsingIndexAsync(
         String table, String index, Key key, Iterable<String> columns) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
   }
 
@@ -751,7 +750,6 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubjectWithTimeout(1L);
     try {
       subject.executeQuery(createParsedQuery(SLOW_QUERY), AnalyzeMode.NONE);
-      fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
         throw e;

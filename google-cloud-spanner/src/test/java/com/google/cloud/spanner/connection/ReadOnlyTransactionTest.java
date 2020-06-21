@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
@@ -137,29 +136,29 @@ public class ReadOnlyTransactionTest {
     @Override
     public AsyncResultSet readAsync(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public AsyncResultSet readUsingIndexAsync(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public ApiFuture<Struct> readRowUsingIndexAsync(
         String table, String index, Key key, Iterable<String> columns) {
-      throw new UnsupportedOperationException();
+      return null;
     }
 
     @Override
     public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      throw new UnsupportedOperationException();
+      return null;
     }
   }
 
