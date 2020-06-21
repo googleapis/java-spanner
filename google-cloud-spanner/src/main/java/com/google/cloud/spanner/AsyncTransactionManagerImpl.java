@@ -22,6 +22,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -30,7 +31,8 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 
 /** Implementation of {@link AsyncTransactionManager}. */
-final class AsyncTransactionManagerImpl implements AsyncTransactionManager, SessionTransaction {
+final class AsyncTransactionManagerImpl
+    implements CommittableAsyncTransactionManager, SessionTransaction {
   private static final Tracer tracer = Tracing.getTracer();
 
   private final SessionImpl session;
@@ -56,9 +58,9 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
   }
 
   @Override
-  public TransactionContextFuture beginAsync() {
+  public TransactionContextFutureImpl beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    TransactionContextFuture begin =
+    TransactionContextFutureImpl begin =
         new TransactionContextFutureImpl(this, internalBeginAsync(true));
     return begin;
   }
@@ -86,6 +88,13 @@ final class AsyncTransactionManagerImpl implements AsyncTransactionManager, Sess
         },
         MoreExecutors.directExecutor());
     return res;
+  }
+
+  @Override
+  public void onError(Throwable t) {
+    if (t instanceof AbortedException) {
+      txnState = TransactionState.ABORTED;
+    }
   }
 
   @Override

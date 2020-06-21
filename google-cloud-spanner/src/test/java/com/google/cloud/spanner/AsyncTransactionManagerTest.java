@@ -29,13 +29,13 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -49,6 +49,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,12 +64,40 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
    * Java8 and higher can use lambda expressions.
    */
   public static class AsyncTransactionManagerHelper {
+
+    public static <I> AsyncTransactionFunction<I, AsyncResultSet> readAsync(
+        final String table,
+        final KeySet keys,
+        final Iterable<String> columns,
+        final ReadOption... options) {
+      return new AsyncTransactionFunction<I, AsyncResultSet>() {
+        @Override
+        public ApiFuture<AsyncResultSet> apply(TransactionContext txn, I input) throws Exception {
+          return ApiFutures.immediateFuture(txn.readAsync(table, keys, columns, options));
+        }
+      };
+    }
+
     public static <I> AsyncTransactionFunction<I, Struct> readRowAsync(
         final String table, final Key key, final Iterable<String> columns) {
       return new AsyncTransactionFunction<I, Struct>() {
         @Override
         public ApiFuture<Struct> apply(TransactionContext txn, I input) throws Exception {
           return txn.readRowAsync(table, key, columns);
+        }
+      };
+    }
+
+    public static <I> AsyncTransactionFunction<I, Void> buffer(Mutation mutation) {
+      return buffer(ImmutableList.of(mutation));
+    }
+
+    public static <I> AsyncTransactionFunction<I, Void> buffer(final Iterable<Mutation> mutations) {
+      return new AsyncTransactionFunction<I, Void>() {
+        @Override
+        public ApiFuture<Void> apply(TransactionContext txn, I input) throws Exception {
+          txn.buffer(mutations);
+          return ApiFutures.immediateFuture(null);
         }
       };
     }
@@ -879,25 +908,84 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   }
 
   @Test
-  public void asyncRunnerRead() throws Exception {
-    AsyncRunner runner = client().runAsync();
-    ApiFuture<ImmutableList<String>> val =
-        runner.runAsync(
-            new AsyncWork<ImmutableList<String>>() {
-              @Override
-              public ApiFuture<ImmutableList<String>> doWorkAsync(TransactionContext txn) {
-                return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
-                    .toListAsync(
-                        new Function<StructReader, String>() {
-                          @Override
-                          public String apply(StructReader input) {
-                            return input.getString("Value");
-                          }
-                        },
-                        MoreExecutors.directExecutor());
-              }
-            },
-            executor);
-    assertThat(val.get()).containsExactly("v1", "v2", "v3");
+  public void asyncTransactionManagerRead() throws Exception {
+    AsyncTransactionStep<Void, ImmutableList<String>> res;
+    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
+      TransactionContextFuture txn = mgr.beginAsync();
+      while (true) {
+        try {
+          res =
+              txn.then(
+                  new AsyncTransactionFunction<Void, ImmutableList<String>>() {
+                    @Override
+                    public ApiFuture<ImmutableList<String>> apply(
+                        TransactionContext txn, Void input) throws Exception {
+                      return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
+                          .toListAsync(
+                              new Function<StructReader, String>() {
+                                @Override
+                                public String apply(StructReader input) {
+                                  return input.getString("Value");
+                                }
+                              },
+                              MoreExecutors.directExecutor());
+                    }
+                  });
+          // Commit the transaction.
+          res.commitAsync().get();
+          break;
+        } catch (AbortedException e) {
+          txn = mgr.resetForRetryAsync();
+        }
+      }
+    }
+    assertThat(res.get()).containsExactly("v1", "v2", "v3");
+  }
+
+  @Test
+  public void asyncTransactionManagerQuery() throws Exception {
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of("SELECT FirstName FROM Singers WHERE ID=1"),
+            MockSpannerTestUtil.READ_FIRST_NAME_SINGERS_RESULTSET));
+    final long singerId = 1L;
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture txn = manager.beginAsync();
+      while (true) {
+        final String column = "FirstName";
+        CommitTimestampFuture commitTimestamp =
+            txn.then(
+                    new AsyncTransactionFunction<Void, Struct>() {
+                      @Override
+                      public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+                          throws Exception {
+                        return txn.readRowAsync(
+                            "Singers", Key.of(singerId), Collections.singleton(column));
+                      }
+                    })
+                .then(
+                    new AsyncTransactionFunction<Struct, Void>() {
+                      @Override
+                      public ApiFuture<Void> apply(TransactionContext txn, Struct input)
+                          throws Exception {
+                        String name = input.getString(column);
+                        txn.buffer(
+                            Mutation.newUpdateBuilder("Singers")
+                                .set(column)
+                                .to(name.toUpperCase())
+                                .build());
+                        return ApiFutures.immediateFuture(null);
+                      }
+                    })
+                .commitAsync();
+        try {
+          commitTimestamp.get();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetryAsync();
+        }
+      }
+    }
   }
 }

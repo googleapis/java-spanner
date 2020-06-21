@@ -24,15 +24,21 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
-import java.util.concurrent.ExecutionException;
+import javax.annotation.concurrent.GuardedBy;
 
-class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
+class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionManager {
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private TransactionState txnState;
+
   private volatile PooledSessionFuture session;
-  private final SettableApiFuture<AsyncTransactionManager> delegate = SettableApiFuture.create();
+  private final SettableApiFuture<AsyncTransactionManagerImpl> delegate =
+      SettableApiFuture.create();
 
   SessionPoolAsyncTransactionManager(PooledSessionFuture session) {
     this.session = session;
@@ -65,19 +71,21 @@ class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
 
   @Override
   public TransactionContextFuture beginAsync() {
-    Preconditions.checkState(txnState == null, "begin can only be called once");
-    txnState = TransactionState.STARTED;
+    synchronized (lock) {
+      Preconditions.checkState(txnState == null, "begin can only be called once");
+      txnState = TransactionState.STARTED;
+    }
     final SettableApiFuture<TransactionContext> delegateTxnFuture = SettableApiFuture.create();
     ApiFutures.addCallback(
         delegate,
-        new ApiFutureCallback<AsyncTransactionManager>() {
+        new ApiFutureCallback<AsyncTransactionManagerImpl>() {
           @Override
           public void onFailure(Throwable t) {
             delegateTxnFuture.setException(t);
           }
 
           @Override
-          public void onSuccess(AsyncTransactionManager result) {
+          public void onSuccess(AsyncTransactionManagerImpl result) {
             ApiFutures.addCallback(
                 result.beginAsync(),
                 new ApiFutureCallback<TransactionContext>() {
@@ -96,40 +104,53 @@ class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
         },
         MoreExecutors.directExecutor());
     return new TransactionContextFutureImpl(this, delegateTxnFuture);
+  }
 
-    //    return new TransactionContextFutureImpl(
-    //        this,
-    //        ApiFutures.transformAsync(
-    //            delegate,
-    //            new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
-    //              @Override
-    //              public ApiFuture<TransactionContext> apply(AsyncTransactionManager input) {
-    //                return input.beginAsync();
-    //              }
-    //            },
-    //            MoreExecutors.directExecutor()));
+  @Override
+  public void onError(Throwable t) {
+    if (t instanceof AbortedException) {
+      synchronized (lock) {
+        txnState = TransactionState.ABORTED;
+      }
+    }
   }
 
   @Override
   public ApiFuture<Timestamp> commitAsync() {
-    Preconditions.checkState(
-        txnState == TransactionState.STARTED,
-        "commit can only be invoked if the transaction is in progress. Current state: " + txnState);
-    txnState = TransactionState.COMMITTED;
+    synchronized (lock) {
+      Preconditions.checkState(
+          txnState == TransactionState.STARTED,
+          "commit can only be invoked if the transaction is in progress. Current state: "
+              + txnState);
+      txnState = TransactionState.COMMITTED;
+    }
     return ApiFutures.transformAsync(
         delegate,
-        new ApiAsyncFunction<AsyncTransactionManager, Timestamp>() {
+        new ApiAsyncFunction<AsyncTransactionManagerImpl, Timestamp>() {
           @Override
-          public ApiFuture<Timestamp> apply(AsyncTransactionManager input) throws Exception {
-            ApiFuture<Timestamp> res = input.commitAsync();
-            //            res.addListener(
-            //                new Runnable() {
-            //                  @Override
-            //                  public void run() {
-            //                    session.close();
-            //                  }
-            //                },
-            //                MoreExecutors.directExecutor());
+          public ApiFuture<Timestamp> apply(AsyncTransactionManagerImpl input) throws Exception {
+            final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
+            ApiFutures.addCallback(
+                input.commitAsync(),
+                new ApiFutureCallback<Timestamp>() {
+                  @Override
+                  public void onFailure(Throwable t) {
+                    synchronized (lock) {
+                      if (t instanceof AbortedException) {
+                        txnState = TransactionState.ABORTED;
+                      } else {
+                        txnState = TransactionState.COMMIT_FAILED;
+                      }
+                    }
+                    res.setException(t);
+                  }
+
+                  @Override
+                  public void onSuccess(Timestamp result) {
+                    res.set(result);
+                  }
+                },
+                MoreExecutors.directExecutor());
             return res;
           }
         },
@@ -138,15 +159,17 @@ class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
 
   @Override
   public ApiFuture<Void> rollbackAsync() {
-    Preconditions.checkState(
-        txnState == TransactionState.STARTED,
-        "rollback can only be called if the transaction is in progress");
-    txnState = TransactionState.ROLLED_BACK;
+    synchronized (lock) {
+      Preconditions.checkState(
+          txnState == TransactionState.STARTED,
+          "rollback can only be called if the transaction is in progress");
+      txnState = TransactionState.ROLLED_BACK;
+    }
     return ApiFutures.transformAsync(
         delegate,
-        new ApiAsyncFunction<AsyncTransactionManager, Void>() {
+        new ApiAsyncFunction<AsyncTransactionManagerImpl, Void>() {
           @Override
-          public ApiFuture<Void> apply(AsyncTransactionManager input) throws Exception {
+          public ApiFuture<Void> apply(AsyncTransactionManagerImpl input) throws Exception {
             ApiFuture<Void> res = input.rollbackAsync();
             res.addListener(
                 new Runnable() {
@@ -164,16 +187,19 @@ class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
 
   @Override
   public TransactionContextFuture resetForRetryAsync() {
-    Preconditions.checkState(
-        txnState != null, "resetForRetry can only be called after the transaction has started.");
-    txnState = TransactionState.STARTED;
+    synchronized (lock) {
+      Preconditions.checkState(
+          txnState == TransactionState.ABORTED,
+          "resetForRetry can only be called after the transaction aborted.");
+      txnState = TransactionState.STARTED;
+    }
     return new TransactionContextFutureImpl(
         this,
         ApiFutures.transformAsync(
             delegate,
-            new ApiAsyncFunction<AsyncTransactionManager, TransactionContext>() {
+            new ApiAsyncFunction<AsyncTransactionManagerImpl, TransactionContext>() {
               @Override
-              public ApiFuture<TransactionContext> apply(AsyncTransactionManager input)
+              public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input)
                   throws Exception {
                 return input.resetForRetryAsync();
               }
@@ -183,12 +209,8 @@ class SessionPoolAsyncTransactionManager implements AsyncTransactionManager {
 
   @Override
   public TransactionState getState() {
-    try {
-      return delegate.get().getState();
-    } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.propagateInterrupt(e);
-    } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
+    synchronized (lock) {
+      return txnState;
     }
   }
 }

@@ -124,4 +124,28 @@ public class MockSpannerTestUtil {
     }
     return builder.setMetadata(READ_KEY_VALUE_METADATA).build();
   }
+
+  static final ResultSetMetadata READ_FIRST_NAME_SINGERS_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FirstName")
+                          .setType(
+                              com.google.spanner.v1.Type.newBuilder()
+                                  .setCode(TypeCode.STRING)
+                                  .build())
+                          .build())
+                  .build())
+          .build();
+  static final com.google.spanner.v1.ResultSet READ_FIRST_NAME_SINGERS_RESULTSET =
+      com.google.spanner.v1.ResultSet.newBuilder()
+          .addRows(
+              ListValue.newBuilder()
+                  .addValues(
+                      com.google.protobuf.Value.newBuilder().setStringValue("FirstName").build())
+                  .build())
+          .setMetadata(READ_FIRST_NAME_SINGERS_METADATA)
+          .build();
 }

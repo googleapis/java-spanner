@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.ForwardingApiFuture;
+import com.google.api.core.InternalApi;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
@@ -35,6 +36,12 @@ import java.util.concurrent.TimeoutException;
 class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContext>
     implements TransactionContextFuture {
 
+  @InternalApi
+  interface CommittableAsyncTransactionManager extends AsyncTransactionManager {
+    void onError(Throwable t);
+
+    ApiFuture<Timestamp> commitAsync();
+  }
   /**
    * {@link ApiFuture} that returns a commit timestamp. Any {@link AbortedException} that is thrown
    * by either the commit call or any other rpc during the transaction will be thrown by the {@link
@@ -98,6 +105,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
           new ApiFutureCallback<I>() {
             @Override
             public void onFailure(Throwable t) {
+              mgr.onError(t);
               txnResult.setException(t);
             }
 
@@ -111,6 +119,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
                     new ApiFutureCallback<O>() {
                       @Override
                       public void onFailure(Throwable t) {
+                        mgr.onError(t);
                         txnResult.setException(t);
                       }
 
@@ -121,6 +130,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
                     },
                     MoreExecutors.directExecutor());
               } catch (Throwable t) {
+                mgr.onError(t);
                 txnResult.setException(t);
               }
             }
@@ -140,6 +150,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
           new ApiFutureCallback<O>() {
             @Override
             public void onFailure(Throwable t) {
+              mgr.onError(t);
               txnResult.setException(t);
             }
 
@@ -150,6 +161,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
                   new ApiFutureCallback<Timestamp>() {
                     @Override
                     public void onFailure(Throwable t) {
+                      mgr.onError(t);
                       txnResult.setException(t);
                     }
 
@@ -166,11 +178,11 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     }
   }
 
-  final AsyncTransactionManager mgr;
+  final CommittableAsyncTransactionManager mgr;
   final SettableApiFuture<Timestamp> txnResult = SettableApiFuture.create();
 
   TransactionContextFutureImpl(
-      AsyncTransactionManager mgr, ApiFuture<TransactionContext> txnFuture) {
+      CommittableAsyncTransactionManager mgr, ApiFuture<TransactionContext> txnFuture) {
     super(txnFuture);
     this.mgr = mgr;
   }
@@ -184,6 +196,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
         new ApiFutureCallback<TransactionContext>() {
           @Override
           public void onFailure(Throwable t) {
+            mgr.onError(t);
             input.setException(t);
           }
 

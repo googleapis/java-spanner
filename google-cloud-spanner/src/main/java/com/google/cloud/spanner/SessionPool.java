@@ -1393,7 +1393,7 @@ final class SessionPool {
     }
 
     @Override
-    public AsyncTransactionManager transactionManagerAsync() {
+    public AsyncTransactionManagerImpl transactionManagerAsync() {
       return delegate.transactionManagerAsync();
     }
 

@@ -1,0 +1,285 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.cloud.spanner.it;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.AsyncTransactionManager;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionManager.TransactionState;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@RunWith(JUnit4.class)
+public class ITTransactionManagerAsyncTest {
+
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  private static Database db;
+  private static DatabaseClient client;
+
+  @BeforeClass
+  public static void setUpDatabase() {
+    // Empty database.
+    db =
+        env.getTestHelper()
+            .createTestDatabase(
+                "CREATE TABLE T ("
+                    + "  K                   STRING(MAX) NOT NULL,"
+                    + "  BoolValue           BOOL,"
+                    + ") PRIMARY KEY (K)");
+    client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @Test
+  public void testSimpleInsert() throws ExecutionException, InterruptedException {
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = manager.beginAsync();
+      while (true) {
+        assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
+        try {
+          txn.then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(
+                          Mutation.newInsertBuilder("T")
+                              .set("K")
+                              .to("Key1")
+                              .set("BoolValue")
+                              .to(true)
+                              .build());
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  })
+              .commitAsync()
+              .get();
+          assertThat(manager.getState()).isEqualTo(TransactionState.COMMITTED);
+          Struct row =
+              client.singleUse().readRow("T", Key.of("Key1"), Arrays.asList("K", "BoolValue"));
+          assertThat(row.getString(0)).isEqualTo("Key1");
+          assertThat(row.getBoolean(1)).isTrue();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetryAsync();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testInvalidInsert() throws InterruptedException {
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = manager.beginAsync();
+      while (true) {
+        try {
+          txn.then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(
+                          Mutation.newInsertBuilder("InvalidTable")
+                              .set("K")
+                              .to("Key1")
+                              .set("BoolValue")
+                              .to(true)
+                              .build());
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  })
+              .commitAsync()
+              .get();
+          fail("Expected exception");
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetryAsync();
+        } catch (ExecutionException e) {
+          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+          SpannerException se = (SpannerException) e.getCause();
+          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+          // expected
+          break;
+        }
+      }
+      assertThat(manager.getState()).isEqualTo(TransactionState.COMMIT_FAILED);
+      // We cannot retry for non aborted errors.
+      try {
+        manager.resetForRetryAsync();
+        fail("Expected exception");
+      } catch (IllegalStateException ex) {
+        assertNotNull(ex.getMessage());
+      }
+    }
+  }
+
+  @Test
+  public void testRollback() throws InterruptedException {
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = manager.beginAsync();
+      while (true) {
+        txn.then(
+            new AsyncTransactionFunction<Void, Void>() {
+              @Override
+              public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
+                txn.buffer(
+                    Mutation.newInsertBuilder("T")
+                        .set("K")
+                        .to("Key2")
+                        .set("BoolValue")
+                        .to(true)
+                        .build());
+                return ApiFutures.immediateFuture(null);
+              }
+            });
+        try {
+          manager.rollbackAsync();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetryAsync();
+        }
+      }
+      assertThat(manager.getState()).isEqualTo(TransactionState.ROLLED_BACK);
+      // Row should not have been inserted.
+      assertThat(client.singleUse().readRow("T", Key.of("Key2"), Arrays.asList("K", "BoolValue")))
+          .isNull();
+    }
+  }
+
+  @Test
+  public void testAbortAndRetry() throws InterruptedException, ExecutionException {
+    assumeFalse(
+        "Emulator does not support more than 1 simultanous transaction. "
+            + "This test would therefore loop indefinetly on the emulator.",
+        env.getTestHelper().isEmulator());
+
+    client.write(
+        Arrays.asList(
+            Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));
+    try (AsyncTransactionManager manager1 = client.transactionManagerAsync()) {
+      TransactionContextFuture txn1 = manager1.beginAsync();
+      AsyncTransactionManager manager2;
+      TransactionContextFuture txn2;
+      AsyncTransactionStep<Void, Struct> txn2Step1;
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Struct> txn1Step1 =
+              txn1.then(
+                  new AsyncTransactionFunction<Void, Struct>() {
+                    @Override
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
+                    }
+                  });
+          manager2 = client.transactionManagerAsync();
+          txn2 = manager2.beginAsync();
+          txn2Step1 =
+              txn2.then(
+                  new AsyncTransactionFunction<Void, Struct>() {
+                    @Override
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
+                    }
+                  });
+
+          AsyncTransactionStep<Struct, Void> txn1Step2 =
+              txn1Step1.then(
+                  new AsyncTransactionFunction<Struct, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Struct input)
+                        throws Exception {
+                      txn.buffer(
+                          Mutation.newUpdateBuilder("T")
+                              .set("K")
+                              .to("Key3")
+                              .set("BoolValue")
+                              .to(false)
+                              .build());
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  });
+
+          txn2Step1.get();
+          txn1Step2.commitAsync().get();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          // It is possible that it was txn2 that aborted.
+          // In that case we should just retry without resetting anything.
+          if (manager1.getState() == TransactionState.ABORTED) {
+            txn1 = manager1.resetForRetryAsync();
+          }
+        }
+      }
+
+      // txn2 should have been aborted.
+      try {
+        txn2Step1.commitAsync().get();
+        fail("Expected to abort");
+      } catch (AbortedException e) {
+        assertThat(manager2.getState()).isEqualTo(TransactionState.ABORTED);
+        txn2 = manager2.resetForRetryAsync();
+      }
+      AsyncTransactionStep<Void, Void> txn2Step2 =
+          txn2.then(
+              new AsyncTransactionFunction<Void, Void>() {
+                @Override
+                public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
+                  txn.buffer(
+                      Mutation.newUpdateBuilder("T")
+                          .set("K")
+                          .to("Key3")
+                          .set("BoolValue")
+                          .to(true)
+                          .build());
+                  return ApiFutures.immediateFuture(null);
+                }
+              });
+      txn2Step2.commitAsync().get();
+      Struct row = client.singleUse().readRow("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
+      assertThat(row.getString(0)).isEqualTo("Key3");
+      assertThat(row.getBoolean(1)).isTrue();
+      manager2.close();
+    }
+  }
+}

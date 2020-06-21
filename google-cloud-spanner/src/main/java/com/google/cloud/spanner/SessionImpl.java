@@ -241,7 +241,7 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public AsyncTransactionManager transactionManagerAsync() {
+  public AsyncTransactionManagerImpl transactionManagerAsync() {
     return new AsyncTransactionManagerImpl(this, currentSpan);
   }
 
