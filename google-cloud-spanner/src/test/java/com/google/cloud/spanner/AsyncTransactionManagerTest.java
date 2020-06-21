@@ -480,17 +480,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           if (attempt.incrementAndGet() == 1) {
                             mockSpanner.abortTransaction(txn);
                           }
-                          // This update statement will be aborted, but the error will not
-                          // propagated to the
-                          // transaction runner and cause the transaction to retry. Instead, the
-                          // commit call
-                          // will do that.
+                          // This update statement will be aborted, but the error will not propagated to the transaction runner and cause the transaction to retry. Instead, the commit call will do that.
                           txn.executeUpdateAsync(UPDATE_STATEMENT);
-                          // Resolving this future will not resolve the result of the entire
-                          // transaction. The
-                          // transaction result will be resolved when the commit has actually
-                          // finished
-                          // successfully.
+                          // Resolving this future will not resolve the result of the entire transaction. The transaction result will be resolved when the commit has actually finished successfully.
                           return ApiFutures.immediateFuture(null);
                         }
                       },
@@ -498,12 +490,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
           assertThat(attempt.get()).isEqualTo(2);
+          // The server may receive 1 or 2 commit requests, depending on whether the commitAsync() call already knows that the transaction has aborted or not. In case it is known that the transaction has aborted, it will not attempt to call the Commit RPC, and instead propagate the Aborted error directly.
           assertThat(mockSpanner.getRequestTypes())
-              .containsExactly(
+              .containsAtLeast(
                   BatchCreateSessionsRequest.class,
                   BeginTransactionRequest.class,
                   ExecuteSqlRequest.class,
-                  CommitRequest.class,
                   BeginTransactionRequest.class,
                   ExecuteSqlRequest.class,
                   CommitRequest.class);
