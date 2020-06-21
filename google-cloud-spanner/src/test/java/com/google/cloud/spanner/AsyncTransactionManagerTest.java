@@ -49,16 +49,34 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
+
+  @Parameter public Executor executor;
+
+  @Parameters(name = "executor = {0}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+          {MoreExecutors.directExecutor()},
+          {Executors.newSingleThreadExecutor()},
+          {Executors.newFixedThreadPool(4)}
+        });
+  }
+
   /**
    * Static helper methods that simplifies creating {@link AsyncTransactionFunction}s for Java7.
    * Java8 and higher can use lambda expressions.
@@ -173,7 +191,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture commitTimestamp =
               txn.then(
                       AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT))
+                          updateCount, UPDATE_STATEMENT),
+                      executor)
                   .commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get()).isNotNull();
@@ -197,7 +216,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture commitTimestamp =
               txn.then(
                       AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT))
+                          updateCount, UPDATE_STATEMENT),
+                      executor)
                   .commitAsync();
           mockSpanner.unfreeze();
           assertThat(updateCount.get(10L, TimeUnit.SECONDS)).isEqualTo(UPDATE_COUNT);
@@ -219,7 +239,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture commitTimestamp =
               txn.then(
                       AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT))
+                          INVALID_UPDATE_STATEMENT),
+                      executor)
                   .commitAsync();
           commitTimestamp.get();
           fail("missing expected exception");
@@ -249,7 +270,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture commitTimestamp =
               txn.then(
                       AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT))
+                          updateCount, UPDATE_STATEMENT),
+                      executor)
                   .then(
                       new AsyncTransactionFunction<Long, Void>() {
                         @Override
@@ -260,7 +282,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           }
                           return ApiFutures.immediateFuture(null);
                         }
-                      })
+                      },
+                      executor)
                   .commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get()).isNotNull();
@@ -305,7 +328,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                               MoreExecutors.directExecutor());
                           return updateCount;
                         }
-                      })
+                      },
+                      executor)
                   .commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(ts.get()).isNotNull();
@@ -324,10 +348,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           CommitTimestampFuture ts =
-              txn.then(AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT))
+              txn.then(
+                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
+                      executor)
                   .then(
                       AsyncTransactionManagerHelper.<Long>readRowAsync(
-                          READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES))
+                          READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
+                      executor)
                   .then(
                       new AsyncTransactionFunction<Struct, String>() {
                         @Override
@@ -335,7 +362,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                             throws Exception {
                           return ApiFutures.immediateFuture(input.getString("Value"));
                         }
-                      })
+                      },
+                      executor)
                   .then(
                       new AsyncTransactionFunction<String, Void>() {
                         @Override
@@ -344,7 +372,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           assertThat(input).isEqualTo("v1");
                           return ApiFutures.immediateFuture(null);
                         }
-                      })
+                      },
+                      executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
           break;
@@ -364,7 +393,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture ts =
               txn.then(
                       AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT))
+                          INVALID_UPDATE_STATEMENT),
+                      executor)
                   .then(
                       new AsyncTransactionFunction<Long, Void>() {
                         @Override
@@ -372,7 +402,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                             throws Exception {
                           throw new IllegalStateException("this should not be executed");
                         }
-                      })
+                      },
+                      executor)
                   .commitAsync();
           ts.get();
           break;
@@ -415,8 +446,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           }
                           return ApiFutures.immediateFuture(null);
                         }
-                      })
-                  .then(AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT))
+                      },
+                      executor)
+                  .then(
+                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
+                      executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
           break;
@@ -459,7 +493,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           // successfully.
                           return ApiFutures.immediateFuture(null);
                         }
-                      })
+                      },
+                      executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
           assertThat(attempt.get()).isEqualTo(2);
@@ -491,7 +526,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       TransactionContextFuture txn = mgr.beginAsync();
       while (true) {
         try {
-          txn.then(AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT))
+          txn.then(
+                  AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
+                  executor)
               .commitAsync()
               .get();
           fail("missing expected exception");
@@ -524,7 +561,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       txn.executeUpdateAsync(UPDATE_STATEMENT);
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           assertThat(mockSpanner.getRequestTypes())
@@ -550,7 +588,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           txn.then(
                   AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT))
+                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
+                  executor)
               .commitAsync()
               .get();
           break;
@@ -571,7 +610,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           CommitTimestampFuture ts =
-              txn.then(AsyncTransactionManagerHelper.<Void>batchUpdateAsync(res, UPDATE_STATEMENT))
+              txn.then(
+                      AsyncTransactionManagerHelper.<Void>batchUpdateAsync(res, UPDATE_STATEMENT),
+                      executor)
                   .commitAsync();
           mockSpanner.unfreeze();
           assertThat(ts.get()).isNotNull();
@@ -593,7 +634,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           txn.then(
                   AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT))
+                      result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT),
+                  executor)
               .commitAsync()
               .get();
           fail("missing expected exception");
@@ -626,10 +668,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .then(
                   AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT))
+                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
+                  executor)
               .commitAsync()
               .get();
           break;
@@ -668,7 +712,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                             ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
                       }
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           break;
@@ -712,10 +757,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       }
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .then(
                   AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT))
+                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
+                  executor)
               .then(
                   new AsyncTransactionFunction<long[], Void>() {
                     @Override
@@ -726,7 +773,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       }
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           assertThat(result.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
@@ -774,7 +822,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           break;
@@ -822,7 +871,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           txn.then(
                   AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      UPDATE_STATEMENT, UPDATE_STATEMENT))
+                      UPDATE_STATEMENT, UPDATE_STATEMENT),
+                  executor)
               .commitAsync()
               .get();
           fail("missing expected exception");
@@ -859,7 +909,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           break;
@@ -888,7 +939,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               step =
                   txn.then(
                           AsyncTransactionManagerHelper.<Void>readRowAsync(
-                              READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES))
+                              READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
+                          executor)
                       .then(
                           new AsyncTransactionFunction<Struct, String>() {
                             @Override
@@ -896,7 +948,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                                 throws Exception {
                               return ApiFutures.immediateFuture(input.getString("Value"));
                             }
-                          });
+                          },
+                          executor);
           step.commitAsync().get();
           break;
         } catch (AbortedException e) {
@@ -930,7 +983,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                               },
                               MoreExecutors.directExecutor());
                     }
-                  });
+                  },
+                  executor);
           // Commit the transaction.
           res.commitAsync().get();
           break;
@@ -962,7 +1016,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                         return txn.readRowAsync(
                             "Singers", Key.of(singerId), Collections.singleton(column));
                       }
-                    })
+                    },
+                    executor)
                 .then(
                     new AsyncTransactionFunction<Struct, Void>() {
                       @Override
@@ -976,7 +1031,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                                 .build());
                         return ApiFutures.immediateFuture(null);
                       }
-                    })
+                    },
+                    executor)
                 .commitAsync();
         try {
           commitTimestamp.get();

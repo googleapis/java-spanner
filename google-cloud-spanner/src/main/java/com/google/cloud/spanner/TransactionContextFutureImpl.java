@@ -30,6 +30,7 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -88,15 +89,17 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     AsyncTransactionStatementImpl(
         final ApiFuture<TransactionContext> txnFuture,
         ApiFuture<I> input,
-        final AsyncTransactionFunction<I, O> function) {
-      this(SettableApiFuture.<O>create(), txnFuture, input, function);
+        final AsyncTransactionFunction<I, O> function,
+        Executor executor) {
+      this(SettableApiFuture.<O>create(), txnFuture, input, function, executor);
     }
 
     AsyncTransactionStatementImpl(
         SettableApiFuture<O> delegate,
         final ApiFuture<TransactionContext> txnFuture,
         ApiFuture<I> input,
-        final AsyncTransactionFunction<I, O> function) {
+        final AsyncTransactionFunction<I, O> function,
+        final Executor executor) {
       super(delegate);
       this.statementResult = delegate;
       this.txnFuture = txnFuture;
@@ -113,9 +116,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
             public void onSuccess(I result) {
               try {
                 ApiFutures.addCallback(
-                    Preconditions.checkNotNull(
-                        function.apply(txnFuture.get(), result),
-                        "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?"),
+                    runAsyncTransactionFunction(function, txnFuture.get(), result, executor),
                     new ApiFutureCallback<O>() {
                       @Override
                       public void onFailure(Throwable t) {
@@ -139,8 +140,9 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     }
 
     @Override
-    public <RES> AsyncTransactionStatementImpl<O, RES> then(AsyncTransactionFunction<O, RES> next) {
-      return new AsyncTransactionStatementImpl<>(txnFuture, statementResult, next);
+    public <RES> AsyncTransactionStatementImpl<O, RES> then(
+        AsyncTransactionFunction<O, RES> next, Executor executor) {
+      return new AsyncTransactionStatementImpl<>(txnFuture, statementResult, next, executor);
     }
 
     @Override
@@ -178,6 +180,51 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     }
   }
 
+  static <I, O> ApiFuture<O> runAsyncTransactionFunction(
+      final AsyncTransactionFunction<I, O> function,
+      final TransactionContext txn,
+      final I input,
+      Executor executor)
+      throws Exception {
+    // Shortcut for common path.
+    if (executor == MoreExecutors.directExecutor()) {
+      return Preconditions.checkNotNull(
+          function.apply(txn, input),
+          "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
+    } else {
+      final SettableApiFuture<O> res = SettableApiFuture.create();
+      executor.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                ApiFuture<O> functionResult =
+                    Preconditions.checkNotNull(
+                        function.apply(txn, input),
+                        "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
+                ApiFutures.addCallback(
+                    functionResult,
+                    new ApiFutureCallback<O>() {
+                      @Override
+                      public void onFailure(Throwable t) {
+                        res.setException(t);
+                      }
+
+                      @Override
+                      public void onSuccess(O result) {
+                        res.set(result);
+                      }
+                    },
+                    MoreExecutors.directExecutor());
+              } catch (Throwable t) {
+                res.setException(t);
+              }
+            }
+          });
+      return res;
+    }
+  }
+
   final CommittableAsyncTransactionManager mgr;
   final SettableApiFuture<Timestamp> txnResult = SettableApiFuture.create();
 
@@ -189,7 +236,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
 
   @Override
   public <O> AsyncTransactionStatementImpl<Void, O> then(
-      AsyncTransactionFunction<Void, O> function) {
+      AsyncTransactionFunction<Void, O> function, Executor executor) {
     final SettableApiFuture<Void> input = SettableApiFuture.create();
     ApiFutures.addCallback(
         this,
@@ -206,6 +253,6 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
           }
         },
         MoreExecutors.directExecutor());
-    return new AsyncTransactionStatementImpl<>(this, input, function);
+    return new AsyncTransactionStatementImpl<>(this, input, function, executor);
   }
 }

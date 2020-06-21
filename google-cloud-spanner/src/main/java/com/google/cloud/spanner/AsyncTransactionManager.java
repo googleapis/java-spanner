@@ -22,7 +22,10 @@ import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -50,7 +53,14 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * multiple {@link TransactionContextFuture}s to form a transaction.
    */
   public interface TransactionContextFuture extends ApiFuture<TransactionContext> {
-    <O> AsyncTransactionStep<Void, O> then(AsyncTransactionFunction<Void, O> function);
+    /**
+     * Sets the first step to execute as part of this transaction after the transaction has started
+     * using the specified executor. {@link MoreExecutors#directExecutor()} can be be used for
+     * lightweight functions, but should be avoided for heavy or blocking operations. See also
+     * {@link ListenableFuture#addListener(Runnable, Executor)} for further information.
+     */
+    <O> AsyncTransactionStep<Void, O> then(
+        AsyncTransactionFunction<Void, O> function, Executor executor);
   }
 
   /**
@@ -120,10 +130,14 @@ public interface AsyncTransactionManager extends AutoCloseable {
    */
   public interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
     /**
-     * Adds a step to the transaction chain that should be executed. This step is guaranteed to be
-     * executed only after the previous step executed successfully.
+     * Adds a step to the transaction chain that should be executed using the specified executor.
+     * This step is guaranteed to be executed only after the previous step executed successfully.
+     * {@link MoreExecutors#directExecutor()} can be be used for lightweight functions, but should
+     * be avoided for heavy or blocking operations. See also {@link
+     * ListenableFuture#addListener(Runnable, Executor)} for further information.
      */
-    <RES> AsyncTransactionStep<O, RES> then(AsyncTransactionFunction<O, RES> next);
+    <RES> AsyncTransactionStep<O, RES> then(
+        AsyncTransactionFunction<O, RES> next, Executor executor);
 
     /**
      * Commits the transaction and returns a {@link CommitTimestampFuture} that will return the

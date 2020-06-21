@@ -38,16 +38,34 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITTransactionManagerAsyncTest {
+
+  @Parameter public Executor executor;
+
+  @Parameters(name = "executor = {0}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+          {MoreExecutors.directExecutor()},
+          {Executors.newSingleThreadExecutor()},
+          {Executors.newFixedThreadPool(4)}
+        });
+  }
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
@@ -87,7 +105,8 @@ public class ITTransactionManagerAsyncTest {
                               .build());
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           assertThat(manager.getState()).isEqualTo(TransactionState.COMMITTED);
@@ -124,7 +143,8 @@ public class ITTransactionManagerAsyncTest {
                               .build());
                       return ApiFutures.immediateFuture(null);
                     }
-                  })
+                  },
+                  executor)
               .commitAsync()
               .get();
           fail("Expected exception");
@@ -168,7 +188,8 @@ public class ITTransactionManagerAsyncTest {
                         .build());
                 return ApiFutures.immediateFuture(null);
               }
-            });
+            },
+            executor);
         try {
           manager.rollbackAsync();
           break;
@@ -209,7 +230,8 @@ public class ITTransactionManagerAsyncTest {
                         throws Exception {
                       return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
                     }
-                  });
+                  },
+                  executor);
           manager2 = client.transactionManagerAsync();
           txn2 = manager2.beginAsync();
           txn2Step1 =
@@ -220,7 +242,8 @@ public class ITTransactionManagerAsyncTest {
                         throws Exception {
                       return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
                     }
-                  });
+                  },
+                  executor);
 
           AsyncTransactionStep<Struct, Void> txn1Step2 =
               txn1Step1.then(
@@ -237,7 +260,8 @@ public class ITTransactionManagerAsyncTest {
                               .build());
                       return ApiFutures.immediateFuture(null);
                     }
-                  });
+                  },
+                  executor);
 
           txn2Step1.get();
           txn1Step2.commitAsync().get();
@@ -274,7 +298,8 @@ public class ITTransactionManagerAsyncTest {
                           .build());
                   return ApiFutures.immediateFuture(null);
                 }
-              });
+              },
+              executor);
       txn2Step2.commitAsync().get();
       Struct row = client.singleUse().readRow("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
       assertThat(row.getString(0)).isEqualTo("Key3");
