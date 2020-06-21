@@ -89,6 +89,11 @@ public abstract class AbstractMockServerTest {
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
   public static final int UPDATE_COUNT = 1;
 
+  public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
+  public static final Statement SELECT_RANDOM_STATEMENT = Statement.of("SELECT * FROM RANDOM");
+  public static final com.google.spanner.v1.ResultSet RANDOM_RESULT_SET =
+      new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT).generate();
+
   public static MockSpannerServiceImpl mockSpanner;
   public static MockInstanceAdminImpl mockInstanceAdmin;
   public static MockDatabaseAdminImpl mockDatabaseAdmin;
@@ -112,6 +117,8 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
   }
 
   @AfterClass

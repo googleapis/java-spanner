@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
@@ -112,6 +113,9 @@ interface UnitOfWork {
    *     database error occurs.
    */
   ResultSet executeQuery(
+      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
+
+  AsyncResultSet executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
 
   /**

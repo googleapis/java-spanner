@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
@@ -71,6 +72,16 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
                 internalExecuteQuery(statement, analyzeMode, options));
           }
         });
+  }
+
+  @Override
+  public AsyncResultSet executeQueryAsync(
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
+    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
+    checkValidTransaction();
+    return getReadContext().executeQueryAsync(statement.getStatement(), options);
   }
 
   ResultSet internalExecuteQuery(
