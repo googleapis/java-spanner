@@ -25,13 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
@@ -52,6 +46,13 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.v1.ResultSetStats;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ReadOnlyTransactionTest {
