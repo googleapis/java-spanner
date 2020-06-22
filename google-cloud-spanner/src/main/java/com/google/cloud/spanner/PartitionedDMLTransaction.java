@@ -104,12 +104,12 @@ class PartitionedDMLTransaction implements SessionTransaction {
               ServerStream<PartialResultSet> stream =
                   rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
               for (PartialResultSet rs : stream) {
-                if (rs.getResumeToken() != null && ByteString.EMPTY.equals(rs.getResumeToken())) {
+                if (rs.getResumeToken() != null && !ByteString.EMPTY.equals(rs.getResumeToken())) {
                   resumeToken = rs.getResumeToken();
                 }
                 streams++;
                 log.log(
-                    Level.FINEST,
+                    Level.FINER,
                     "processing stream #"
                         + streams
                         + ", current resume token is "
