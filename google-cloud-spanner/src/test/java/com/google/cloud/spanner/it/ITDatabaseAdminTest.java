@@ -21,13 +21,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.kms.v1.CryptoKey;
 import com.google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose;
 import com.google.cloud.kms.v1.KeyManagementServiceClient;
+import com.google.cloud.kms.v1.KeyManagementServiceSettings;
 import com.google.cloud.kms.v1.KeyRing;
 import com.google.cloud.kms.v1.KeyRingName;
 import com.google.cloud.kms.v1.LocationName;
@@ -60,6 +63,7 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -215,6 +219,26 @@ public class ITDatabaseAdminTest {
       page = page.getNextPage();
     }
     assertThat(dbIdsGot).containsAtLeastElementsIn(dbIds);
+  }
+
+  @Test
+  public void testCreateEncryptedDatabaseWithExistingKey() throws Exception {
+    Database db =
+        dbAdminClient
+            .newDatabaseBuilder(
+                DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId()))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey("projects/appdev-soda-spanner-staging/locations/us-central1/keyRings/cmek_demo/cryptoKeys/client-libs-staging-cmek-key"))
+            .build();
+    db = dbAdminClient.createDatabase(db, ImmutableList.<String>of()).get();
+    assertThat(db).isNotNull();
+
+    // Get the database again from the backend and verify that it is encrypted.
+    Database database =
+        dbAdminClient.getDatabase(
+            testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
+    assertThat(database.getEncryptionConfigInfo()).isNotNull();
+    assertThat(database.getEncryptionConfigInfo().getKmsKeyName())
+        .isEqualTo("projects/appdev-soda-spanner-staging/locations/us-central1/keyRings/cmek_demo/cryptoKeys/client-libs-staging-cmek-key");
   }
 
   @Test
