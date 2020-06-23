@@ -574,8 +574,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * <ul>
      *   <li>gzip: Enable gzip compression
      *   <li>identity: Disable compression
-     *   <li><code>null</code>: Use default comporession
-     *       <ul>
+     *   <li><code>null</code>: Use default compression
+     * </ul>
      */
     @ExperimentalApi("https://github.com/grpc/grpc-java/issues/1704")
     public Builder setCompressorName(@Nullable String compressorName) {
