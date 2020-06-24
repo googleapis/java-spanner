@@ -72,7 +72,7 @@ public class SessionPoolLeakTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     SpannerOptions.Builder builder =
@@ -95,7 +95,7 @@ public class SessionPoolLeakTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 
@@ -135,7 +135,7 @@ public class SessionPoolLeakTest {
           .run(
               new TransactionCallable<Void>() {
                 @Override
-                public Void run(TransactionContext transaction) throws Exception {
+                public Void run(TransactionContext transaction) {
                   return null;
                 }
               });
@@ -161,7 +161,7 @@ public class SessionPoolLeakTest {
   }
 
   @Test
-  public void testTransactionManagerExceptionOnBegin() throws Exception {
+  public void testTransactionManagerExceptionOnBegin() {
     transactionManagerTest(
         new Runnable() {
           @Override

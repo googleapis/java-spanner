@@ -34,7 +34,7 @@ public class ConnectionStatementWithOneParameterTest {
   private final StatementParser parser = StatementParser.INSTANCE;
 
   @Test
-  public void testExecuteSetAutcommit() throws Exception {
+  public void testExecuteSetAutcommit() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit = true"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -49,7 +49,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetReadOnly() throws Exception {
+  public void testExecuteSetReadOnly() {
     ParsedStatement subject = parser.parse(Statement.of("set readonly = true"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -64,7 +64,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetAutcommitDmlMode() throws Exception {
+  public void testExecuteSetAutcommitDmlMode() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit_dml_mode='foo'"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -79,7 +79,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetStatementTimeout() throws Exception {
+  public void testExecuteSetStatementTimeout() {
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.statementSetStatementTimeout(any(Duration.class))).thenCallRealMethod();
     ConnectionImpl connection = mock(ConnectionImpl.class);
@@ -109,7 +109,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetReadOnlyStaleness() throws Exception {
+  public void testExecuteSetReadOnlyStaleness() {
     ParsedStatement subject = parser.parse(Statement.of("set read_only_staleness='foo'"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -149,7 +149,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetOptimizerVersion() throws Exception {
+  public void testExecuteSetOptimizerVersion() {
     ParsedStatement subject = parser.parse(Statement.of("set optimizer_version='foo'"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -164,7 +164,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetTransaction() throws Exception {
+  public void testExecuteSetTransaction() {
     ParsedStatement subject = parser.parse(Statement.of("set transaction read_only"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);

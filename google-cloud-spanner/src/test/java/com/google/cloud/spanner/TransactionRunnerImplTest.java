@@ -90,7 +90,7 @@ public class TransactionRunnerImplTest {
   private boolean firstRun;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
     when(session.newTransaction()).thenReturn(txn);
@@ -117,8 +117,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName((String) invocation.getArguments()[0] + "/sessions/1")
@@ -131,7 +130,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             new Answer<Transaction>() {
               @Override
-              public Transaction answer(InvocationOnMock invocation) throws Throwable {
+              public Transaction answer(InvocationOnMock invocation) {
                 return Transaction.newBuilder()
                     .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
                     .build();
@@ -141,7 +140,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             new Answer<CommitResponse>() {
               @Override
-              public CommitResponse answer(InvocationOnMock invocation) throws Throwable {
+              public CommitResponse answer(InvocationOnMock invocation) {
                 return CommitResponse.newBuilder()
                     .setCommitTimestamp(
                         Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
@@ -156,7 +155,7 @@ public class TransactionRunnerImplTest {
           .run(
               new TransactionCallable<Void>() {
                 @Override
-                public Void run(TransactionContext transaction) throws Exception {
+                public Void run(TransactionContext transaction) {
                   return null;
                 }
               });
@@ -171,7 +170,7 @@ public class TransactionRunnerImplTest {
     transactionRunner.run(
         new TransactionCallable<Void>() {
           @Override
-          public Void run(TransactionContext transaction) throws Exception {
+          public Void run(TransactionContext transaction) {
             numCalls.incrementAndGet();
             return null;
           }
@@ -197,7 +196,7 @@ public class TransactionRunnerImplTest {
     transactionRunner.run(
         new TransactionCallable<Void>() {
           @Override
-          public Void run(TransactionContext transaction) throws Exception {
+          public Void run(TransactionContext transaction) {
             numCalls.incrementAndGet();
             return null;
           }
@@ -217,7 +216,7 @@ public class TransactionRunnerImplTest {
       transactionRunner.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               numCalls.incrementAndGet();
               return null;
             }
@@ -232,7 +231,7 @@ public class TransactionRunnerImplTest {
   }
 
   @Test
-  public void runResourceExhaustedNoRetry() throws Exception {
+  public void runResourceExhaustedNoRetry() {
     try {
       runTransaction(
           new StatusRuntimeException(Status.fromCodeValue(Status.Code.RESOURCE_EXHAUSTED.value())));
@@ -308,7 +307,7 @@ public class TransactionRunnerImplTest {
         runner.run(
             new TransactionCallable<long[]>() {
               @Override
-              public long[] run(TransactionContext transaction) throws Exception {
+              public long[] run(TransactionContext transaction) {
                 numCalls.incrementAndGet();
                 return transaction.batchUpdate(Arrays.asList(statement, statement));
               }
@@ -324,7 +323,7 @@ public class TransactionRunnerImplTest {
     transactionRunner.run(
         new TransactionCallable<Void>() {
           @Override
-          public Void run(TransactionContext transaction) throws Exception {
+          public Void run(TransactionContext transaction) {
             if (firstRun) {
               firstRun = false;
               throw SpannerExceptionFactory.newSpannerException(exception);

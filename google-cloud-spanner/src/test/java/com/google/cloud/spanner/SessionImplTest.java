@@ -124,7 +124,7 @@ public class SessionImplTest {
                     .run(
                         new TransactionCallable<Void>() {
                           @Override
-                          public Void run(TransactionContext transaction) throws Exception {
+                          public Void run(TransactionContext transaction) {
                             return null;
                           }
                         });
@@ -428,7 +428,7 @@ public class SessionImplTest {
         .then(
             new Answer<SpannerRpc.StreamingCall>() {
               @Override
-              public SpannerRpc.StreamingCall answer(InvocationOnMock invocation) throws Throwable {
+              public SpannerRpc.StreamingCall answer(InvocationOnMock invocation) {
                 consumer.getValue().onPartialResultSet(myResultSet);
                 consumer.getValue().onCompleted();
                 return new NoOpStreamingCall();

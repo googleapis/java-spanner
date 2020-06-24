@@ -115,7 +115,7 @@ public class DatabaseAdminClientTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     client.close();
   }
 

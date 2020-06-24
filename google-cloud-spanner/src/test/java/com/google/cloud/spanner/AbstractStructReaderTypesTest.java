@@ -328,7 +328,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterForIncorrectType() throws Exception {
+  public void getterForIncorrectType() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     int columnIndex = 0;
     Mockito.when(reader.isNull(columnIndex)).thenReturn(false);
@@ -367,7 +367,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterWhenNull() throws Exception {
+  public void getterWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
     try {
@@ -379,7 +379,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterByNameWhenNull() throws Exception {
+  public void getterByNameWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
     try {

@@ -186,7 +186,7 @@ public class SpannerGaxRetryTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spannerWithTimeout.close();
     spanner.close();
   }
@@ -201,7 +201,7 @@ public class SpannerGaxRetryTest {
               runner.run(
                   new TransactionCallable<Long>() {
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       return transaction.executeUpdate(UPDATE_STATEMENT);
                     }
                   });
@@ -336,7 +336,7 @@ public class SpannerGaxRetryTest {
         runner.run(
             new TransactionCallable<Long>() {
               @Override
-              public Long run(TransactionContext transaction) throws Exception {
+              public Long run(TransactionContext transaction) {
                 return transaction.executeUpdate(UPDATE_STATEMENT);
               }
             });
@@ -351,7 +351,7 @@ public class SpannerGaxRetryTest {
         runner.run(
             new TransactionCallable<Long>() {
               @Override
-              public Long run(TransactionContext transaction) throws Exception {
+              public Long run(TransactionContext transaction) {
                 if (attempts.getAndIncrement() == 0) {
                   mockSpanner.abortTransaction(transaction);
                 }
@@ -370,7 +370,7 @@ public class SpannerGaxRetryTest {
         runner.run(
             new TransactionCallable<Long>() {
               @Override
-              public Long run(TransactionContext transaction) throws Exception {
+              public Long run(TransactionContext transaction) {
                 long res = transaction.executeUpdate(UPDATE_STATEMENT);
                 if (attempts.getAndIncrement() == 0) {
                   mockSpanner.abortTransaction(transaction);
@@ -401,7 +401,7 @@ public class SpannerGaxRetryTest {
     runner.run(
         new TransactionCallable<Long>() {
           @Override
-          public Long run(TransactionContext transaction) throws Exception {
+          public Long run(TransactionContext transaction) {
             transaction.executeUpdate(UPDATE_STATEMENT);
             throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "test");
           }

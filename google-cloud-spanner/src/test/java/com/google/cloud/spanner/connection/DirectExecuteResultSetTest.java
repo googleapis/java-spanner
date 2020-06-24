@@ -144,8 +144,7 @@ public class DirectExecuteResultSetTest {
   }
 
   @Test
-  public void testValidMethodCall()
-      throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+  public void testValidMethodCall() throws IllegalArgumentException {
     ResultSet delegate = mock(ResultSet.class);
     when(delegate.next()).thenReturn(true, true, false);
     DirectExecuteResultSet subject = DirectExecuteResultSet.ofResultSet(delegate);

@@ -153,7 +153,7 @@ public class BackendExhaustedTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     // This test case force-closes the Spanner instance as it would otherwise wait
@@ -209,7 +209,7 @@ public class BackendExhaustedTest {
       runner.run(
           new TransactionCallable<Long>() {
             @Override
-            public Long run(TransactionContext transaction) throws Exception {
+            public Long run(TransactionContext transaction) {
               return transaction.executeUpdate(UPDATE_STATEMENT);
             }
           });

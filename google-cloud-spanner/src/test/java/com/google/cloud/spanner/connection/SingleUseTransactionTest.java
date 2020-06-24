@@ -346,7 +346,7 @@ public class SingleUseTransactionTest {
         .thenAnswer(
             new Answer<TransactionRunner>() {
               @Override
-              public TransactionRunner answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionRunner answer(InvocationOnMock invocation) {
                 TransactionRunner runner =
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;

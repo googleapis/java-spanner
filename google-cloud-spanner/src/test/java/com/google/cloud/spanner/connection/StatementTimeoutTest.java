@@ -191,15 +191,14 @@ public class StatementTimeoutTest {
         .thenAnswer(
             new Answer<TransactionManager>() {
               @Override
-              public TransactionManager answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionManager answer(InvocationOnMock invocation) {
                 TransactionManager txManager = mock(TransactionManager.class);
                 when(txManager.getState()).thenReturn(null, TransactionState.STARTED);
                 when(txManager.begin())
                     .thenAnswer(
                         new Answer<TransactionContext>() {
                           @Override
-                          public TransactionContext answer(InvocationOnMock invocation)
-                              throws Throwable {
+                          public TransactionContext answer(InvocationOnMock invocation) {
                             TransactionContext txContext = mock(TransactionContext.class);
                             when(txContext.executeQuery(Statement.of(SLOW_SELECT)))
                                 .thenAnswer(new DelayedQueryExecution());
@@ -681,7 +680,7 @@ public class StatementTimeoutTest {
         executor.submit(
             new Callable<Boolean>() {
               @Override
-              public Boolean call() throws Exception {
+              public Boolean call() {
                 try (Connection connection =
                     createConnection(
                         ConnectionOptions.newBuilder()

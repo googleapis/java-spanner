@@ -167,7 +167,7 @@ public class TransactionManagerAbortedTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     SpannerOptions.Builder builder =
@@ -179,7 +179,7 @@ public class TransactionManagerAbortedTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 

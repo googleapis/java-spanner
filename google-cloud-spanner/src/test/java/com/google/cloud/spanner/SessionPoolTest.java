@@ -132,7 +132,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
@@ -150,7 +150,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -241,7 +241,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -299,7 +299,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -315,7 +315,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -357,7 +357,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -373,7 +373,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -413,7 +413,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -449,7 +449,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -489,12 +489,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void poolClosureFailsNewRequests() throws Exception {
+  public void poolClosureFailsNewRequests() {
     final SessionImpl session = mockSession();
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -543,11 +543,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
-                      public Void call() throws Exception {
+                      public Void call() {
                         SessionConsumerImpl consumer =
                             invocation.getArgumentAt(2, SessionConsumerImpl.class);
                         consumer.onSessionCreateFailure(
@@ -574,11 +574,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
-                      public Void call() throws Exception {
+                      public Void call() {
                         SessionConsumerImpl consumer =
                             invocation.getArgumentAt(2, SessionConsumerImpl.class);
                         consumer.onSessionCreateFailure(
@@ -606,7 +606,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -639,7 +639,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -670,7 +670,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -701,7 +701,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -735,7 +735,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Answer<Void>() {
 
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -746,7 +746,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Answer<Void>() {
 
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -756,7 +756,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -797,7 +797,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -807,7 +807,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -847,7 +847,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -888,7 +888,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -924,7 +924,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -984,7 +984,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1040,7 +1040,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1142,7 +1142,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           executor.submit(
               new Callable<Void>() {
                 @Override
-                public Void call() throws Exception {
+                public Void call() {
                   Session session;
                   latch.countDown();
                   if (finWrite) {
@@ -1198,7 +1198,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1214,7 +1214,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1254,7 +1254,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1270,7 +1270,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1376,7 +1376,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         doAnswer(
                 new Answer<Void>() {
                   @Override
-                  public Void answer(final InvocationOnMock invocation) throws Throwable {
+                  public Void answer(final InvocationOnMock invocation) {
                     executor.submit(
                         new Runnable() {
                           @Override
@@ -1392,7 +1392,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .doAnswer(
                 new Answer<Void>() {
                   @Override
-                  public Void answer(final InvocationOnMock invocation) throws Throwable {
+                  public Void answer(final InvocationOnMock invocation) {
                     executor.submit(
                         new Runnable() {
                           @Override
@@ -1430,7 +1430,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                   private int callNumber = 0;
 
                   @Override
-                  public Integer run(TransactionContext transaction) throws Exception {
+                  public Integer run(TransactionContext transaction) {
                     callNumber++;
                     if (hasPreparedTransaction) {
                       // If the session had a prepared read/write transaction, that transaction will
@@ -1512,7 +1512,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1528,7 +1528,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1563,7 +1563,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1579,7 +1579,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1615,7 +1615,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1631,7 +1631,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1666,7 +1666,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1682,7 +1682,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override

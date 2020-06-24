@@ -68,7 +68,7 @@ public class ITBulkConnectionTest extends ITAbstractSpannerTest {
       executor.submit(
           new Callable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
               try (ITConnection connection = createConnection()) {
                 try (ResultSet rs = connection.executeQuery(Statement.of("select 1"))) {
                   assertThat(rs.next(), is(true));

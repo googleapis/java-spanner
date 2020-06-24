@@ -108,7 +108,7 @@ public final class ITBatchDmlTest {
     final TransactionCallable<long[]> callable =
         new TransactionCallable<long[]>() {
           @Override
-          public long[] run(TransactionContext transaction) throws Exception {
+          public long[] run(TransactionContext transaction) {
             List<Statement> stmts = new ArrayList<>();
             stmts.add(Statement.of(INSERT_DML));
             stmts.add(Statement.of(UPDATE_DML));
@@ -129,7 +129,7 @@ public final class ITBatchDmlTest {
     final TransactionCallable<long[]> callable =
         new TransactionCallable<long[]>() {
           @Override
-          public long[] run(TransactionContext transaction) throws Exception {
+          public long[] run(TransactionContext transaction) {
             long rowCount = transaction.executeUpdate(Statement.of(INSERT_DML));
             List<Statement> stmts = new ArrayList<>();
             stmts.add(Statement.of(UPDATE_DML));

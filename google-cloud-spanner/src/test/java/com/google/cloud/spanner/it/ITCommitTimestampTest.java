@@ -61,7 +61,7 @@ public class ITCommitTimestampTest {
   private static String databaseId;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     testHelper = env.getTestHelper();
     db =
         testHelper.createTestDatabase(

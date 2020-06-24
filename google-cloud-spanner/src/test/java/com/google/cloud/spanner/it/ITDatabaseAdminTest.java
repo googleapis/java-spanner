@@ -77,13 +77,13 @@ public class ITDatabaseAdminTest {
   private List<Database> dbs = new ArrayList<>();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     for (Database db : dbs) {
       db.drop();
     }

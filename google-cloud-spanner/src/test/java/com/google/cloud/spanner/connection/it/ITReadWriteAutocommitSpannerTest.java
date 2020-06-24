@@ -63,7 +63,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void test02_WriteMutation() throws Exception {
+  public void test02_WriteMutation() {
     try (ITConnection connection = createConnection()) {
       connection.write(
           Mutation.newInsertBuilder("TEST").set("ID").to(9999L).set("NAME").to("FOO").build());
@@ -72,7 +72,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void test03_MultipleStatements_WithTimeouts() throws InterruptedException {
+  public void test03_MultipleStatements_WithTimeouts() {
     try (ITConnection connection = createConnection()) {
       // do an insert that should succeed
       assertThat(

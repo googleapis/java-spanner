@@ -33,7 +33,6 @@ import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConne
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -186,7 +184,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   @BeforeClass
-  public static void setup() throws IOException, InterruptedException, ExecutionException {
+  public static void setup() {
     database = env.getTestHelper().createTestDatabase();
   }
 
@@ -268,7 +266,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   @Before
-  public void createTestTable() throws Exception {
+  public void createTestTable() {
     if (doCreateDefaultTestTable()) {
       try (Connection connection = createConnection()) {
         connection.setAutocommit(true);
