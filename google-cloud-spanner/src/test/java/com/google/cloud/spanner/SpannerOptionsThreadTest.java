@@ -27,6 +27,7 @@ import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -175,15 +176,10 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
 
   private int getNumberOfThreadsWithName(String serviceName) {
     Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
-    ThreadGroup group = new Thread().getThreadGroup();
-    while (group.getParent() != null) {
-      group = group.getParent();
-    }
-    Thread[] threads = new Thread[100 * NUMBER_OF_TEST_RUNS];
-    int numberOfThreads = group.enumerate(threads);
+    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
     int res = 0;
-    for (int i = 0; i < numberOfThreads; i++) {
-      if (pattern.matcher(threads[i].getName()).matches()) {
+    for (Thread thread : threadSet) {
+      if (pattern.matcher(thread.getName()).matches()) {
         res++;
       }
     }
