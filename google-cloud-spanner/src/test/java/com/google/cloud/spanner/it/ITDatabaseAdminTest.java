@@ -21,24 +21,13 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.Timestamp;
-import com.google.cloud.kms.v1.CryptoKey;
-import com.google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose;
-import com.google.cloud.kms.v1.KeyManagementServiceClient;
-import com.google.cloud.kms.v1.KeyManagementServiceSettings;
-import com.google.cloud.kms.v1.KeyRing;
-import com.google.cloud.kms.v1.KeyRingName;
-import com.google.cloud.kms.v1.LocationName;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.EncryptionConfigInfo;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Options;
@@ -63,7 +52,6 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -219,75 +207,6 @@ public class ITDatabaseAdminTest {
       page = page.getNextPage();
     }
     assertThat(dbIdsGot).containsAtLeastElementsIn(dbIds);
-  }
-
-  @Test
-  public void testCreateEncryptedDatabaseWithExistingKey() throws Exception {
-    Database db =
-        dbAdminClient
-            .newDatabaseBuilder(
-                DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId()))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey("projects/appdev-soda-spanner-staging/locations/us-central1/keyRings/cmek_demo/cryptoKeys/client-libs-staging-cmek-key"))
-            .build();
-    db = dbAdminClient.createDatabase(db, ImmutableList.<String>of()).get();
-    assertThat(db).isNotNull();
-
-    // Get the database again from the backend and verify that it is encrypted.
-    Database database =
-        dbAdminClient.getDatabase(
-            testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
-    assertThat(database.getEncryptionConfigInfo()).isNotNull();
-    assertThat(database.getEncryptionConfigInfo().getKmsKeyName())
-        .isEqualTo("projects/appdev-soda-spanner-staging/locations/us-central1/keyRings/cmek_demo/cryptoKeys/client-libs-staging-cmek-key");
-  }
-
-  @Test
-  public void testCreateEncryptedDatabase() throws Exception {
-    Random rnd = new Random();
-    String location = "us-east1";
-    String keyRingId = "spanner-test-keyring";
-    String keyId = "spanner-test=key-" + rnd.nextInt();
-    LocationName locationName = LocationName.of(testHelper.getOptions().getProjectId(), location);
-    try (KeyManagementServiceClient kmsClient = KeyManagementServiceClient.create()) {
-      try {
-        KeyRing keyRing =
-            kmsClient.getKeyRing(
-                KeyRingName.of(locationName.getProject(), locationName.getLocation(), keyRingId));
-        if (keyRing == null) {
-          keyRing = kmsClient.createKeyRing(locationName, keyRingId, KeyRing.getDefaultInstance());
-        }
-        CryptoKey cryptoKeyInput =
-            CryptoKey.newBuilder()
-                .setPurpose(CryptoKeyPurpose.ENCRYPT_DECRYPT)
-                .setNextRotationTime(
-                    com.google.protobuf.Timestamp.newBuilder()
-                        .setSeconds(
-                            TimeUnit.SECONDS.convert(
-                                System.currentTimeMillis()
-                                    + TimeUnit.MILLISECONDS.convert(7L, TimeUnit.DAYS),
-                                TimeUnit.MILLISECONDS)))
-                .build();
-        CryptoKey cryptoKey =
-            kmsClient.createCryptoKey(KeyRingName.parse(keyRing.getName()), keyId, cryptoKeyInput);
-        Database db =
-            dbAdminClient
-                .newDatabaseBuilder(
-                    DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId()))
-                .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(cryptoKey.getName()))
-                .build();
-        db = dbAdminClient.createDatabase(db, ImmutableList.<String>of()).get();
-        assertThat(db).isNotNull();
-
-        // Get the database again from the backend and verify that it is encrypted.
-        Database database =
-            dbAdminClient.getDatabase(
-                testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
-        assertThat(database.getEncryptionConfigInfo()).isNotNull();
-        assertThat(database.getEncryptionConfigInfo().getKmsKeyName())
-            .isEqualTo(cryptoKey.getName());
-      } finally {
-      }
-    }
   }
 
   private static final class InjectErrorInterceptorProvider implements GrpcInterceptorProvider {

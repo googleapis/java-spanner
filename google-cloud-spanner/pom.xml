@@ -259,20 +259,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Needed for testing encrypted databases -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-kms</artifactId>
-      <version>1.38.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>proto-google-cloud-kms-v1</artifactId>
-      <version>0.85.1</version>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-cloud-spanner-v1</artifactId>
