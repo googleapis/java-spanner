@@ -308,8 +308,7 @@ public class DatabaseClientImplTest {
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
-      mockSpanner.setExecuteSqlExecutionTime(
-          SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+      mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
       try {
         client
             .readWriteTransaction()
