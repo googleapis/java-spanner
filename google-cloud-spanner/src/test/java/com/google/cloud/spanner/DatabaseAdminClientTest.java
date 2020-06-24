@@ -34,7 +34,9 @@ import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
+import com.google.common.collect.ImmutableList;
 import com.google.longrunning.Operation;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
@@ -940,5 +942,22 @@ public class DatabaseAdminClientTest {
     Database retrieved = client.getDatabase(INSTANCE_ID, databaseId);
     assertThat(retrieved.getCreateTime()).isEqualTo(database.getCreateTime());
     assertThat(mockDatabaseAdmin.countRequestsOfType(RestoreDatabaseRequest.class)).isAtLeast(3);
+  }
+
+  @Test
+  public void testCreateEncryptedDatabase() throws InterruptedException, ExecutionException {
+    String keyName =
+        "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
+    Database database =
+        client
+            .newDatabaseBuilder(DatabaseId.of(PROJECT_ID, INSTANCE_ID, "encrypted-db"))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(keyName))
+            .build();
+    client.createDatabase(database, ImmutableList.<String>of()).get();
+    List<AbstractMessage> messages = mockDatabaseAdmin.getRequests();
+    AbstractMessage msg = messages.get(messages.size() - 1);
+    assertThat(msg).isInstanceOf(CreateDatabaseRequest.class);
+    CreateDatabaseRequest request = (CreateDatabaseRequest) msg;
+    assertThat(request.getEncryptionConfig().getKmsKeyName()).isEqualTo(keyName);
   }
 }
