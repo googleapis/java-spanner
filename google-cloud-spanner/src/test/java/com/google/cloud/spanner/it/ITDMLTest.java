@@ -39,7 +39,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.Arrays;
-import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -52,7 +51,6 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public final class ITDMLTest {
-  private static final Logger log = Logger.getLogger(ITDMLTest.class.getName());
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
   private static DatabaseClient client;
