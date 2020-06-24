@@ -23,6 +23,7 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.base.Stopwatch;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -33,8 +34,11 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status.Code;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.threeten.bp.Duration;
+import org.threeten.bp.temporal.ChronoUnit;
 
 /** Partitioned DML transaction for bulk updates and deletes. */
 class PartitionedDMLTransaction implements SessionTransaction {
@@ -72,12 +76,13 @@ class PartitionedDMLTransaction implements SessionTransaction {
    * statement, and will retry the stream if an {@link UnavailableException} is thrown, using the
    * last seen resume token if the server returns any.
    */
-  long executeStreamingPartitionedUpdate(final Statement statement) {
+  long executeStreamingPartitionedUpdate(final Statement statement, Duration timeout) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     log.log(Level.FINER, "Starting PartitionedUpdate statement");
     boolean foundStats = false;
     long updateCount = 0L;
-    long streams = 0L;
+    Duration remainingTimeout = timeout;
+    Stopwatch stopWatch = Stopwatch.createStarted();
     try {
       // Loop to catch AbortedExceptions.
       while (true) {
@@ -99,21 +104,17 @@ class PartitionedDMLTransaction implements SessionTransaction {
             }
           }
           while (true) {
+            remainingTimeout =
+                remainingTimeout.minus(stopWatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
             try {
               builder.setResumeToken(resumeToken);
               ServerStream<PartialResultSet> stream =
-                  rpc.executeStreamingPartitionedDml(builder.build(), session.getOptions());
+                  rpc.executeStreamingPartitionedDml(
+                      builder.build(), session.getOptions(), remainingTimeout);
               for (PartialResultSet rs : stream) {
                 if (rs.getResumeToken() != null && !ByteString.EMPTY.equals(rs.getResumeToken())) {
                   resumeToken = rs.getResumeToken();
                 }
-                streams++;
-                log.log(
-                    Level.FINER,
-                    "processing stream #"
-                        + streams
-                        + ", current resume token is "
-                        + resumeToken.toStringUtf8());
                 if (rs.hasStats()) {
                   foundStats = true;
                   updateCount += rs.getStats().getRowCountLowerBound();
@@ -126,7 +127,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
               // entire transaction.
               if (resumeToken != null && !ByteString.EMPTY.equals(resumeToken)) {
                 log.log(
-                    Level.WARNING,
+                    Level.FINER,
                     "Retrying PartitionedDml stream using resume token '"
                         + resumeToken.toStringUtf8()
                         + "' because of broken stream",
@@ -140,7 +141,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
           break;
         } catch (com.google.api.gax.rpc.AbortedException e) {
           // Retry using a new transaction but with the same session if the transaction is aborted.
-          log.log(Level.WARNING, "Retrying PartitionedDml transaction after AbortedException", e);
+          log.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
         }
       }
       if (!foundStats) {
