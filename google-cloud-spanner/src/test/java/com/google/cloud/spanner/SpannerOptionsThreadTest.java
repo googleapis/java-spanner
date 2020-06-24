@@ -35,7 +35,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class SpannerOptionsThreadTest extends AbstractMockServerTest {
-
   private static final int NUMBER_OF_TEST_RUNS = 2;
   private static final int DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT = 4;
   private static final int NUM_GAPIC_CLIENTS = 4;
@@ -176,7 +175,7 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
 
   private int getNumberOfThreadsWithName(String serviceName) {
     Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
-    ThreadGroup group = Thread.currentThread().getThreadGroup();
+    ThreadGroup group = new Thread().getThreadGroup();
     while (group.getParent() != null) {
       group = group.getParent();
     }
