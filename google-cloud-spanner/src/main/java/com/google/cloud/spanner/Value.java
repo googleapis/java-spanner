@@ -71,7 +71,7 @@ public abstract class Value implements Serializable {
    */
   public static final Timestamp COMMIT_TIMESTAMP = Timestamp.ofTimeMicroseconds(0L);
 
-  private static final int MAX_DEBUG_STRING_LENGTH = 32;
+  private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
   private static final String NULL_STRING = "NULL";
   private static final char LIST_SEPERATOR = ',';
