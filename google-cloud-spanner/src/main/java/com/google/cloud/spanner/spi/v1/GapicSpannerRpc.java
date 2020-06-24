@@ -163,7 +163,8 @@ public class GapicSpannerRpc implements SpannerRpc {
    * down when the {@link SpannerRpc} is closed.
    */
   private static final class ManagedInstantiatingExecutorProvider implements ExecutorProvider {
-    private static final int DEFAULT_THREAD_COUNT = 4;
+    // 4 Gapic clients * 4 channels per client.
+    private static final int DEFAULT_MIN_THREAD_COUNT = 16;
     private final List<ScheduledExecutorService> executors = new LinkedList<>();
     private final ThreadFactory threadFactory;
 
@@ -178,8 +179,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public ScheduledExecutorService getExecutor() {
+      int numCpus = Runtime.getRuntime().availableProcessors();
+      int numThreads = Math.max(DEFAULT_MIN_THREAD_COUNT, numCpus);
       ScheduledExecutorService executor =
-          new ScheduledThreadPoolExecutor(DEFAULT_THREAD_COUNT, threadFactory);
+          new ScheduledThreadPoolExecutor(numThreads, threadFactory);
       synchronized (this) {
         executors.add(executor);
       }
@@ -298,7 +301,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
                 .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
                 .setPoolSize(options.getNumChannels())
-                .setExecutorProvider(executorProvider)
+                .setExecutor(executorProvider.getExecutor())
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
