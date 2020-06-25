@@ -212,11 +212,11 @@ public class ValueTest {
 
   @Test
   public void stringLong() {
-    String str = "aaaaaaaaaabbbbbbbbbbccccccccccdddddddddd";
+    String str = "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeee";
     Value v = Value.string(str);
     assertThat(v.getString()).isEqualTo(str);
-    assertThat(v.toString()).hasLength(32);
-    assertThat(v.toString()).startsWith(str.substring(0, 32 - 3));
+    assertThat(v.toString()).hasLength(36);
+    assertThat(v.toString()).startsWith(str.substring(0, 36 - 3));
     assertThat(v.toString()).endsWith("...");
   }
 
