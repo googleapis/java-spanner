@@ -105,7 +105,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void testStatementTimeoutTransactional() throws Exception {
+  public void testStatementTimeoutTransactional() {
     try (ITConnection connection = createConnection()) {
       connection.beginTransaction();
       connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
@@ -123,7 +123,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void testStatementTimeoutTransactionalMultipleStatements() throws Exception {
+  public void testStatementTimeoutTransactionalMultipleStatements() {
     long startTime = System.currentTimeMillis();
     try (ITConnection connection = createConnection()) {
       connection.beginTransaction();
@@ -151,7 +151,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void testStatementTimeoutAutocommit() throws Exception {
+  public void testStatementTimeoutAutocommit() {
     try (ITConnection connection = createConnection()) {
       assertThat(connection.isAutocommit(), is(true));
       connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);

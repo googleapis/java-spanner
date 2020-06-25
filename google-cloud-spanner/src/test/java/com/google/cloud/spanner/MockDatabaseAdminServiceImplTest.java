@@ -193,7 +193,7 @@ public class MockDatabaseAdminServiceImplTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     client.close();
   }
 

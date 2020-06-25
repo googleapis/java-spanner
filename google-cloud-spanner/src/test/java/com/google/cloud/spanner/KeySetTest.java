@@ -264,7 +264,7 @@ public class KeySetTest {
   }
 
   @Test
-  public void javaSerialization() throws Exception {
+  public void javaSerialization() {
     reserializeAndAssert(
         KeySet.all()
             .toBuilder()

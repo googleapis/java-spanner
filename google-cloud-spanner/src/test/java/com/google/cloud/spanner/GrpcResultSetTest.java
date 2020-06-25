@@ -564,7 +564,7 @@ public class GrpcResultSetTest {
   }
 
   @Test
-  public void serialization() throws Exception {
+  public void serialization() {
     Type structType =
         Type.struct(
             Arrays.asList(
@@ -605,7 +605,7 @@ public class GrpcResultSetTest {
   }
 
   @Test
-  public void nestedStructSerialization() throws Exception {
+  public void nestedStructSerialization() {
     Type structType =
         Type.struct(
             Arrays.asList(
