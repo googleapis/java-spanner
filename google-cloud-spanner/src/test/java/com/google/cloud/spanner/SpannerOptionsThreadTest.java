@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,54 +14,57 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.it;
+package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.Statement;
+import com.google.api.core.ApiFunction;
+import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.common.base.Stopwatch;
+import com.google.spanner.admin.database.v1.ListDatabasesResponse;
+import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
-public class ITSpannerOptionsTest {
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static Database db;
-
-  @BeforeClass
-  public static void setUp() throws Exception {
-    db = env.getTestHelper().createTestDatabase();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    db.drop();
-  }
-
+public class SpannerOptionsThreadTest extends AbstractMockServerTest {
   private static final int NUMBER_OF_TEST_RUNS = 2;
-  private static final int DEFAULT_NUM_CHANNELS = 4;
-  private static final int NUM_THREADS_PER_CHANNEL = 4;
+  private static final int DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT = 4;
+  private static final int NUM_GAPIC_CLIENTS = 4;
+  private static final int NUM_THREADS =
+      Math.max(
+          DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT * NUM_GAPIC_CLIENTS,
+          Runtime.getRuntime().availableProcessors());
   private static final String SPANNER_THREAD_NAME = "Cloud-Spanner-TransportChannel";
   private static final String THREAD_PATTERN = "%s-[0-9]+";
+
+  private final DatabaseId dbId = DatabaseId.of("p", "i", "d");
+
+  @SuppressWarnings("rawtypes")
+  private SpannerOptions createOptions() {
+    return SpannerOptions.newBuilder()
+        .setProjectId("p")
+        // Set a custom channel configurator to allow http instead of https.
+        .setChannelConfigurator(
+            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
+              @Override
+              public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
+                input.usePlaintext();
+                return input;
+              }
+            })
+        .setHost("http://localhost:" + getPort())
+        .setCredentials(NoCredentials.getInstance())
+        .build();
+  }
 
   @Test
   public void testCloseAllThreadsWhenClosingSpanner() throws InterruptedException {
@@ -72,18 +75,15 @@ public class ITSpannerOptionsTest {
       // Create Spanner instance.
       // We make a copy of the options instance, as SpannerOptions caches any service object
       // that has been handed out.
-      SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
+      SpannerOptions options = createOptions();
       Spanner spanner = options.getService();
       // Get a database client and do a query. This should initiate threads for the Spanner service.
-      DatabaseClient client = spanner.getDatabaseClient(db.getId());
+      DatabaseClient client = spanner.getDatabaseClient(dbId);
       List<ResultSet> resultSets = new ArrayList<>();
       // SpannerStub affiliates a channel with a session, so we need to use multiple sessions
       // to ensure we also hit multiple channels.
       for (int i2 = 0; i2 < options.getSessionPoolOptions().getMaxSessions(); i2++) {
-        ResultSet rs =
-            client
-                .singleUse()
-                .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"));
+        ResultSet rs = client.singleUse().executeQuery(SELECT_COUNT_STATEMENT);
         // Execute ResultSet#next() to send the query to Spanner.
         rs.next();
         // Delay closing the result set in order to force the use of multiple sessions.
@@ -91,8 +91,7 @@ public class ITSpannerOptionsTest {
         // sessions should initialize multiple transport channels.
         resultSets.add(rs);
         // Check whether the number of expected threads has been reached.
-        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME)
-            == DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount) {
+        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME) == NUM_THREADS + baseThreadCount) {
           break;
         }
       }
@@ -102,25 +101,27 @@ public class ITSpannerOptionsTest {
       // Check the number of threads after the query. Doing a request should initialize a thread
       // pool for the underlying SpannerClient.
       assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
+          .isEqualTo(NUM_THREADS + baseThreadCount);
 
       // Then do a request to the InstanceAdmin service and check the number of threads.
       // Doing a request should initialize a thread pool for the underlying InstanceAdminClient.
-      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS * 2; i2++) {
+      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT * 2; i2++) {
         InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+        mockInstanceAdmin.addResponse(ListInstancesResponse.getDefaultInstance());
         instanceAdminClient.listInstances();
       }
       assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(2 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
+          .isEqualTo(NUM_THREADS + baseThreadCount);
 
       // Then do a request to the DatabaseAdmin service and check the number of threads.
       // Doing a request should initialize a thread pool for the underlying DatabaseAdminClient.
-      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS * 2; i2++) {
+      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT * 2; i2++) {
         DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-        databaseAdminClient.listDatabases(db.getId().getInstanceId().getInstance());
+        mockDatabaseAdmin.addResponse(ListDatabasesResponse.getDefaultInstance());
+        databaseAdminClient.listDatabases(dbId.getInstanceId().getInstance());
       }
       assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(3 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
+          .isEqualTo(NUM_THREADS + baseThreadCount);
 
       // Now close the Spanner instance and check whether the threads are shutdown or not.
       spanner.close();
@@ -138,23 +139,17 @@ public class ITSpannerOptionsTest {
   public void testMultipleSpannersFromSameSpannerOptions() throws InterruptedException {
     waitForStartup();
     int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
-    SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
+    SpannerOptions options = createOptions();
     try (Spanner spanner1 = options.getService()) {
       // Having both in the try-with-resources block is not possible, as it is the same instance.
       // One will be closed before the other, and the closing of the second instance would fail.
       Spanner spanner2 = options.getService();
       assertThat(spanner1).isSameInstanceAs(spanner2);
-      DatabaseClient client1 = spanner1.getDatabaseClient(db.getId());
-      DatabaseClient client2 = spanner2.getDatabaseClient(db.getId());
+      DatabaseClient client1 = spanner1.getDatabaseClient(dbId);
+      DatabaseClient client2 = spanner2.getDatabaseClient(dbId);
       assertThat(client1).isSameInstanceAs(client2);
-      try (ResultSet rs1 =
-              client1
-                  .singleUse()
-                  .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"));
-          ResultSet rs2 =
-              client2
-                  .singleUse()
-                  .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2")); ) {
+      try (ResultSet rs1 = client1.singleUse().executeQuery(SELECT_COUNT_STATEMENT);
+          ResultSet rs2 = client2.singleUse().executeQuery(SELECT_COUNT_STATEMENT)) {
         while (rs1.next() && rs2.next()) {
           // Do nothing, just consume the result sets.
         }
@@ -181,15 +176,10 @@ public class ITSpannerOptionsTest {
 
   private int getNumberOfThreadsWithName(String serviceName) {
     Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
-    ThreadGroup group = Thread.currentThread().getThreadGroup();
-    while (group.getParent() != null) {
-      group = group.getParent();
-    }
-    Thread[] threads = new Thread[100 * NUMBER_OF_TEST_RUNS];
-    int numberOfThreads = group.enumerate(threads);
+    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
     int res = 0;
-    for (int i = 0; i < numberOfThreads; i++) {
-      if (pattern.matcher(threads[i].getName()).matches()) {
+    for (Thread thread : threadSet) {
+      if (pattern.matcher(thread.getName()).matches()) {
         res++;
       }
     }
