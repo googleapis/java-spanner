@@ -89,9 +89,6 @@ public class ITBatchReadTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
-    assumeFalse(
-        "BatchReadOnlyTransactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
     db =
         env.getTestHelper()
             .createTestDatabase(
