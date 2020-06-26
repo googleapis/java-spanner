@@ -49,7 +49,6 @@ import org.junit.experimental.categories.Category;
  * Base class for integration tests. This class is located in this package to be able to access
  * package-private methods of the Connection API
  */
-@Category(IntegrationTest.class)
 public abstract class ITAbstractSpannerTest {
   protected class ITConnectionProvider implements GenericConnectionProvider {
     public ITConnectionProvider() {}
