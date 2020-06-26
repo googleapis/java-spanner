@@ -170,7 +170,8 @@ public class IntegrationTestEnv extends ExternalResource {
           instanceAdminClient.deleteInstance(testHelper.getInstanceId().getInstance());
           logger.log(Level.INFO, "Deleted test instance {0}", testHelper.getInstanceId());
         } catch (SpannerException e) {
-          logger.log(Level.SEVERE, "Failed to delete test instance " + testHelper.getInstanceId(), e);
+          logger.log(
+              Level.SEVERE, "Failed to delete test instance " + testHelper.getInstanceId(), e);
         }
       } else {
         testHelper.cleanUp();
