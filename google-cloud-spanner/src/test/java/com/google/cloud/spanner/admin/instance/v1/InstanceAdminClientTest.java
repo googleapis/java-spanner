@@ -103,7 +103,7 @@ public class InstanceAdminClientTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     client.close();
   }
 
