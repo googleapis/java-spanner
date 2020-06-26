@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -43,7 +42,6 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.experimental.categories.Category;
 
 /**
  * Base class for integration tests. This class is located in this package to be able to access
