@@ -107,6 +107,7 @@ public class IntegrationTestEnv extends ExternalResource {
   protected void after() {
     cleanUpInstance();
     this.config.tearDown();
+    this.testHelper.getClient().close();
   }
 
   private void initializeInstance(InstanceId instanceId) {
