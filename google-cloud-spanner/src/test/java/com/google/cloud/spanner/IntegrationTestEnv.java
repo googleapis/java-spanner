@@ -107,7 +107,6 @@ public class IntegrationTestEnv extends ExternalResource {
   protected void after() {
     cleanUpInstance();
     this.config.tearDown();
-    this.testHelper.getClient().close();
   }
 
   private void initializeInstance(InstanceId instanceId) {
@@ -163,17 +162,21 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpInstance() {
-    if (isOwnedInstance) {
-      // Delete the instance, which implicitly drops all databases in it.
-      try {
-        logger.log(Level.FINE, "Deleting test instance {0}", testHelper.getInstanceId());
-        instanceAdminClient.deleteInstance(testHelper.getInstanceId().getInstance());
-        logger.log(Level.INFO, "Deleted test instance {0}", testHelper.getInstanceId());
-      } catch (SpannerException e) {
-        logger.log(Level.SEVERE, "Failed to delete test instance " + testHelper.getInstanceId(), e);
+    try {
+      if (isOwnedInstance) {
+        // Delete the instance, which implicitly drops all databases in it.
+        try {
+          logger.log(Level.FINE, "Deleting test instance {0}", testHelper.getInstanceId());
+          instanceAdminClient.deleteInstance(testHelper.getInstanceId().getInstance());
+          logger.log(Level.INFO, "Deleted test instance {0}", testHelper.getInstanceId());
+        } catch (SpannerException e) {
+          logger.log(Level.SEVERE, "Failed to delete test instance " + testHelper.getInstanceId(), e);
+        }
+      } else {
+        testHelper.cleanUp();
       }
-    } else {
-      testHelper.cleanUp();
+    } finally {
+      testHelper.getClient().close();
     }
   }
 
