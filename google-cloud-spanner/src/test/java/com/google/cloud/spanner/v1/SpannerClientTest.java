@@ -108,7 +108,7 @@ public class SpannerClientTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     client.close();
   }
 
