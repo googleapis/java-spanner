@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -177,12 +179,20 @@ public abstract class ITAbstractSpannerTest {
       url.append(options.getHost().substring(options.getHost().indexOf(':') + 1));
     }
     url.append("/").append(database.getId().getName());
+    if (options.getCredentials() == NoCredentials.getInstance()) {
+      url.append(";usePlainText=true");
+    }
     return url;
   }
 
   @BeforeClass
   public static void setup() {
     database = env.getTestHelper().createTestDatabase();
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   /**

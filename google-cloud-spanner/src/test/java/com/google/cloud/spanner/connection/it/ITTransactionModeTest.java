@@ -42,7 +42,7 @@ import org.junit.runners.JUnit4;
 public class ITTransactionModeTest extends ITAbstractSpannerTest {
   @Override
   public void appendConnectionUri(StringBuilder uri) {
-    uri.append("?autocommit=false");
+    uri.append(";autocommit=false");
   }
 
   @Override

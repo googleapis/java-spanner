@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -168,6 +169,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAnalyzeQuery() {
+    assumeFalse("analyze query is not supported on the emulator", env.getTestHelper().isEmulator());
     try (ITConnection connection = createConnection()) {
       for (QueryAnalyzeMode mode : QueryAnalyzeMode.values()) {
         try (ResultSet rs =
