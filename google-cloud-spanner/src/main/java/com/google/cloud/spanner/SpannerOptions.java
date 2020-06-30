@@ -376,6 +376,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     Builder(SpannerOptions options) {
       super(options);
+      if (options.getHost() != null
+          && this.emulatorHost != null
+          && !options.getHost().equals(this.emulatorHost)) {
+        this.emulatorHost = null;
+      }
       this.numChannels = options.numChannels;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
