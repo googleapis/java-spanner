@@ -57,14 +57,9 @@ public class ITSpannerOptionsTest {
           env.getTestHelper().getOptions().toBuilder().setCompressorName(compressorName).build();
       try (Spanner spanner = options.getService()) {
         DatabaseClient client = spanner.getDatabaseClient(db.getId());
-        try (ResultSet rs =
-            client
-                .singleUse()
-                .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"))) {
+        try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1 AS COL1"))) {
           assertThat(rs.next()).isTrue();
           assertThat(rs.getLong(0)).isEqualTo(1L);
-          assertThat(rs.next()).isTrue();
-          assertThat(rs.getLong(0)).isEqualTo(2L);
           assertThat(rs.next()).isFalse();
         }
       }
