@@ -125,7 +125,7 @@ class PartitionedDMLTransaction implements SessionTransaction {
               // Retry the stream in the same transaction if the stream breaks with
               // UnavailableException and we have a resume token. Otherwise, we just retry the
               // entire transaction.
-              if (resumeToken != null && !ByteString.EMPTY.equals(resumeToken)) {
+              if (!ByteString.EMPTY.equals(resumeToken)) {
                 log.log(
                     Level.FINER,
                     "Retrying PartitionedDml stream using resume token '"
