@@ -176,4 +176,10 @@
     <method>com.google.api.gax.retrying.RetrySettings getPartitionedDmlRetrySettings()</method>
   </difference>
   
+  <!-- Streaming PDML -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.rpc.ServerStream executeStreamingPartitionedDml(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, org.threeten.bp.Duration)</method>
+  </difference>
 </differences>

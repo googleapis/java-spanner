@@ -38,6 +38,7 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -54,6 +55,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -359,6 +361,21 @@ public class GapicSpannerRpc implements SpannerRpc {
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
           .setRetrySettings(partitionedDmlRetrySettings);
+      // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
+      // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
+      // also change the StreamWatchdogCheckInterval.
+      if (options
+              .getPartitionedDmlTimeout()
+              .dividedBy(10L)
+              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+          < 0) {
+        pdmlSettings.setStreamWatchdogCheckInterval(
+            options.getPartitionedDmlTimeout().dividedBy(10));
+        pdmlSettings.setStreamWatchdogProvider(
+            pdmlSettings
+                .getStreamWatchdogProvider()
+                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+      }
       this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
@@ -1071,6 +1088,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public RetrySettings getPartitionedDmlRetrySettings() {
     return partitionedDmlRetrySettings;
+  }
+
+  @Override
+  public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
+      ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    context = context.withStreamWaitTimeout(timeout);
+    return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 
   @Override

@@ -169,7 +169,7 @@ public class DatabaseClientImplTest {
    * A valid query that returns a {@link ResultSet} should not be accepted by a partitioned dml
    * transaction.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithQuery() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -234,20 +234,22 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testPartitionedDmlWithLowerTimeout() {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(100L));
+    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout())
-          .isEqualTo(Duration.ofMillis(100L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
       // PDML should timeout with these settings.
+      mockSpanner.setExecuteSqlExecutionTime(
+          SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
         fail("expected DEADLINE_EXCEEDED");
@@ -275,7 +277,8 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testPartitionedDmlWithHigherTimeout() {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -307,6 +310,7 @@ public class DatabaseClientImplTest {
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
+      mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
       try {
         client
             .readWriteTransaction()
