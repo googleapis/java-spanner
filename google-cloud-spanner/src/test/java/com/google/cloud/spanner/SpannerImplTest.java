@@ -168,7 +168,7 @@ public class SpannerImplTest {
   }
 
   @Test
-  public void testSpannerClosed() throws InterruptedException {
+  public void testSpannerClosed() {
     SpannerOptions options = createSpannerOptions();
     Spanner spanner1 = options.getService();
     Spanner spanner2 = options.getService();
@@ -199,7 +199,7 @@ public class SpannerImplTest {
   }
 
   @Test
-  public void testClientId() throws Exception {
+  public void testClientId() {
     // Create a unique database id to be sure it has not yet been used in the lifetime of this JVM.
     String dbName =
         String.format("projects/p1/instances/i1/databases/%s", UUID.randomUUID().toString());

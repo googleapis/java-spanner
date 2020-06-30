@@ -28,7 +28,6 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,11 +211,11 @@ public class ValueTest {
 
   @Test
   public void stringLong() {
-    String str = "aaaaaaaaaabbbbbbbbbbccccccccccdddddddddd";
+    String str = "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeee";
     Value v = Value.string(str);
     assertThat(v.getString()).isEqualTo(str);
-    assertThat(v.toString()).hasLength(32);
-    assertThat(v.toString()).startsWith(str.substring(0, 32 - 3));
+    assertThat(v.toString()).hasLength(36);
+    assertThat(v.toString()).startsWith(str.substring(0, 36 - 3));
     assertThat(v.toString()).endsWith("...");
   }
 
@@ -1008,13 +1007,11 @@ public class ValueTest {
       return delegate;
     }
 
-    private void readObject(@SuppressWarnings("unused") java.io.ObjectInputStream unusedStream)
-        throws IOException, ClassNotFoundException {
+    private void readObject(@SuppressWarnings("unused") java.io.ObjectInputStream unusedStream) {
       throw new IllegalStateException("Serialization disabled");
     }
 
-    private void writeObject(@SuppressWarnings("unused") java.io.ObjectOutputStream unusedStream)
-        throws IOException {
+    private void writeObject(@SuppressWarnings("unused") java.io.ObjectOutputStream unusedStream) {
       throw new IllegalStateException("Serialization disabled");
     }
   }

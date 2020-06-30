@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -89,9 +88,6 @@ public class ITBatchReadTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
-    assumeFalse(
-        "BatchReadOnlyTransactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
     db =
         env.getTestHelper()
             .createTestDatabase(
@@ -177,7 +173,7 @@ public class ITBatchReadTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     if (batchTxn != null) {
       batchTxn.close();
     }

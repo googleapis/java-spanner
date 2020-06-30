@@ -38,7 +38,6 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.PrimitiveSink;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 /**
  * {@link ResultSet} implementation that keeps a running checksum that can be used to determine
@@ -117,7 +116,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   }
 
   @VisibleForTesting
-  HashCode getChecksum() throws InterruptedException, ExecutionException {
+  HashCode getChecksum() {
     // HashCode is immutable and can be safely returned.
     return checksumCalculator.getChecksum();
   }

@@ -97,7 +97,7 @@ public class ITBackupTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     logger.info("Setting up tests");
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -474,7 +474,7 @@ public class ITBackupTest {
     assertThat(backup.getDatabase()).isEqualTo(db.getId());
   }
 
-  private void testUpdateBackup(Backup backup) throws InterruptedException, ExecutionException {
+  private void testUpdateBackup(Backup backup) {
     // Update the expire time.
     Timestamp tomorrow = tomorrow();
     backup = backup.toBuilder().setExpireTime(tomorrow).build();
@@ -525,7 +525,7 @@ public class ITBackupTest {
     assertThat(numBackups).isAtLeast(expectedMinimumTotalBackups);
   }
 
-  private void testDelete(String backupId) throws InterruptedException, ExecutionException {
+  private void testDelete(String backupId) throws InterruptedException {
     waitForDbOperations(backupId);
     // Get the backup.
     logger.info(String.format("Fetching backup %s", backupId));

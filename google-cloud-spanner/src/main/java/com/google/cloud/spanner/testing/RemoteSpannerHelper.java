@@ -129,7 +129,6 @@ public class RemoteSpannerHelper {
       }
     }
     logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);
-    client.close();
   }
 
   /**

@@ -201,7 +201,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
     }
 
     @Override
-    public Database call() throws Exception {
+    public Database call() {
       MockDatabase db = databases.get(name);
       db.state = State.READY;
       Database proto = db.toProto();

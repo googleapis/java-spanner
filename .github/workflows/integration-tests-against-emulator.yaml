@@ -1,0 +1,19 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+name: integration-tests-against-emulator
+jobs:
+  units:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - run: java -version
+    - run: .kokoro/build.sh
+    - run: sh .github/workflows/integration-tests-against-emulator.sh
+      env:
+        JOB_TYPE: test

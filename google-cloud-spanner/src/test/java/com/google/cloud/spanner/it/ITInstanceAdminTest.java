@@ -64,7 +64,7 @@ public class ITInstanceAdminTest {
   }
 
   @Test
-  public void listInstances() throws Exception {
+  public void listInstances() {
     Instance instance =
         Iterators.getOnlyElement(
             instanceClient
