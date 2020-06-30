@@ -248,6 +248,8 @@ public class DatabaseClientImplTest {
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
       // PDML should timeout with these settings.
+      mockSpanner.setExecuteSqlExecutionTime(
+          SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
         fail("expected DEADLINE_EXCEEDED");
