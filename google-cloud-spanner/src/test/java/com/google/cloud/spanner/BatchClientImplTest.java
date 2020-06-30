@@ -102,7 +102,7 @@ public final class BatchClientImplTest {
   }
 
   @Test
-  public void testBatchReadOnlyTxnWithTxnId() throws Exception {
+  public void testBatchReadOnlyTxnWithTxnId() {
     when(txnID.getSessionId()).thenReturn(SESSION_NAME);
     when(txnID.getTransactionId()).thenReturn(TXN_ID);
     Timestamp t = Timestamp.parseTimestamp(TIMESTAMP);

@@ -105,7 +105,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 createExecutor.submit(
                     new Runnable() {
                       @Override
@@ -116,7 +116,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                           synchronized (lock) {
                             session = mockSession();
                             setupSession(session);
-
                             sessions.put(session.getName(), false);
                             if (sessions.size() > maxAliveSessions) {
                               maxAliveSessions = sessions.size();
@@ -145,7 +144,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             new Answer<ResultSet>() {
 
               @Override
-              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) {
                 resetTransaction(session);
                 return mockResult;
               }
@@ -155,7 +154,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             new Answer<ApiFuture<Empty>>() {
 
               @Override
-              public ApiFuture<Empty> answer(InvocationOnMock invocation) throws Throwable {
+              public ApiFuture<Empty> answer(InvocationOnMock invocation) {
                 synchronized (lock) {
                   if (expiredSessions.contains(session.getName())) {
                     return ApiFutures.immediateFailedFuture(
@@ -178,7 +177,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(InvocationOnMock invocation) throws Throwable {
+              public Void answer(InvocationOnMock invocation) {
                 if (random.nextInt(100) < 10) {
                   expireSession(session);
                   throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());

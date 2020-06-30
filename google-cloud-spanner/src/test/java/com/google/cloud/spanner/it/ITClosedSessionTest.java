@@ -207,7 +207,7 @@ public class ITClosedSessionTest {
       txn.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               for (int i = 0; i < 2; i++) {
                 try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
                   assertThat(rs.next()).isTrue();
@@ -230,7 +230,7 @@ public class ITClosedSessionTest {
       txn.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
                 rs.next();
                 fail("Expected exception");
@@ -271,7 +271,7 @@ public class ITClosedSessionTest {
   }
 
   @Test
-  public void testTransactionManagerNoRecreation() throws InterruptedException {
+  public void testTransactionManagerNoRecreation() {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
     try (TransactionManager manager = client.transactionManager()) {

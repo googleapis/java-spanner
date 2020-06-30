@@ -50,7 +50,7 @@ public class SpannerRetryHelperTest {
     final Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             latch.countDown();
             throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
           }
@@ -85,12 +85,12 @@ public class SpannerRetryHelperTest {
   }
 
   @Test
-  public void testTimedoutContext() throws InterruptedException {
+  public void testTimedoutContext() {
     ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
     final Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
           }
         };
@@ -120,7 +120,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             return 1 + 1;
           }
         };
@@ -132,7 +132,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             throw new IllegalStateException("test");
           }
         };
@@ -145,7 +145,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             if (attempts.getAndIncrement() == 0) {
               throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
             }
@@ -161,7 +161,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             if (attempts.getAndIncrement() < 2) {
               throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1));
             }
@@ -177,7 +177,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             if (attempts.getAndIncrement() == 0) {
               throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
             }
@@ -227,7 +227,7 @@ public class SpannerRetryHelperTest {
     Callable<Integer> callable =
         new Callable<Integer>() {
           @Override
-          public Integer call() throws Exception {
+          public Integer call() {
             if (attempts.getAndIncrement() == 0) {
               throw e;
             }

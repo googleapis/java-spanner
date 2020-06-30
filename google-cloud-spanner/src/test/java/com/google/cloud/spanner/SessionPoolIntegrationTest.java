@@ -74,7 +74,7 @@ public class SessionPoolIntegrationTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     SessionPoolOptions options =
         SessionPoolOptions.newBuilder().setMinSessions(1).setMaxSessions(2).build();
     pool =

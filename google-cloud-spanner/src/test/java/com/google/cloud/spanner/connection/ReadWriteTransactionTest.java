@@ -50,7 +50,6 @@ import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -145,7 +144,7 @@ public class ReadWriteTransactionTest {
         .thenAnswer(
             new Answer<TransactionManager>() {
               @Override
-              public TransactionManager answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionManager answer(InvocationOnMock invocation) {
                 TransactionContext txContext = mock(TransactionContext.class);
                 when(txContext.executeQuery(any(Statement.class)))
                     .thenReturn(mock(ResultSet.class));
@@ -470,7 +469,7 @@ public class ReadWriteTransactionTest {
   }
 
   @Test
-  public void testChecksumResultSet() throws InterruptedException, ExecutionException {
+  public void testChecksumResultSet() {
     DatabaseClient client = mock(DatabaseClient.class);
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
@@ -534,7 +533,7 @@ public class ReadWriteTransactionTest {
   }
 
   @Test
-  public void testChecksumResultSetWithArray() throws InterruptedException, ExecutionException {
+  public void testChecksumResultSetWithArray() {
     DatabaseClient client = mock(DatabaseClient.class);
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()

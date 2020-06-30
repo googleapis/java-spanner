@@ -151,8 +151,7 @@ public class SessionClientTest {
         .then(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
                 Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
                 usedChannels.add(channelHint);
@@ -215,8 +214,7 @@ public class SessionClientTest {
         .then(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
                 Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
                 usedChannelHintss.add(channelHint);
@@ -300,8 +298,7 @@ public class SessionClientTest {
             .then(
                 new Answer<List<com.google.spanner.v1.Session>>() {
                   @Override
-                  public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                      throws Throwable {
+                  public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                     Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
                     Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
                     if (errorOnChannels.contains(channelHint)) {
@@ -368,8 +365,7 @@ public class SessionClientTest {
         .then(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 int sessionCount = invocation.getArgumentAt(1, Integer.class);
                 List<com.google.spanner.v1.Session> res = new ArrayList<>();
                 for (int i = 1; i <= Math.min(MAX_SESSIONS_PER_BATCH, sessionCount); i++) {

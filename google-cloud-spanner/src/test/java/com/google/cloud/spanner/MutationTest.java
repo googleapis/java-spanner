@@ -413,7 +413,7 @@ public class MutationTest {
   }
 
   @Test
-  public void javaSerialization() throws Exception {
+  public void javaSerialization() {
     reserializeAndAssert(appendAllTypes(Mutation.newInsertBuilder("test")).build());
     reserializeAndAssert(appendAllTypes(Mutation.newUpdateBuilder("test")).build());
     reserializeAndAssert(appendAllTypes(Mutation.newReplaceBuilder("test")).build());

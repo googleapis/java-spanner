@@ -34,11 +34,13 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -61,7 +63,7 @@ public class ITCommitTimestampTest {
   private static String databaseId;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     testHelper = env.getTestHelper();
     db =
         testHelper.createTestDatabase(
@@ -75,6 +77,11 @@ public class ITCommitTimestampTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     instanceId = testHelper.getInstanceId().getInstance();
     databaseId = db.getId().getDatabase();
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   @After

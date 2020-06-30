@@ -114,7 +114,7 @@ public class DatabaseClientImplTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -134,7 +134,7 @@ public class DatabaseClientImplTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     mockSpanner.unfreeze();
     spanner.close();
     spannerWithEmptySessionPool.close();
@@ -613,7 +613,7 @@ public class DatabaseClientImplTest {
    * A valid query that returns a {@link ResultSet} should not be accepted by a partitioned dml
    * transaction.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithQuery() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -629,7 +629,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlDoesNotTimeout() throws Exception {
+  public void testPartitionedDmlDoesNotTimeout() {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
@@ -662,7 +662,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Void>() {
                   @Override
-                  public Void run(TransactionContext transaction) throws Exception {
+                  public Void run(TransactionContext transaction) {
                     transaction.executeUpdate(UPDATE_STATEMENT);
                     return null;
                   }
@@ -677,21 +677,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlWithLowerTimeout() throws Exception {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+  public void testPartitionedDmlWithLowerTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(100L));
+    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout())
-          .isEqualTo(Duration.ofMillis(100L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
       // PDML should timeout with these settings.
+      mockSpanner.setExecuteSqlExecutionTime(
+          SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
         fail("expected DEADLINE_EXCEEDED");
@@ -709,7 +711,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Long>() {
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       return transaction.executeUpdate(UPDATE_STATEMENT);
                     }
                   });
@@ -718,8 +720,9 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlWithHigherTimeout() throws Exception {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+  public void testPartitionedDmlWithHigherTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -751,13 +754,14 @@ public class DatabaseClientImplTest {
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
+      mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
       try {
         client
             .readWriteTransaction()
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
@@ -770,7 +774,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlRetriesOnUnavailable() throws Exception {
+  public void testPartitionedDmlRetriesOnUnavailable() {
     mockSpanner.setExecuteSqlExecutionTime(
         SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
     SpannerOptions.Builder builder =
@@ -831,7 +835,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -884,7 +888,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testDatabaseOrInstanceDoesNotExistOnCreate() throws Exception {
+  public void testDatabaseOrInstanceDoesNotExistOnCreate() {
     StatusRuntimeException[] exceptions =
         new StatusRuntimeException[] {
           SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
@@ -1023,7 +1027,7 @@ public class DatabaseClientImplTest {
           .run(
               new TransactionCallable<Void>() {
                 @Override
-                public Void run(TransactionContext transaction) throws Exception {
+                public Void run(TransactionContext transaction) {
                   return null;
                 }
               });
@@ -1039,7 +1043,7 @@ public class DatabaseClientImplTest {
         .run(
             new TransactionCallable<Void>() {
               @Override
-              public Void run(TransactionContext transaction) throws Exception {
+              public Void run(TransactionContext transaction) {
                 return null;
               }
             });
@@ -1110,7 +1114,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -1135,7 +1139,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -1182,7 +1186,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
@@ -1217,7 +1221,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     // Client1 should have 1 session checked out.
                     // Client2 should have 0 sessions checked out.
                     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
@@ -1228,7 +1232,7 @@ public class DatabaseClientImplTest {
                             .run(
                                 new TransactionCallable<Long>() {
                                   @Override
-                                  public Long run(TransactionContext transaction) throws Exception {
+                                  public Long run(TransactionContext transaction) {
                                     // Both clients should now have 1 session checked out.
                                     assertThat(client1.pool.getNumberOfSessionsInPool())
                                         .isEqualTo(minSessions - 1);

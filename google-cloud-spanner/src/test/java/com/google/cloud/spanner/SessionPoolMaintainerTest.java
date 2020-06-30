@@ -57,7 +57,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   private Map<String, Integer> pingedSessions = new HashMap<>();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
@@ -79,7 +79,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -108,7 +108,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
         .thenAnswer(
             new Answer<ResultSet>() {
               @Override
-              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) {
                 Integer currentValue = pingedSessions.get(session.getName());
                 if (currentValue == null) {
                   currentValue = 0;

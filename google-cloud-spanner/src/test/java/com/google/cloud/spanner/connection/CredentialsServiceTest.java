@@ -54,14 +54,14 @@ public class CredentialsServiceTest {
       };
 
   @Test
-  public void testCreateCredentialsDefault() throws Exception {
+  public void testCreateCredentialsDefault() {
     ServiceAccountCredentials credentials =
         (ServiceAccountCredentials) service.createCredentials(null);
     assertThat(credentials.getProjectId(), is(equalTo(APP_DEFAULT_PROJECT_ID)));
   }
 
   @Test
-  public void testCreateCredentialsFile() throws IOException {
+  public void testCreateCredentialsFile() {
     ServiceAccountCredentials credentials =
         (ServiceAccountCredentials) service.createCredentials(FILE_TEST_PATH);
     assertThat(credentials.getProjectId(), is(equalTo(TEST_PROJECT_ID)));

@@ -108,7 +108,7 @@ public final class ITBatchDmlTest {
     final TransactionCallable<long[]> callable =
         new TransactionCallable<long[]>() {
           @Override
-          public long[] run(TransactionContext transaction) throws Exception {
+          public long[] run(TransactionContext transaction) {
             List<Statement> stmts = new ArrayList<>();
             stmts.add(Statement.of(INSERT_DML));
             stmts.add(Statement.of(UPDATE_DML));
@@ -129,7 +129,7 @@ public final class ITBatchDmlTest {
     final TransactionCallable<long[]> callable =
         new TransactionCallable<long[]>() {
           @Override
-          public long[] run(TransactionContext transaction) throws Exception {
+          public long[] run(TransactionContext transaction) {
             long rowCount = transaction.executeUpdate(Statement.of(INSERT_DML));
             List<Statement> stmts = new ArrayList<>();
             stmts.add(Statement.of(UPDATE_DML));
@@ -195,10 +195,7 @@ public final class ITBatchDmlTest {
       runner.run(callable);
       Assert.fail("Expecting an exception.");
     } catch (SpannerBatchUpdateException e) {
-      // TODO: Remove if-statement when emulator returns the same error code as Cloud Spanner.
-      if (!env.getTestHelper().isEmulator()) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
-      }
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
       long[] rowCounts = e.getUpdateCounts();
       assertThat(rowCounts.length).isEqualTo(1);
       for (long rc : rowCounts) {

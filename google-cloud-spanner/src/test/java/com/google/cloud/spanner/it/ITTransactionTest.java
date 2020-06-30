@@ -397,7 +397,7 @@ public class ITTransactionTest {
                     .run(
                         new TransactionCallable<Void>() {
                           @Override
-                          public Void run(TransactionContext transaction) throws Exception {
+                          public Void run(TransactionContext transaction) {
                             return null;
                           }
                         });
