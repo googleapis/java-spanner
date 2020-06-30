@@ -397,7 +397,7 @@ public class AsyncResultSetImplStressTest {
         }
       }
       final AtomicBoolean finished = new AtomicBoolean(false);
-      // Both resume and cancel result sets randomly.
+      // Both resume and cancel resultsets randomly.
       ExecutorService resumeService = createExecService();
       resumeService.execute(
           new Runnable() {
@@ -406,6 +406,10 @@ public class AsyncResultSetImplStressTest {
               while (!finished.get()) {
                 // Randomly resume result sets.
                 resultSets.get(random.nextInt(resultSets.size())).resume();
+              }
+              // Make sure all result sets finish.
+              for (AsyncResultSet rs : resultSets) {
+                rs.resume();
               }
             }
           });
@@ -438,7 +442,7 @@ public class AsyncResultSetImplStressTest {
       int index = 0;
       for (ApiFuture<ImmutableList<Row>> future : futures) {
         try {
-          ImmutableList<Row> list = future.get();
+          ImmutableList<Row> list = future.get(30L, TimeUnit.SECONDS);
           // Note that the fact that the call succeeded for for this result set, does not
           // necessarily mean that the result set was not cancelled. Cancelling a result set is a
           // best-effort operation, and the entire result set may still be produced and returned to
