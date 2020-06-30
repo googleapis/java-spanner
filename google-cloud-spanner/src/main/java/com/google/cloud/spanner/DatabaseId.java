@@ -81,7 +81,7 @@ public final class DatabaseId {
    *     projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID}
    * @throws IllegalArgumentException if {@code name} does not conform to the expected pattern
    */
-  static DatabaseId of(String name) {
+  public static DatabaseId of(String name) {
     Preconditions.checkNotNull(name);
     Map<String, String> parts = NAME_TEMPLATE.match(name);
     Preconditions.checkArgument(

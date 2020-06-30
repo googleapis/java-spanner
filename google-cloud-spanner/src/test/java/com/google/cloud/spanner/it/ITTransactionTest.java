@@ -477,7 +477,12 @@ public class ITTransactionTest {
               new TransactionCallable<Void>() {
                 @Override
                 public Void run(TransactionContext transaction) throws SpannerException {
-                  client.singleUseReadOnlyTransaction();
+                  try (ResultSet rs =
+                      client
+                          .singleUseReadOnlyTransaction()
+                          .executeQuery(Statement.of("SELECT 1"))) {
+                    rs.next();
+                  }
 
                   return null;
                 }

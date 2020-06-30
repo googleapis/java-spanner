@@ -1078,8 +1078,14 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    return get(executeQueryAsync(request, options));
+  }
+
+  @Override
+  public ApiFuture<ResultSet> executeQueryAsync(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.executeSqlCallable().futureCall(request, context));
+    return spannerStub.executeSqlCallable().futureCall(request, context);
   }
 
   @Override
@@ -1127,30 +1133,52 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ExecuteBatchDmlResponse executeBatchDml(
       ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
+    return get(executeBatchDmlAsync(request, options));
+  }
 
+  @Override
+  public ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
+      ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.executeBatchDmlCallable().futureCall(request, context));
+    return spannerStub.executeBatchDmlCallable().futureCall(request, context);
+  }
+
+  @Override
+  public ApiFuture<Transaction> beginTransactionAsync(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return spannerStub.beginTransactionCallable().futureCall(request, context);
   }
 
   @Override
   public Transaction beginTransaction(
       BeginTransactionRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
-    GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.beginTransactionCallable().futureCall(request, context));
+    return get(beginTransactionAsync(request, options));
+  }
+
+  @Override
+  public ApiFuture<CommitResponse> commitAsync(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
+    return spannerStub.commitCallable().futureCall(commitRequest, context);
   }
 
   @Override
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
-    return get(spannerStub.commitCallable().futureCall(commitRequest, context));
+    return get(commitAsync(commitRequest, options));
+  }
+
+  @Override
+  public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return spannerStub.rollbackCallable().futureCall(request, context);
   }
 
   @Override
   public void rollback(RollbackRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, request.getSession());
-    get(spannerStub.rollbackCallable().futureCall(request, context));
+    get(rollbackAsync(request, options));
   }
 
   @Override

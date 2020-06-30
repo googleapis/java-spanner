@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,9 +26,11 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +41,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -66,6 +70,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
   SessionPoolOptions options;
+  ExecutorService createExecutor = Executors.newSingleThreadExecutor();
   Object lock = new Object();
   Random random = new Random();
   FakeClock clock = new FakeClock();
@@ -97,43 +102,31 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     SessionClient sessionClient = mock(SessionClient.class);
     when(mockSpanner.getSessionClient(db)).thenReturn(sessionClient);
     when(mockSpanner.getOptions()).thenReturn(spannerOptions);
-    when(sessionClient.createSession())
-        .thenAnswer(
-            new Answer<Session>() {
-
-              @Override
-              public Session answer(InvocationOnMock invocation) {
-                synchronized (lock) {
-                  SessionImpl session = mockSession();
-                  setupSession(session);
-
-                  sessions.put(session.getName(), false);
-                  if (sessions.size() > maxAliveSessions) {
-                    maxAliveSessions = sessions.size();
-                  }
-                  return session;
-                }
-              }
-            });
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(InvocationOnMock invocation) {
-                int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                for (int s = 0; s < sessionCount; s++) {
-                  synchronized (lock) {
-                    SessionImpl session = mockSession();
-                    setupSession(session);
-
-                    sessions.put(session.getName(), false);
-                    if (sessions.size() > maxAliveSessions) {
-                      maxAliveSessions = sessions.size();
-                    }
-                    SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                    consumer.onSessionReady(session);
-                  }
-                }
+              public Void answer(final InvocationOnMock invocation) {
+                createExecutor.submit(
+                    new Runnable() {
+                      @Override
+                      public void run() {
+                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                        for (int s = 0; s < sessionCount; s++) {
+                          SessionImpl session;
+                          synchronized (lock) {
+                            session = mockSession();
+                            setupSession(session);
+                            sessions.put(session.getName(), false);
+                            if (sessions.size() > maxAliveSessions) {
+                              maxAliveSessions = sessions.size();
+                            }
+                          }
+                          SessionConsumerImpl consumer =
+                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          consumer.onSessionReady(session);
+                        }
+                      }
+                    });
                 return null;
               }
             })
@@ -189,36 +182,43 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                   expireSession(session);
                   throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());
                 }
+                String name = session.getName();
                 synchronized (lock) {
-                  if (sessions.put(session.getName(), true)) {
+                  if (sessions.put(name, true)) {
                     setFailed();
                   }
+                  session.readyTransactionId = ByteString.copyFromUtf8("foo");
                 }
                 return null;
               }
             })
         .when(session)
         .prepareReadWriteTransaction();
+    when(session.hasReadyTransaction()).thenCallRealMethod();
   }
 
   private void expireSession(Session session) {
+    String name = session.getName();
     synchronized (lock) {
-      sessions.remove(session.getName());
-      expiredSessions.add(session.getName());
+      sessions.remove(name);
+      expiredSessions.add(name);
     }
   }
 
   private void assertWritePrepared(Session session) {
+    String name = session.getName();
     synchronized (lock) {
-      if (!sessions.get(session.getName())) {
+      if (!sessions.containsKey(name) || !sessions.get(name)) {
         setFailed();
       }
     }
   }
 
-  private void resetTransaction(Session session) {
+  private void resetTransaction(SessionImpl session) {
+    String name = session.getName();
     synchronized (lock) {
-      sessions.put(session.getName(), false);
+      session.readyTransactionId = null;
+      sessions.put(name, false);
     }
   }
 
@@ -264,8 +264,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         new Function<PooledSession, Void>() {
           @Override
           public Void apply(PooledSession pooled) {
+            String name = pooled.getName();
             synchronized (lock) {
-              sessions.remove(pooled.getName());
+              sessions.remove(name);
               return null;
             }
           }
@@ -279,16 +280,18 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                   Uninterruptibles.awaitUninterruptibly(releaseThreads);
                   for (int j = 0; j < numOperationsPerThread; j++) {
                     try {
-                      Session session = null;
+                      PooledSessionFuture session = null;
                       if (random.nextInt(10) < writeOperationFraction) {
                         session = pool.getReadWriteSession();
-                        assertWritePrepared(session);
+                        PooledSession sess = session.get();
+                        assertWritePrepared(sess);
                       } else {
                         session = pool.getReadSession();
+                        session.get();
                       }
                       Uninterruptibles.sleepUninterruptibly(
                           random.nextInt(5), TimeUnit.MILLISECONDS);
-                      resetTransaction(session);
+                      resetTransaction(session.get().delegate);
                       session.close();
                     } catch (SpannerException e) {
                       if (e.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED || shouldBlock) {

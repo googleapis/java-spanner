@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.protobuf.Message;
 import com.google.protobuf.TextFormat;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutionException;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -45,6 +46,15 @@ public final class SpannerMatchers {
    */
   public static <T extends Throwable> Matcher<T> isSpannerException(ErrorCode code) {
     return new SpannerExceptionMatcher<>(code);
+  }
+
+  /**
+   * Returns a method that checks that a {@link Throwable} is an {@link ExecutionException} where
+   * the cause is a {@link SpannerException} with an error code to {@code code}.
+   */
+  public static <T extends Throwable> Matcher<T> isExecutionExceptionWithSpannerCause(
+      ErrorCode code) {
+    return new ExecutionExceptionWithSpannerCauseMatcher<>(code);
   }
 
   private static class ProtoTextMatcher<T extends Message> extends BaseMatcher<T> {
@@ -108,6 +118,33 @@ public final class SpannerMatchers {
     @Override
     public void describeTo(Description description) {
       description.appendText("SpannerException[" + expectedCode + "]");
+    }
+  }
+
+  private static class ExecutionExceptionWithSpannerCauseMatcher<T extends Throwable>
+      extends BaseMatcher<T> {
+    private final ErrorCode expectedCode;
+
+    ExecutionExceptionWithSpannerCauseMatcher(ErrorCode expectedCode) {
+      this.expectedCode = checkNotNull(expectedCode);
+    }
+
+    @Override
+    public boolean matches(Object item) {
+      if (!(item instanceof ExecutionException)) {
+        return false;
+      }
+      ExecutionException ee = (ExecutionException) item;
+      if (!(ee.getCause() instanceof SpannerException)) {
+        return false;
+      }
+      SpannerException e = (SpannerException) ee.getCause();
+      return e.getErrorCode() == expectedCode;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText("ExecutionException[SpannerException[" + expectedCode + "]]");
     }
   }
 }

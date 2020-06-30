@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -40,10 +41,12 @@ import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
@@ -59,6 +62,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
@@ -107,6 +115,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final Map<DatabaseId, QueryOptions> mergedQueryOptions;
 
   private final CallCredentialsProvider callCredentialsProvider;
+  private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
 
   /**
@@ -136,6 +145,67 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public ServiceRpc create(SpannerOptions options) {
       return new GapicSpannerRpc(options);
     }
+  }
+
+  private static final AtomicInteger DEFAULT_POOL_COUNT = new AtomicInteger();
+
+  /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
+  interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+    /** Overridden to suppress the throws declaration of the super interface. */
+    @Override
+    public void close();
+  }
+
+  static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+    private final ScheduledExecutorService executor;
+
+    private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
+      this.executor = Preconditions.checkNotNull(executor);
+    }
+
+    @Override
+    public void close() {
+      executor.shutdown();
+    }
+
+    @Override
+    public ScheduledExecutorService getExecutor() {
+      return executor;
+    }
+
+    @Override
+    public boolean shouldAutoClose() {
+      return false;
+    }
+
+    /** Creates a FixedCloseableExecutorProvider. */
+    static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
+      return new FixedCloseableExecutorProvider(executor);
+    }
+  }
+
+  /**
+   * Default {@link ExecutorProvider} for high-level async calls that need an executor. The default
+   * uses a cached thread pool containing a max of 8 threads. The pool is lazily initialized and
+   * will not create any threads if the user application does not use any async methods. It will
+   * also scale down the thread usage if the async load allows for that.
+   */
+  @VisibleForTesting
+  static CloseableExecutorProvider createDefaultAsyncExecutorProvider() {
+    return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
+  }
+
+  @VisibleForTesting
+  static CloseableExecutorProvider createAsyncExecutorProvider(
+      int poolSize, long keepAliveTime, TimeUnit unit) {
+    String format =
+        String.format("spanner-async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
+    ThreadFactory threadFactory =
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(format).build();
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+    executor.setKeepAliveTime(keepAliveTime, unit);
+    executor.allowCoreThreadTimeOut(true);
+    return FixedCloseableExecutorProvider.create(executor);
   }
 
   private SpannerOptions(Builder builder) {
@@ -178,6 +248,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.mergedQueryOptions = ImmutableMap.copyOf(merged);
     }
     callCredentialsProvider = builder.callCredentialsProvider;
+    asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
   }
 
@@ -243,6 +314,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean autoThrottleAdministrativeRequests = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
+    private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
@@ -304,6 +376,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     Builder(SpannerOptions options) {
       super(options);
+      if (options.getHost() != null
+          && this.emulatorHost != null
+          && !options.getHost().equals(this.emulatorHost)) {
+        this.emulatorHost = null;
+      }
       this.numChannels = options.numChannels;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
@@ -315,6 +392,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
+      this.asyncExecutorProvider = options.asyncExecutorProvider;
       this.compressorName = options.compressorName;
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
@@ -734,6 +812,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       options = this.envQueryOptions;
     }
     return options;
+  }
+
+  CloseableExecutorProvider getAsyncExecutorProvider() {
+    return asyncExecutorProvider;
   }
 
   public int getPrefetchChunks() {

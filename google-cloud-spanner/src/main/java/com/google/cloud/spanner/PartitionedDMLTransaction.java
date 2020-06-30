@@ -33,6 +33,7 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status.Code;
+import io.opencensus.trace.Span;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -160,4 +161,8 @@ class PartitionedDMLTransaction implements SessionTransaction {
   public void invalidate() {
     isValid = false;
   }
+
+  // No-op method needed to implement SessionTransaction interface.
+  @Override
+  public void setSpan(Span span) {}
 }

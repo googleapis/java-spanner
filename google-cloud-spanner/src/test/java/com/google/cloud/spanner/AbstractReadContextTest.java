@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -80,6 +81,7 @@ public class AbstractReadContextTest {
             .setSession(session)
             .setRpc(mock(SpannerRpc.class))
             .setDefaultQueryOptions(defaultQueryOptions)
+            .setExecutorProvider(mock(ExecutorProvider.class))
             .build();
   }
 

@@ -40,7 +40,7 @@ class TraceUtil {
         AttributeValue.stringAttributeValue(Timestamp.fromProto(t.getReadTimestamp()).toString()));
   }
 
-  static ImmutableMap<String, AttributeValue> getExceptionAnnotations(RuntimeException e) {
+  static ImmutableMap<String, AttributeValue> getExceptionAnnotations(Throwable e) {
     if (e instanceof SpannerException) {
       return ImmutableMap.of(
           "Status",

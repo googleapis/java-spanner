@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 
 /**
@@ -73,30 +74,30 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     }
 
     @Override
-    PooledSession getReadSession() {
-      PooledSession session = super.getReadSession();
+    PooledSessionFuture getReadSession() {
+      PooledSessionFuture session = super.getReadSession();
       if (invalidateNextSession) {
-        session.delegate.close();
-        session.setAllowReplacing(false);
-        awaitDeleted(session.delegate);
-        session.setAllowReplacing(allowReplacing);
+        session.get().delegate.close();
+        session.get().setAllowReplacing(false);
+        awaitDeleted(session.get().delegate);
+        session.get().setAllowReplacing(allowReplacing);
         invalidateNextSession = false;
       }
-      session.setAllowReplacing(allowReplacing);
+      session.get().setAllowReplacing(allowReplacing);
       return session;
     }
 
     @Override
-    PooledSession getReadWriteSession() {
-      PooledSession session = super.getReadWriteSession();
+    PooledSessionFuture getReadWriteSession() {
+      PooledSessionFuture session = super.getReadWriteSession();
       if (invalidateNextSession) {
-        session.delegate.close();
-        session.setAllowReplacing(false);
-        awaitDeleted(session.delegate);
-        session.setAllowReplacing(allowReplacing);
+        session.get().delegate.close();
+        session.get().setAllowReplacing(false);
+        awaitDeleted(session.get().delegate);
+        session.get().setAllowReplacing(allowReplacing);
         invalidateNextSession = false;
       }
-      session.setAllowReplacing(allowReplacing);
+      session.get().setAllowReplacing(allowReplacing);
       return session;
     }
 

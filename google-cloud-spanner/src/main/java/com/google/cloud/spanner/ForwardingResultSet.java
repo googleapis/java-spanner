@@ -17,16 +17,23 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.spanner.v1.ResultSetStats;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
 public class ForwardingResultSet extends ForwardingStructReader implements ResultSet {
 
-  private ResultSet delegate;
+  private Supplier<ResultSet> delegate;
 
   public ForwardingResultSet(ResultSet delegate) {
     super(delegate);
-    this.delegate = Preconditions.checkNotNull(delegate);
+    this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(delegate));
+  }
+
+  public ForwardingResultSet(Supplier<ResultSet> supplier) {
+    super(supplier);
+    this.delegate = supplier;
   }
 
   /**
@@ -39,26 +46,26 @@ public class ForwardingResultSet extends ForwardingStructReader implements Resul
   void replaceDelegate(ResultSet newDelegate) {
     Preconditions.checkNotNull(newDelegate);
     super.replaceDelegate(newDelegate);
-    this.delegate = newDelegate;
+    this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(newDelegate));
   }
 
   @Override
   public boolean next() throws SpannerException {
-    return delegate.next();
+    return delegate.get().next();
   }
 
   @Override
   public Struct getCurrentRowAsStruct() {
-    return delegate.getCurrentRowAsStruct();
+    return delegate.get().getCurrentRowAsStruct();
   }
 
   @Override
   public void close() {
-    delegate.close();
+    delegate.get().close();
   }
 
   @Override
   public ResultSetStats getStats() {
-    return delegate.getStats();
+    return delegate.get().getStats();
   }
 }

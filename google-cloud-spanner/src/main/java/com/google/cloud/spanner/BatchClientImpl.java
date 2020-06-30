@@ -30,6 +30,7 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.TransactionSelector;
+import io.opencensus.trace.Tracing;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,7 @@ public class BatchClientImpl implements BatchClient {
             .setTimestampBound(bound)
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
         checkNotNull(bound));
   }
@@ -67,6 +69,7 @@ public class BatchClientImpl implements BatchClient {
             .setTimestamp(batchTransactionId.getTimestamp())
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
+            .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
         batchTransactionId);
   }
@@ -81,6 +84,7 @@ public class BatchClientImpl implements BatchClient {
       super(builder.setTimestampBound(bound));
       this.sessionName = session.getName();
       this.options = session.getOptions();
+      setSpan(Tracing.getTracer().getCurrentSpan());
       initTransaction();
     }
 
@@ -89,6 +93,7 @@ public class BatchClientImpl implements BatchClient {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
       this.sessionName = session.getName();
       this.options = session.getOptions();
+      setSpan(Tracing.getTracer().getCurrentSpan());
     }
 
     @Override

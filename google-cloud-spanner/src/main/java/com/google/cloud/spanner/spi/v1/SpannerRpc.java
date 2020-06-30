@@ -284,6 +284,9 @@ public interface SpannerRpc extends ServiceRpc {
 
   ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
+  ApiFuture<ResultSet> executeQueryAsync(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
   RetrySettings getPartitionedDmlRetrySettings();
@@ -296,13 +299,24 @@ public interface SpannerRpc extends ServiceRpc {
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
+  ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
+      ExecuteBatchDmlRequest build, Map<Option, ?> options);
+
   Transaction beginTransaction(BeginTransactionRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException;
+
+  ApiFuture<Transaction> beginTransactionAsync(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options);
 
   CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException;
 
+  ApiFuture<CommitResponse> commitAsync(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options);
+
   void rollback(RollbackRequest request, @Nullable Map<Option, ?> options) throws SpannerException;
+
+  ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options);
 
   PartitionResponse partitionQuery(PartitionQueryRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException;

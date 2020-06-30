@@ -40,6 +40,8 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -48,6 +50,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -56,11 +59,12 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ForwardingListenableFuture;
+import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
 import io.opencensus.common.ToLongFunction;
@@ -85,12 +89,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,53 +141,115 @@ final class SessionPool {
     }
   }
 
+  private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+    private ResultSet cached;
+
+    abstract ResultSet load();
+
+    ResultSet reload() {
+      return cached = load();
+    }
+
+    @Override
+    public ResultSet get() {
+      if (cached == null) {
+        cached = load();
+      }
+      return cached;
+    }
+  }
+
   /**
    * Wrapper around {@code ReadContext} that releases the session to the pool once the call is
    * finished, if it is a single use context.
    */
   private static class AutoClosingReadContext<T extends ReadContext> implements ReadContext {
-    private final Function<PooledSession, T> readContextDelegateSupplier;
+    /**
+     * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
+     * running for this {@link ReadContext} and that should finish before the {@link ReadContext}
+     * releases its session back into the pool.
+     */
+    private class AutoClosingReadContextAsyncResultSetImpl extends AsyncResultSetImpl {
+      private AutoClosingReadContextAsyncResultSetImpl(
+          ExecutorProvider executorProvider, ResultSet delegate, int bufferRows) {
+        super(executorProvider, delegate, bufferRows);
+      }
+
+      @Override
+      public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
+        Runnable listener =
+            new Runnable() {
+              @Override
+              public void run() {
+                synchronized (lock) {
+                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                    // All async operations for this read context have finished.
+                    AutoClosingReadContext.this.close();
+                  }
+                }
+              }
+            };
+        try {
+          asyncOperationsCount.incrementAndGet();
+          addListener(listener);
+          return super.setCallback(exec, cb);
+        } catch (Throwable t) {
+          removeListener(listener);
+          asyncOperationsCount.decrementAndGet();
+          throw t;
+        }
+      }
+    }
+
+    private final Function<PooledSessionFuture, T> readContextDelegateSupplier;
     private T readContextDelegate;
     private final SessionPool sessionPool;
-    private PooledSession session;
     private final boolean isSingleUse;
-    private boolean closed;
+    private final AtomicInteger asyncOperationsCount = new AtomicInteger();
+
+    private Object lock = new Object();
+
+    @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
 
+    @GuardedBy("lock")
+    private PooledSessionFuture session;
+
+    @GuardedBy("lock")
+    private boolean closed;
+
+    @GuardedBy("lock")
+    private boolean delegateClosed;
+
     private AutoClosingReadContext(
-        Function<PooledSession, T> delegateSupplier,
+        Function<PooledSessionFuture, T> delegateSupplier,
         SessionPool sessionPool,
-        PooledSession session,
+        PooledSessionFuture session,
         boolean isSingleUse) {
       this.readContextDelegateSupplier = delegateSupplier;
       this.sessionPool = sessionPool;
       this.session = session;
       this.isSingleUse = isSingleUse;
-      while (true) {
-        try {
-          this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
-          break;
-        } catch (SessionNotFoundException e) {
-          replaceSessionIfPossible(e);
-        }
-      }
     }
 
     T getReadContextDelegate() {
+      synchronized (lock) {
+        if (readContextDelegate == null) {
+          while (true) {
+            try {
+              this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
+              break;
+            } catch (SessionNotFoundException e) {
+              replaceSessionIfPossible(e);
+            }
+          }
+        }
+      }
       return readContextDelegate;
     }
 
-    private ResultSet wrap(final Supplier<ResultSet> resultSetSupplier) {
-      ResultSet res;
-      while (true) {
-        try {
-          res = resultSetSupplier.get();
-          break;
-        } catch (SessionNotFoundException e) {
-          replaceSessionIfPossible(e);
-        }
-      }
-      return new ForwardingResultSet(res) {
+    private ResultSet wrap(final CachedResultSetSupplier resultSetSupplier) {
+      return new ForwardingResultSet(resultSetSupplier) {
         private boolean beforeFirst = true;
 
         @Override
@@ -187,8 +258,18 @@ final class SessionPool {
             try {
               return internalNext();
             } catch (SessionNotFoundException e) {
-              replaceSessionIfPossible(e);
-              replaceDelegate(resultSetSupplier.get());
+              while (true) {
+                // Keep the replace-if-possible outside the try-block to let the exception bubble up
+                // if it's too late to replace the session.
+                replaceSessionIfPossible(e);
+                try {
+                  replaceDelegate(resultSetSupplier.reload());
+                  break;
+                } catch (SessionNotFoundException snfe) {
+                  e = snfe;
+                  // retry on yet another session.
+                }
+              }
             }
           }
         }
@@ -197,9 +278,11 @@ final class SessionPool {
           try {
             boolean ret = super.next();
             if (beforeFirst) {
-              session.markUsed();
-              beforeFirst = false;
-              sessionUsedForQuery = true;
+              synchronized (lock) {
+                session.get().markUsed();
+                beforeFirst = false;
+                sessionUsedForQuery = true;
+              }
             }
             if (!ret && isSingleUse) {
               close();
@@ -208,9 +291,11 @@ final class SessionPool {
           } catch (SessionNotFoundException e) {
             throw e;
           } catch (SpannerException e) {
-            if (!closed && isSingleUse) {
-              session.lastException = e;
-              AutoClosingReadContext.this.close();
+            synchronized (lock) {
+              if (!closed && isSingleUse) {
+                session.get().lastException = e;
+                AutoClosingReadContext.this.close();
+              }
             }
             throw e;
           }
@@ -218,22 +303,27 @@ final class SessionPool {
 
         @Override
         public void close() {
-          super.close();
-          if (isSingleUse) {
-            AutoClosingReadContext.this.close();
+          try {
+            super.close();
+          } finally {
+            if (isSingleUse) {
+              AutoClosingReadContext.this.close();
+            }
           }
         }
       };
     }
 
-    private void replaceSessionIfPossible(SessionNotFoundException e) {
-      if (isSingleUse || !sessionUsedForQuery) {
-        // This class is only used by read-only transactions, so we know that we only need a
-        // read-only session.
-        session = sessionPool.replaceReadSession(e, session);
-        readContextDelegate = readContextDelegateSupplier.apply(session);
-      } else {
-        throw e;
+    private void replaceSessionIfPossible(SessionNotFoundException notFound) {
+      synchronized (lock) {
+        if (isSingleUse || !sessionUsedForQuery) {
+          // This class is only used by read-only transactions, so we know that we only need a
+          // read-only session.
+          session = sessionPool.replaceReadSession(notFound, session);
+          readContextDelegate = readContextDelegateSupplier.apply(session);
+        } else {
+          throw notFound;
+        }
       }
     }
 
@@ -244,12 +334,35 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.read(table, keys, columns, options);
+            ResultSet load() {
+              return getReadContextDelegate().read(table, keys, columns, options);
             }
           });
+    }
+
+    @Override
+    public AsyncResultSet readAsync(
+        final String table,
+        final KeySet keys,
+        final Iterable<String> columns,
+        final ReadOption... options) {
+      Options readOptions = Options.fromReadOptions(options);
+      final int bufferRows =
+          readOptions.hasBufferRows()
+              ? readOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+      return new AutoClosingReadContextAsyncResultSetImpl(
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
+          wrap(
+              new CachedResultSetSupplier() {
+                @Override
+                ResultSet load() {
+                  return getReadContextDelegate().read(table, keys, columns, options);
+                }
+              }),
+          bufferRows);
     }
 
     @Override
@@ -260,12 +373,37 @@ final class SessionPool {
         final Iterable<String> columns,
         final ReadOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.readUsingIndex(table, index, keys, columns, options);
+            ResultSet load() {
+              return getReadContextDelegate().readUsingIndex(table, index, keys, columns, options);
             }
           });
+    }
+
+    @Override
+    public AsyncResultSet readUsingIndexAsync(
+        final String table,
+        final String index,
+        final KeySet keys,
+        final Iterable<String> columns,
+        final ReadOption... options) {
+      Options readOptions = Options.fromReadOptions(options);
+      final int bufferRows =
+          readOptions.hasBufferRows()
+              ? readOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+      return new AutoClosingReadContextAsyncResultSetImpl(
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
+          wrap(
+              new CachedResultSetSupplier() {
+                @Override
+                ResultSet load() {
+                  return getReadContextDelegate()
+                      .readUsingIndex(table, index, keys, columns, options);
+                }
+              }),
+          bufferRows);
     }
 
     @Override
@@ -274,17 +412,28 @@ final class SessionPool {
       try {
         while (true) {
           try {
-            session.markUsed();
-            return readContextDelegate.readRow(table, key, columns);
+            synchronized (lock) {
+              session.get().markUsed();
+            }
+            return getReadContextDelegate().readRow(table, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
         }
       } finally {
-        sessionUsedForQuery = true;
+        synchronized (lock) {
+          sessionUsedForQuery = true;
+        }
         if (isSingleUse) {
           close();
         }
+      }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+        return AbstractReadContext.consumeSingleRowAsync(rs);
       }
     }
 
@@ -294,14 +443,18 @@ final class SessionPool {
       try {
         while (true) {
           try {
-            session.markUsed();
-            return readContextDelegate.readRowUsingIndex(table, index, key, columns);
+            synchronized (lock) {
+              session.get().markUsed();
+            }
+            return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
           } catch (SessionNotFoundException e) {
             replaceSessionIfPossible(e);
           }
         }
       } finally {
-        sessionUsedForQuery = true;
+        synchronized (lock) {
+          sessionUsedForQuery = true;
+        }
         if (isSingleUse) {
           close();
         }
@@ -309,35 +462,70 @@ final class SessionPool {
     }
 
     @Override
+    public ApiFuture<Struct> readRowUsingIndexAsync(
+        String table, String index, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+        return AbstractReadContext.consumeSingleRowAsync(rs);
+      }
+    }
+
+    @Override
     public ResultSet executeQuery(final Statement statement, final QueryOption... options) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.executeQuery(statement, options);
+            ResultSet load() {
+              return getReadContextDelegate().executeQuery(statement, options);
             }
           });
     }
 
     @Override
+    public AsyncResultSet executeQueryAsync(
+        final Statement statement, final QueryOption... options) {
+      Options queryOptions = Options.fromQueryOptions(options);
+      final int bufferRows =
+          queryOptions.hasBufferRows()
+              ? queryOptions.bufferRows()
+              : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+      return new AutoClosingReadContextAsyncResultSetImpl(
+          sessionPool.sessionClient.getSpanner().getAsyncExecutorProvider(),
+          wrap(
+              new CachedResultSetSupplier() {
+                @Override
+                ResultSet load() {
+                  return getReadContextDelegate().executeQuery(statement, options);
+                }
+              }),
+          bufferRows);
+    }
+
+    @Override
     public ResultSet analyzeQuery(final Statement statement, final QueryAnalyzeMode queryMode) {
       return wrap(
-          new Supplier<ResultSet>() {
+          new CachedResultSetSupplier() {
             @Override
-            public ResultSet get() {
-              return readContextDelegate.analyzeQuery(statement, queryMode);
+            ResultSet load() {
+              return getReadContextDelegate().analyzeQuery(statement, queryMode);
             }
           });
     }
 
     @Override
     public void close() {
-      if (closed) {
-        return;
+      synchronized (lock) {
+        if (closed && delegateClosed) {
+          return;
+        }
+        closed = true;
+        if (asyncOperationsCount.get() == 0) {
+          if (readContextDelegate != null) {
+            readContextDelegate.close();
+          }
+          session.close();
+          delegateClosed = true;
+        }
       }
-      closed = true;
-      readContextDelegate.close();
-      session.close();
     }
   }
 
@@ -345,9 +533,9 @@ final class SessionPool {
       extends AutoClosingReadContext<ReadOnlyTransaction> implements ReadOnlyTransaction {
 
     AutoClosingReadTransaction(
-        Function<PooledSession, ReadOnlyTransaction> txnSupplier,
+        Function<PooledSessionFuture, ReadOnlyTransaction> txnSupplier,
         SessionPool sessionPool,
-        PooledSession session,
+        PooledSessionFuture session,
         boolean isSingleUse) {
       super(txnSupplier, sessionPool, session, isSingleUse);
     }
@@ -395,6 +583,13 @@ final class SessionPool {
       }
 
       @Override
+      public AsyncResultSet readAsync(
+          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, "not yet implemented");
+      }
+
+      @Override
       public ResultSet readUsingIndex(
           String table,
           String index,
@@ -406,11 +601,29 @@ final class SessionPool {
       }
 
       @Override
+      public AsyncResultSet readUsingIndexAsync(
+          String table,
+          String index,
+          KeySet keys,
+          Iterable<String> columns,
+          ReadOption... options) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, "not yet implemented");
+      }
+
+      @Override
       public Struct readRow(String table, Key key, Iterable<String> columns) {
         try {
           return delegate.readRow(table, key, columns);
         } catch (SessionNotFoundException e) {
           throw handleSessionNotFound(e);
+        }
+      }
+
+      @Override
+      public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+        try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+          return AbstractReadContext.consumeSingleRowAsync(rs);
         }
       }
 
@@ -430,6 +643,15 @@ final class SessionPool {
       }
 
       @Override
+      public ApiFuture<Struct> readRowUsingIndexAsync(
+          String table, String index, Key key, Iterable<String> columns) {
+        try (AsyncResultSet rs =
+            readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+          return AbstractReadContext.consumeSingleRowAsync(rs);
+        }
+      }
+
+      @Override
       public void buffer(Iterable<Mutation> mutations) {
         delegate.buffer(mutations);
       }
@@ -438,6 +660,15 @@ final class SessionPool {
       public long executeUpdate(Statement statement) {
         try {
           return delegate.executeUpdate(statement);
+        } catch (SessionNotFoundException e) {
+          throw handleSessionNotFound(e);
+        }
+      }
+
+      @Override
+      public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+        try {
+          return delegate.executeUpdateAsync(statement);
         } catch (SessionNotFoundException e) {
           throw handleSessionNotFound(e);
         }
@@ -453,8 +684,26 @@ final class SessionPool {
       }
 
       @Override
+      public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+        try {
+          return delegate.batchUpdateAsync(statements);
+        } catch (SessionNotFoundException e) {
+          throw handleSessionNotFound(e);
+        }
+      }
+
+      @Override
       public ResultSet executeQuery(Statement statement, QueryOption... options) {
         return new SessionPoolResultSet(delegate.executeQuery(statement, options));
+      }
+
+      @Override
+      public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+        try {
+          return delegate.executeQueryAsync(statement, options);
+        } catch (SessionNotFoundException e) {
+          throw handleSessionNotFound(e);
+        }
       }
 
       @Override
@@ -470,39 +719,40 @@ final class SessionPool {
 
     private TransactionManager delegate;
     private final SessionPool sessionPool;
-    private PooledSession session;
+    private PooledSessionFuture session;
     private boolean closed;
     private boolean restartedAfterSessionNotFound;
 
-    AutoClosingTransactionManager(SessionPool sessionPool, PooledSession session) {
+    AutoClosingTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
       this.session = session;
-      this.delegate = session.delegate.transactionManager();
     }
 
     @Override
     public TransactionContext begin() {
+      this.delegate = session.get().transactionManager();
       while (true) {
         try {
           return internalBegin();
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.delegate.transactionManager();
+          delegate = session.get().delegate.transactionManager();
         }
       }
     }
 
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(delegate.begin());
-      session.markUsed();
+      session.get().markUsed();
       return res;
     }
 
-    private SpannerException handleSessionNotFound(SessionNotFoundException e) {
-      session = sessionPool.replaceReadWriteSession(e, session);
-      delegate = session.delegate.transactionManager();
+    private SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
+      session = sessionPool.replaceReadWriteSession(notFound, session);
+      delegate = session.get().delegate.transactionManager();
       restartedAfterSessionNotFound = true;
-      return SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, e.getMessage(), e);
+      return SpannerExceptionFactory.newSpannerException(
+          ErrorCode.ABORTED, notFound.getMessage(), notFound);
     }
 
     @Override
@@ -540,7 +790,7 @@ final class SessionPool {
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.delegate.transactionManager();
+          delegate = session.get().delegate.transactionManager();
           restartedAfterSessionNotFound = true;
         }
       }
@@ -558,7 +808,9 @@ final class SessionPool {
       }
       closed = true;
       try {
-        delegate.close();
+        if (delegate != null) {
+          delegate.close();
+        }
       } finally {
         session.close();
       }
@@ -569,7 +821,7 @@ final class SessionPool {
       if (restartedAfterSessionNotFound) {
         return TransactionState.ABORTED;
       } else {
-        return delegate.getState();
+        return delegate == null ? null : delegate.getState();
       }
     }
   }
@@ -580,13 +832,19 @@ final class SessionPool {
    */
   private static final class SessionPoolTransactionRunner implements TransactionRunner {
     private final SessionPool sessionPool;
-    private PooledSession session;
+    private PooledSessionFuture session;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(SessionPool sessionPool, PooledSession session) {
+    private SessionPoolTransactionRunner(SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
       this.session = session;
-      this.runner = session.delegate.readWriteTransaction();
+    }
+
+    private TransactionRunner getRunner() {
+      if (this.runner == null) {
+        this.runner = session.get().readWriteTransaction();
+      }
+      return runner;
     }
 
     @Override
@@ -596,17 +854,17 @@ final class SessionPool {
         T result;
         while (true) {
           try {
-            result = runner.run(callable);
+            result = getRunner().run(callable);
             break;
           } catch (SessionNotFoundException e) {
             session = sessionPool.replaceReadWriteSession(e, session);
-            runner = session.delegate.readWriteTransaction();
+            runner = session.get().delegate.readWriteTransaction();
           }
         }
-        session.markUsed();
+        session.get().markUsed();
         return result;
       } catch (SpannerException e) {
-        throw session.lastException = e;
+        throw session.get().lastException = e;
       } finally {
         session.close();
       }
@@ -614,19 +872,86 @@ final class SessionPool {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return runner.getCommitTimestamp();
+      return getRunner().getCommitTimestamp();
     }
 
     @Override
     public TransactionRunner allowNestedTransaction() {
-      runner.allowNestedTransaction();
+      getRunner().allowNestedTransaction();
       return this;
+    }
+  }
+
+  private static class SessionPoolAsyncRunner implements AsyncRunner {
+    private final SessionPool sessionPool;
+    private volatile PooledSessionFuture session;
+    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+
+    private SessionPoolAsyncRunner(SessionPool sessionPool, PooledSessionFuture session) {
+      this.sessionPool = sessionPool;
+      this.session = session;
+    }
+
+    @Override
+    public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      final SettableApiFuture<R> res = SettableApiFuture.create();
+      executor.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              SpannerException se = null;
+              R r = null;
+              AsyncRunner runner = null;
+              while (true) {
+                try {
+                  runner = session.get().runAsync();
+                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
+                  break;
+                } catch (ExecutionException e) {
+                  se = SpannerExceptionFactory.newSpannerException(e.getCause());
+                } catch (InterruptedException e) {
+                  se = SpannerExceptionFactory.propagateInterrupt(e);
+                } catch (Throwable t) {
+                  se = SpannerExceptionFactory.newSpannerException(t);
+                } finally {
+                  if (se != null && se instanceof SessionNotFoundException) {
+                    session =
+                        sessionPool.replaceReadWriteSession((SessionNotFoundException) se, session);
+                  } else {
+                    break;
+                  }
+                }
+              }
+              session.get().markUsed();
+              session.close();
+              setCommitTimestamp(runner);
+              if (se != null) {
+                res.setException(se);
+              } else {
+                res.set(r);
+              }
+            }
+          });
+      return res;
+    }
+
+    private void setCommitTimestamp(AsyncRunner delegate) {
+      try {
+        commitTimestamp.set(delegate.getCommitTimestamp().get());
+      } catch (Throwable t) {
+        commitTimestamp.setException(t);
+      }
+    }
+
+    @Override
+    public ApiFuture<Timestamp> getCommitTimestamp() {
+      return commitTimestamp;
     }
   }
 
   // Exception class used just to track the stack trace at the point when a session was handed out
   // from the pool.
-  private final class LeakedSessionException extends RuntimeException {
+  final class LeakedSessionException extends RuntimeException {
     private static final long serialVersionUID = 1451131180314064914L;
 
     private LeakedSessionException() {
@@ -640,25 +965,124 @@ final class SessionPool {
     CLOSING,
   }
 
-  final class PooledSession implements Session {
-    @VisibleForTesting SessionImpl delegate;
-    private volatile Instant lastUseTime;
-    private volatile SpannerException lastException;
-    private volatile LeakedSessionException leakedException;
-    private volatile boolean allowReplacing = true;
+  /**
+   * Forwarding future that will return a {@link PooledSession}. If {@link #inProcessPrepare} has
+   * been set to true, the returned session will be prepared with a read/write session using the
+   * thread of the caller to {@link #get()}. This ensures that the executor that is responsible for
+   * background preparing of read/write transactions is not overwhelmed by requests in case of a
+   * large burst of write requests. Instead of filling up the queue of the background executor, the
+   * caller threads will be used for the BeginTransaction call.
+   */
+  private final class ForwardingListenablePooledSessionFuture
+      extends SimpleForwardingListenableFuture<SessionPool.PooledSession> {
+    private final boolean inProcessPrepare;
+    private final Span span;
+    private volatile boolean initialized = false;
+    private final Object prepareLock = new Object();
+    private volatile PooledSession result;
+    private volatile SpannerException error;
 
-    @GuardedBy("lock")
-    private SessionState state;
-
-    private PooledSession(SessionImpl delegate) {
-      this.delegate = delegate;
-      this.state = SessionState.AVAILABLE;
-      this.lastUseTime = clock.instant();
+    private ForwardingListenablePooledSessionFuture(
+        ListenableFuture<PooledSession> delegate, boolean inProcessPrepare, Span span) {
+      super(delegate);
+      this.inProcessPrepare = inProcessPrepare;
+      this.span = span;
     }
 
-    @VisibleForTesting
-    void setAllowReplacing(boolean allowReplacing) {
-      this.allowReplacing = allowReplacing;
+    @Override
+    public PooledSession get() throws InterruptedException, ExecutionException {
+      try {
+        return initialize(super.get());
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+
+    @Override
+    public PooledSession get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
+      try {
+        return initialize(super.get(timeout, unit));
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (TimeoutException e) {
+        throw SpannerExceptionFactory.propagateTimeout(e);
+      }
+    }
+
+    private PooledSession initialize(PooledSession sess) {
+      if (!initialized) {
+        synchronized (prepareLock) {
+          if (!initialized) {
+            try {
+              result = prepare(sess);
+            } catch (Throwable t) {
+              error = SpannerExceptionFactory.newSpannerException(t);
+            } finally {
+              initialized = true;
+            }
+          }
+        }
+      }
+      if (error != null) {
+        throw error;
+      }
+      return result;
+    }
+
+    private PooledSession prepare(PooledSession sess) {
+      if (inProcessPrepare && !sess.delegate.hasReadyTransaction()) {
+        while (true) {
+          try {
+            sess.prepareReadWriteTransaction();
+            synchronized (lock) {
+              stopAutomaticPrepare = false;
+            }
+            break;
+          } catch (Throwable t) {
+            if (isClosed()) {
+              span.addAnnotation("Pool has been closed");
+              throw new IllegalStateException("Pool has been closed");
+            }
+            SpannerException e = newSpannerException(t);
+            WaiterFuture waiter = new WaiterFuture();
+            synchronized (lock) {
+              handlePrepareSessionFailure(e, sess, false);
+              if (!isSessionNotFound(e)) {
+                throw e;
+              }
+              readWaiters.add(waiter);
+            }
+            sess = waiter.get();
+            if (sess.delegate.hasReadyTransaction()) {
+              break;
+            }
+          }
+        }
+      }
+      return sess;
+    }
+  }
+
+  private PooledSessionFuture createPooledSessionFuture(
+      ListenableFuture<PooledSession> future, Span span) {
+    return new PooledSessionFuture(future, span);
+  }
+
+  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
+      implements Session {
+    private volatile LeakedSessionException leakedException;
+    private volatile AtomicBoolean inUse = new AtomicBoolean();
+    private volatile CountDownLatch initialized = new CountDownLatch(1);
+    private final Span span;
+
+    private PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+      super(delegate);
+      this.span = span;
     }
 
     @VisibleForTesting
@@ -666,34 +1090,14 @@ final class SessionPool {
       this.leakedException = null;
     }
 
-    private void markBusy() {
-      this.state = SessionState.BUSY;
+    private void markCheckedOut() {
       this.leakedException = new LeakedSessionException();
-    }
-
-    private void markClosing() {
-      this.state = SessionState.CLOSING;
     }
 
     @Override
     public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
       try {
-        markUsed();
-        return delegate.write(mutations);
-      } catch (SpannerException e) {
-        throw lastException = e;
-      } finally {
-        close();
-      }
-    }
-
-    @Override
-    public long executePartitionedUpdate(Statement stmt) throws SpannerException {
-      try {
-        markUsed();
-        return delegate.executePartitionedUpdate(stmt);
-      } catch (SpannerException e) {
-        throw lastException = e;
+        return get().write(mutations);
       } finally {
         close();
       }
@@ -702,10 +1106,7 @@ final class SessionPool {
     @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
-        markUsed();
-        return delegate.writeAtLeastOnce(mutations);
-      } catch (SpannerException e) {
-        throw lastException = e;
+        return get().writeAtLeastOnce(mutations);
       } finally {
         close();
       }
@@ -715,10 +1116,10 @@ final class SessionPool {
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSession, ReadContext>() {
+            new Function<PooledSessionFuture, ReadContext>() {
               @Override
-              public ReadContext apply(PooledSession session) {
-                return session.delegate.singleUse();
+              public ReadContext apply(PooledSessionFuture session) {
+                return session.get().delegate.singleUse();
               }
             },
             SessionPool.this,
@@ -734,10 +1135,10 @@ final class SessionPool {
     public ReadContext singleUse(final TimestampBound bound) {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSession, ReadContext>() {
+            new Function<PooledSessionFuture, ReadContext>() {
               @Override
-              public ReadContext apply(PooledSession session) {
-                return session.delegate.singleUse(bound);
+              public ReadContext apply(PooledSessionFuture session) {
+                return session.get().delegate.singleUse(bound);
               }
             },
             SessionPool.this,
@@ -752,10 +1153,10 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSession, ReadOnlyTransaction>() {
+          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
-            public ReadOnlyTransaction apply(PooledSession session) {
-              return session.delegate.singleUseReadOnlyTransaction();
+            public ReadOnlyTransaction apply(PooledSessionFuture session) {
+              return session.get().delegate.singleUseReadOnlyTransaction();
             }
           },
           true);
@@ -764,10 +1165,10 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSession, ReadOnlyTransaction>() {
+          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
-            public ReadOnlyTransaction apply(PooledSession session) {
-              return session.delegate.singleUseReadOnlyTransaction(bound);
+            public ReadOnlyTransaction apply(PooledSessionFuture session) {
+              return session.get().delegate.singleUseReadOnlyTransaction(bound);
             }
           },
           true);
@@ -776,10 +1177,10 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSession, ReadOnlyTransaction>() {
+          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
-            public ReadOnlyTransaction apply(PooledSession session) {
-              return session.delegate.readOnlyTransaction();
+            public ReadOnlyTransaction apply(PooledSessionFuture session) {
+              return session.get().delegate.readOnlyTransaction();
             }
           },
           false);
@@ -788,17 +1189,18 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSession, ReadOnlyTransaction>() {
+          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
-            public ReadOnlyTransaction apply(PooledSession session) {
-              return session.delegate.readOnlyTransaction(bound);
+            public ReadOnlyTransaction apply(PooledSessionFuture session) {
+              return session.get().delegate.readOnlyTransaction(bound);
             }
           },
           false);
     }
 
     private ReadOnlyTransaction internalReadOnlyTransaction(
-        Function<PooledSession, ReadOnlyTransaction> transactionSupplier, boolean isSingleUse) {
+        Function<PooledSessionFuture, ReadOnlyTransaction> transactionSupplier,
+        boolean isSingleUse) {
       try {
         return new AutoClosingReadTransaction(
             transactionSupplier, SessionPool.this, this, isSingleUse);
@@ -814,6 +1216,188 @@ final class SessionPool {
     }
 
     @Override
+    public TransactionManager transactionManager() {
+      return new AutoClosingTransactionManager(SessionPool.this, this);
+    }
+
+    @Override
+    public AsyncRunner runAsync() {
+      return new SessionPoolAsyncRunner(SessionPool.this, this);
+    }
+
+    @Override
+    public AsyncTransactionManager transactionManagerAsync() {
+      return new SessionPoolAsyncTransactionManager(this);
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt) {
+      try {
+        return get().executePartitionedUpdate(stmt);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public String getName() {
+      return get().getName();
+    }
+
+    @Override
+    public void prepareReadWriteTransaction() {
+      get().prepareReadWriteTransaction();
+    }
+
+    @Override
+    public void close() {
+      synchronized (lock) {
+        leakedException = null;
+        checkedOutSessions.remove(this);
+      }
+      get().close();
+    }
+
+    @Override
+    public ApiFuture<Empty> asyncClose() {
+      synchronized (lock) {
+        leakedException = null;
+        checkedOutSessions.remove(this);
+      }
+      return get().asyncClose();
+    }
+
+    @Override
+    public PooledSession get() {
+      if (inUse.compareAndSet(false, true)) {
+        PooledSession res = null;
+        try {
+          res = super.get();
+        } catch (Throwable e) {
+          // ignore the exception as it will be handled by the call to super.get() below.
+        }
+        if (res != null) {
+          res.markBusy(span);
+          span.addAnnotation(sessionAnnotation(res));
+          synchronized (lock) {
+            incrementNumSessionsInUse();
+            checkedOutSessions.add(this);
+          }
+        }
+        initialized.countDown();
+      }
+      try {
+        initialized.await();
+        return super.get();
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+  }
+
+  final class PooledSession implements Session {
+    @VisibleForTesting SessionImpl delegate;
+    private volatile Instant lastUseTime;
+    private volatile SpannerException lastException;
+    private volatile boolean allowReplacing = true;
+
+    @GuardedBy("lock")
+    private SessionState state;
+
+    private PooledSession(SessionImpl delegate) {
+      this.delegate = delegate;
+      this.state = SessionState.AVAILABLE;
+      this.lastUseTime = clock.instant();
+    }
+
+    @Override
+    public String toString() {
+      return getName();
+    }
+
+    @VisibleForTesting
+    void setAllowReplacing(boolean allowReplacing) {
+      this.allowReplacing = allowReplacing;
+    }
+
+    @Override
+    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      try {
+        markUsed();
+        return delegate.write(mutations);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      try {
+        markUsed();
+        return delegate.writeAtLeastOnce(mutations);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt) throws SpannerException {
+      try {
+        markUsed();
+        return delegate.executePartitionedUpdate(stmt);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public ReadContext singleUse() {
+      return delegate.singleUse();
+    }
+
+    @Override
+    public ReadContext singleUse(TimestampBound bound) {
+      return delegate.singleUse(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+      return delegate.singleUseReadOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
+      return delegate.singleUseReadOnlyTransaction(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction() {
+      return delegate.readOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
+      return delegate.readOnlyTransaction(bound);
+    }
+
+    @Override
+    public TransactionRunner readWriteTransaction() {
+      return delegate.readWriteTransaction();
+    }
+
+    @Override
+    public AsyncRunner runAsync() {
+      return delegate.runAsync();
+    }
+
+    @Override
+    public AsyncTransactionManagerImpl transactionManagerAsync() {
+      return delegate.transactionManagerAsync();
+    }
+
+    @Override
     public ApiFuture<Empty> asyncClose() {
       close();
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
@@ -825,7 +1409,6 @@ final class SessionPool {
         numSessionsInUse--;
         numSessionsReleased++;
       }
-      leakedException = null;
       if (lastException != null && isSessionNotFound(lastException)) {
         invalidateSession(this);
       } else {
@@ -868,59 +1451,56 @@ final class SessionPool {
       }
     }
 
+    private void markBusy(Span span) {
+      this.delegate.setCurrentSpan(span);
+      this.state = SessionState.BUSY;
+    }
+
+    private void markClosing() {
+      this.state = SessionState.CLOSING;
+    }
+
     void markUsed() {
       lastUseTime = clock.instant();
     }
 
     @Override
     public TransactionManager transactionManager() {
-      return new AutoClosingTransactionManager(SessionPool.this, this);
+      return delegate.transactionManager();
     }
   }
 
-  private static final class SessionOrError {
-    private final PooledSession session;
-    private final SpannerException e;
-
-    SessionOrError(PooledSession session) {
-      this.session = session;
-      this.e = null;
-    }
-
-    SessionOrError(SpannerException e) {
-      this.session = null;
-      this.e = e;
-    }
-  }
-
-  private final class Waiter {
+  private final class WaiterFuture extends ForwardingListenableFuture<PooledSession> {
     private static final long MAX_SESSION_WAIT_TIMEOUT = 240_000L;
-    private final SynchronousQueue<SessionOrError> waiter = new SynchronousQueue<>();
+    private final SettableFuture<PooledSession> waiter = SettableFuture.create();
+
+    @Override
+    protected ListenableFuture<? extends PooledSession> delegate() {
+      return waiter;
+    }
 
     private void put(PooledSession session) {
-      Uninterruptibles.putUninterruptibly(waiter, new SessionOrError(session));
+      waiter.set(session);
     }
 
     private void put(SpannerException e) {
-      Uninterruptibles.putUninterruptibly(waiter, new SessionOrError(e));
+      waiter.setException(e);
     }
 
-    private PooledSession take() throws SpannerException {
+    @Override
+    public PooledSession get() {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          SessionOrError s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
             tracer.getCurrentSpan().setStatus(Status.DEADLINE_EXCEEDED);
             currentTimeout = Math.min(currentTimeout * 2, MAX_SESSION_WAIT_TIMEOUT);
           } else {
-            if (s.e != null) {
-              throw newSpannerException(s.e);
-            }
-            return s.session;
+            return s;
           }
         } catch (Exception e) {
           TraceUtil.setWithFailure(span, e);
@@ -931,14 +1511,18 @@ final class SessionPool {
       }
     }
 
-    private SessionOrError pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
+          } catch (TimeoutException e) {
+            return null;
+          } catch (ExecutionException e) {
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
           }
         }
       } finally {
@@ -1118,6 +1702,7 @@ final class SessionPool {
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
   private final ScheduledExecutorService prepareExecutor;
+
   private final int prepareThreadPoolSize;
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
@@ -1146,10 +1731,10 @@ final class SessionPool {
   private final LinkedList<PooledSession> writePreparedSessions = new LinkedList<>();
 
   @GuardedBy("lock")
-  private final Queue<Waiter> readWaiters = new LinkedList<>();
+  private final Queue<WaiterFuture> readWaiters = new LinkedList<>();
 
   @GuardedBy("lock")
-  private final Queue<Waiter> readWriteWaiters = new LinkedList<>();
+  private final Queue<WaiterFuture> readWriteWaiters = new LinkedList<>();
 
   @GuardedBy("lock")
   private int numSessionsBeingPrepared = 0;
@@ -1182,6 +1767,9 @@ final class SessionPool {
 
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
+
+  @GuardedBy("lock")
+  private final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -1275,6 +1863,12 @@ final class SessionPool {
   }
 
   @VisibleForTesting
+  int getNumberOfSessionsInUse() {
+    synchronized (lock) {
+      return numSessionsInUse;
+    }
+  }
+
   long getNumberOfSessionsInProcessPrepared() {
     synchronized (lock) {
       return numSessionsInProcessPrepared;
@@ -1297,9 +1891,9 @@ final class SessionPool {
       session.markClosing();
       allSessions.remove(session);
       numIdleSessionsRemoved++;
-      if (idleSessionRemovedListener != null) {
-        idleSessionRemovedListener.apply(session);
-      }
+    }
+    if (idleSessionRemovedListener != null) {
+      idleSessionRemovedListener.apply(session);
     }
   }
 
@@ -1437,10 +2031,10 @@ final class SessionPool {
    *       session being returned to the pool or a new session being created.
    * </ol>
    */
-  PooledSession getReadSession() throws SpannerException {
+  PooledSessionFuture getReadSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
-    Waiter waiter = null;
+    WaiterFuture waiter = null;
     PooledSession sess = null;
     synchronized (lock) {
       if (closureFuture != null) {
@@ -1462,7 +2056,7 @@ final class SessionPool {
         if (sess == null) {
           span.addAnnotation("No session available");
           maybeCreateSession();
-          waiter = new Waiter();
+          waiter = new WaiterFuture();
           readWaiters.add(waiter);
         } else {
           span.addAnnotation("Acquired read write session");
@@ -1470,18 +2064,8 @@ final class SessionPool {
       } else {
         span.addAnnotation("Acquired read only session");
       }
+      return checkoutSession(span, sess, waiter, false, false);
     }
-    if (waiter != null) {
-      logger.log(
-          Level.FINE,
-          "No session available in the pool. Blocking for one to become available/created");
-      span.addAnnotation("Waiting for read only session to be available");
-      sess = waiter.take();
-    }
-    sess.markBusy();
-    incrementNumSessionsInUse();
-    span.addAnnotation(sessionAnnotation(sess));
-    return sess;
   }
 
   /**
@@ -1502,129 +2086,123 @@ final class SessionPool {
    *       to the pool which is then write prepared.
    * </ol>
    */
-  PooledSession getReadWriteSession() {
+  PooledSessionFuture getReadWriteSession() {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring read write session");
     PooledSession sess = null;
-    // Loop to retry SessionNotFoundExceptions that might occur during in-process prepare of a
-    // session.
-    while (true) {
-      Waiter waiter = null;
-      boolean inProcessPrepare = stopAutomaticPrepare;
-      synchronized (lock) {
-        if (closureFuture != null) {
-          span.addAnnotation("Pool has been closed");
-          throw new IllegalStateException("Pool has been closed", closedException);
-        }
-        if (resourceNotFoundException != null) {
-          span.addAnnotation("Database has been deleted");
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.NOT_FOUND,
-              String.format(
-                  "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                  resourceNotFoundException.getMessage()),
-              resourceNotFoundException);
-        }
-        sess = writePreparedSessions.poll();
-        if (sess == null) {
-          if (!inProcessPrepare && numSessionsBeingPrepared <= prepareThreadPoolSize) {
-            if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
-              PooledSession readSession = readSessions.poll();
-              if (readSession != null) {
-                span.addAnnotation(
-                    "Acquired read only session. Preparing for read write transaction");
-                prepareSession(readSession);
-              } else {
-                span.addAnnotation("No session available");
-                maybeCreateSession();
-              }
-            }
-          } else {
-            inProcessPrepare = true;
-            numSessionsInProcessPrepared++;
+    WaiterFuture waiter = null;
+    boolean inProcessPrepare = stopAutomaticPrepare;
+    synchronized (lock) {
+      if (closureFuture != null) {
+        span.addAnnotation("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed", closedException);
+      }
+      if (resourceNotFoundException != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                resourceNotFoundException.getMessage()),
+            resourceNotFoundException);
+      }
+      sess = writePreparedSessions.poll();
+      if (sess == null) {
+        if (!inProcessPrepare && numSessionsBeingPrepared <= prepareThreadPoolSize) {
+          if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
             PooledSession readSession = readSessions.poll();
             if (readSession != null) {
-              // Create a read/write transaction in-process if there is already a queue for prepared
-              // sessions. This is more efficient than doing it asynchronously, as it scales with
-              // the number of user threads. The thread pool for asynchronously preparing sessions
-              // is fixed.
               span.addAnnotation(
-                  "Acquired read only session. Preparing in-process for read write transaction");
-              sess = readSession;
+                  "Acquired read only session. Preparing for read write transaction");
+              prepareSession(readSession);
             } else {
               span.addAnnotation("No session available");
               maybeCreateSession();
             }
           }
-          if (sess == null) {
-            waiter = new Waiter();
-            if (inProcessPrepare) {
-              // inProcessPrepare=true means that we have already determined that the queue for
-              // preparing read/write sessions is larger than the number of threads in the prepare
-              // thread pool, and that it's more efficient to do the prepare in-process. We will
-              // therefore create a waiter for a read-only session, even though a read/write session
-              // has been requested.
-              readWaiters.add(waiter);
-            } else {
-              readWriteWaiters.add(waiter);
-            }
-          }
         } else {
-          span.addAnnotation("Acquired read write session");
-        }
-      }
-      if (waiter != null) {
-        logger.log(
-            Level.FINE,
-            "No session available in the pool. Blocking for one to become available/created");
-        span.addAnnotation("Waiting for read write session to be available");
-        sess = waiter.take();
-      }
-      if (inProcessPrepare) {
-        try {
-          sess.prepareReadWriteTransaction();
-          // Session prepare succeeded, restart automatic prepare if it had been stopped.
-          synchronized (lock) {
-            stopAutomaticPrepare = false;
-          }
-        } catch (Throwable t) {
-          SpannerException e = newSpannerException(t);
-          if (!isClosed()) {
-            handlePrepareSessionFailure(e, sess, false);
-          }
-          sess = null;
-          if (!isSessionNotFound(e)) {
-            throw e;
+          inProcessPrepare = true;
+          numSessionsInProcessPrepared++;
+          PooledSession readSession = readSessions.poll();
+          if (readSession != null) {
+            // Create a read/write transaction in-process if there is already a queue for prepared
+            // sessions. This is more efficient than doing it asynchronously, as it scales with
+            // the number of user threads. The thread pool for asynchronously preparing sessions
+            // is fixed.
+            span.addAnnotation(
+                "Acquired read only session. Preparing in-process for read write transaction");
+            sess = readSession;
+          } else {
+            span.addAnnotation("No session available");
+            maybeCreateSession();
           }
         }
+        if (sess == null) {
+          waiter = new WaiterFuture();
+          if (inProcessPrepare) {
+            // inProcessPrepare=true means that we have already determined that the queue for
+            // preparing read/write sessions is larger than the number of threads in the prepare
+            // thread pool, and that it's more efficient to do the prepare in-process. We will
+            // therefore create a waiter for a read-only session, even though a read/write session
+            // has been requested.
+            readWaiters.add(waiter);
+          } else {
+            readWriteWaiters.add(waiter);
+          }
+        }
+      } else {
+        span.addAnnotation("Acquired read write session");
       }
-      if (sess != null) {
-        break;
-      }
+      return checkoutSession(span, sess, waiter, true, inProcessPrepare);
     }
-    sess.markBusy();
-    incrementNumSessionsInUse();
-    span.addAnnotation(sessionAnnotation(sess));
-    return sess;
   }
 
-  PooledSession replaceReadSession(SessionNotFoundException e, PooledSession session) {
+  private PooledSessionFuture checkoutSession(
+      final Span span,
+      final PooledSession readySession,
+      WaiterFuture waiter,
+      boolean write,
+      final boolean inProcessPrepare) {
+    ListenableFuture<PooledSession> sessionFuture;
+    if (waiter != null) {
+      logger.log(
+          Level.FINE,
+          "No session available in the pool. Blocking for one to become available/created");
+      span.addAnnotation(
+          String.format(
+              "Waiting for %s session to be available", write ? "read write" : "read only"));
+      sessionFuture = waiter;
+    } else {
+      SettableFuture<PooledSession> fut = SettableFuture.create();
+      fut.set(readySession);
+      sessionFuture = fut;
+    }
+    ForwardingListenablePooledSessionFuture forwardingFuture =
+        new ForwardingListenablePooledSessionFuture(sessionFuture, inProcessPrepare, span);
+    PooledSessionFuture res = createPooledSessionFuture(forwardingFuture, span);
+    res.markCheckedOut();
+    return res;
+  }
+
+  PooledSessionFuture replaceReadSession(SessionNotFoundException e, PooledSessionFuture session) {
     return replaceSession(e, session, false);
   }
 
-  PooledSession replaceReadWriteSession(SessionNotFoundException e, PooledSession session) {
+  PooledSessionFuture replaceReadWriteSession(
+      SessionNotFoundException e, PooledSessionFuture session) {
     return replaceSession(e, session, true);
   }
 
-  private PooledSession replaceSession(
-      SessionNotFoundException e, PooledSession session, boolean write) {
-    if (!options.isFailIfSessionNotFound() && session.allowReplacing) {
+  private PooledSessionFuture replaceSession(
+      SessionNotFoundException e, PooledSessionFuture session, boolean write) {
+    if (!options.isFailIfSessionNotFound() && session.get().allowReplacing) {
       synchronized (lock) {
         numSessionsInUse--;
         numSessionsReleased++;
+        checkedOutSessions.remove(session);
       }
       session.leakedException = null;
-      invalidateSession(session);
+      invalidateSession(session.get());
       return write ? getReadWriteSession() : getReadSession();
     } else {
       throw e;
@@ -1787,7 +2365,7 @@ final class SessionPool {
       }
       this.closedException = closedException;
       // Fail all pending waiters.
-      Waiter waiter = readWaiters.poll();
+      WaiterFuture waiter = readWaiters.poll();
       while (waiter != null) {
         waiter.put(newSpannerException(ErrorCode.INTERNAL, "Client has been closed"));
         waiter = readWaiters.poll();
@@ -1821,10 +2399,16 @@ final class SessionPool {
               }
             }
           });
-      for (final PooledSession session : ImmutableList.copyOf(allSessions)) {
+      for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
-          logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          if (options.isFailOnSessionLeak()) {
+            throw session.leakedException;
+          } else {
+            logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          }
         }
+      }
+      for (final PooledSession session : ImmutableList.copyOf(allSessions)) {
         if (session.state != SessionState.CLOSING) {
           closeSessionAsync(session);
         }
@@ -1894,7 +2478,7 @@ final class SessionPool {
             }
           }
         },
-        executor);
+        MoreExecutors.directExecutor());
     return res;
   }
 
