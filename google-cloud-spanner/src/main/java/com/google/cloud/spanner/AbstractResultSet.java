@@ -855,8 +855,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return new ExponentialBackOff.Builder()
           .setMultiplier(STREAMING_RETRY_SETTINGS.getRetryDelayMultiplier())
           .setInitialIntervalMillis(
-              (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis())
-          .setMaxIntervalMillis((int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis())
+              Math.max(10, (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis()))
+          .setMaxIntervalMillis(
+              Math.max(1000, (int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis()))
           .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
           .build();
     }
