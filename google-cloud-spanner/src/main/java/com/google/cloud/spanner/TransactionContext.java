@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
+
 /**
  * Context for a single attempt of a locking read-write transaction. This type of transaction is the
  * only way to write data into Cloud Spanner; {@link Session#write(Iterable)} and {@link
@@ -103,6 +105,17 @@ public interface TransactionContext extends ReadContext {
   long executeUpdate(Statement statement);
 
   /**
+   * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking. If multiple
+   * asynchronous update statements are submitted to the same read/write transaction, the statements
+   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
+   * client. This does however not guarantee that an asynchronous update statement will see the
+   * results of all previously submitted statements, as the execution of the statements can be
+   * parallel. If you rely on the results of a previous statement, you should block until the result
+   * of that statement is known and has been returned to the client.
+   */
+  ApiFuture<Long> executeUpdateAsync(Statement statement);
+
+  /**
    * Executes a list of DML statements in a single request. The statements will be executed in order
    * and the semantics is the same as if each statement is executed by {@code executeUpdate} in a
    * loop. This method returns an array of long integers, each representing the number of rows
@@ -118,4 +131,15 @@ public interface TransactionContext extends ReadContext {
    * statement. The 3rd statement will not run.
    */
   long[] batchUpdate(Iterable<Statement> statements);
+
+  /**
+   * Same as {@link #batchUpdate(Iterable)}, but is guaranteed to be non-blocking. If multiple
+   * asynchronous update statements are submitted to the same read/write transaction, the statements
+   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
+   * client. This does however not guarantee that an asynchronous update statement will see the
+   * results of all previously submitted statements, as the execution of the statements can be
+   * parallel. If you rely on the results of a previous statement, you should block until the result
+   * of that statement is known and has been returned to the client.
+   */
+  ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements);
 }

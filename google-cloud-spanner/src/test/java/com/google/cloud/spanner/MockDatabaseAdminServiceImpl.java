@@ -79,8 +79,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -434,7 +433,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   private static final String EXPIRE_TIME_MASK = "expire_time";
   private static final Random RND = new Random();
   private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
-  private final ReadWriteLock freezeLock = new ReentrantReadWriteLock();
+  private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private final ConcurrentMap<String, MockDatabase> databases = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, MockBackup> backups = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Set<String>> filterMatches = new ConcurrentHashMap<>();

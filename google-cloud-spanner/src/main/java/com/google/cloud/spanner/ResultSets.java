@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -23,6 +25,7 @@ import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.List;
 
@@ -39,6 +42,30 @@ public final class ResultSets {
    */
   public static ResultSet forRows(Type type, Iterable<Struct> rows) {
     return new PrePopulatedResultSet(type, rows);
+  }
+
+  /** Converts the given {@link ResultSet} to an {@link AsyncResultSet}. */
+  public static AsyncResultSet toAsyncResultSet(ResultSet delegate) {
+    return new AsyncResultSetImpl(
+        InstantiatingExecutorProvider.newBuilder()
+            .setExecutorThreadCount(1)
+            .setThreadFactory(
+                new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setNameFormat("test-async-resultset-%d")
+                    .build())
+            .build(),
+        delegate,
+        100);
+  }
+
+  /**
+   * Converts the given {@link ResultSet} to an {@link AsyncResultSet} using the given {@link
+   * ExecutorProvider}.
+   */
+  public static AsyncResultSet toAsyncResultSet(
+      ResultSet delegate, ExecutorProvider executorProvider) {
+    return new AsyncResultSetImpl(executorProvider, delegate, 100);
   }
 
   private static class PrePopulatedResultSet implements ResultSet {

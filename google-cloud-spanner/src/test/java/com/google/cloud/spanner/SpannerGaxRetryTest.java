@@ -321,6 +321,13 @@ public class SpannerGaxRetryTest {
     mockSpanner.setBeginTransactionExecutionTime(ONE_SECOND);
     try {
       TransactionRunner runner = clientWithTimeout.readWriteTransaction();
+      runner.run(
+          new TransactionCallable<Void>() {
+            @Override
+            public Void run(TransactionContext transaction) throws Exception {
+              return null;
+            }
+          });
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());

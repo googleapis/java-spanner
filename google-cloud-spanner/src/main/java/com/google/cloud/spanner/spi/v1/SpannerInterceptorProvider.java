@@ -45,6 +45,10 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     return new SpannerInterceptorProvider(defaultInterceptors);
   }
 
+  static SpannerInterceptorProvider create(GrpcInterceptorProvider provider) {
+    return new SpannerInterceptorProvider(ImmutableList.copyOf(provider.getInterceptors()));
+  }
+
   public SpannerInterceptorProvider with(ClientInterceptor clientInterceptor) {
     List<ClientInterceptor> interceptors =
         ImmutableList.<ClientInterceptor>builder()
@@ -52,6 +56,13 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
             .add(clientInterceptor)
             .build();
     return new SpannerInterceptorProvider(interceptors);
+  }
+
+  SpannerInterceptorProvider withEncoding(String encoding) {
+    if (encoding != null) {
+      return with(new EncodingInterceptor(encoding));
+    }
+    return this;
   }
 
   @Override

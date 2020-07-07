@@ -505,4 +505,35 @@ public class SpannerOptionsTest {
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
   }
+
+  @Test
+  public void testCompressorName() {
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("gzip")
+                .build()
+                .getCompressorName())
+        .isEqualTo("gzip");
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("identity")
+                .build()
+                .getCompressorName())
+        .isEqualTo("identity");
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName(null)
+                .build()
+                .getCompressorName())
+        .isNull();
+    try {
+      SpannerOptions.newBuilder().setCompressorName("foo");
+      fail("missing expected exception");
+    } catch (IllegalArgumentException e) {
+      // ignore, this is the expected exception.
+    }
+  }
 }
