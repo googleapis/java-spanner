@@ -228,19 +228,25 @@ class SessionImpl implements Session {
   @Override
   public TransactionRunner readWriteTransaction() {
     return setActive(
-        new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+        new TransactionRunnerImpl(
+            this,
+            spanner.getRpc(),
+            spanner.getDefaultPrefetchChunks(),
+            spanner.getOptions().isInlineBeginForReadWriteTransaction()));
   }
 
   @Override
   public AsyncRunner runAsync() {
     return new AsyncRunnerImpl(
         setActive(
-            new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks())));
+            new TransactionRunnerImpl(
+                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), false)));
   }
 
   @Override
   public TransactionManager transactionManager() {
-    return new TransactionManagerImpl(this, currentSpan);
+    return new TransactionManagerImpl(
+        this, currentSpan, spanner.getOptions().isInlineBeginForReadWriteTransaction());
   }
 
   @Override

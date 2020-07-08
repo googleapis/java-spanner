@@ -505,6 +505,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
   private ConcurrentMap<String, Instant> sessionLastUsed = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
+  private final Queue<ByteString> transactionsStarted = new ConcurrentLinkedQueue<>();
   private ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
       new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
@@ -931,14 +932,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  private ResultSetMetadata createTransactionMetadata(TransactionSelector transactionSelector) {
-    if (transactionSelector.hasBegin() || transactionSelector.hasSingleUse()) {
-      Transaction transaction = getTemporaryTransactionOrNull(transactionSelector);
-      return ResultSetMetadata.newBuilder().setTransaction(transaction).build();
-    }
-    return ResultSetMetadata.getDefaultInstance();
-  }
-
   private void returnResultSet(
       ResultSet resultSet,
       ByteString transactionId,
@@ -1033,7 +1026,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             ResultSet.newBuilder()
                 .setStats(
                     ResultSetStats.newBuilder().setRowCountExact(res.getUpdateCount()).build())
-                .setMetadata(createTransactionMetadata(request.getTransaction()))
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setTransaction(Transaction.newBuilder().setId(transactionId).build())
+                        .build())
                 .build());
       }
       builder.setStatus(status);
@@ -1597,6 +1593,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     Transaction transaction = builder.build();
     transactions.put(transaction.getId(), transaction);
+    transactionsStarted.add(transaction.getId());
     isPartitionedDmlTransaction.put(
         transaction.getId(), options.getModeCase() == ModeCase.PARTITIONED_DML);
     if (abortNextTransaction.getAndSet(false)) {
@@ -1864,6 +1861,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public List<ByteString> getTransactionsStarted() {
+    return new ArrayList<>(transactionsStarted);
+  }
+
   @Override
   public void addResponse(AbstractMessage response) {
     throw new UnsupportedOperationException();
@@ -1896,6 +1897,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     sessions = new ConcurrentHashMap<>();
     sessionLastUsed = new ConcurrentHashMap<>();
     transactions = new ConcurrentHashMap<>();
+    transactionsStarted.clear();
     isPartitionedDmlTransaction = new ConcurrentHashMap<>();
     abortedTransactions = new ConcurrentHashMap<>();
     transactionCounters = new ConcurrentHashMap<>();

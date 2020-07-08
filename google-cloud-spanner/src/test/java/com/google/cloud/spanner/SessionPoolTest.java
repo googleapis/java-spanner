@@ -1343,7 +1343,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .thenThrow(sessionNotFound);
         when(rpc.commitAsync(any(CommitRequest.class), any(Map.class)))
             .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
-        doThrow(sessionNotFound).when(rpc).rollback(any(RollbackRequest.class), any(Map.class));
+        when(rpc.rollbackAsync(any(RollbackRequest.class), any(Map.class)))
+            .thenReturn(ApiFutures.<Empty>immediateFailedFuture(sessionNotFound));
         final SessionImpl closedSession = mock(SessionImpl.class);
         when(closedSession.getName())
             .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
@@ -1360,7 +1361,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
         when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
-            new TransactionRunnerImpl(closedSession, rpc, 10);
+            new TransactionRunnerImpl(closedSession, rpc, 10, false);
         closedTransactionRunner.setSpan(mock(Span.class));
         when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -1374,7 +1375,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(openSession.beginTransactionAsync())
             .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
         TransactionRunnerImpl openTransactionRunner =
-            new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+            new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10, false);
         openTransactionRunner.setSpan(mock(Span.class));
         when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
@@ -1504,10 +1505,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             // The rollback will also cause a SessionNotFoundException, but this is caught, logged
             // and further ignored by the library, meaning that the session will not be re-created
             // for retry. Hence rollback at call 1.
-            assertThat(
-                    executeStatementType == ReadWriteTransactionTestStatementType.EXCEPTION
-                        && e.getMessage().contains("rollback at call 1"))
-                .isTrue();
+            assertThat(executeStatementType)
+                .isEqualTo(ReadWriteTransactionTestStatementType.EXCEPTION);
+            assertThat(e.getMessage()).contains("rollback at call 1");
+
+            //            assertThat(
+            //                    executeStatementType ==
+            // ReadWriteTransactionTestStatementType.EXCEPTION
+            //                        && e.getMessage().contains("rollback at call 1"))
+            //                .isTrue();
           }
         }
         pool.closeAsync(new SpannerImpl.ClosedException());
@@ -1617,7 +1623,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, false);
     assertThat(impl.write(mutations)).isNotNull();
   }
 
@@ -1668,7 +1674,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, false);
     assertThat(impl.writeAtLeastOnce(mutations)).isNotNull();
   }
 
@@ -1719,7 +1725,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, false);
     assertThat(impl.executePartitionedUpdate(statement)).isEqualTo(1L);
   }
 

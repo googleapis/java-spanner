@@ -44,8 +44,12 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSet;
+import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import io.grpc.Metadata;
 import io.grpc.Status;
@@ -90,19 +94,43 @@ public class TransactionRunnerImplTest {
   @Mock private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionRunnerImpl transactionRunner;
   private boolean firstRun;
+  private boolean usedInlinedBegin;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
     when(session.newTransaction()).thenReturn(txn);
-    transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
+    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
+        .thenAnswer(
+            new Answer<ResultSet>() {
+              @Override
+              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+                ResultSet.Builder builder =
+                    ResultSet.newBuilder()
+                        .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
+                ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
+                if (request.getTransaction().hasBegin()
+                    && request.getTransaction().getBegin().hasReadWrite()) {
+                  builder.setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setTransaction(
+                              Transaction.newBuilder().setId(ByteString.copyFromUtf8("test")))
+                          .build());
+                  usedInlinedBegin = true;
+                }
+                return builder.build();
+              }
+            });
+    transactionRunner = new TransactionRunnerImpl(session, rpc, 1, false);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
                 CommitResponse.newBuilder()
                     .setCommitTimestamp(Timestamp.getDefaultInstance())
                     .build()));
+    when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
+        .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     transactionRunner.setSpan(mock(Span.class));
   }
 
@@ -275,6 +303,44 @@ public class TransactionRunnerImplTest {
   }
 
   @SuppressWarnings("unchecked")
+  @Test
+  public void inlineBegin() {
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    when(spanner.getRpc()).thenReturn(rpc);
+    when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
+        .thenReturn(QueryOptions.getDefaultInstance());
+    SessionImpl session =
+        new SessionImpl(
+            spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {
+          @Override
+          public void prepareReadWriteTransaction() {
+            // Using a prepared transaction is not allowed when the beginTransaction should be
+            // inlined with the first statement.
+            throw new IllegalStateException();
+          }
+        };
+    session.setCurrentSpan(mock(Span.class));
+    // Create a transaction runner that will inline the BeginTransaction call with the first
+    // statement.
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10, true);
+    runner.setSpan(mock(Span.class));
+    assertThat(usedInlinedBegin).isFalse();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.executeUpdate(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
+            return null;
+          }
+        });
+    verify(rpc, Mockito.never())
+        .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+    verify(rpc, Mockito.never())
+        .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+    assertThat(usedInlinedBegin).isTrue();
+  }
+
+  @SuppressWarnings("unchecked")
   private long[] batchDmlException(int status) {
     Preconditions.checkArgument(status != Code.OK_VALUE);
     TransactionContextImpl transaction =
@@ -288,7 +354,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10, false);
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

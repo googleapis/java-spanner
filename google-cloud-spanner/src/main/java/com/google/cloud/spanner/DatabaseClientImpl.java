@@ -189,7 +189,7 @@ class DatabaseClientImpl implements DatabaseClient {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
-  
+
   private TransactionRunner inlinedReadWriteTransaction() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
     try (Scope s = tracer.withSpan(span)) {
@@ -217,7 +217,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throw e;
     }
   }
-  
+
   private TransactionManager inlinedTransactionManager() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
     try (Scope s = tracer.withSpan(span)) {
