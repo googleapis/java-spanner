@@ -484,12 +484,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
+        if (resultSet.getMetadata().hasTransaction()) {
+          onTransactionMetadata(resultSet.getMetadata().getTransaction());
+        }
         if (!resultSet.hasStats()) {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
-        }
-        if (resultSet.getMetadata().hasTransaction()) {
-          onTransactionMetadata(resultSet.getMetadata().getTransaction());
         }
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
