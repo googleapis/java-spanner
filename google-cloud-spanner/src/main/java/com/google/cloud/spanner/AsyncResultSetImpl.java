@@ -381,11 +381,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         while (!stop) {
           waitIfPaused();
           startCallbackIfNecessary();
-          synchronized (monitor) {
-            stop = state.shouldStop || cursorReturnedDoneOrException;
-          }
           // Make sure we wait until the callback runner has actually finished.
           consumingLatch.await();
+          synchronized (monitor) {
+            stop = cursorReturnedDoneOrException;
+          }
         }
       } finally {
         if (executorProvider.shouldAutoClose()) {
