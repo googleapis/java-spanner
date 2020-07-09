@@ -212,455 +212,6 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
   /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project for which a list of supported instance
-   *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstanceConfigsPagedResponse listInstanceConfigs(ProjectName parent) {
-    ListInstanceConfigsRequest request =
-        ListInstanceConfigsRequest.newBuilder()
-            .setParent(parent == null ? null : parent.toString())
-            .build();
-    return listInstanceConfigs(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent.toString()).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project for which a list of supported instance
-   *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstanceConfigsPagedResponse listInstanceConfigs(String parent) {
-    ListInstanceConfigsRequest request =
-        ListInstanceConfigsRequest.newBuilder().setParent(parent).build();
-    return listInstanceConfigs(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(request).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstanceConfigsPagedResponse listInstanceConfigs(
-      ListInstanceConfigsRequest request) {
-    return listInstanceConfigsPagedCallable().call(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   ApiFuture&lt;ListInstanceConfigsPagedResponse&gt; future = instanceAdminClient.listInstanceConfigsPagedCallable().futureCall(request);
-   *   // Do something
-   *   for (InstanceConfig element : future.get().iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
-      listInstanceConfigsPagedCallable() {
-    return stub.listInstanceConfigsPagedCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   while (true) {
-   *     ListInstanceConfigsResponse response = instanceAdminClient.listInstanceConfigsCallable().call(request);
-   *     for (InstanceConfig element : response.getInstanceConfigsList()) {
-   *       // doThingsWith(element);
-   *     }
-   *     String nextPageToken = response.getNextPageToken();
-   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
-   *       request = request.toBuilder().setPageToken(nextPageToken).build();
-   *     } else {
-   *       break;
-   *     }
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
-      listInstanceConfigsCallable() {
-    return stub.listInstanceConfigsCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance configuration.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
-   * }
-   * </code></pre>
-   *
-   * @param name Required. The name of the requested instance configuration. Values are of the form
-   *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final InstanceConfig getInstanceConfig(InstanceConfigName name) {
-    GetInstanceConfigRequest request =
-        GetInstanceConfigRequest.newBuilder()
-            .setName(name == null ? null : name.toString())
-            .build();
-    return getInstanceConfig(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance configuration.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name.toString());
-   * }
-   * </code></pre>
-   *
-   * @param name Required. The name of the requested instance configuration. Values are of the form
-   *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final InstanceConfig getInstanceConfig(String name) {
-    GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder().setName(name).build();
-    return getInstanceConfig(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance configuration.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(request);
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final InstanceConfig getInstanceConfig(GetInstanceConfigRequest request) {
-    return getInstanceConfigCallable().call(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance configuration.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   ApiFuture&lt;InstanceConfig&gt; future = instanceAdminClient.getInstanceConfigCallable().futureCall(request);
-   *   // Do something
-   *   InstanceConfig response = future.get();
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
-    return stub.getInstanceConfigCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists all instances in the given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project for which a list of instances is requested.
-   *     Values are of the form `projects/&lt;project&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstancesPagedResponse listInstances(ProjectName parent) {
-    ListInstancesRequest request =
-        ListInstancesRequest.newBuilder()
-            .setParent(parent == null ? null : parent.toString())
-            .build();
-    return listInstances(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists all instances in the given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (Instance element : instanceAdminClient.listInstances(parent.toString()).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project for which a list of instances is requested.
-   *     Values are of the form `projects/&lt;project&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstancesPagedResponse listInstances(String parent) {
-    ListInstancesRequest request = ListInstancesRequest.newBuilder().setParent(parent).build();
-    return listInstances(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists all instances in the given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   for (Instance element : instanceAdminClient.listInstances(request).iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final ListInstancesPagedResponse listInstances(ListInstancesRequest request) {
-    return listInstancesPagedCallable().call(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists all instances in the given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   ApiFuture&lt;ListInstancesPagedResponse&gt; future = instanceAdminClient.listInstancesPagedCallable().futureCall(request);
-   *   // Do something
-   *   for (Instance element : future.get().iterateAll()) {
-   *     // doThingsWith(element);
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
-      listInstancesPagedCallable() {
-    return stub.listInstancesPagedCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Lists all instances in the given project.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   while (true) {
-   *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
-   *     for (Instance element : response.getInstancesList()) {
-   *       // doThingsWith(element);
-   *     }
-   *     String nextPageToken = response.getNextPageToken();
-   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
-   *       request = request.toBuilder().setPageToken(nextPageToken).build();
-   *     } else {
-   *       break;
-   *     }
-   *   }
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
-    return stub.listInstancesCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Instance response = instanceAdminClient.getInstance(name);
-   * }
-   * </code></pre>
-   *
-   * @param name Required. The name of the requested instance. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final Instance getInstance(InstanceName name) {
-    GetInstanceRequest request =
-        GetInstanceRequest.newBuilder().setName(name == null ? null : name.toString()).build();
-    return getInstance(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Instance response = instanceAdminClient.getInstance(name.toString());
-   * }
-   * </code></pre>
-   *
-   * @param name Required. The name of the requested instance. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final Instance getInstance(String name) {
-    GetInstanceRequest request = GetInstanceRequest.newBuilder().setName(name).build();
-    return getInstance(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   Instance response = instanceAdminClient.getInstance(request);
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  public final Instance getInstance(GetInstanceRequest request) {
-    return getInstanceCallable().call(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Gets information about a particular instance.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   ApiFuture&lt;Instance&gt; future = instanceAdminClient.getInstanceCallable().futureCall(request);
-   *   // Do something
-   *   Instance response = future.get();
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
-    return stub.getInstanceCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
    * Creates an instance and begins preparing it to begin serving. The returned [long-running
    * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
    * instance. The instance name is assigned by the caller. If the named instance already exists,
@@ -1193,6 +744,455 @@ public class InstanceAdminClient implements BackgroundResource {
    */
   public final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
     return stub.updateInstanceCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the project for which a list of supported instance
+   *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigsPagedResponse listInstanceConfigs(ProjectName parent) {
+    ListInstanceConfigsRequest request =
+        ListInstanceConfigsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listInstanceConfigs(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the project for which a list of supported instance
+   *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigsPagedResponse listInstanceConfigs(String parent) {
+    ListInstanceConfigsRequest request =
+        ListInstanceConfigsRequest.newBuilder().setParent(parent).build();
+    return listInstanceConfigs(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigsPagedResponse listInstanceConfigs(
+      ListInstanceConfigsRequest request) {
+    return listInstanceConfigsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListInstanceConfigsPagedResponse&gt; future = instanceAdminClient.listInstanceConfigsPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (InstanceConfig element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
+      listInstanceConfigsPagedCallable() {
+    return stub.listInstanceConfigsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListInstanceConfigsResponse response = instanceAdminClient.listInstanceConfigsCallable().call(request);
+   *     for (InstanceConfig element : response.getInstanceConfigsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
+      listInstanceConfigsCallable() {
+    return stub.listInstanceConfigsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance configuration.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
+   * }
+   * </code></pre>
+   *
+   * @param name Required. The name of the requested instance configuration. Values are of the form
+   *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstanceConfig getInstanceConfig(InstanceConfigName name) {
+    GetInstanceConfigRequest request =
+        GetInstanceConfigRequest.newBuilder()
+            .setName(name == null ? null : name.toString())
+            .build();
+    return getInstanceConfig(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance configuration.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name.toString());
+   * }
+   * </code></pre>
+   *
+   * @param name Required. The name of the requested instance configuration. Values are of the form
+   *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstanceConfig getInstanceConfig(String name) {
+    GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder().setName(name).build();
+    return getInstanceConfig(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance configuration.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(request);
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstanceConfig getInstanceConfig(GetInstanceConfigRequest request) {
+    return getInstanceConfigCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance configuration.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   ApiFuture&lt;InstanceConfig&gt; future = instanceAdminClient.getInstanceConfigCallable().futureCall(request);
+   *   // Do something
+   *   InstanceConfig response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
+    return stub.getInstanceConfigCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the project for which a list of instances is requested.
+   *     Values are of the form `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancesPagedResponse listInstances(ProjectName parent) {
+    ListInstancesRequest request =
+        ListInstancesRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listInstances(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (Instance element : instanceAdminClient.listInstances(parent.toString()).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param parent Required. The name of the project for which a list of instances is requested.
+   *     Values are of the form `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancesPagedResponse listInstances(String parent) {
+    ListInstancesRequest request = ListInstancesRequest.newBuilder().setParent(parent).build();
+    return listInstances(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   for (Instance element : instanceAdminClient.listInstances(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancesPagedResponse listInstances(ListInstancesRequest request) {
+    return listInstancesPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   ApiFuture&lt;ListInstancesPagedResponse&gt; future = instanceAdminClient.listInstancesPagedCallable().futureCall(request);
+   *   // Do something
+   *   for (Instance element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
+      listInstancesPagedCallable() {
+    return stub.listInstancesPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
+   *     .setParent(parent.toString())
+   *     .build();
+   *   while (true) {
+   *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
+   *     for (Instance element : response.getInstancesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
+    return stub.listInstancesCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Instance response = instanceAdminClient.getInstance(name);
+   * }
+   * </code></pre>
+   *
+   * @param name Required. The name of the requested instance. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Instance getInstance(InstanceName name) {
+    GetInstanceRequest request =
+        GetInstanceRequest.newBuilder().setName(name == null ? null : name.toString()).build();
+    return getInstance(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Instance response = instanceAdminClient.getInstance(name.toString());
+   * }
+   * </code></pre>
+   *
+   * @param name Required. The name of the requested instance. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Instance getInstance(String name) {
+    GetInstanceRequest request = GetInstanceRequest.newBuilder().setName(name).build();
+    return getInstance(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   Instance response = instanceAdminClient.getInstance(request);
+   * }
+   * </code></pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final Instance getInstance(GetInstanceRequest request) {
+    return getInstanceCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  /**
+   * Gets information about a particular instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre><code>
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
+   *     .setName(name.toString())
+   *     .build();
+   *   ApiFuture&lt;Instance&gt; future = instanceAdminClient.getInstanceCallable().futureCall(request);
+   *   // Do something
+   *   Instance response = future.get();
+   * }
+   * </code></pre>
+   */
+  public final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
+    return stub.getInstanceCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD
