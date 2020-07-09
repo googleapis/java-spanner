@@ -176,6 +176,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return Whether the metadata field is set.
    */
+  @java.lang.Override
   public boolean hasMetadata() {
     return metadata_ != null;
   }
@@ -191,6 +192,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The metadata.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadata getMetadata() {
     return metadata_ == null
         ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
@@ -206,6 +208,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
     return getMetadata();
   }
@@ -279,6 +282,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.protobuf.Value> getValuesList() {
     return values_;
   }
@@ -349,6 +353,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.ValueOrBuilder> getValuesOrBuilderList() {
     return values_;
   }
@@ -419,6 +424,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
+  @java.lang.Override
   public int getValuesCount() {
     return values_.size();
   }
@@ -489,6 +495,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.Value getValues(int index) {
     return values_.get(index);
   }
@@ -559,6 +566,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ValueOrBuilder getValuesOrBuilder(int index) {
     return values_.get(index);
   }
@@ -578,6 +586,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The chunkedValue.
    */
+  @java.lang.Override
   public boolean getChunkedValue() {
     return chunkedValue_;
   }
@@ -599,6 +608,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The resumeToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getResumeToken() {
     return resumeToken_;
   }
@@ -621,6 +631,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return Whether the stats field is set.
    */
+  @java.lang.Override
   public boolean hasStats() {
     return stats_ != null;
   }
@@ -640,6 +651,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The stats.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetStats getStats() {
     return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
@@ -657,6 +669,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
     return getStats();
   }
@@ -2700,6 +2713,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The chunkedValue.
      */
+    @java.lang.Override
     public boolean getChunkedValue() {
       return chunkedValue_;
     }
@@ -2759,6 +2773,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The resumeToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }

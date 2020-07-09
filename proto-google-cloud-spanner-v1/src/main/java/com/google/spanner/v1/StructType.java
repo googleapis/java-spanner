@@ -320,6 +320,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The name.
      */
+    @java.lang.Override
     public java.lang.String getName() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
@@ -348,6 +349,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for name.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
@@ -373,6 +375,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the type field is set.
      */
+    @java.lang.Override
     public boolean hasType() {
       return type_ != null;
     }
@@ -387,6 +390,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The type.
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getType() {
       return type_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : type_;
     }
@@ -399,6 +403,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Type type = 2;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.TypeOrBuilder getTypeOrBuilder() {
       return getType();
     }
@@ -1132,6 +1137,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.StructType.Field> getFieldsList() {
     return fields_;
   }
@@ -1149,6 +1155,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.StructType.FieldOrBuilder>
       getFieldsOrBuilderList() {
     return fields_;
@@ -1167,6 +1174,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
+  @java.lang.Override
   public int getFieldsCount() {
     return fields_.size();
   }
@@ -1184,6 +1192,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.StructType.Field getFields(int index) {
     return fields_.get(index);
   }
@@ -1201,6 +1210,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.StructType.FieldOrBuilder getFieldsOrBuilder(int index) {
     return fields_.get(index);
   }

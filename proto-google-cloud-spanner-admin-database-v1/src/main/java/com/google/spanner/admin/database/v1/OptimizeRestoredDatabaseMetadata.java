@@ -145,6 +145,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -167,6 +168,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -192,6 +194,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    *
    * @return Whether the progress field is set.
    */
+  @java.lang.Override
   public boolean hasProgress() {
     return progress_ != null;
   }
@@ -206,6 +209,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    *
    * @return The progress.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgress getProgress() {
     return progress_ == null
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
@@ -220,6 +224,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder() {
     return getProgress();
   }

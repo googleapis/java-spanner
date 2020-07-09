@@ -130,6 +130,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the commitTimestamp field is set.
    */
+  @java.lang.Override
   public boolean hasCommitTimestamp() {
     return commitTimestamp_ != null;
   }
@@ -144,6 +145,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The commitTimestamp.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCommitTimestamp() {
     return commitTimestamp_ == null
         ? com.google.protobuf.Timestamp.getDefaultInstance()
@@ -158,6 +160,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Timestamp commit_timestamp = 1;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCommitTimestampOrBuilder() {
     return getCommitTimestamp();
   }

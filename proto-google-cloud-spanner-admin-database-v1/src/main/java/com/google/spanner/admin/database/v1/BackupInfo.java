@@ -147,6 +147,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The backup.
    */
+  @java.lang.Override
   public java.lang.String getBackup() {
     java.lang.Object ref = backup_;
     if (ref instanceof java.lang.String) {
@@ -169,6 +170,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for backup.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getBackupBytes() {
     java.lang.Object ref = backup_;
     if (ref instanceof java.lang.String) {
@@ -195,6 +197,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the createTime field is set.
    */
+  @java.lang.Override
   public boolean hasCreateTime() {
     return createTime_ != null;
   }
@@ -210,6 +213,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The createTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCreateTime() {
     return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
@@ -223,6 +227,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Timestamp create_time = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
     return getCreateTime();
   }
@@ -240,6 +245,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The sourceDatabase.
    */
+  @java.lang.Override
   public java.lang.String getSourceDatabase() {
     java.lang.Object ref = sourceDatabase_;
     if (ref instanceof java.lang.String) {
@@ -262,6 +268,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for sourceDatabase.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSourceDatabaseBytes() {
     java.lang.Object ref = sourceDatabase_;
     if (ref instanceof java.lang.String) {

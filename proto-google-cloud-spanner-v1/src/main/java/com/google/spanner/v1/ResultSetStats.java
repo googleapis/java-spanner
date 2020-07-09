@@ -204,6 +204,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the queryPlan field is set.
    */
+  @java.lang.Override
   public boolean hasQueryPlan() {
     return queryPlan_ != null;
   }
@@ -218,6 +219,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The queryPlan.
    */
+  @java.lang.Override
   public com.google.spanner.v1.QueryPlan getQueryPlan() {
     return queryPlan_ == null ? com.google.spanner.v1.QueryPlan.getDefaultInstance() : queryPlan_;
   }
@@ -230,6 +232,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.QueryPlan query_plan = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.QueryPlanOrBuilder getQueryPlanOrBuilder() {
     return getQueryPlan();
   }
@@ -254,6 +257,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the queryStats field is set.
    */
+  @java.lang.Override
   public boolean hasQueryStats() {
     return queryStats_ != null;
   }
@@ -275,6 +279,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The queryStats.
    */
+  @java.lang.Override
   public com.google.protobuf.Struct getQueryStats() {
     return queryStats_ == null ? com.google.protobuf.Struct.getDefaultInstance() : queryStats_;
   }
@@ -294,6 +299,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Struct query_stats = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.StructOrBuilder getQueryStatsOrBuilder() {
     return getQueryStats();
   }
@@ -310,6 +316,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The rowCountExact.
    */
+  @java.lang.Override
   public long getRowCountExact() {
     if (rowCountCase_ == 3) {
       return (java.lang.Long) rowCount_;
@@ -330,6 +337,7 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The rowCountLowerBound.
    */
+  @java.lang.Override
   public long getRowCountLowerBound() {
     if (rowCountCase_ == 4) {
       return (java.lang.Long) rowCount_;

@@ -163,6 +163,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -187,6 +188,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -289,6 +291,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    *
    * @return The operationId.
    */
+  @java.lang.Override
   public java.lang.String getOperationId() {
     java.lang.Object ref = operationId_;
     if (ref instanceof java.lang.String) {
@@ -327,6 +330,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    *
    * @return The bytes for operationId.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getOperationIdBytes() {
     java.lang.Object ref = operationId_;
     if (ref instanceof java.lang.String) {

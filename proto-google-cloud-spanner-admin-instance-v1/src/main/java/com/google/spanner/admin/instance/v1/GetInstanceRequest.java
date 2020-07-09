@@ -142,6 +142,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -167,6 +168,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -194,6 +196,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the fieldMask field is set.
    */
+  @java.lang.Override
   public boolean hasFieldMask() {
     return fieldMask_ != null;
   }
@@ -210,6 +213,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * @return The fieldMask.
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMask getFieldMask() {
     return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
   }
@@ -224,6 +228,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMaskOrBuilder getFieldMaskOrBuilder() {
     return getFieldMask();
   }
