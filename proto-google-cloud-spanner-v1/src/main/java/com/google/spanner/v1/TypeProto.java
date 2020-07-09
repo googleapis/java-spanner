@@ -60,11 +60,12 @@ public final class TypeProto {
           + ".Type*\216\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIF"
           + "IED\020\000\022\010\n\004BOOL\020\001\022\t\n\005INT64\020\002\022\013\n\007FLOAT64\020\003\022"
           + "\r\n\tTIMESTAMP\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005"
-          + "BYTES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\tB\222\001\n\025com.g"
+          + "BYTES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\tB\257\001\n\025com.g"
           + "oogle.spanner.v1B\tTypeProtoP\001Z8google.go"
           + "lang.org/genproto/googleapis/spanner/v1;"
           + "spanner\252\002\027Google.Cloud.Spanner.V1\312\002\027Goog"
-          + "le\\Cloud\\Spanner\\V1b\006proto3"
+          + "le\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spa"
+          + "nner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
