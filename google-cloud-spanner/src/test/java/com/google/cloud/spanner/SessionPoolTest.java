@@ -22,8 +22,8 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEIN
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -47,6 +47,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -59,12 +60,14 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
+import io.opencensus.trace.Span;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -81,9 +84,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -96,7 +97,6 @@ import org.mockito.stubbing.Answer;
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
 public class SessionPoolTest extends BaseSessionPoolTest {
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
@@ -135,7 +135,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
@@ -153,7 +153,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -207,21 +207,21 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolLifo() {
     setupMockSessionCreation();
     pool = createPool();
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    Session session1 = pool.getReadSession().get();
+    Session session2 = pool.getReadSession().get();
     assertThat(session1).isNotEqualTo(session2);
 
     session2.close();
     session1.close();
-    Session session3 = pool.getReadSession();
-    Session session4 = pool.getReadSession();
+    Session session3 = pool.getReadSession().get();
+    Session session4 = pool.getReadSession().get();
     assertThat(session3).isEqualTo(session1);
     assertThat(session4).isEqualTo(session2);
     session3.close();
     session4.close();
 
-    Session session5 = pool.getReadWriteSession();
-    Session session6 = pool.getReadWriteSession();
+    Session session5 = pool.getReadWriteSession().get();
+    Session session6 = pool.getReadWriteSession().get();
     assertThat(session5).isEqualTo(session4);
     assertThat(session6).isEqualTo(session3);
     session6.close();
@@ -244,7 +244,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -262,7 +262,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool();
     Session session1 = pool.getReadSession();
     // Leaked sessions
-    PooledSession leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getReadSession();
     // Clear the leaked exception to suppress logging of expected exceptions.
     leakedSession.clearLeakedException();
     session1.close();
@@ -302,7 +302,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -318,7 +318,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -338,7 +338,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSession leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getReadSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
@@ -347,7 +347,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     insideCreation.await();
     pool.closeAsync(new SpannerImpl.ClosedException());
     releaseCreation.countDown();
-    latch.await();
+    latch.await(5L, TimeUnit.SECONDS);
     assertThat(failed.get()).isTrue();
   }
 
@@ -360,7 +360,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -376,7 +376,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -396,7 +396,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSession leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getReadSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
@@ -416,7 +416,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
@@ -452,7 +452,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -492,12 +492,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void poolClosureFailsNewRequests() throws Exception {
+  public void poolClosureFailsNewRequests() {
     final SessionImpl session = mockSession();
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -513,12 +513,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    PooledSession leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getReadSession();
+    leakedSession.get();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     pool.closeAsync(new SpannerImpl.ClosedException());
-    expectedException.expect(IllegalStateException.class);
-    pool.getReadSession();
+    try {
+      pool.getReadSession();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -542,11 +547,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
-                      public Void call() throws Exception {
+                      public Void call() {
                         SessionConsumerImpl consumer =
                             invocation.getArgumentAt(2, SessionConsumerImpl.class);
                         consumer.onSessionCreateFailure(
@@ -560,8 +565,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    expectedException.expect(isSpannerException(ErrorCode.INTERNAL));
-    pool.getReadSession();
+    try {
+      pool.getReadSession().get();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -569,11 +578,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Callable<Void>() {
                       @Override
-                      public Void call() throws Exception {
+                      public Void call() {
                         SessionConsumerImpl consumer =
                             invocation.getArgumentAt(2, SessionConsumerImpl.class);
                         consumer.onSessionCreateFailure(
@@ -587,8 +596,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    expectedException.expect(isSpannerException(ErrorCode.INTERNAL));
-    pool.getReadWriteSession();
+    try {
+      pool.getReadWriteSession().get();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -597,7 +610,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -616,8 +629,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(session)
         .prepareReadWriteTransaction();
     pool = createPool();
-    expectedException.expect(isSpannerException(ErrorCode.INTERNAL));
-    pool.getReadWriteSession();
+    try {
+      pool.getReadWriteSession().get();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+    }
   }
 
   @Test
@@ -626,7 +643,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -642,14 +659,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    try (Session session = pool.getReadWriteSession()) {
+    try (PooledSessionFuture session = pool.getReadWriteSession()) {
       assertThat(session).isNotNull();
+      session.get();
       verify(mockSession).prepareReadWriteTransaction();
     }
   }
 
   @Test
-  public void getMultipleReadWriteSessions() {
+  public void getMultipleReadWriteSessions() throws Exception {
     SessionImpl mockSession1 = mockSession();
     SessionImpl mockSession2 = mockSession();
     final LinkedList<SessionImpl> sessions =
@@ -657,7 +675,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -673,8 +691,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    Session session1 = pool.getReadWriteSession();
-    Session session2 = pool.getReadWriteSession();
+    PooledSessionFuture session1 = pool.getReadWriteSession();
+    PooledSessionFuture session2 = pool.getReadWriteSession();
+    session1.get();
+    session2.get();
     verify(mockSession1).prepareReadWriteTransaction();
     verify(mockSession2).prepareReadWriteTransaction();
     session1.close();
@@ -688,7 +708,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -722,7 +742,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Answer<Void>() {
 
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -733,7 +753,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Answer<Void>() {
 
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -743,7 +763,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -769,8 +789,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool();
     // One of the sessions would be pre prepared.
     Uninterruptibles.awaitUninterruptibly(prepareLatch);
-    PooledSession readSession = pool.getReadSession();
-    PooledSession writeSession = pool.getReadWriteSession();
+    PooledSession readSession = pool.getReadSession().get();
+    PooledSession writeSession = pool.getReadWriteSession().get();
     verify(writeSession.delegate, times(1)).prepareReadWriteTransaction();
     verify(readSession.delegate, never()).prepareReadWriteTransaction();
     readSession.close();
@@ -784,7 +804,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(InvocationOnMock arg0) throws Throwable {
+              public Void answer(InvocationOnMock arg0) {
                 prepareLatch.countDown();
                 return null;
               }
@@ -794,7 +814,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -819,7 +839,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.getReadWriteSession().close();
     prepareLatch.await();
     // This session should also be write prepared.
-    PooledSession readSession = pool.getReadSession();
+    PooledSession readSession = pool.getReadSession().get();
     verify(readSession.delegate, times(2)).prepareReadWriteTransaction();
   }
 
@@ -834,7 +854,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -851,8 +871,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
     Session session1 = pool.getReadSession();
-    expectedException.expect(isSpannerException(ErrorCode.RESOURCE_EXHAUSTED));
-    pool.getReadSession();
+    try {
+      pool.getReadSession();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    }
     session1.close();
     session1 = pool.getReadSession();
     assertThat(session1).isNotNull();
@@ -871,7 +895,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -887,7 +911,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    assertThat(pool.getReadWriteSession().delegate).isEqualTo(mockSession2);
+    assertThat(pool.getReadWriteSession().get().delegate).isEqualTo(mockSession2);
   }
 
   @Test
@@ -907,7 +931,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -932,9 +956,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.getReadSession().close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
-    Session readSession1 = pool.getReadSession();
-    Session readSession2 = pool.getReadSession();
-    Session readSession3 = pool.getReadSession();
+    PooledSessionFuture readSession1 = pool.getReadSession();
+    PooledSessionFuture readSession2 = pool.getReadSession();
+    PooledSessionFuture readSession3 = pool.getReadSession();
+    // Wait until the sessions have actually been gotten in order to make sure they are in use in
+    // parallel.
+    readSession1.get();
+    readSession2.get();
+    readSession3.get();
     readSession1.close();
     readSession2.close();
     readSession3.close();
@@ -967,7 +996,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -988,8 +1017,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    PooledSessionFuture session1 = pool.getReadSession();
+    PooledSessionFuture session2 = pool.getReadSession();
+    session1.get();
+    session2.get();
     session1.close();
     session2.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
@@ -1023,7 +1054,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1058,9 +1089,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
     // Verify that all sessions are still in the pool, and that the write fraction is maintained.
     assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
-    assertThat(
-            pool.getNumberOfAvailableWritePreparedSessions()
-                + pool.getNumberOfSessionsBeingPrepared())
+    assertThat(pool.getNumberOfWriteSessionsInPool())
         .isEqualTo(
             (int) Math.ceil(pool.getNumberOfSessionsInPool() * options.getWriteSessionsFraction()));
 
@@ -1118,7 +1147,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       setupMockSessionCreation();
       pool = createPool();
       // Take the only session that can be in the pool.
-      Session checkedOutSession = pool.getReadSession();
+      PooledSessionFuture checkedOutSession = pool.getReadSession();
+      checkedOutSession.get();
       final Boolean finWrite = write;
       ExecutorService executor = Executors.newFixedThreadPool(1);
       final CountDownLatch latch = new CountDownLatch(1);
@@ -1127,8 +1157,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           executor.submit(
               new Callable<Void>() {
                 @Override
-                public Void call() throws Exception {
-                  Session session;
+                public Void call() {
+                  PooledSessionFuture session;
                   latch.countDown();
                   if (finWrite) {
                     session = pool.getReadWriteSession();
@@ -1183,7 +1213,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1199,7 +1229,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1239,7 +1269,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1255,7 +1285,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1311,7 +1341,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .thenThrow(sessionNotFound);
         when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
             .thenThrow(sessionNotFound);
-        when(rpc.commit(any(CommitRequest.class), any(Map.class))).thenThrow(sessionNotFound);
+        when(rpc.commitAsync(any(CommitRequest.class), any(Map.class)))
+            .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
         doThrow(sessionNotFound).when(rpc).rollback(any(RollbackRequest.class), any(Map.class));
         final SessionImpl closedSession = mock(SessionImpl.class);
         when(closedSession.getName())
@@ -1327,9 +1358,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.asyncClose())
             .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
-        when(closedSession.beginTransaction()).thenThrow(sessionNotFound);
+        when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
             new TransactionRunnerImpl(closedSession, rpc, 10);
+        closedTransactionRunner.setSpan(mock(Span.class));
         when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
         final SessionImpl openSession = mock(SessionImpl.class);
@@ -1339,9 +1371,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
         final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
         when(openSession.newTransaction()).thenReturn(openTransactionContext);
-        when(openSession.beginTransaction()).thenReturn(ByteString.copyFromUtf8("open-txn"));
+        when(openSession.beginTransactionAsync())
+            .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
         TransactionRunnerImpl openTransactionRunner =
             new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+        openTransactionRunner.setSpan(mock(Span.class));
         when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
         ResultSet openResultSet = mock(ResultSet.class);
@@ -1361,7 +1395,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         doAnswer(
                 new Answer<Void>() {
                   @Override
-                  public Void answer(final InvocationOnMock invocation) throws Throwable {
+                  public Void answer(final InvocationOnMock invocation) {
                     executor.submit(
                         new Runnable() {
                           @Override
@@ -1377,7 +1411,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .doAnswer(
                 new Answer<Void>() {
                   @Override
-                  public Void answer(final InvocationOnMock invocation) throws Throwable {
+                  public Void answer(final InvocationOnMock invocation) {
                     executor.submit(
                         new Runnable() {
                           @Override
@@ -1407,7 +1441,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SessionPool pool =
             SessionPool.createPool(
                 options, new TestExecutorFactory(), spanner.getSessionClient(db));
-        try (PooledSession readWriteSession = pool.getReadWriteSession()) {
+        try (PooledSessionFuture readWriteSession = pool.getReadWriteSession()) {
           TransactionRunner runner = readWriteSession.readWriteTransaction();
           try {
             runner.run(
@@ -1415,7 +1449,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                   private int callNumber = 0;
 
                   @Override
-                  public Integer run(TransactionContext transaction) throws Exception {
+                  public Integer run(TransactionContext transaction) {
                     callNumber++;
                     if (hasPreparedTransaction) {
                       // If the session had a prepared read/write transaction, that transaction will
@@ -1497,7 +1531,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1513,7 +1547,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1531,7 +1565,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    PooledSession session = pool.getReadWriteSession();
+    PooledSession session = pool.getReadWriteSession().get();
     assertThat(session.delegate).isEqualTo(openSession);
   }
 
@@ -1548,7 +1582,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1564,7 +1598,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1600,7 +1634,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1616,7 +1650,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1651,7 +1685,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1667,7 +1701,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -1711,8 +1745,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     setupMockSessionCreation();
     pool = createPool(clock, metricRegistry, labelValues);
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    PooledSessionFuture session1 = pool.getReadSession();
+    PooledSessionFuture session2 = pool.getReadSession();
+    session1.get();
+    session2.get();
 
     MetricsRecord record = metricRegistry.pollRecord();
     assertThat(record.getMetrics().size()).isEqualTo(6);
@@ -1846,7 +1882,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Runnable() {
               @Override
               public void run() {
-                try (Session session = pool.getReadSession()) {
+                try (PooledSessionFuture future = pool.getReadSession()) {
+                  PooledSession session = future.get();
                   failed.compareAndSet(false, session == null);
                   Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
                 } catch (Throwable e) {
@@ -1864,7 +1901,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Runnable() {
               @Override
               public void run() {
-                try (Session session = pool.getReadWriteSession()) {
+                try (PooledSessionFuture future = pool.getReadWriteSession()) {
+                  PooledSession session = future.get();
                   failed.compareAndSet(false, session == null);
                   Uninterruptibles.sleepUninterruptibly(2, TimeUnit.MILLISECONDS);
                 } catch (SpannerException e) {

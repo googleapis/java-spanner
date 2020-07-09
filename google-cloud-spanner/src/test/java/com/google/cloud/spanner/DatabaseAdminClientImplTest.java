@@ -338,7 +338,7 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
-  public void updateBackup() throws Exception {
+  public void updateBackup() {
     Timestamp t =
         Timestamp.ofTimeMicroseconds(
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())

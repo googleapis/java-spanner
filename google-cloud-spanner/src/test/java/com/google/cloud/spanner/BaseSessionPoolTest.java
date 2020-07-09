@@ -59,7 +59,7 @@ abstract class BaseSessionPoolTest {
   }
 
   SessionImpl mockSession() {
-    SessionImpl session = mock(SessionImpl.class);
+    final SessionImpl session = mock(SessionImpl.class);
     when(session.getName())
         .thenReturn(
             "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);

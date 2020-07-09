@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.BaseService;
@@ -23,9 +24,11 @@ import com.google.cloud.PageImpl;
 import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
+import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -86,6 +89,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
 
+  private final CloseableExecutorProvider asyncExecutorProvider;
+
   @GuardedBy("this")
   private final List<DatabaseClientImpl> invalidatedDbClients = new ArrayList<>();
 
@@ -116,6 +121,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   SpannerImpl(SpannerRpc gapicRpc, SpannerOptions options) {
     super(options);
     this.gapicRpc = gapicRpc;
+    this.asyncExecutorProvider =
+        MoreObjects.firstNonNull(
+            options.getAsyncExecutorProvider(),
+            SpannerOptions.createDefaultAsyncExecutorProvider());
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
@@ -138,6 +147,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /** Returns the default query options that should be used for the specified database. */
   QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
     return getOptions().getDefaultQueryOptions(databaseId);
+  }
+
+  /**
+   * Returns the {@link ExecutorProvider} to use for async methods that need a background executor.
+   */
+  public ExecutorProvider getAsyncExecutorProvider() {
+    return asyncExecutorProvider;
   }
 
   SessionImpl sessionWithId(String name) {
@@ -251,6 +267,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         sessionClient.close();
       }
       sessionClients.clear();
+      asyncExecutorProvider.close();
       try {
         gapicRpc.shutdown();
       } catch (RuntimeException e) {

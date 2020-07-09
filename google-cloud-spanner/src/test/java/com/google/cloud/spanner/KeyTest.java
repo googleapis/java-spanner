@@ -179,7 +179,7 @@ public class KeyTest {
   }
 
   @Test
-  public void serialization() throws Exception {
+  public void serialization() {
     reserializeAndAssert(Key.of());
     reserializeAndAssert(Key.of(new Object[] {null}));
     reserializeAndAssert(Key.of(true));

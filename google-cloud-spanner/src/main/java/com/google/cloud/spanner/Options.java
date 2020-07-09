@@ -59,6 +59,11 @@ public final class Options implements Serializable {
     return new FlowControlOption(prefetchChunks);
   }
 
+  public static ReadAndQueryOption bufferRows(int bufferRows) {
+    Preconditions.checkArgument(bufferRows > 0, "bufferRows should be greater than 0");
+    return new BufferRowsOption(bufferRows);
+  }
+
   /**
    * Specifying this will cause the list operations to fetch at most this many records in a page.
    */
@@ -115,8 +120,22 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class BufferRowsOption extends InternalOption implements ReadAndQueryOption {
+    final int bufferRows;
+
+    BufferRowsOption(int bufferRows) {
+      this.bufferRows = bufferRows;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.bufferRows = bufferRows;
+    }
+  }
+
   private Long limit;
   private Integer prefetchChunks;
+  private Integer bufferRows;
   private Integer pageSize;
   private String pageToken;
   private String filter;
@@ -138,6 +157,14 @@ public final class Options implements Serializable {
 
   int prefetchChunks() {
     return prefetchChunks;
+  }
+
+  boolean hasBufferRows() {
+    return bufferRows != null;
+  }
+
+  int bufferRows() {
+    return bufferRows;
   }
 
   boolean hasPageSize() {
@@ -203,6 +230,10 @@ public final class Options implements Serializable {
             || hasPrefetchChunks()
                 && that.hasPrefetchChunks()
                 && Objects.equals(prefetchChunks(), that.prefetchChunks()))
+        && (!hasBufferRows() && !that.hasBufferRows()
+            || hasBufferRows()
+                && that.hasBufferRows()
+                && Objects.equals(bufferRows(), that.bufferRows()))
         && (!hasPageSize() && !that.hasPageSize()
             || hasPageSize() && that.hasPageSize() && Objects.equals(pageSize(), that.pageSize()))
         && Objects.equals(pageToken(), that.pageToken())
@@ -217,6 +248,9 @@ public final class Options implements Serializable {
     }
     if (prefetchChunks != null) {
       result = 31 * result + prefetchChunks.hashCode();
+    }
+    if (bufferRows != null) {
+      result = 31 * result + bufferRows.hashCode();
     }
     if (pageSize != null) {
       result = 31 * result + pageSize.hashCode();

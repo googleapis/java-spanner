@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -52,12 +52,12 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @VisibleForTesting
-  PooledSession getReadSession() {
+  PooledSessionFuture getReadSession() {
     return pool.getReadSession();
   }
 
   @VisibleForTesting
-  PooledSession getReadWriteSession() {
+  PooledSessionFuture getReadWriteSession() {
     return pool.getReadWriteSession();
   }
 
@@ -192,6 +192,28 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public AsyncRunner runAsync() {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return getReadWriteSession().runAsync();
+    } catch (RuntimeException e) {
+      TraceUtil.endSpanWithFailure(span, e);
+      throw e;
+    }
+  }
+
+  @Override
+  public AsyncTransactionManager transactionManagerAsync() {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return getReadWriteSession().transactionManagerAsync();
+    } catch (RuntimeException e) {
+      TraceUtil.endSpanWithFailure(span, e);
+      throw e;
+    }
+  }
+
+  @Override
   public long executePartitionedUpdate(final Statement stmt) {
     Span span = tracer.spanBuilder(PARTITION_DML_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
@@ -212,7 +234,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   private <T> T runWithSessionRetry(SessionMode mode, Function<Session, T> callable) {
-    PooledSession session =
+    PooledSessionFuture session =
         mode == SessionMode.READ_WRITE ? getReadWriteSession() : getReadSession();
     while (true) {
       try {

@@ -38,6 +38,7 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -54,6 +55,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -163,7 +165,8 @@ public class GapicSpannerRpc implements SpannerRpc {
    * down when the {@link SpannerRpc} is closed.
    */
   private static final class ManagedInstantiatingExecutorProvider implements ExecutorProvider {
-    private static final int DEFAULT_THREAD_COUNT = 4;
+    // 4 Gapic clients * 4 channels per client.
+    private static final int DEFAULT_MIN_THREAD_COUNT = 16;
     private final List<ScheduledExecutorService> executors = new LinkedList<>();
     private final ThreadFactory threadFactory;
 
@@ -178,8 +181,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public ScheduledExecutorService getExecutor() {
+      int numCpus = Runtime.getRuntime().availableProcessors();
+      int numThreads = Math.max(DEFAULT_MIN_THREAD_COUNT, numCpus);
       ScheduledExecutorService executor =
-          new ScheduledThreadPoolExecutor(DEFAULT_THREAD_COUNT, threadFactory);
+          new ScheduledThreadPoolExecutor(numThreads, threadFactory);
       synchronized (this) {
         executors.add(executor);
       }
@@ -226,6 +231,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final String projectName;
   private final SpannerMetadataProvider metadataProvider;
   private final CallCredentialsProvider callCredentialsProvider;
+  private final String compressorName;
   private final Duration waitTimeout =
       systemProperty(PROPERTY_TIMEOUT_SECONDS, DEFAULT_TIMEOUT_SECONDS);
   private final Duration idleTimeout =
@@ -279,6 +285,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             mergedHeaderProvider.getHeaders(),
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
+    this.compressorName = options.getCompressorName();
 
     // Create a managed executor provider.
     this.executorProvider =
@@ -298,7 +305,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
                 .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
                 .setPoolSize(options.getNumChannels())
-                .setExecutorProvider(executorProvider)
+                .setExecutor(executorProvider.getExecutor())
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
@@ -307,9 +314,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
                 .setInterceptorProvider(
-                    MoreObjects.firstNonNull(
-                        options.getInterceptorProvider(),
-                        SpannerInterceptorProvider.createDefault()))
+                    SpannerInterceptorProvider.create(
+                            MoreObjects.firstNonNull(
+                                options.getInterceptorProvider(),
+                                SpannerInterceptorProvider.createDefault()))
+                        .withEncoding(compressorName))
                 .setHeaderProvider(mergedHeaderProvider)
                 .build());
 
@@ -356,6 +365,21 @@ public class GapicSpannerRpc implements SpannerRpc {
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
           .setRetrySettings(partitionedDmlRetrySettings);
+      // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
+      // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
+      // also change the StreamWatchdogCheckInterval.
+      if (options
+              .getPartitionedDmlTimeout()
+              .dividedBy(10L)
+              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+          < 0) {
+        pdmlSettings.setStreamWatchdogCheckInterval(
+            options.getPartitionedDmlTimeout().dividedBy(10));
+        pdmlSettings.setStreamWatchdogProvider(
+            pdmlSettings
+                .getStreamWatchdogProvider()
+                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+      }
       this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
@@ -1054,8 +1078,14 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    return get(executeQueryAsync(request, options));
+  }
+
+  @Override
+  public ApiFuture<ResultSet> executeQueryAsync(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.executeSqlCallable().futureCall(request, context));
+    return spannerStub.executeSqlCallable().futureCall(request, context);
   }
 
   @Override
@@ -1068,6 +1098,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public RetrySettings getPartitionedDmlRetrySettings() {
     return partitionedDmlRetrySettings;
+  }
+
+  @Override
+  public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
+      ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    context = context.withStreamWaitTimeout(timeout);
+    return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 
   @Override
@@ -1095,30 +1133,52 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ExecuteBatchDmlResponse executeBatchDml(
       ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
+    return get(executeBatchDmlAsync(request, options));
+  }
 
+  @Override
+  public ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
+      ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.executeBatchDmlCallable().futureCall(request, context));
+    return spannerStub.executeBatchDmlCallable().futureCall(request, context);
+  }
+
+  @Override
+  public ApiFuture<Transaction> beginTransactionAsync(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return spannerStub.beginTransactionCallable().futureCall(request, context);
   }
 
   @Override
   public Transaction beginTransaction(
       BeginTransactionRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
-    GrpcCallContext context = newCallContext(options, request.getSession());
-    return get(spannerStub.beginTransactionCallable().futureCall(request, context));
+    return get(beginTransactionAsync(request, options));
+  }
+
+  @Override
+  public ApiFuture<CommitResponse> commitAsync(
+      CommitRequest commitRequest, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
+    return spannerStub.commitCallable().futureCall(commitRequest, context);
   }
 
   @Override
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, commitRequest.getSession());
-    return get(spannerStub.commitCallable().futureCall(commitRequest, context));
+    return get(commitAsync(commitRequest, options));
+  }
+
+  @Override
+  public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    return spannerStub.rollbackCallable().futureCall(request, context);
   }
 
   @Override
   public void rollback(RollbackRequest request, @Nullable Map<Option, ?> options)
       throws SpannerException {
-    GrpcCallContext context = newCallContext(options, request.getSession());
-    get(spannerStub.rollbackCallable().futureCall(request, context));
+    get(rollbackAsync(request, options));
   }
 
   @Override

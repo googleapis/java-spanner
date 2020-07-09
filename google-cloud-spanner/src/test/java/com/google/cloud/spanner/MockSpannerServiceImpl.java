@@ -19,9 +19,11 @@ package com.google.cloud.spanner;
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
+import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
@@ -79,6 +81,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,14 +91,15 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.threeten.bp.Instant;
 
 /**
@@ -232,11 +236,20 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private final StatementResultType type;
     private final Statement statement;
     private final Long updateCount;
-    private final ResultSet resultSet;
+    private final Deque<ResultSet> resultSets;
     private final StatusRuntimeException exception;
 
     /** Creates a {@link StatementResult} for a query that returns a {@link ResultSet}. */
     public static StatementResult query(Statement statement, ResultSet resultSet) {
+      return new StatementResult(statement, resultSet);
+    }
+
+    /**
+     * Creates a {@link StatementResult} for a query that returns a {@link ResultSet} the first
+     * time, and a different {@link ResultSet} for all subsequent calls.
+     */
+    public static StatementResult queryAndThen(
+        Statement statement, ResultSet resultSet, ResultSet next) {
       return new StatementResult(statement, resultSet);
     }
 
@@ -254,6 +267,25 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     /** Creates a {@link StatementResult} for statement that should return an error. */
     public static StatementResult exception(Statement statement, StatusRuntimeException exception) {
       return new StatementResult(statement, exception);
+    }
+
+    private static class KeepLastElementDeque<E> extends LinkedList<E> {
+      private static <E> KeepLastElementDeque<E> singleton(E item) {
+        return new KeepLastElementDeque<E>(Collections.singleton(item));
+      }
+
+      private static <E> KeepLastElementDeque<E> of(E first, E second) {
+        return new KeepLastElementDeque<E>(Arrays.asList(first, second));
+      }
+
+      private KeepLastElementDeque(Collection<E> coll) {
+        super(coll);
+      }
+
+      @Override
+      public E pop() {
+        return this.size() == 1 ? super.peek() : super.pop();
+      }
     }
 
     /**
@@ -275,6 +307,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           builder.append(", ");
         }
         builder.append(col);
+        first = false;
       }
       builder.append(" FROM ").append(table);
       if (keySet.isAll()) {
@@ -302,14 +335,24 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(Statement statement, Long updateCount) {
       this.statement = Preconditions.checkNotNull(statement);
       this.updateCount = Preconditions.checkNotNull(updateCount);
-      this.resultSet = null;
+      this.resultSets = null;
       this.exception = null;
       this.type = StatementResultType.UPDATE_COUNT;
     }
 
     private StatementResult(Statement statement, ResultSet resultSet) {
       this.statement = Preconditions.checkNotNull(statement);
-      this.resultSet = Preconditions.checkNotNull(resultSet);
+      this.resultSets = KeepLastElementDeque.singleton(Preconditions.checkNotNull(resultSet));
+      this.updateCount = null;
+      this.exception = null;
+      this.type = StatementResultType.RESULT_SET;
+    }
+
+    private StatementResult(Statement statement, ResultSet resultSet, ResultSet andThen) {
+      this.statement = Preconditions.checkNotNull(statement);
+      this.resultSets =
+          KeepLastElementDeque.of(
+              Preconditions.checkNotNull(resultSet), Preconditions.checkNotNull(andThen));
       this.updateCount = null;
       this.exception = null;
       this.type = StatementResultType.RESULT_SET;
@@ -318,7 +361,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(
         String table, KeySet keySet, Iterable<String> columns, ResultSet resultSet) {
       this.statement = createReadStatement(table, keySet, columns);
-      this.resultSet = Preconditions.checkNotNull(resultSet);
+      this.resultSets = KeepLastElementDeque.singleton(Preconditions.checkNotNull(resultSet));
       this.updateCount = null;
       this.exception = null;
       this.type = StatementResultType.RESULT_SET;
@@ -327,7 +370,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private StatementResult(Statement statement, StatusRuntimeException exception) {
       this.statement = Preconditions.checkNotNull(statement);
       this.exception = Preconditions.checkNotNull(exception);
-      this.resultSet = null;
+      this.resultSets = null;
       this.updateCount = null;
       this.type = StatementResultType.EXCEPTION;
     }
@@ -340,7 +383,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       Preconditions.checkState(
           type == StatementResultType.RESULT_SET,
           "This statement result does not contain a result set");
-      return resultSet;
+      return resultSets.pop();
     }
 
     private Long getUpdateCount() {
@@ -394,6 +437,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return new SimulatedExecutionTime(0, 0, Arrays.asList(exception), true);
     }
 
+    public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {
+      return ofStickyException(
+          SpannerExceptionFactoryTest.newStatusDatabaseNotFoundException(name));
+    }
+
     public static SimulatedExecutionTime ofExceptions(Collection<Exception> exceptions) {
       return new SimulatedExecutionTime(0, 0, exceptions, false);
     }
@@ -421,19 +469,15 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     void simulateExecutionTime(
         Queue<Exception> globalExceptions,
         boolean stickyGlobalExceptions,
-        ReadWriteLock freezeLock) {
-      try {
-        freezeLock.readLock().lock();
-        checkException(globalExceptions, stickyGlobalExceptions);
-        checkException(this.exceptions, stickyException);
-        if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
-          Uninterruptibles.sleepUninterruptibly(
-              (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
-                  + minimumExecutionTime,
-              TimeUnit.MILLISECONDS);
-        }
-      } finally {
-        freezeLock.readLock().unlock();
+        CountDownLatch freezeLock) {
+      Uninterruptibles.awaitUninterruptibly(freezeLock);
+      checkException(globalExceptions, stickyGlobalExceptions);
+      checkException(this.exceptions, stickyException);
+      if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
+        Uninterruptibles.sleepUninterruptibly(
+            (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
+                + minimumExecutionTime,
+            TimeUnit.MILLISECONDS);
       }
     }
 
@@ -451,22 +495,23 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
 
-  private final Queue<AbstractMessage> requests = new ConcurrentLinkedQueue<>();
-  private final ReadWriteLock freezeLock = new ReentrantReadWriteLock();
-  private final Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
+  private final Object lock = new Object();
+  private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
+  private volatile CountDownLatch freezeLock = new CountDownLatch(0);
+  private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
-  private final ConcurrentMap<Statement, StatementResult> statementResults =
-      new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
+  private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
+  private ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
   private ConcurrentMap<String, Instant> sessionLastUsed = new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
+  private ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
+  private ConcurrentMap<ByteString, Boolean> isPartitionedDmlTransaction =
       new ConcurrentHashMap<>();
-  private final ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
+  private ConcurrentMap<ByteString, Boolean> abortedTransactions = new ConcurrentHashMap<>();
   private final AtomicBoolean abortNextTransaction = new AtomicBoolean();
   private final AtomicBoolean abortNextStatement = new AtomicBoolean();
-  private final ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, AtomicLong> transactionCounters = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, List<ByteString>> partitionTokens = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
@@ -532,11 +577,29 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
    */
   public void putStatementResult(StatementResult result) {
     Preconditions.checkNotNull(result);
-    statementResults.put(result.statement, result);
+    synchronized (lock) {
+      statementResults.put(result.statement, result);
+    }
+  }
+
+  public void putStatementResults(StatementResult... results) {
+    synchronized (lock) {
+      for (StatementResult result : results) {
+        statementResults.put(result.statement, result);
+      }
+    }
   }
 
   private StatementResult getResult(Statement statement) {
-    StatementResult res = statementResults.get(statement);
+    StatementResult res;
+    synchronized (lock) {
+      res = statementResults.get(statement);
+      if (statementGetCounts.containsKey(statement)) {
+        statementGetCounts.put(statement, statementGetCounts.get(statement) + 1L);
+      } else {
+        statementGetCounts.put(statement, 1L);
+      }
+    }
     if (res == null) {
       throw Status.INTERNAL
           .withDescription(
@@ -593,11 +656,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   public void freeze() {
-    freezeLock.writeLock().lock();
+    freezeLock = new CountDownLatch(1);
   }
 
   public void unfreeze() {
-    freezeLock.writeLock().unlock();
+    freezeLock.countDown();
   }
 
   public void setMaxSessionsInOneBatch(int max) {
@@ -935,6 +998,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               status =
                   com.google.rpc.Status.newBuilder()
                       .setCode(res.getException().getStatus().getCode().value())
+                      .setMessage(res.getException().getMessage())
                       .build();
               break resultLoop;
             case RESULT_SET:
@@ -994,10 +1058,27 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
+      Statement statement =
+          buildStatement(request.getSql(), request.getParamTypesMap(), request.getParams());
+      ByteString transactionId = getTransactionId(session, request.getTransaction());
+      boolean isPartitioned = isPartitionedDmlTransaction(transactionId);
+      if (isPartitioned) {
+        StatementResult firstRes = getResult(statement);
+        switch (firstRes.getType()) {
+          case EXCEPTION:
+            throw firstRes.getException();
+          case UPDATE_COUNT:
+            returnPartialResultSet(
+                session, 0L, !isPartitioned, responseObserver, request.getTransaction(), false);
+            break;
+          case RESULT_SET:
+          default:
+            break;
+        }
+      }
       executeStreamingSqlExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
       // Get or start transaction
-      ByteString transactionId = getTransactionId(session, request.getTransaction());
       if (!request.getPartitionToken().isEmpty()) {
         List<ByteString> tokens =
             partitionTokens.get(partitionKey(session.getName(), transactionId));
@@ -1009,8 +1090,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       simulateAbort(session, transactionId);
-      Statement statement =
-          buildStatement(request.getSql(), request.getParamTypesMap(), request.getParams());
       StatementResult res = getResult(statement);
       switch (res.getType()) {
         case EXCEPTION:
@@ -1020,7 +1099,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
           break;
         case UPDATE_COUNT:
-          boolean isPartitioned = isPartitionedDmlTransaction(transactionId);
           if (isPartitioned) {
             commitTransaction(transactionId);
           }
@@ -1041,6 +1119,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Statement buildStatement(
       String sql, Map<String, Type> paramTypes, com.google.protobuf.Struct params) {
     Statement.Builder builder = Statement.newBuilder(sql);
@@ -1049,7 +1128,37 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (value.getKindCase() == KindCase.NULL_VALUE) {
         switch (entry.getValue().getCode()) {
           case ARRAY:
-            throw new IllegalArgumentException("Array parameters not (yet) supported");
+            switch (entry.getValue().getArrayElementType().getCode()) {
+              case BOOL:
+                builder.bind(entry.getKey()).toBoolArray((Iterable<Boolean>) null);
+                break;
+              case BYTES:
+                builder.bind(entry.getKey()).toBytesArray(null);
+                break;
+              case DATE:
+                builder.bind(entry.getKey()).toDateArray(null);
+                break;
+              case FLOAT64:
+                builder.bind(entry.getKey()).toFloat64Array((Iterable<Double>) null);
+                break;
+              case INT64:
+                builder.bind(entry.getKey()).toInt64Array((Iterable<Long>) null);
+                break;
+              case STRING:
+                builder.bind(entry.getKey()).toStringArray(null);
+                break;
+              case TIMESTAMP:
+                builder.bind(entry.getKey()).toTimestampArray(null);
+                break;
+              case STRUCT:
+              case TYPE_CODE_UNSPECIFIED:
+              case UNRECOGNIZED:
+              default:
+                throw new IllegalArgumentException(
+                    "Unknown or invalid array parameter type: "
+                        + entry.getValue().getArrayElementType().getCode());
+            }
+            break;
           case BOOL:
             builder.bind(entry.getKey()).to((Boolean) null);
             break;
@@ -1083,7 +1192,72 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       } else {
         switch (entry.getValue().getCode()) {
           case ARRAY:
-            throw new IllegalArgumentException("Array parameters not (yet) supported");
+            switch (entry.getValue().getArrayElementType().getCode()) {
+              case BOOL:
+                builder
+                    .bind(entry.getKey())
+                    .toBoolArray(
+                        (Iterable<Boolean>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.bool(), value.getListValue()));
+                break;
+              case BYTES:
+                builder
+                    .bind(entry.getKey())
+                    .toBytesArray(
+                        (Iterable<ByteArray>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.bytes(), value.getListValue()));
+                break;
+              case DATE:
+                builder
+                    .bind(entry.getKey())
+                    .toDateArray(
+                        (Iterable<Date>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case FLOAT64:
+                builder
+                    .bind(entry.getKey())
+                    .toFloat64Array(
+                        (Iterable<Double>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.float64(), value.getListValue()));
+                break;
+              case INT64:
+                builder
+                    .bind(entry.getKey())
+                    .toInt64Array(
+                        (Iterable<Long>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.int64(), value.getListValue()));
+                break;
+              case STRING:
+                builder
+                    .bind(entry.getKey())
+                    .toStringArray(
+                        (Iterable<String>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.string(), value.getListValue()));
+                break;
+              case TIMESTAMP:
+                builder
+                    .bind(entry.getKey())
+                    .toTimestampArray(
+                        (Iterable<com.google.cloud.Timestamp>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
+                break;
+              case STRUCT:
+              case TYPE_CODE_UNSPECIFIED:
+              case UNRECOGNIZED:
+              default:
+                throw new IllegalArgumentException(
+                    "Unknown or invalid array parameter type: "
+                        + entry.getValue().getArrayElementType().getCode());
+            }
+            break;
           case BOOL:
             builder.bind(entry.getKey()).to(value.getBoolValue());
             break;
@@ -1105,6 +1279,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           case STRUCT:
             throw new IllegalArgumentException("Struct parameters not (yet) supported");
           case TIMESTAMP:
+            builder
+                .bind(entry.getKey())
+                .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
@@ -1186,12 +1363,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               return request.getColumnsList().iterator();
             }
           };
-      StatementResult res =
-          statementResults.get(
-              StatementResult.createReadStatement(
-                  request.getTable(),
-                  request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
-                  cols));
+      Statement statement =
+          StatementResult.createReadStatement(
+              request.getTable(),
+              request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
+              cols);
+      StatementResult res = getResult(statement);
       returnResultSet(
           res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
       responseObserver.onCompleted();
@@ -1236,12 +1413,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               return request.getColumnsList().iterator();
             }
           };
-      StatementResult res =
-          statementResults.get(
-              StatementResult.createReadStatement(
-                  request.getTable(),
-                  request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
-                  cols));
+      Statement statement =
+          StatementResult.createReadStatement(
+              request.getTable(),
+              request.getKeySet().getAll() ? KeySet.all() : KeySet.singleKey(Key.of()),
+              cols);
+      StatementResult res = getResult(statement);
+      if (res == null) {
+        throw Status.NOT_FOUND
+            .withDescription("No result found for " + statement.toString())
+            .asRuntimeException();
+      }
       returnPartialResultSet(
           res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
     } catch (StatusRuntimeException e) {
@@ -1281,6 +1463,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       boolean exact,
       StreamObserver<PartialResultSet> responseObserver,
       TransactionSelector transaction) {
+    returnPartialResultSet(session, updateCount, exact, responseObserver, transaction, true);
+  }
+
+  private void returnPartialResultSet(
+      Session session,
+      Long updateCount,
+      boolean exact,
+      StreamObserver<PartialResultSet> responseObserver,
+      TransactionSelector transaction,
+      boolean complete) {
     Field field =
         Field.newBuilder()
             .setName("UPDATE_COUNT")
@@ -1307,7 +1499,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               .setStats(ResultSetStats.newBuilder().setRowCountLowerBound(updateCount).build())
               .build());
     }
-    responseObserver.onCompleted();
+    if (complete) {
+      responseObserver.onCompleted();
+    }
   }
 
   private boolean isPartitionedDmlTransaction(ByteString transactionId) {
@@ -1470,7 +1664,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw Status.FAILED_PRECONDITION
               .withDescription(
                   String.format(
-                      "This transaction has been invalidated by a later transaction in the same session.",
+                      "This transaction has been invalidated by a later transaction in the same session.\nTransaction id: "
+                          + id
+                          + "\nExpected: "
+                          + counter.get(),
                       session.getName()))
               .asRuntimeException();
         }
@@ -1636,6 +1833,37 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return new ArrayList<>(this.requests);
   }
 
+  public Iterable<Class<? extends AbstractMessage>> getRequestTypes() {
+    List<Class<? extends AbstractMessage>> res = new LinkedList<>();
+    for (AbstractMessage m : this.requests) {
+      res.add(m.getClass());
+    }
+    return res;
+  }
+
+  public int countRequestsOfType(Class<? extends AbstractMessage> type) {
+    int c = 0;
+    for (AbstractMessage m : this.requests) {
+      if (m.getClass().equals(type)) {
+        c++;
+      }
+    }
+    return c;
+  }
+
+  public void waitForLastRequestToBe(Class<? extends AbstractMessage> type, long timeoutMillis)
+      throws InterruptedException, TimeoutException {
+    Stopwatch watch = Stopwatch.createStarted();
+    while (!(this.requests.peekLast() != null
+        && this.requests.peekLast().getClass().equals(type))) {
+      Thread.sleep(10L);
+      if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
+        throw new TimeoutException(
+            "Timeout while waiting for last request to become " + type.getName());
+      }
+    }
+  }
+
   @Override
   public void addResponse(AbstractMessage response) {
     throw new UnsupportedOperationException();
@@ -1644,6 +1872,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void addException(Exception exception) {
     exceptions.add(exception);
+  }
+
+  public void clearExceptions() {
+    exceptions.clear();
   }
 
   public void setStickyGlobalExceptions(boolean sticky) {
@@ -1658,18 +1890,21 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   /** Removes all sessions and transactions. Mocked results are not removed. */
   @Override
   public void reset() {
-    requests.clear();
-    sessions.clear();
+    requests = new ConcurrentLinkedDeque<>();
+    exceptions = new ConcurrentLinkedQueue<>();
+    statementGetCounts = new ConcurrentHashMap<>();
+    sessions = new ConcurrentHashMap<>();
+    sessionLastUsed = new ConcurrentHashMap<>();
+    transactions = new ConcurrentHashMap<>();
+    isPartitionedDmlTransaction = new ConcurrentHashMap<>();
+    abortedTransactions = new ConcurrentHashMap<>();
+    transactionCounters = new ConcurrentHashMap<>();
+    partitionTokens = new ConcurrentHashMap<>();
+    transactionLastUsed = new ConcurrentHashMap<>();
+
     numSessionsCreated.set(0);
-    sessionLastUsed.clear();
-    transactions.clear();
-    isPartitionedDmlTransaction.clear();
-    abortedTransactions.clear();
-    transactionCounters.clear();
-    partitionTokens.clear();
-    transactionLastUsed.clear();
-    exceptions.clear();
     stickyGlobalExceptions = false;
+    freezeLock.countDown();
   }
 
   public void removeAllExecutionTimes() {

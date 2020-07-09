@@ -20,6 +20,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.doAnswer;
@@ -51,9 +53,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Matchers;
@@ -62,6 +62,7 @@ import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class StatementTimeoutTest {
+
   private static final String URI =
       "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
   private static final String SLOW_SELECT = "SELECT foo FROM bar";
@@ -99,8 +100,6 @@ public class StatementTimeoutTest {
     SLOW_COMMIT,
     SLOW_ROLLBACK;
   }
-
-  @Rule public ExpectedException expected = ExpectedException.none();
 
   private static final class DelayedQueryExecution implements Answer<ResultSet> {
     @Override
@@ -192,15 +191,14 @@ public class StatementTimeoutTest {
         .thenAnswer(
             new Answer<TransactionManager>() {
               @Override
-              public TransactionManager answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionManager answer(InvocationOnMock invocation) {
                 TransactionManager txManager = mock(TransactionManager.class);
                 when(txManager.getState()).thenReturn(null, TransactionState.STARTED);
                 when(txManager.begin())
                     .thenAnswer(
                         new Answer<TransactionContext>() {
                           @Override
-                          public TransactionContext answer(InvocationOnMock invocation)
-                              throws Throwable {
+                          public TransactionContext answer(InvocationOnMock invocation) {
                             TransactionContext txContext = mock(TransactionContext.class);
                             when(txContext.executeQuery(Statement.of(SLOW_SELECT)))
                                 .thenAnswer(new DelayedQueryExecution());
@@ -273,8 +271,12 @@ public class StatementTimeoutTest {
                 .build())) {
       connection.setReadOnly(true);
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -315,8 +317,12 @@ public class StatementTimeoutTest {
       connection.setReadOnly(true);
       connection.setAutocommit(false);
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -359,8 +365,12 @@ public class StatementTimeoutTest {
                 .setUri(URI)
                 .build())) {
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -398,8 +408,12 @@ public class StatementTimeoutTest {
                 .setUri(URI)
                 .build())) {
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.execute(Statement.of(SLOW_UPDATE));
+      try {
+        connection.execute(Statement.of(SLOW_UPDATE));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -449,8 +463,12 @@ public class StatementTimeoutTest {
       // gRPC call will be slow.
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
       connection.setAutocommit(true);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.execute(Statement.of(FAST_UPDATE));
+      try {
+        connection.execute(Statement.of(FAST_UPDATE));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -494,8 +512,12 @@ public class StatementTimeoutTest {
       connection.execute(Statement.of(FAST_UPDATE));
 
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.execute(Statement.of(SLOW_UPDATE));
+      try {
+        connection.execute(Statement.of(SLOW_UPDATE));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -509,8 +531,12 @@ public class StatementTimeoutTest {
                 .build())) {
       connection.setAutocommit(false);
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -564,8 +590,12 @@ public class StatementTimeoutTest {
       connection.executeQuery(Statement.of(FAST_SELECT));
 
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.commit();
+      try {
+        connection.commit();
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -583,8 +613,12 @@ public class StatementTimeoutTest {
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
       connection.executeQuery(Statement.of(FAST_SELECT));
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
-      connection.rollback();
+      try {
+        connection.rollback();
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      }
     }
   }
 
@@ -646,7 +680,7 @@ public class StatementTimeoutTest {
         executor.submit(
             new Callable<Boolean>() {
               @Override
-              public Boolean call() throws Exception {
+              public Boolean call() {
                 try (Connection connection =
                     createConnection(
                         ConnectionOptions.newBuilder()
@@ -683,9 +717,12 @@ public class StatementTimeoutTest {
                 .build())) {
       connection.setReadOnly(true);
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.INVALID_ARGUMENT));
-      connection.executeQuery(Statement.of(INVALID_SELECT));
+      try {
+        connection.executeQuery(Statement.of(INVALID_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.getErrorCode());
+      }
     }
   }
 
@@ -700,9 +737,12 @@ public class StatementTimeoutTest {
       connection.setReadOnly(true);
       connection.setAutocommit(false);
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.INVALID_ARGUMENT));
-      connection.executeQuery(Statement.of(INVALID_SELECT));
+      try {
+        connection.executeQuery(Statement.of(INVALID_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.getErrorCode());
+      }
     }
   }
 
@@ -715,9 +755,12 @@ public class StatementTimeoutTest {
                 .setUri(URI)
                 .build())) {
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.INVALID_ARGUMENT));
-      connection.executeQuery(Statement.of(INVALID_SELECT));
+      try {
+        connection.executeQuery(Statement.of(INVALID_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.getErrorCode());
+      }
     }
   }
 
@@ -731,9 +774,12 @@ public class StatementTimeoutTest {
                 .build())) {
       connection.setAutocommit(false);
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.INVALID_ARGUMENT));
-      connection.executeQuery(Statement.of(INVALID_SELECT));
+      try {
+        connection.executeQuery(Statement.of(INVALID_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.getErrorCode());
+      }
     }
   }
 
@@ -756,9 +802,12 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
+      }
     }
   }
 
@@ -816,9 +865,12 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
+      }
     }
   }
 
@@ -878,9 +930,12 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
-      connection.executeQuery(Statement.of(SLOW_SELECT));
+      try {
+        connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
+      }
     }
   }
 
@@ -935,9 +990,12 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
-      connection.execute(Statement.of(SLOW_UPDATE));
+      try {
+        connection.execute(Statement.of(SLOW_UPDATE));
+        fail("Expected exception");
+      } catch (SpannerException ex) {
+        assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
+      }
     }
   }
 
@@ -960,9 +1018,10 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
       connection.execute(Statement.of(FAST_UPDATE));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
     }
   }
 
@@ -986,8 +1045,10 @@ public class StatementTimeoutTest {
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
 
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
       connection.executeQuery(Statement.of(SLOW_SELECT));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
     }
   }
 
@@ -1014,6 +1075,7 @@ public class StatementTimeoutTest {
       boolean cancelled = false;
       try {
         connection.executeQuery(Statement.of(SLOW_SELECT));
+        fail("Expected exception");
       } catch (SpannerException e) {
         cancelled = e.getErrorCode() == ErrorCode.CANCELLED;
       }
@@ -1048,9 +1110,10 @@ public class StatementTimeoutTest {
               },
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
-
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
       connection.runBatch();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
     }
   }
 
@@ -1073,8 +1136,10 @@ public class StatementTimeoutTest {
               WAIT_BEFORE_CANCEL,
               TimeUnit.MILLISECONDS);
 
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.CANCELLED));
       connection.execute(Statement.of(SLOW_DDL));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.CANCELLED, ex.getErrorCode());
     }
   }
 
@@ -1087,8 +1152,10 @@ public class StatementTimeoutTest {
                 .setUri(URI)
                 .build())) {
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
       connection.execute(Statement.of(SLOW_DDL));
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
     }
   }
 
@@ -1133,8 +1200,10 @@ public class StatementTimeoutTest {
       // the following statement will NOT timeout as the statement is only buffered locally
       connection.execute(Statement.of(SLOW_DDL));
       // the commit sends the statement to the server and should timeout
-      expected.expect(SpannerExceptionMatcher.matchCode(ErrorCode.DEADLINE_EXCEEDED));
       connection.runBatch();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
     }
   }
 

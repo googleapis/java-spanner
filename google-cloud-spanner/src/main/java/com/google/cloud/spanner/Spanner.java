@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Service;
 
 /**
@@ -108,4 +109,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
 
   /** @return <code>true</code> if this {@link Spanner} object is closed. */
   boolean isClosed();
+
+  /** @return the {@link ExecutorProvider} that is used for asynchronous queries and operations. */
+  ExecutorProvider getAsyncExecutorProvider();
 }

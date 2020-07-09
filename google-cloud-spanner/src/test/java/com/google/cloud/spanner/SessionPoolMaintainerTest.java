@@ -25,6 +25,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.base.Function;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   private Map<String, Integer> pingedSessions = new HashMap<>();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
@@ -78,7 +79,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     doAnswer(
             new Answer<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) throws Throwable {
+              public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
                     new Runnable() {
                       @Override
@@ -107,7 +108,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
         .thenAnswer(
             new Answer<ResultSet>() {
               @Override
-              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) {
                 Integer currentValue = pingedSessions.get(session.getName());
                 if (currentValue == null) {
                   currentValue = 0;
@@ -200,7 +201,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 3);
     // Update the last use date and release the session to the pool and do another maintenance
     // cycle.
-    ((PooledSession) session6).markUsed();
+    ((PooledSessionFuture) session6).get().markUsed();
     session6.close();
     runMaintainanceLoop(clock, pool, 3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 3);
@@ -261,9 +262,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Now check out three sessions so the pool will create an additional session. The pool will
     // only keep 2 sessions alive, as that is the setting for MinSessions.
-    Session session3 = pool.getReadSession();
-    Session session4 = pool.getReadSession();
-    Session session5 = pool.getReadSession();
+    Session session3 = pool.getReadSession().get();
+    Session session4 = pool.getReadSession().get();
+    Session session5 = pool.getReadSession().get();
     // Note that session2 was now the first session in the pool as it was the last to receive a
     // ping.
     assertThat(session3.getName()).isEqualTo(session2.getName());
@@ -278,9 +279,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     assertThat(pool.totalSessions()).isEqualTo(2);
 
     // Check out three sessions again and keep one session checked out.
-    Session session6 = pool.getReadSession();
-    Session session7 = pool.getReadSession();
-    Session session8 = pool.getReadSession();
+    Session session6 = pool.getReadSession().get();
+    Session session7 = pool.getReadSession().get();
+    Session session8 = pool.getReadSession().get();
     session8.close();
     session7.close();
     // Now advance the clock to idle sessions. This should remove session8 from the pool.
@@ -292,9 +293,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Check out three sessions and keep them all checked out. No sessions should be removed from
     // the pool.
-    Session session9 = pool.getReadSession();
-    Session session10 = pool.getReadSession();
-    Session session11 = pool.getReadSession();
+    Session session9 = pool.getReadSession().get();
+    Session session10 = pool.getReadSession().get();
+    Session session11 = pool.getReadSession().get();
     runMaintainanceLoop(clock, pool, loopsToIdleSessions);
     assertThat(idledSessions).containsExactly(session5, session8);
     assertThat(pool.totalSessions()).isEqualTo(3);

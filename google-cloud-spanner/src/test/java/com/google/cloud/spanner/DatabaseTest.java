@@ -28,9 +28,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import java.util.Arrays;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -44,7 +42,6 @@ public class DatabaseTest {
   private static final String NAME =
       "projects/test-project/instances/test-instance/databases/database-1";
 
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   @Mock DatabaseAdminClient dbClient;
 
   @Before
@@ -54,7 +51,7 @@ public class DatabaseTest {
         .thenAnswer(
             new Answer<Backup.Builder>() {
               @Override
-              public Backup.Builder answer(InvocationOnMock invocation) throws Throwable {
+              public Backup.Builder answer(InvocationOnMock invocation) {
                 return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
               }
             });

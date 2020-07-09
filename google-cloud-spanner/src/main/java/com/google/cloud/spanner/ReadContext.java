@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import javax.annotation.Nullable;
@@ -66,6 +67,13 @@ public interface ReadContext extends AutoCloseable {
   ResultSet read(String table, KeySet keys, Iterable<String> columns, ReadOption... options);
 
   /**
+   * Same as {@link #read(String, KeySet, Iterable, ReadOption...)}, but is guaranteed to be
+   * non-blocking and will return the results as an {@link AsyncResultSet}.
+   */
+  AsyncResultSet readAsync(
+      String table, KeySet keys, Iterable<String> columns, ReadOption... options);
+
+  /**
    * Reads zero or more rows from a database using an index.
    *
    * <p>Implementations may or may not block in the initial {@code read(...)} call; for those that
@@ -94,6 +102,13 @@ public interface ReadContext extends AutoCloseable {
       String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options);
 
   /**
+   * Same as {@link #readUsingIndex(String, String, KeySet, Iterable, ReadOption...)}, but is
+   * guaranteed to be non-blocking and will return its results as an {@link AsyncResultSet}.
+   */
+  AsyncResultSet readUsingIndexAsync(
+      String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options);
+
+  /**
    * Reads a single row from a database, returning {@code null} if the row does not exist.
    * <!--SNIPPET read_context_read_row-->
    *
@@ -111,6 +126,9 @@ public interface ReadContext extends AutoCloseable {
    */
   @Nullable
   Struct readRow(String table, Key key, Iterable<String> columns);
+
+  /** Same as {@link #readRow(String, Key, Iterable)}, but is guaranteed to be non-blocking. */
+  ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns);
 
   /**
    * Reads a single row from a database using an index, returning {@code null} if the row does not
@@ -133,6 +151,13 @@ public interface ReadContext extends AutoCloseable {
    */
   @Nullable
   Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns);
+
+  /**
+   * Same as {@link #readRowUsingIndex(String, String, Key, Iterable)}, but is guaranteed to be
+   * non-blocking.
+   */
+  ApiFuture<Struct> readRowUsingIndexAsync(
+      String table, String index, Key key, Iterable<String> columns);
 
   /**
    * Executes a query against the database.
@@ -159,6 +184,12 @@ public interface ReadContext extends AutoCloseable {
    * @param options the options to configure the query
    */
   ResultSet executeQuery(Statement statement, QueryOption... options);
+
+  /**
+   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
+   * and returns its results as an {@link AsyncResultSet}.
+   */
+  AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options);
 
   /**
    * Analyzes a query and returns query plan and/or query execution statistics information.

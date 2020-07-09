@@ -102,7 +102,7 @@ public class BatchCreateSessionsTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
   }
@@ -237,7 +237,7 @@ public class BatchCreateSessionsTest {
   }
 
   @Test
-  public void testPrepareSessionFailPropagatesToUser() throws InterruptedException {
+  public void testPrepareSessionFailPropagatesToUser() {
     // Do not create any sessions by default.
     // This also means that when a read/write session is requested, the session pool
     // will start preparing a read session at that time. Any errors that might occur
@@ -256,7 +256,7 @@ public class BatchCreateSessionsTest {
       runner.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               return null;
             }
           });
@@ -297,7 +297,7 @@ public class BatchCreateSessionsTest {
       runner.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               return null;
             }
           });

@@ -20,14 +20,20 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import java.util.List;
 
 /** Forwarding implements of StructReader */
 public class ForwardingStructReader implements StructReader {
 
-  private StructReader delegate;
+  private Supplier<? extends StructReader> delegate;
 
   public ForwardingStructReader(StructReader delegate) {
+    this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(delegate));
+  }
+
+  public ForwardingStructReader(Supplier<? extends StructReader> delegate) {
     this.delegate = Preconditions.checkNotNull(delegate);
   }
 
@@ -39,221 +45,271 @@ public class ForwardingStructReader implements StructReader {
    * returned to the user.
    */
   void replaceDelegate(StructReader newDelegate) {
-    this.delegate = Preconditions.checkNotNull(newDelegate);
+    this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(newDelegate));
   }
+
+  /**
+   * Called before each forwarding call to allow sub classes to do additional state checking. Sub
+   * classes should throw an {@link Exception} if the current state is not valid for reading data
+   * from this {@link ForwardingStructReader}. The default implementation does nothing.
+   */
+  protected void checkValidState() {}
 
   @Override
   public Type getType() {
-    return delegate.getType();
+    checkValidState();
+    return delegate.get().getType();
   }
 
   @Override
   public int getColumnCount() {
-    return delegate.getColumnCount();
+    checkValidState();
+    return delegate.get().getColumnCount();
   }
 
   @Override
   public int getColumnIndex(String columnName) {
-    return delegate.getColumnIndex(columnName);
+    checkValidState();
+    return delegate.get().getColumnIndex(columnName);
   }
 
   @Override
   public Type getColumnType(int columnIndex) {
-    return delegate.getColumnType(columnIndex);
+    checkValidState();
+    return delegate.get().getColumnType(columnIndex);
   }
 
   @Override
   public Type getColumnType(String columnName) {
-    return delegate.getColumnType(columnName);
+    checkValidState();
+    return delegate.get().getColumnType(columnName);
   }
 
   @Override
   public boolean isNull(int columnIndex) {
-    return delegate.isNull(columnIndex);
+    checkValidState();
+    return delegate.get().isNull(columnIndex);
   }
 
   @Override
   public boolean isNull(String columnName) {
-    return delegate.isNull(columnName);
+    checkValidState();
+    return delegate.get().isNull(columnName);
   }
 
   @Override
   public boolean getBoolean(int columnIndex) {
-    return delegate.getBoolean(columnIndex);
+    checkValidState();
+    return delegate.get().getBoolean(columnIndex);
   }
 
   @Override
   public boolean getBoolean(String columnName) {
-    return delegate.getBoolean(columnName);
+    checkValidState();
+    return delegate.get().getBoolean(columnName);
   }
 
   @Override
   public long getLong(int columnIndex) {
-    return delegate.getLong(columnIndex);
+    checkValidState();
+    return delegate.get().getLong(columnIndex);
   }
 
   @Override
   public long getLong(String columnName) {
-    return delegate.getLong(columnName);
+    checkValidState();
+    return delegate.get().getLong(columnName);
   }
 
   @Override
   public double getDouble(int columnIndex) {
-    return delegate.getDouble(columnIndex);
+    checkValidState();
+    return delegate.get().getDouble(columnIndex);
   }
 
   @Override
   public double getDouble(String columnName) {
-    return delegate.getDouble(columnName);
+    checkValidState();
+    return delegate.get().getDouble(columnName);
   }
 
   @Override
   public String getString(int columnIndex) {
-    return delegate.getString(columnIndex);
+    checkValidState();
+    return delegate.get().getString(columnIndex);
   }
 
   @Override
   public String getString(String columnName) {
-    return delegate.getString(columnName);
+    checkValidState();
+    return delegate.get().getString(columnName);
   }
 
   @Override
   public ByteArray getBytes(int columnIndex) {
-    return delegate.getBytes(columnIndex);
+    checkValidState();
+    return delegate.get().getBytes(columnIndex);
   }
 
   @Override
   public ByteArray getBytes(String columnName) {
-    return delegate.getBytes(columnName);
+    checkValidState();
+    return delegate.get().getBytes(columnName);
   }
 
   @Override
   public Timestamp getTimestamp(int columnIndex) {
-    return delegate.getTimestamp(columnIndex);
+    checkValidState();
+    return delegate.get().getTimestamp(columnIndex);
   }
 
   @Override
   public Timestamp getTimestamp(String columnName) {
-    return delegate.getTimestamp(columnName);
+    checkValidState();
+    return delegate.get().getTimestamp(columnName);
   }
 
   @Override
   public Date getDate(int columnIndex) {
-    return delegate.getDate(columnIndex);
+    checkValidState();
+    return delegate.get().getDate(columnIndex);
   }
 
   @Override
   public Date getDate(String columnName) {
-    return delegate.getDate(columnName);
+    checkValidState();
+    return delegate.get().getDate(columnName);
   }
 
   @Override
   public boolean[] getBooleanArray(int columnIndex) {
-    return delegate.getBooleanArray(columnIndex);
+    checkValidState();
+    return delegate.get().getBooleanArray(columnIndex);
   }
 
   @Override
   public boolean[] getBooleanArray(String columnName) {
-    return delegate.getBooleanArray(columnName);
+    checkValidState();
+    return delegate.get().getBooleanArray(columnName);
   }
 
   @Override
   public List<Boolean> getBooleanList(int columnIndex) {
-    return delegate.getBooleanList(columnIndex);
+    checkValidState();
+    return delegate.get().getBooleanList(columnIndex);
   }
 
   @Override
   public List<Boolean> getBooleanList(String columnName) {
-    return delegate.getBooleanList(columnName);
+    checkValidState();
+    return delegate.get().getBooleanList(columnName);
   }
 
   @Override
   public long[] getLongArray(int columnIndex) {
-    return delegate.getLongArray(columnIndex);
+    checkValidState();
+    return delegate.get().getLongArray(columnIndex);
   }
 
   @Override
   public long[] getLongArray(String columnName) {
-    return delegate.getLongArray(columnName);
+    checkValidState();
+    return delegate.get().getLongArray(columnName);
   }
 
   @Override
   public List<Long> getLongList(int columnIndex) {
-    return delegate.getLongList(columnIndex);
+    checkValidState();
+    return delegate.get().getLongList(columnIndex);
   }
 
   @Override
   public List<Long> getLongList(String columnName) {
-    return delegate.getLongList(columnName);
+    checkValidState();
+    return delegate.get().getLongList(columnName);
   }
 
   @Override
   public double[] getDoubleArray(int columnIndex) {
-    return delegate.getDoubleArray(columnIndex);
+    checkValidState();
+    return delegate.get().getDoubleArray(columnIndex);
   }
 
   @Override
   public double[] getDoubleArray(String columnName) {
-    return delegate.getDoubleArray(columnName);
+    checkValidState();
+    return delegate.get().getDoubleArray(columnName);
   }
 
   @Override
   public List<Double> getDoubleList(int columnIndex) {
-    return delegate.getDoubleList(columnIndex);
+    checkValidState();
+    return delegate.get().getDoubleList(columnIndex);
   }
 
   @Override
   public List<Double> getDoubleList(String columnName) {
-    return delegate.getDoubleList(columnName);
+    checkValidState();
+    return delegate.get().getDoubleList(columnName);
   }
 
   @Override
   public List<String> getStringList(int columnIndex) {
-    return delegate.getStringList(columnIndex);
+    checkValidState();
+    return delegate.get().getStringList(columnIndex);
   }
 
   @Override
   public List<String> getStringList(String columnName) {
-    return delegate.getStringList(columnName);
+    checkValidState();
+    return delegate.get().getStringList(columnName);
   }
 
   @Override
   public List<ByteArray> getBytesList(int columnIndex) {
-    return delegate.getBytesList(columnIndex);
+    checkValidState();
+    return delegate.get().getBytesList(columnIndex);
   }
 
   @Override
   public List<ByteArray> getBytesList(String columnName) {
-    return delegate.getBytesList(columnName);
+    checkValidState();
+    return delegate.get().getBytesList(columnName);
   }
 
   @Override
   public List<Timestamp> getTimestampList(int columnIndex) {
-    return delegate.getTimestampList(columnIndex);
+    checkValidState();
+    return delegate.get().getTimestampList(columnIndex);
   }
 
   @Override
   public List<Timestamp> getTimestampList(String columnName) {
-    return delegate.getTimestampList(columnName);
+    checkValidState();
+    return delegate.get().getTimestampList(columnName);
   }
 
   @Override
   public List<Date> getDateList(int columnIndex) {
-    return delegate.getDateList(columnIndex);
+    checkValidState();
+    return delegate.get().getDateList(columnIndex);
   }
 
   @Override
   public List<Date> getDateList(String columnName) {
-    return delegate.getDateList(columnName);
+    checkValidState();
+    return delegate.get().getDateList(columnName);
   }
 
   @Override
   public List<Struct> getStructList(int columnIndex) {
-    return delegate.getStructList(columnIndex);
+    checkValidState();
+    return delegate.get().getStructList(columnIndex);
   }
 
   @Override
   public List<Struct> getStructList(String columnName) {
-    return delegate.getStructList(columnName);
+    checkValidState();
+    return delegate.get().getStructList(columnName);
   }
 }

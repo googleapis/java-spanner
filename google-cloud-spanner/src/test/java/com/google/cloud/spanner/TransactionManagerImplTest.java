@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
@@ -37,6 +39,7 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Transaction;
+import io.opencensus.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +47,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -69,8 +70,6 @@ public class TransactionManagerImplTest {
     }
   }
 
-  @Rule public ExpectedException exception = ExpectedException.none();
-
   @Mock private SessionImpl session;
   @Mock TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionManagerImpl manager;
@@ -78,7 +77,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session);
+    manager = new TransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test
@@ -86,26 +85,42 @@ public class TransactionManagerImplTest {
     when(session.newTransaction()).thenReturn(txn);
     assertThat(manager.begin()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
-    exception.expect(IllegalStateException.class);
-    manager.begin();
+    try {
+      manager.begin();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void commitBeforeBeginFails() {
-    exception.expect(IllegalStateException.class);
-    manager.commit();
+    try {
+      manager.commit();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void rollbackBeforeBeginFails() {
-    exception.expect(IllegalStateException.class);
-    manager.rollback();
+    try {
+      manager.rollback();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
   public void resetBeforeBeginFails() {
-    exception.expect(IllegalStateException.class);
-    manager.resetForRetry();
+    try {
+      manager.resetForRetry();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -133,8 +148,12 @@ public class TransactionManagerImplTest {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
     manager.commit();
-    exception.expect(IllegalStateException.class);
-    manager.resetForRetry();
+    try {
+      manager.resetForRetry();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -165,8 +184,12 @@ public class TransactionManagerImplTest {
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
     }
-    exception.expect(IllegalStateException.class);
-    manager.resetForRetry();
+    try {
+      manager.resetForRetry();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -174,8 +197,12 @@ public class TransactionManagerImplTest {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
     manager.commit();
-    exception.expect(IllegalStateException.class);
-    manager.rollback();
+    try {
+      manager.rollback();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @Test
@@ -183,8 +210,12 @@ public class TransactionManagerImplTest {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
     manager.rollback();
-    exception.expect(IllegalStateException.class);
-    manager.commit();
+    try {
+      manager.commit();
+      fail("Expected exception");
+    } catch (IllegalStateException ex) {
+      assertNotNull(ex.getMessage());
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -207,8 +238,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName((String) invocation.getArguments()[0] + "/sessions/1")
@@ -218,26 +248,29 @@ public class TransactionManagerImplTest {
                         .build());
               }
             });
-    when(rpc.beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<Transaction>() {
+            new Answer<ApiFuture<Transaction>>() {
               @Override
-              public Transaction answer(InvocationOnMock invocation) throws Throwable {
-                return Transaction.newBuilder()
-                    .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                    .build();
+              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
+                return ApiFutures.immediateFuture(
+                    Transaction.newBuilder()
+                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                        .build());
               }
             });
-    when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.anyMap()))
+    when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<CommitResponse>() {
+            new Answer<ApiFuture<CommitResponse>>() {
               @Override
-              public CommitResponse answer(InvocationOnMock invocation) throws Throwable {
-                return CommitResponse.newBuilder()
-                    .setCommitTimestamp(
-                        com.google.protobuf.Timestamp.newBuilder()
-                            .setSeconds(System.currentTimeMillis() * 1000))
-                    .build();
+              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
+                  throws Throwable {
+                return ApiFutures.immediateFuture(
+                    CommitResponse.newBuilder()
+                        .setCommitTimestamp(
+                            com.google.protobuf.Timestamp.newBuilder()
+                                .setSeconds(System.currentTimeMillis() * 1000))
+                        .build());
               }
             });
     DatabaseId db = DatabaseId.of("test", "test", "test");
@@ -248,7 +281,7 @@ public class TransactionManagerImplTest {
         mgr.commit();
       }
       verify(rpc, times(1))
-          .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
     }
   }
 }
