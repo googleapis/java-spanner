@@ -279,15 +279,16 @@ public final class SpannerDatabaseAdminProto {
           + "rations\332A\006parent\032x\312A\026spanner.googleapis."
           + "com\322A\\https://www.googleapis.com/auth/cl"
           + "oud-platform,https://www.googleapis.com/"
-          + "auth/spanner.adminB\254\002\n$com.google.spanne"
+          + "auth/spanner.adminB\332\002\n$com.google.spanne"
           + "r.admin.database.v1B\031SpannerDatabaseAdmi"
           + "nProtoP\001ZHgoogle.golang.org/genproto/goo"
           + "gleapis/spanner/admin/database/v1;databa"
           + "se\252\002&Google.Cloud.Spanner.Admin.Database"
           + ".V1\312\002&Google\\Cloud\\Spanner\\Admin\\Databas"
-          + "e\\V1\352AJ\n\037spanner.googleapis.com/Instance"
-          + "\022\'projects/{project}/instances/{instance"
-          + "}b\006proto3"
+          + "e\\V1\352\002+Google::Cloud::Spanner::Admin::Da"
+          + "tabase::V1\352AJ\n\037spanner.googleapis.com/In"
+          + "stance\022\'projects/{project}/instances/{in"
+          + "stance}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

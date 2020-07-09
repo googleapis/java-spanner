@@ -130,12 +130,14 @@ public final class BackupProto {
           + ".Operation\022\027\n\017next_page_token\030\002 \001(\t\"f\n\nB"
           + "ackupInfo\022\016\n\006backup\030\001 \001(\t\022/\n\013create_time"
           + "\030\002 \001(\0132\032.google.protobuf.Timestamp\022\027\n\017so"
-          + "urce_database\030\003 \001(\tB\321\001\n$com.google.spann"
+          + "urce_database\030\003 \001(\tB\377\001\n$com.google.spann"
           + "er.admin.database.v1B\013BackupProtoP\001ZHgoo"
           + "gle.golang.org/genproto/googleapis/spann"
           + "er/admin/database/v1;database\252\002&Google.C"
           + "loud.Spanner.Admin.Database.V1\312\002&Google\\"
-          + "Cloud\\Spanner\\Admin\\Database\\V1b\006proto3"
+          + "Cloud\\Spanner\\Admin\\Database\\V1\352\002+Google"
+          + "::Cloud::Spanner::Admin::Database::V1b\006p"
+          + "roto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

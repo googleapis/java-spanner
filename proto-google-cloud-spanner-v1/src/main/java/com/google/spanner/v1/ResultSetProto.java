@@ -74,11 +74,12 @@ public final class ResultSetProto {
           + "gle.spanner.v1.QueryPlan\022,\n\013query_stats\030"
           + "\002 \001(\0132\027.google.protobuf.Struct\022\031\n\017row_co"
           + "unt_exact\030\003 \001(\003H\000\022\037\n\025row_count_lower_bou"
-          + "nd\030\004 \001(\003H\000B\013\n\trow_countB\232\001\n\025com.google.s"
+          + "nd\030\004 \001(\003H\000B\013\n\trow_countB\267\001\n\025com.google.s"
           + "panner.v1B\016ResultSetProtoP\001Z8google.gola"
           + "ng.org/genproto/googleapis/spanner/v1;sp"
           + "anner\370\001\001\252\002\027Google.Cloud.Spanner.V1\312\002\027Goo"
-          + "gle\\Cloud\\Spanner\\V1b\006proto3"
+          + "gle\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::Sp"
+          + "anner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

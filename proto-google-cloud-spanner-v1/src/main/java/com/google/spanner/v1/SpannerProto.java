@@ -332,13 +332,14 @@ public final class SpannerProto {
           + ":\001*\032w\312A\026spanner.googleapis.com\322A[https:/"
           + "/www.googleapis.com/auth/cloud-platform,"
           + "https://www.googleapis.com/auth/spanner."
-          + "dataB\367\001\n\025com.google.spanner.v1B\014SpannerP"
+          + "dataB\224\002\n\025com.google.spanner.v1B\014SpannerP"
           + "rotoP\001Z8google.golang.org/genproto/googl"
           + "eapis/spanner/v1;spanner\252\002\027Google.Cloud."
-          + "Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352A_\n"
-          + "\037spanner.googleapis.com/Database\022<projec"
-          + "ts/{project}/instances/{instance}/databa"
-          + "ses/{database}b\006proto3"
+          + "Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032G"
+          + "oogle::Cloud::Spanner::V1\352A_\n\037spanner.go"
+          + "ogleapis.com/Database\022<projects/{project"
+          + "}/instances/{instance}/databases/{databa"
+          + "se}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
