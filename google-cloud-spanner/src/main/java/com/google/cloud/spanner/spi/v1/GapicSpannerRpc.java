@@ -421,7 +421,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       throws IOException {
     final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     // Only do the check if the emulator environment variable has been set to localhost.
-    if (emulatorHost != null
+    if (options.getChannelProvider() == null
+        && emulatorHost != null
         && options.getHost() != null
         && options.getHost().startsWith("http://localhost")
         && options.getHost().endsWith(emulatorHost)) {
@@ -436,12 +437,14 @@ public class GapicSpannerRpc implements SpannerRpc {
         testEmulatorSettings
             .listInstanceConfigsSettings()
             .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
-        GrpcInstanceAdminStub.create(testEmulatorSettings.build())
-            .listInstanceConfigsCallable()
-            .call(
-                ListInstanceConfigsRequest.newBuilder()
-                    .setParent(String.format("projects/%s", options.getProjectId()))
-                    .build());
+        try (GrpcInstanceAdminStub stub =
+            GrpcInstanceAdminStub.create(testEmulatorSettings.build())) {
+          stub.listInstanceConfigsCallable()
+              .call(
+                  ListInstanceConfigsRequest.newBuilder()
+                      .setParent(String.format("projects/%s", options.getProjectId()))
+                      .build());
+        }
       } catch (UnavailableException e) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.UNAVAILABLE,
