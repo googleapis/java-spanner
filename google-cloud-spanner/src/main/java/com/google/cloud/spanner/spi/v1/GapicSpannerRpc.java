@@ -309,7 +309,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
-                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS * 1000))
+                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
 
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
