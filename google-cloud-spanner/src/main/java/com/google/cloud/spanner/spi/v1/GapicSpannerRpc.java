@@ -42,10 +42,12 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -55,6 +57,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
@@ -136,6 +139,7 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -401,8 +405,51 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setStreamWatchdogProvider(watchdogProvider)
               .build();
       this.databaseAdminStub = GrpcDatabaseAdminStub.create(this.databaseAdminStubSettings);
+
+      // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
+      // actually running.
+      checkEmulatorConnection(options, channelProvider, credentialsProvider);
     } catch (Exception e) {
       throw newSpannerException(e);
+    }
+  }
+
+  private static void checkEmulatorConnection(
+      SpannerOptions options,
+      TransportChannelProvider channelProvider,
+      CredentialsProvider credentialsProvider)
+      throws IOException {
+    final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    // Only do the check if the emulator environment variable has been set to localhost.
+    if (emulatorHost != null
+        && options.getHost() != null
+        && options.getHost().startsWith("http://localhost")
+        && options.getHost().endsWith(emulatorHost)) {
+      // Do a quick check to see if the emulator is actually running.
+      try {
+        InstanceAdminStubSettings.Builder testEmulatorSettings =
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider);
+        testEmulatorSettings
+            .listInstanceConfigsSettings()
+            .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
+        GrpcInstanceAdminStub.create(testEmulatorSettings.build())
+            .listInstanceConfigsCallable()
+            .call(
+                ListInstanceConfigsRequest.newBuilder()
+                    .setParent(String.format("projects/%s", options.getProjectId()))
+                    .build());
+      } catch (UnavailableException e) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNAVAILABLE,
+            String.format(
+                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running emulator could be found at that address.\n"
+                    + "Did you forget to start the emulator, or to unset the environment variable?",
+                emulatorHost));
+      }
     }
   }
 
