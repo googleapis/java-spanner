@@ -1457,4 +1457,30 @@ public class DatabaseClientImplTest {
       }
     }
   }
+
+  @Test
+  public void testBatchCreateSessionsPermissionDenied() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+      // The following call is non-blocking and will not generate an exception.
+      ResultSet rs = client.singleUse().executeQuery(SELECT1);
+      try {
+        // Actually trying to get any results will cause an exception.
+        rs.next();
+        fail("missing PERMISSION_DENIED exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PERMISSION_DENIED);
+      }
+    }
+  }
 }
