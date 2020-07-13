@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -41,7 +42,7 @@ import org.junit.runners.JUnit4;
  */
 @Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
-public class SessionPoolIntegrationTest {
+public class ITSessionPoolIntegrationTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static final String TABLE_NAME = "TestTable";
 
@@ -97,28 +98,28 @@ public class SessionPoolIntegrationTest {
 
   @Test
   public void sessionCreation() {
-    try (Session session = pool.getReadSession()) {
-      assertThat(session).isNotNull();
+    try (PooledSessionFuture session = pool.getReadSession()) {
+      assertThat(session.get()).isNotNull();
     }
 
-    try (Session session = pool.getReadSession()) {
-      assertThat(session).isNotNull();
-      Session session2 = pool.getReadSession();
-      assertThat(session2).isNotNull();
+    try (PooledSessionFuture session = pool.getReadSession()) {
+      assertThat(session.get()).isNotNull();
+      PooledSessionFuture session2 = pool.getReadSession();
+      assertThat(session2.get()).isNotNull();
       session2.close();
     }
   }
 
   @Test
   public void poolExhaustion() throws Exception {
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    Session session1 = pool.getReadSession().get();
+    Session session2 = pool.getReadSession().get();
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(
             new Runnable() {
               @Override
               public void run() {
-                try (Session session3 = pool.getReadSession()) {
+                try (Session session3 = pool.getReadSession().get()) {
                   latch.countDown();
                 }
               }
@@ -132,8 +133,8 @@ public class SessionPoolIntegrationTest {
 
   @Test
   public void multipleWaiters() throws Exception {
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    Session session1 = pool.getReadSession().get();
+    Session session2 = pool.getReadSession().get();
     int numSessions = 5;
     final CountDownLatch latch = new CountDownLatch(numSessions);
     for (int i = 0; i < numSessions; i++) {
@@ -141,7 +142,7 @@ public class SessionPoolIntegrationTest {
               new Runnable() {
                 @Override
                 public void run() {
-                  try (Session session = pool.getReadSession()) {
+                  try (Session session = pool.getReadSession().get()) {
                     latch.countDown();
                   }
                 }
@@ -167,7 +168,9 @@ public class SessionPoolIntegrationTest {
 
   @Test
   public void closeWhenSessionsActiveFinishes() throws Exception {
-    Session session = pool.getReadSession();
+    pool.getReadSession().get();
+    // This will log a warning that a session has been leaked, as the session that we retrieved in
+    // the previous statement was never returned to the pool.
     pool.closeAsync(new SpannerImpl.ClosedException()).get();
   }
 }
