@@ -81,7 +81,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testSpannerDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings witRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
@@ -91,21 +91,28 @@ public class SpannerOptionsTest {
             .setMaxRpcTimeout(Duration.ofMillis(3600000L))
             .setTotalTimeout(Duration.ofMillis(3600000L))
             .build();
-    RetrySettings streamingRetrySettings =
+    RetrySettings witRetryPolicy2 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+            .setInitialRpcTimeout(Duration.ofMillis(60000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(60000L))
+            .setTotalTimeout(Duration.ofMillis(60000L))
             .build();
-    RetrySettings longRunningRetrySettings =
+    RetrySettings witRetryPolicy3 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetry1 =
+        RetrySettings.newBuilder()
             .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
             .setMaxRpcTimeout(Duration.ofMillis(3600000L))
@@ -113,33 +120,37 @@ public class SpannerOptionsTest {
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     SpannerStubSettings stubSettings = options.getSpannerStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
+        Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
+        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
-            stubSettings.beginTransactionSettings(),
             stubSettings.createSessionSettings(),
-            stubSettings.deleteSessionSettings(),
-            stubSettings.executeBatchDmlSettings(),
-            stubSettings.executeSqlSettings(),
             stubSettings.getSessionSettings(),
-            stubSettings.listSessionsSettings(),
-            stubSettings.partitionQuerySettings(),
-            stubSettings.partitionReadSettings(),
+            stubSettings.deleteSessionSettings(),
+            stubSettings.executeSqlSettings(),
+            stubSettings.executeBatchDmlSettings(),
             stubSettings.readSettings(),
-            stubSettings.rollbackSettings());
-    List<? extends ServerStreamingCallSettings<?, ?>> callsWithStreamingSettings =
+            stubSettings.beginTransactionSettings(),
+            stubSettings.rollbackSettings(),
+            stubSettings.partitionQuerySettings(),
+            stubSettings.partitionReadSettings());
+    List<? extends ServerStreamingCallSettings<?, ?>> callsWithNoRetry1 =
         Arrays.asList(
             stubSettings.executeStreamingSqlSettings(), stubSettings.streamingReadSettings());
-    List<? extends UnaryCallSettings<?, ?>> callsWithLongRunningSettings =
-        Arrays.asList(stubSettings.commitSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy1);
     }
-    for (ServerStreamingCallSettings<?, ?> callSettings : callsWithStreamingSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(streamingRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy2);
     }
-    for (UnaryCallSettings<?, ?> callSettings : callsWithLongRunningSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(longRunningRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry3) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy3);
+    }
+    for (ServerStreamingCallSettings<?, ?> callSettings : callsWithNoRetry1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetry1);
     }
   }
 
@@ -213,26 +224,54 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDatabaseAdminDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings withRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1000L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(60000L))
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(60000L))
-            .setTotalTimeout(Duration.ofMillis(600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings withRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1000L))
+            .setRetryDelayMultiplier(1.3)
+            .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     DatabaseAdminStubSettings stubSettings = options.getDatabaseAdminStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy1 =
         Arrays.asList(
             stubSettings.dropDatabaseSettings(),
-            stubSettings.getDatabaseDdlSettings(),
-            stubSettings.getDatabaseSettings());
+            stubSettings.getDatabaseSettings(),
+            stubSettings.getDatabaseDdlSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
+        Arrays.asList(stubSettings.getIamPolicySettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
+        Arrays.asList(
+            stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy2);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetry2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy2);
     }
   }
 
@@ -275,28 +314,68 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInstanceAdminDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings withRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1000L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(60000L))
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(60000L))
-            .setTotalTimeout(Duration.ofMillis(600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings withRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1000L))
+            .setRetryDelayMultiplier(1.3)
+            .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetryPolicy1 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings noRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     InstanceAdminStubSettings stubSettings = options.getInstanceAdminStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy1 =
         Arrays.asList(
             stubSettings.getInstanceConfigSettings(),
             stubSettings.listInstanceConfigsSettings(),
             stubSettings.deleteInstanceSettings(),
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
+        Arrays.asList(stubSettings.getIamPolicySettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
+        Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =
+        Arrays.asList(
+            stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy2);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy2);
     }
   }
 
