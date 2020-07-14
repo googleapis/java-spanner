@@ -367,9 +367,6 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
       connection.commit();
       assertThat(RETRY_STATISTICS.totalSuccessfulRetries >= 3, is(true));
-      assertThat(
-          RETRY_STATISTICS.totalNestedAborts,
-          is(equalTo(RETRY_STATISTICS.totalSuccessfulRetries - 3)));
       // verify that the insert succeeded
       try (ResultSet rs = connection.executeQuery(Statement.of("SELECT COUNT(*) AS C FROM TEST"))) {
         assertThat(rs.next(), is(true));
