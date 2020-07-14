@@ -84,11 +84,12 @@ public final class TransactionProto {
           + "single_use\030\001 \001(\0132%.google.spanner.v1.Tra"
           + "nsactionOptionsH\000\022\014\n\002id\030\002 \001(\014H\000\0226\n\005begin"
           + "\030\003 \001(\0132%.google.spanner.v1.TransactionOp"
-          + "tionsH\000B\n\n\010selectorB\231\001\n\025com.google.spann"
+          + "tionsH\000B\n\n\010selectorB\266\001\n\025com.google.spann"
           + "er.v1B\020TransactionProtoP\001Z8google.golang"
           + ".org/genproto/googleapis/spanner/v1;span"
           + "ner\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\C"
-          + "loud\\Spanner\\V1b\006proto3"
+          + "loud\\Spanner\\V1\352\002\032Google::Cloud::Spanner"
+          + "::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
