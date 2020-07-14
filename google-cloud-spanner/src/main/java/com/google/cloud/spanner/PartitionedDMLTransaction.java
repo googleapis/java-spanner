@@ -78,12 +78,11 @@ class PartitionedDMLTransaction implements SessionTransaction {
    * statement, and will retry the stream if an {@link UnavailableException} is thrown, using the
    * last seen resume token if the server returns any.
    */
-  long executeStreamingPartitionedUpdate(final Statement statement, Duration timeout) {
+  long executeStreamingPartitionedUpdate(final Statement statement, final Duration timeout) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     log.log(Level.FINER, "Starting PartitionedUpdate statement");
     boolean foundStats = false;
     long updateCount = 0L;
-    Duration remainingTimeout = timeout;
     Stopwatch stopWatch = createStopwatchStarted();
     try {
       // Loop to catch AbortedExceptions.
@@ -106,8 +105,8 @@ class PartitionedDMLTransaction implements SessionTransaction {
             }
           }
           while (true) {
-            remainingTimeout =
-                remainingTimeout.minus(stopWatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
+            Duration remainingTimeout =
+                timeout.minus(stopWatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
             if (remainingTimeout.isNegative() || remainingTimeout.isZero()) {
               // The total deadline has been exceeded while retrying.
               throw new DeadlineExceededException(
