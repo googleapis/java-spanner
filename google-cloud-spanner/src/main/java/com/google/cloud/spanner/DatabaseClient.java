@@ -24,6 +24,9 @@ import com.google.cloud.Timestamp;
  */
 public interface DatabaseClient {
 
+  /** Only for testing */
+  String getClientId();
+
   /**
    * Writes the given mutations atomically to the database.
    *

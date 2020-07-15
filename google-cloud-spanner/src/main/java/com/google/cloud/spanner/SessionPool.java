@@ -1094,6 +1094,10 @@ final class SessionPool {
       this.leakedException = new LeakedSessionException();
     }
 
+    public String getClientId() {
+      return null;
+    }
+
     @Override
     public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
       try {
@@ -1310,6 +1314,10 @@ final class SessionPool {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
       this.lastUseTime = clock.instant();
+    }
+
+    public String getClientId() {
+      return null;
     }
 
     @Override

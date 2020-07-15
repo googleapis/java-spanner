@@ -51,6 +51,10 @@ class DatabaseClientImpl implements DatabaseClient {
     this.pool = pool;
   }
 
+  public String getClientId() {
+    return clientId;
+  }
+
   @VisibleForTesting
   PooledSessionFuture getReadSession() {
     return pool.getReadSession();

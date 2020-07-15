@@ -98,6 +98,10 @@ class SessionImpl implements Session {
     this.databaseId = SessionId.of(name).getDatabaseId();
   }
 
+  public String getClientId() {
+    return null;
+  }
+
   @Override
   public String getName() {
     return name;
