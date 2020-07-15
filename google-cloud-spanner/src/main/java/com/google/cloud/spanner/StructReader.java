@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -100,6 +101,12 @@ public interface StructReader {
 
   /** Returns the value of a non-{@code NULL} column with type {@link Type#float64()}. */
   double getDouble(String columnName);
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  BigDecimal getBigDecimal(int columnIndex);
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  BigDecimal getBigDecimal(String columnName);
 
   /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
   String getString(int columnIndex);
@@ -194,6 +201,16 @@ public interface StructReader {
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
    */
   List<Double> getDoubleList(String columnName);
+
+  /**
+   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())}.
+   */
+  List<BigDecimal> getBigDecimalList(int columnIndex);
+
+  /**
+   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())}.
+   */
+  List<BigDecimal> getBigDecimalList(String columnName);
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
   List<String> getStringList(int columnIndex);

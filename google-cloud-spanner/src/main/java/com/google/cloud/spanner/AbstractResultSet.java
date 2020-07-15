@@ -52,6 +52,7 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -358,6 +359,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case FLOAT64:
             builder.set(fieldName).to((Double) value);
             break;
+          case NUMERIC:
+            builder.set(fieldName).to((BigDecimal) value);
+            break;
           case STRING:
             builder.set(fieldName).to((String) value);
             break;
@@ -380,6 +384,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case FLOAT64:
                 builder.set(fieldName).toFloat64Array((Iterable<Double>) value);
+                break;
+              case NUMERIC:
+                builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
                 break;
               case STRING:
                 builder.set(fieldName).toStringArray((Iterable<String>) value);
@@ -457,6 +464,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
           return valueProtoToFloat64(proto);
+        case NUMERIC:
+          return new BigDecimal(proto.getStringValue());
         case STRING:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
@@ -513,6 +522,18 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return new Int64Array(listValue);
         case FLOAT64:
           return new Float64Array(listValue);
+        case NUMERIC:
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : new BigDecimal(value.getStringValue()));
+            }
+            return list;
+          }
         case STRING:
           return Lists.transform(
               listValue.getValuesList(),
@@ -621,6 +642,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected BigDecimal getBigDecimalInternal(int columnIndex) {
+      return (BigDecimal) rowData.get(columnIndex);
+    }
+
+    @Override
     protected String getStringInternal(int columnIndex) {
       return (String) rowData.get(columnIndex);
     }
@@ -683,6 +709,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     protected Float64Array getDoubleListInternal(int columnIndex) {
       return (Float64Array) rowData.get(columnIndex);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<NUMERIC> produces a List<BigDecimal>.
+    protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+      return (List<BigDecimal>) rowData.get(columnIndex);
     }
 
     @Override
@@ -1177,6 +1209,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected BigDecimal getBigDecimalInternal(int columnIndex) {
+    return currRow().getBigDecimalInternal(columnIndex);
+  }
+
+  @Override
   protected String getStringInternal(int columnIndex) {
     return currRow().getStringInternal(columnIndex);
   }
@@ -1224,6 +1261,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<Double> getDoubleListInternal(int columnIndex) {
     return currRow().getDoubleListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+    return currRow().getBigDecimalListInternal(columnIndex);
   }
 
   @Override

@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -119,6 +120,15 @@ public abstract class Value implements Serializable {
   /** Returns a {@code FLOAT64} value. */
   public static Value float64(double v) {
     return new Float64Impl(false, v);
+  }
+
+  /**
+   * Returns a {@code NUMERIC} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value numeric(@Nullable BigDecimal v) {
+    return new NumericImpl(v == null, v);
   }
 
   /**
@@ -284,6 +294,16 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<NUMERIC>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value numericArray(@Nullable Iterable<BigDecimal> v) {
+    return new NumericArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<STRING>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -382,6 +402,13 @@ public abstract class Value implements Serializable {
   public abstract double getFloat64();
 
   /**
+   * Returns the value of a {@code NUMERIC}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract BigDecimal getNumeric();
+
+  /**
    * Returns the value of a {@code STRING}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -443,6 +470,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Double> getFloat64Array();
+
+  /**
+   * Returns the value of an {@code ARRAY<NUMERIC>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<BigDecimal> getNumericArray();
 
   /**
    * Returns the value of an {@code ARRAY<STRING>}-typed instance. While the returned list itself
@@ -650,6 +685,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public BigDecimal getNumeric() {
+      throw defaultGetter(Type.numeric());
+    }
+
+    @Override
     public String getString() {
       throw defaultGetter(Type.string());
     }
@@ -691,6 +731,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Double> getFloat64Array() {
       throw defaultGetter(Type.array(Type.float64()));
+    }
+
+    @Override
+    public List<BigDecimal> getNumericArray() {
+      throw defaultGetter(Type.array(Type.numeric()));
     }
 
     @Override
@@ -943,6 +988,25 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class DateImpl extends AbstractObjectValue<Date> {
+
+    private DateImpl(boolean isNull, Date value) {
+      super(isNull, Type.date(), value);
+    }
+
+    @Override
+    public Date getDate() {
+      checkType(Type.date());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
   private static class StringImpl extends AbstractObjectValue<String> {
 
     private StringImpl(boolean isNull, @Nullable String value) {
@@ -1052,15 +1116,15 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class DateImpl extends AbstractObjectValue<Date> {
+  private static class NumericImpl extends AbstractObjectValue<BigDecimal> {
 
-    private DateImpl(boolean isNull, Date value) {
-      super(isNull, Type.date(), value);
+    private NumericImpl(boolean isNull, BigDecimal value) {
+      super(isNull, Type.numeric(), value);
     }
 
     @Override
-    public Date getDate() {
-      checkType(Type.date());
+    public BigDecimal getNumeric() {
+      checkType(Type.numeric());
       checkNotNull();
       return value;
     }
@@ -1381,6 +1445,25 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class NumericArrayImpl extends AbstractArrayValue<BigDecimal> {
+
+    private NumericArrayImpl(boolean isNull, @Nullable List<BigDecimal> values) {
+      super(isNull, Type.numeric(), values);
+    }
+
+    @Override
+    public List<BigDecimal> getNumericArray() {
+      checkType(getType());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, BigDecimal element) {
+      b.append(element);
+    }
+  }
+
   private static class StructImpl extends AbstractObjectValue<Struct> {
 
     // Constructor for non-NULL struct values.
@@ -1428,6 +1511,8 @@ public abstract class Value implements Serializable {
           return Value.bytes(value.getBytes(fieldIndex));
         case FLOAT64:
           return Value.float64(value.getDouble(fieldIndex));
+        case NUMERIC:
+          return Value.numeric(value.getBigDecimal(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -1448,6 +1533,8 @@ public abstract class Value implements Serializable {
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
                 return Value.float64Array(value.getDoubleArray(fieldIndex));
+              case NUMERIC:
+                return Value.numericArray(value.getBigDecimalList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
               case TIMESTAMP:

@@ -26,6 +26,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -131,6 +132,11 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
+    /** Appends a {@code NUMERIC} value to the key. */
+    public Builder append(@Nullable BigDecimal value) {
+      buffer.add(value);
+      return this;
+    }
     /** Appends a {@code STRING} value to the key. */
     public Builder append(@Nullable String value) {
       buffer.add(value);
@@ -172,6 +178,8 @@ public final class Key implements Serializable {
         append((Float) value);
       } else if (value instanceof Double) {
         append((Double) value);
+      } else if (value instanceof BigDecimal) {
+        append((BigDecimal) value);
       } else if (value instanceof String) {
         append((String) value);
       } else if (value instanceof ByteArray) {
@@ -215,6 +223,7 @@ public final class Key implements Serializable {
    *   <li>{@code BOOL} is represented by {@code Boolean}
    *   <li>{@code INT64} is represented by {@code Long}
    *   <li>{@code FLOAT64} is represented by {@code Double}
+   *   <li>{@code NUMERIC} is represented by {@code BigDecimal}
    *   <li>{@code STRING} is represented by {@code String}
    *   <li>{@code BYTES} is represented by {@link ByteArray}
    *   <li>{@code TIMESTAMP} is represented by {@link Timestamp}
@@ -276,6 +285,8 @@ public final class Key implements Serializable {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof Double) {
         builder.addValuesBuilder().setNumberValue((Double) part);
+      } else if (part instanceof BigDecimal) {
+        builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof String) {
         builder.addValuesBuilder().setStringValue((String) part);
       } else if (part instanceof ByteArray) {

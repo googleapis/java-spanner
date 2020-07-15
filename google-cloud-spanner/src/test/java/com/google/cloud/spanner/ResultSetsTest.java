@@ -26,6 +26,7 @@ import com.google.cloud.Timestamp;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -39,6 +40,7 @@ public class ResultSetsTest {
   @Test
   public void resultSetIteration() {
     double doubleVal = 1.2;
+    BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
     String byteVal = "101";
     long usecs = 32343;
@@ -48,6 +50,13 @@ public class ResultSetsTest {
     boolean[] boolArray = {true, false, true, true, false};
     long[] longArray = {Long.MAX_VALUE, Long.MIN_VALUE, 0, 1, -1};
     double[] doubleArray = {Double.MIN_VALUE, Double.MAX_VALUE, 0, 1, -1, 1.2341};
+    BigDecimal[] bigDecimalArray = {
+      BigDecimal.valueOf(1, Integer.MAX_VALUE),
+      BigDecimal.valueOf(1, Integer.MIN_VALUE),
+      BigDecimal.ZERO,
+      BigDecimal.TEN,
+      BigDecimal.valueOf(3141592, 6)
+    };
     ByteArray[] byteArray = {
       ByteArray.copyFrom("123"), ByteArray.copyFrom("456"), ByteArray.copyFrom("789")
     };
@@ -67,6 +76,7 @@ public class ResultSetsTest {
             Type.StructField.of("f2", Type.int64()),
             Type.StructField.of("f3", Type.bool()),
             Type.StructField.of("doubleVal", Type.float64()),
+            Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
@@ -74,6 +84,7 @@ public class ResultSetsTest {
             Type.StructField.of("boolArray", Type.array(Type.bool())),
             Type.StructField.of("longArray", Type.array(Type.int64())),
             Type.StructField.of("doubleArray", Type.array(Type.float64())),
+            Type.StructField.of("bigDecimalArray", Type.array(Type.numeric())),
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
@@ -88,6 +99,8 @@ public class ResultSetsTest {
             .to(Value.bool(true))
             .set("doubleVal")
             .to(Value.float64(doubleVal))
+            .set("bigDecimalVal")
+            .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
             .set("byteVal")
@@ -102,6 +115,8 @@ public class ResultSetsTest {
             .to(Value.int64Array(longArray))
             .set("doubleArray")
             .to(Value.float64Array(doubleArray))
+            .set("bigDecimalArray")
+            .to(Value.numericArray(Arrays.asList(bigDecimalArray)))
             .set("byteArray")
             .to(Value.bytesArray(Arrays.asList(byteArray)))
             .set("timestampArray")
@@ -121,6 +136,8 @@ public class ResultSetsTest {
             .to(Value.bool(null))
             .set("doubleVal")
             .to(Value.float64(doubleVal))
+            .set("bigDecimalVal")
+            .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
             .set("byteVal")
@@ -135,6 +152,8 @@ public class ResultSetsTest {
             .to(Value.int64Array(longArray))
             .set("doubleArray")
             .to(Value.float64Array(doubleArray))
+            .set("bigDecimalArray")
+            .to(Value.numericArray(Arrays.asList(bigDecimalArray)))
             .set("byteArray")
             .to(Value.bytesArray(Arrays.asList(byteArray)))
             .set("timestampArray")
@@ -173,36 +192,40 @@ public class ResultSetsTest {
     assertThat(rs.getBoolean("f3")).isTrue();
     assertThat(rs.getDouble("doubleVal")).isWithin(0.0).of(doubleVal);
     assertThat(rs.getDouble(3)).isWithin(0.0).of(doubleVal);
-    assertThat(rs.getString(4)).isEqualTo(stringVal);
+    assertThat(rs.getBigDecimal("bigDecimalVal")).isEqualTo(new BigDecimal("1.23"));
+    assertThat(rs.getBigDecimal(4)).isEqualTo(new BigDecimal("1.23"));
+    assertThat(rs.getString(5)).isEqualTo(stringVal);
     assertThat(rs.getString("stringVal")).isEqualTo(stringVal);
-    assertThat(rs.getBytes(5)).isEqualTo(ByteArray.copyFrom(byteVal));
+    assertThat(rs.getBytes(6)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getBytes("byteVal")).isEqualTo(ByteArray.copyFrom(byteVal));
-    assertThat(rs.getTimestamp(6)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
+    assertThat(rs.getTimestamp(7)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
     assertThat(rs.getTimestamp("timestamp")).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
-    assertThat(rs.getDate(7)).isEqualTo(Date.fromYearMonthDay(year, month, day));
+    assertThat(rs.getDate(8)).isEqualTo(Date.fromYearMonthDay(year, month, day));
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
-    assertThat(rs.getBooleanArray(8)).isEqualTo(boolArray);
+    assertThat(rs.getBooleanArray(9)).isEqualTo(boolArray);
     assertThat(rs.getBooleanArray("boolArray")).isEqualTo(boolArray);
-    assertThat(rs.getBooleanList(8)).isEqualTo(Booleans.asList(boolArray));
+    assertThat(rs.getBooleanList(9)).isEqualTo(Booleans.asList(boolArray));
     assertThat(rs.getBooleanList("boolArray")).isEqualTo(Booleans.asList(boolArray));
-    assertThat(rs.getLongArray(9)).isEqualTo(longArray);
+    assertThat(rs.getLongArray(10)).isEqualTo(longArray);
     assertThat(rs.getLongArray("longArray")).isEqualTo(longArray);
-    assertThat(rs.getLongList(9)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList(10)).isEqualTo(Longs.asList(longArray));
     assertThat(rs.getLongList("longArray")).isEqualTo(Longs.asList(longArray));
-    assertThat(rs.getDoubleArray(10)).usingTolerance(0.0).containsAtLeast(doubleArray);
+    assertThat(rs.getDoubleArray(11)).usingTolerance(0.0).containsAtLeast(doubleArray);
     assertThat(rs.getDoubleArray("doubleArray"))
         .usingTolerance(0.0)
         .containsExactly(doubleArray)
         .inOrder();
-    assertThat(rs.getDoubleList(10)).isEqualTo(Doubles.asList(doubleArray));
+    assertThat(rs.getDoubleList(11)).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getDoubleList("doubleArray")).isEqualTo(Doubles.asList(doubleArray));
-    assertThat(rs.getBytesList(11)).isEqualTo(Arrays.asList(byteArray));
+    assertThat(rs.getBigDecimalList(12)).isEqualTo(Arrays.asList(bigDecimalArray));
+    assertThat(rs.getBigDecimalList("bigDecimalArray")).isEqualTo(Arrays.asList(bigDecimalArray));
+    assertThat(rs.getBytesList(13)).isEqualTo(Arrays.asList(byteArray));
     assertThat(rs.getBytesList("byteArray")).isEqualTo(Arrays.asList(byteArray));
-    assertThat(rs.getTimestampList(12)).isEqualTo(Arrays.asList(timestampArray));
+    assertThat(rs.getTimestampList(14)).isEqualTo(Arrays.asList(timestampArray));
     assertThat(rs.getTimestampList("timestampArray")).isEqualTo(Arrays.asList(timestampArray));
-    assertThat(rs.getDateList(13)).isEqualTo(Arrays.asList(dateArray));
+    assertThat(rs.getDateList(15)).isEqualTo(Arrays.asList(dateArray));
     assertThat(rs.getDateList("dateArray")).isEqualTo(Arrays.asList(dateArray));
-    assertThat(rs.getStringList(14)).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getStringList(16)).isEqualTo(Arrays.asList(stringArray));
     assertThat(rs.getStringList("stringArray")).isEqualTo(Arrays.asList(stringArray));
 
     assertThat(rs.next()).isTrue();
