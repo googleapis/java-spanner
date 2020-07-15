@@ -272,9 +272,12 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getNumeric();
+    try {
+      v.getNumeric();
+      fail("missing expected IllegalStateException");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("null value");
+    }
   }
 
   @Test
@@ -641,18 +644,24 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("null value");
-    v.getNumericArray();
+    try {
+      v.getNumericArray();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
+    }
   }
 
   @Test
   public void numericArrayTryGetInt64Array() {
     Value value = Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1)));
 
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>");
-    value.getInt64Array();
+    try {
+      value.getInt64Array();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>"));
+    }
   }
 
   @Test

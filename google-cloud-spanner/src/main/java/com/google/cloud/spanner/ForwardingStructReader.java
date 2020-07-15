@@ -136,12 +136,12 @@ public class ForwardingStructReader implements StructReader {
 
   @Override
   public BigDecimal getBigDecimal(int columnIndex) {
-    return delegate.getBigDecimal(columnIndex);
+    return delegate.get().getBigDecimal(columnIndex);
   }
 
   @Override
   public BigDecimal getBigDecimal(String columnName) {
-    return delegate.getBigDecimal(columnName);
+    return delegate.get().getBigDecimal(columnName);
   }
 
   @Override
@@ -266,12 +266,12 @@ public class ForwardingStructReader implements StructReader {
 
   @Override
   public List<BigDecimal> getBigDecimalList(int columnIndex) {
-    return delegate.getBigDecimalList(columnIndex);
+    return delegate.get().getBigDecimalList(columnIndex);
   }
 
   @Override
   public List<BigDecimal> getBigDecimalList(String columnName) {
-    return delegate.getBigDecimalList(columnName);
+    return delegate.get().getBigDecimalList(columnName);
   }
 
   @Override
