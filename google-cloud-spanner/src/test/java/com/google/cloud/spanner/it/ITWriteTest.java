@@ -37,9 +37,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
-import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +80,6 @@ public class ITWriteTest {
                     + "  BytesValue          BYTES(MAX),"
                     + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
                     + "  DateValue           DATE,"
-                    + "  NumericValue        NUMERIC,"
                     + "  BoolArrayValue      ARRAY<BOOL>,"
                     + "  Int64ArrayValue     ARRAY<INT64>,"
                     + "  Float64ArrayValue   ARRAY<FLOAT64>,"
@@ -90,7 +87,6 @@ public class ITWriteTest {
                     + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
                     + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
                     + "  DateArrayValue      ARRAY<DATE>,"
-                    + "  NumericArrayValue   ARRAY<NUMERIC>,"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
   }
@@ -359,21 +355,6 @@ public class ITWriteTest {
   }
 
   @Test
-  public void writeNumeric() {
-    write(baseInsert().set("NumericValue").to(new BigDecimal("3.141592")).build());
-    Struct row = readLastRow("NumericValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimal(0)).isEqualTo(BigDecimal.valueOf(3141592, 6));
-  }
-
-  @Test
-  public void writeNumericNull() {
-    write(baseInsert().set("NumericValue").to((Long) null).build());
-    Struct row = readLastRow("NumericValue");
-    assertThat(row.isNull(0)).isTrue();
-  }
-
-  @Test
   public void writeBoolArrayNull() {
     write(baseInsert().set("BoolArrayValue").toBoolArray((boolean[]) null).build());
     Struct row = readLastRow("BoolArrayValue");
@@ -594,54 +575,6 @@ public class ITWriteTest {
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly(d1, null, d2).inOrder();
-  }
-
-  @Test
-  public void writeNumericArrayNull() {
-    write(baseInsert().set("NumericArrayValue").toNumericArray(null).build());
-    Struct row = readLastRow("NumericArrayValue");
-    assertThat(row.isNull(0)).isTrue();
-  }
-
-  @Test
-  public void writeNumericArrayEmpty() {
-    write(
-        baseInsert()
-            .set("NumericArrayValue")
-            .toNumericArray(ImmutableList.<BigDecimal>of())
-            .build());
-    Struct row = readLastRow("NumericArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0)).containsExactly();
-  }
-
-  @Test
-  public void writeNumericArray() {
-    write(
-        baseInsert()
-            .set("NumericArrayValue")
-            .toNumericArray(
-                Arrays.asList(new BigDecimal("3.141592"), new BigDecimal("6.626"), null))
-            .build());
-    Struct row = readLastRow("NumericArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0))
-        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3), null)
-        .inOrder();
-  }
-
-  @Test
-  public void writeNumericArrayNoNulls() {
-    write(
-        baseInsert()
-            .set("NumericArrayValue")
-            .toNumericArray(Arrays.asList(new BigDecimal("3.141592"), new BigDecimal("6.626")))
-            .build());
-    Struct row = readLastRow("NumericArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0))
-        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3))
-        .inOrder();
   }
 
   @Test
