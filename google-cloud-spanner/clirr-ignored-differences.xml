@@ -256,14 +256,14 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>com.google.api.gax.retrying.RetrySettings getPartitionedDmlRetrySettings()</method>
   </difference>
-  
+
   <!-- Streaming PDML -->
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>com.google.api.gax.rpc.ServerStream executeStreamingPartitionedDml(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, org.threeten.bp.Duration)</method>
   </difference>
-  
+
   <!-- Add support for NUMERIC data type -->
   <difference>
     <differenceType>7013</differenceType>
@@ -305,5 +305,4 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getNumericArray()</method>
   </difference>
-
 </differences>
