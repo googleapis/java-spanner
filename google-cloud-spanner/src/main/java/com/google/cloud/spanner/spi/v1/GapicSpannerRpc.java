@@ -369,6 +369,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
           .setRetrySettings(partitionedDmlRetrySettings);
+      pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
       // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
       // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
       // also change the StreamWatchdogCheckInterval.

@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
+import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
@@ -77,13 +78,12 @@ class PartitionedDMLTransaction implements SessionTransaction {
    * statement, and will retry the stream if an {@link UnavailableException} is thrown, using the
    * last seen resume token if the server returns any.
    */
-  long executeStreamingPartitionedUpdate(final Statement statement, Duration timeout) {
+  long executeStreamingPartitionedUpdate(final Statement statement, final Duration timeout) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     log.log(Level.FINER, "Starting PartitionedUpdate statement");
     boolean foundStats = false;
     long updateCount = 0L;
-    Duration remainingTimeout = timeout;
-    Stopwatch stopWatch = Stopwatch.createStarted();
+    Stopwatch stopWatch = createStopwatchStarted();
     try {
       // Loop to catch AbortedExceptions.
       while (true) {
@@ -105,8 +105,13 @@ class PartitionedDMLTransaction implements SessionTransaction {
             }
           }
           while (true) {
-            remainingTimeout =
-                remainingTimeout.minus(stopWatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
+            Duration remainingTimeout =
+                timeout.minus(stopWatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
+            if (remainingTimeout.isNegative() || remainingTimeout.isZero()) {
+              // The total deadline has been exceeded while retrying.
+              throw new DeadlineExceededException(
+                  null, GrpcStatusCode.of(Code.DEADLINE_EXCEEDED), false);
+            }
             try {
               builder.setResumeToken(resumeToken);
               ServerStream<PartialResultSet> stream =
@@ -155,6 +160,10 @@ class PartitionedDMLTransaction implements SessionTransaction {
     } catch (Exception e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
+  }
+
+  Stopwatch createStopwatchStarted() {
+    return Stopwatch.createStarted();
   }
 
   @Override
