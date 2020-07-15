@@ -30,7 +30,7 @@ public interface TypeOrBuilder
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The enum numeric value on the wire for code.
    */
@@ -42,7 +42,7 @@ public interface TypeOrBuilder
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The code.
    */
