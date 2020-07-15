@@ -148,7 +148,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The enum numeric value on the wire for code.
    */
@@ -163,7 +163,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
    * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
    * </pre>
    *
-   * <code>.google.spanner.v1.TypeCode code = 1;</code>
+   * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The code.
    */
@@ -650,7 +650,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The enum numeric value on the wire for code.
      */
@@ -665,7 +665,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The enum numeric value on the wire for code to set.
      * @return This builder for chaining.
@@ -683,7 +683,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The code.
      */
@@ -700,7 +700,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The code to set.
      * @return This builder for chaining.
@@ -721,7 +721,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
      * Required. The [TypeCode][google.spanner.v1.TypeCode] for this type.
      * </pre>
      *
-     * <code>.google.spanner.v1.TypeCode code = 1;</code>
+     * <code>.google.spanner.v1.TypeCode code = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
