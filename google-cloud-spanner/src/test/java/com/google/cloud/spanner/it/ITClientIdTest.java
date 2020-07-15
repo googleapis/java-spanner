@@ -23,15 +23,18 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITClientIdTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
