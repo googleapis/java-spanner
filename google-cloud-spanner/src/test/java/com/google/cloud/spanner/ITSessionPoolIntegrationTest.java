@@ -102,11 +102,10 @@ public class ITSessionPoolIntegrationTest {
       assertThat(session.get()).isNotNull();
     }
 
-    try (PooledSessionFuture session = pool.getReadSession()) {
+    try (PooledSessionFuture session = pool.getReadSession();
+        PooledSessionFuture session2 = pool.getReadSession()) {
       assertThat(session.get()).isNotNull();
-      PooledSessionFuture session2 = pool.getReadSession();
       assertThat(session2.get()).isNotNull();
-      session2.close();
     }
   }
 
