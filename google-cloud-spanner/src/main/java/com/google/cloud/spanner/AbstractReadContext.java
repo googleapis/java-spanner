@@ -607,7 +607,7 @@ abstract class AbstractReadContext
   }
 
   ResultSet executeQueryInternalWithOptions(
-      Statement statement,
+      final Statement statement,
       com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
       Options options,
       ByteString partitionToken) {
@@ -622,7 +622,7 @@ abstract class AbstractReadContext
         new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
-            GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
+            GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
             if (resumeToken != null) {
               request.setResumeToken(resumeToken);
             }
