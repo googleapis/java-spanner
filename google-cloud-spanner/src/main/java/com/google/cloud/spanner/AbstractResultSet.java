@@ -763,16 +763,24 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @VisibleForTesting
   static class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
       implements CloseableIterator<PartialResultSet> {
+    private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
     private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
 
     private final ConsumerImpl consumer = new ConsumerImpl();
     private final BlockingQueue<PartialResultSet> stream;
+    private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
     private SpannerException error;
 
-    // Visible for testing.
+    @VisibleForTesting
     GrpcStreamIterator(int prefetchChunks) {
+      this(null, prefetchChunks);
+    }
+
+    @VisibleForTesting
+    GrpcStreamIterator(Statement statement, int prefetchChunks) {
+      this.statement = statement;
       // One extra to allow for END_OF_STREAM message.
       this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
     }
@@ -839,6 +847,23 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
       @Override
       public void onError(SpannerException e) {
+        if (statement != null) {
+          if (logger.isLoggable(Level.FINEST)) {
+            // Include parameter values if logging level is set to FINEST or higher.
+            e =
+                SpannerExceptionFactory.newSpannerExceptionPreformatted(
+                    e.getErrorCode(),
+                    String.format("%s - Statement: '%s'", e.getMessage(), statement.toString()),
+                    e);
+            logger.log(Level.FINEST, "Error executing statement", e);
+          } else {
+            e =
+                SpannerExceptionFactory.newSpannerExceptionPreformatted(
+                    e.getErrorCode(),
+                    String.format("%s - Statement: '%s'", e.getMessage(), statement.getSql()),
+                    e);
+          }
+        }
         error = e;
         addToStream(END_OF_STREAM);
       }

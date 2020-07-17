@@ -188,7 +188,7 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
-  private static SpannerException newSpannerExceptionPreformatted(
+  static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;

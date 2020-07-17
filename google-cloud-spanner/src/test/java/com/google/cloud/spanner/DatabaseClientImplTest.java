@@ -25,6 +25,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
@@ -33,6 +34,7 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -52,6 +54,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -1481,6 +1485,67 @@ public class DatabaseClientImplTest {
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PERMISSION_DENIED);
       }
+    }
+  }
+
+  @Test
+  public void testExceptionIncludesStatement() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid query").asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id'");
+      // The error message should normally not include the parameter values to prevent sensitive
+      // information from accidentally being logged.
+      assertThat(e.getMessage()).doesNotContain("id: 1");
+    }
+
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid query").asRuntimeException()));
+    Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
+    Level currentLevel = logger.getLevel();
+    try (ResultSet rs =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
+      logger.setLevel(Level.FINEST);
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      // With log level set to FINEST the error should also include the parameter values.
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id {id: 1}'");
+    } finally {
+      logger.setLevel(currentLevel);
+    }
+  }
+
+  @Test
+  public void testReadDoesNotIncludeStatement() {
+    mockSpanner.setStreamingReadExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid read").asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client.singleUse().read("FOO", KeySet.singleKey(Key.of(1L)), ImmutableList.of("BAR"))) {
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).doesNotContain("Statement:");
     }
   }
 }
