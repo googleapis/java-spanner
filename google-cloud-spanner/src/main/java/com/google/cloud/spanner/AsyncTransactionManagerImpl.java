@@ -39,14 +39,16 @@ final class AsyncTransactionManagerImpl
 
   private final SessionImpl session;
   private Span span;
+  private final boolean inlineBegin;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
 
-  AsyncTransactionManagerImpl(SessionImpl session, Span span) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, boolean inlineBegin) {
     this.session = session;
     this.span = span;
+    this.inlineBegin = inlineBegin;
   }
 
   @Override
@@ -74,7 +76,12 @@ final class AsyncTransactionManagerImpl
       session.setActive(this);
     }
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
-    final ApiFuture<Void> fut = txn.ensureTxnAsync();
+    final ApiFuture<Void> fut;
+    if (inlineBegin) {
+      fut = ApiFutures.immediateFuture(null);
+    } else {
+      fut = txn.ensureTxnAsync();
+    }
     ApiFutures.addCallback(
         fut,
         new ApiFutureCallback<Void>() {

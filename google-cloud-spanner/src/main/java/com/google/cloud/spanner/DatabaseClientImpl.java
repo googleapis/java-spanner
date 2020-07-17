@@ -256,9 +256,25 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncTransactionManager transactionManagerAsync() {
+    return inlineBeginReadWriteTransactions
+        ? inlinedTransactionManagerAsync()
+        : preparedTransactionManagerAsync();
+  }
+
+  private AsyncTransactionManager preparedTransactionManagerAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return getReadWriteSession().transactionManagerAsync();
+    } catch (RuntimeException e) {
+      TraceUtil.endSpanWithFailure(span, e);
+      throw e;
+    }
+  }
+
+  private AsyncTransactionManager inlinedTransactionManagerAsync() {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return getReadSession().transactionManagerAsync();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;

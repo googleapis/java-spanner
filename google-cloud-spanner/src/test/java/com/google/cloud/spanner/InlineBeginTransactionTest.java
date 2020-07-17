@@ -28,6 +28,10 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
+import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -653,6 +657,164 @@ public class InlineBeginTransactionTest {
     // There should be 1 call to BeginTransaction because there is no statement that we can use to
     // inline the BeginTransaction call with.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerInlinedBeginTx()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = txMgr.beginAsync();
+      while (true) {
+        AsyncTransactionStep<Void, Long> updateCount =
+            txn.then(
+                new AsyncTransactionFunction<Void, Long>() {
+                  @Override
+                  public ApiFuture<Long> apply(TransactionContext txn, Void input)
+                      throws Exception {
+                    return txn.executeUpdateAsync(UPDATE_STATEMENT);
+                  }
+                },
+                executor);
+        CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
+        try {
+          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+          assertThat(commitTimestamp.get()).isNotNull();
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetryAsync();
+        }
+      }
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerInlinedBeginTxAborted()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = txMgr.beginAsync();
+      boolean first = true;
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Long> updateCount =
+              txn.then(
+                  new AsyncTransactionFunction<Void, Long>() {
+                    @Override
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      return txn.executeUpdateAsync(UPDATE_STATEMENT);
+                    }
+                  },
+                  executor);
+          if (first) {
+            // Abort the transaction after the statement has been executed to ensure that the
+            // transaction has actually been started before the test tries to abort it.
+            updateCount.then(
+                new AsyncTransactionFunction<Long, Void>() {
+                  @Override
+                  public ApiFuture<Void> apply(TransactionContext txn, Long input)
+                      throws Exception {
+                    mockSpanner.abortAllTransactions();
+                    return ApiFutures.immediateFuture(null);
+                  }
+                },
+                MoreExecutors.directExecutor());
+            first = false;
+          }
+          assertThat(updateCount.commitAsync().get()).isNotNull();
+          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetryAsync();
+        }
+      }
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerInlinedBeginTxWithOnlyMutations()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = txMgr.beginAsync();
+      while (true) {
+        try {
+          txn.then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(Mutation.delete("FOO", Key.of(1L)));
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  },
+                  executor)
+              .commitAsync()
+              .get();
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetryAsync();
+        }
+      }
+    }
+    // There should be 1 call to BeginTransaction because there is no statement that we can use to
+    // inline the BeginTransaction call with.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerInlinedBeginTxWithError()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = txMgr.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Long, Long> updateCount =
+              txn.then(
+                      new AsyncTransactionFunction<Void, Long>() {
+                        @Override
+                        public ApiFuture<Long> apply(TransactionContext txn, Void input)
+                            throws Exception {
+                          return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                        }
+                      },
+                      executor)
+                  .then(
+                      new AsyncTransactionFunction<Long, Long>() {
+                        @Override
+                        public ApiFuture<Long> apply(TransactionContext txn, Long input)
+                            throws Exception {
+                          return txn.executeUpdateAsync(UPDATE_STATEMENT);
+                        }
+                      },
+                      executor);
+          try {
+            updateCount.commitAsync().get();
+            fail("missing expected exception");
+          } catch (ExecutionException e) {
+            assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+            SpannerException se = (SpannerException) e.getCause();
+            assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+          }
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetryAsync();
+        }
+      }
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
