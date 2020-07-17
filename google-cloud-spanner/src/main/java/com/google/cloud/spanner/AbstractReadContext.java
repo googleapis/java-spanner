@@ -633,7 +633,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, request.hasTransaction() && request.getTransaction().hasBegin());
   }
 
   /**
@@ -685,7 +686,7 @@ abstract class AbstractReadContext
   public void onTransactionMetadata(Transaction transaction) {}
 
   @Override
-  public void onError(SpannerException e) {}
+  public void onError(SpannerException e, boolean withBeginTransaction) {}
 
   @Override
   public void onDone() {}
@@ -746,7 +747,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    GrpcResultSet resultSet = new GrpcResultSet(stream, this);
+    GrpcResultSet resultSet =
+        new GrpcResultSet(stream, this, selector != null && selector.hasBegin());
     return resultSet;
   }
 

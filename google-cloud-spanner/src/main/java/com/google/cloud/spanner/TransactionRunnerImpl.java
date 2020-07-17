@@ -55,10 +55,10 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -158,7 +158,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      * been created, the lock is released and concurrent requests can be executed on the
      * transaction.
      */
-    private final ReentrantLock transactionLock = new ReentrantLock();
+    //    private final ReentrantLock transactionLock = new ReentrantLock();
+    private volatile CountDownLatch transactionLatch = new CountDownLatch(0);
 
     private volatile ByteString transactionId;
     private Timestamp commitTimestamp;
@@ -333,7 +334,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         }
                         span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
                         TraceUtil.endSpanWithFailure(opSpan, e);
-                        onError((SpannerException) e);
+                        onError((SpannerException) e, false);
                         res.setException(e);
                       }
                     }
@@ -401,20 +402,38 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         try {
           // Wait if another request is already beginning, committing or rolling back the
           // transaction.
-          transactionLock.lockInterruptibly();
-          // Check again if a transactionId is now available. It could be that the thread that was
-          // holding the lock and that had sent a statement with a BeginTransaction request caused
-          // an error and did not return a transaction.
-          if (transactionId == null) {
-            // Return a TransactionSelector that will start a new transaction as part of the
-            // statement that is being executed.
-            return TransactionSelector.newBuilder()
-                .setBegin(
-                    TransactionOptions.newBuilder()
-                        .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
-                .build();
-          } else {
-            transactionLock.unlock();
+
+          //        transactionLock.lockInterruptibly();
+          while (true) {
+            CountDownLatch latch;
+            synchronized (lock) {
+              latch = transactionLatch;
+            }
+            latch.await();
+
+            synchronized (lock) {
+              if (transactionLatch.getCount() > 0L) {
+                continue;
+              }
+              // Check again if a transactionId is now available. It could be that the thread that
+              // was
+              // holding the lock and that had sent a statement with a BeginTransaction request
+              // caused
+              // an error and did not return a transaction.
+              if (transactionId == null) {
+                transactionLatch = new CountDownLatch(1);
+                // Return a TransactionSelector that will start a new transaction as part of the
+                // statement that is being executed.
+                return TransactionSelector.newBuilder()
+                    .setBegin(
+                        TransactionOptions.newBuilder()
+                            .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+                    .build();
+              } else {
+                //                transactionLock.unlock();
+                break;
+              }
+            }
           }
         } catch (InterruptedException e) {
           throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
@@ -430,18 +449,24 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // transaction on this instance and release the lock to allow other statements to proceed.
       if (this.transactionId == null && transaction != null && transaction.getId() != null) {
         this.transactionId = transaction.getId();
-        transactionLock.unlock();
+        transactionLatch.countDown();
+        //        transactionLock.unlock();
       }
     }
 
     @Override
-    public void onError(SpannerException e) {
+    public void onError(SpannerException e, boolean withBeginTransaction) {
       // Release the transactionLock if that is being held by this thread. That would mean that the
       // statement that was trying to start a transaction caused an error. The next statement should
       // in that case also include a BeginTransaction option.
-      if (transactionLock.isHeldByCurrentThread()) {
-        transactionLock.unlock();
+
+      //      if (transactionLock.isHeldByCurrentThread()) {
+      //        transactionLock.unlock();
+      //      }
+      if (withBeginTransaction) {
+        transactionLatch.countDown();
       }
+
       if (e.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
         if (e instanceof AbortedException) {
@@ -494,7 +519,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
       } catch (SpannerException e) {
-        onError(e);
+        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
         throw e;
       }
     }
@@ -504,7 +529,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
-      ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
+      final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
@@ -538,7 +563,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public Long apply(Throwable input) {
                   SpannerException e = SpannerExceptionFactory.newSpannerException(input);
-                  onError(e);
+                  onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
                   throw e;
                 }
               },
@@ -547,6 +572,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           new Runnable() {
             @Override
             public void run() {
+              try {
+                if (resultSet.get().getMetadata().hasTransaction()) {
+                  onTransactionMetadata(resultSet.get().getMetadata().getTransaction());
+                }
+              } catch (ExecutionException | InterruptedException e) {
+                // Ignore this error here as it is handled by the future that is returned by the
+                // executeUpdateAsync method.
+              }
               decreaseAsyncOperations();
             }
           },
@@ -582,7 +615,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         return results;
       } catch (SpannerException e) {
-        onError(e);
+        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
         throw e;
       }
     }
@@ -610,6 +643,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   long[] results = new long[input.getResultSetsCount()];
                   for (int i = 0; i < input.getResultSetsCount(); ++i) {
                     results[i] = input.getResultSets(i).getStats().getRowCountExact();
+                    if (input.getResultSets(i).getMetadata().hasTransaction()) {
+                      onTransactionMetadata(input.getResultSets(i).getMetadata().getTransaction());
+                    }
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
@@ -633,9 +669,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               try {
                 updateCounts.get();
               } catch (ExecutionException e) {
-                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
+                onError(
+                    SpannerExceptionFactory.newSpannerException(e.getCause()),
+                    builder.hasTransaction() && builder.getTransaction().hasBegin());
               } catch (InterruptedException e) {
-                onError(SpannerExceptionFactory.propagateInterrupt(e));
+                onError(
+                    SpannerExceptionFactory.propagateInterrupt(e),
+                    builder.hasTransaction() && builder.getTransaction().hasBegin());
               } finally {
                 decreaseAsyncOperations();
               }

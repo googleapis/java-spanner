@@ -19,10 +19,18 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiAsyncFunction;
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -36,8 +44,12 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,10 +61,24 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class InlineBeginTransactionTest {
+  @Parameter public Executor executor;
+
+  @Parameters(name = "executor = {0}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+          {MoreExecutors.directExecutor()},
+          {Executors.newSingleThreadExecutor()},
+          {Executors.newFixedThreadPool(4)}
+        });
+  }
+
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -412,6 +438,222 @@ public class InlineBeginTransactionTest {
     // The first statement will start a transaction, but it will never be returned to the client as
     // the update statement fails.
     assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTx() throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    ApiFuture<Long> updateCount =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<Long>() {
+                  @Override
+                  public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                    return txn.executeUpdateAsync(UPDATE_STATEMENT);
+                  }
+                },
+                executor);
+    assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxAborted() throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    final AtomicBoolean firstAttempt = new AtomicBoolean(true);
+    ApiFuture<Long> updateCount =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<Long>() {
+                  @Override
+                  public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                    ApiFuture<Long> res = txn.executeUpdateAsync(UPDATE_STATEMENT);
+                    if (firstAttempt.getAndSet(false)) {
+                      mockSpanner.abortTransaction(txn);
+                    }
+                    return res;
+                  }
+                },
+                executor);
+    assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // We have started 2 transactions, because the first transaction aborted.
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithQuery() throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    ApiFuture<Long> updateCount =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<Long>() {
+                  @Override
+                  public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                    final SettableApiFuture<Long> res = SettableApiFuture.create();
+                    try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                      rs.setCallback(
+                          executor,
+                          new ReadyCallback() {
+                            @Override
+                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                              switch (resultSet.tryNext()) {
+                                case DONE:
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
+                                case OK:
+                                  res.set(resultSet.getLong(0));
+                                default:
+                                  throw new IllegalStateException();
+                              }
+                            }
+                          });
+                    }
+                    return res;
+                  }
+                },
+                queryExecutor);
+    assertThat(updateCount.get()).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+    queryExecutor.shutdown();
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithBatchDml()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    ApiFuture<long[]> updateCounts =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<long[]>() {
+                  @Override
+                  public ApiFuture<long[]> doWorkAsync(TransactionContext transaction) {
+                    return transaction.batchUpdateAsync(
+                        Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                  }
+                },
+                executor);
+    assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithError() throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    ApiFuture<Long> updateCount =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<Long>() {
+                  @Override
+                  public ApiFuture<Long> doWorkAsync(TransactionContext transaction) {
+                    transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                    return transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                  }
+                },
+                executor);
+    assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // The first update will start a transaction, but then fail the update statement. This will
+    // start a transaction on the mock server, but that transaction will never be returned to the
+    // client.
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithParallelQueries()
+      throws InterruptedException, ExecutionException {
+    final int numQueries = 100;
+    final ScheduledExecutorService executor = Executors.newScheduledThreadPool(16);
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    ApiFuture<Long> updateCount =
+        client
+            .runAsync()
+            .runAsync(
+                new AsyncWork<Long>() {
+                  @Override
+                  public ApiFuture<Long> doWorkAsync(final TransactionContext txn) {
+                    List<ApiFuture<Long>> futures = new ArrayList<>(numQueries);
+                    for (int i = 0; i < numQueries; i++) {
+                      final SettableApiFuture<Long> res = SettableApiFuture.create();
+                      try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                        rs.setCallback(
+                            executor,
+                            new ReadyCallback() {
+                              @Override
+                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                                switch (resultSet.tryNext()) {
+                                  case DONE:
+                                    return CallbackResponse.DONE;
+                                  case NOT_READY:
+                                    return CallbackResponse.CONTINUE;
+                                  case OK:
+                                    res.set(resultSet.getLong(0));
+                                  default:
+                                    throw new IllegalStateException();
+                                }
+                              }
+                            });
+                      }
+                      futures.add(res);
+                    }
+                    return ApiFutures.transformAsync(
+                        ApiFutures.allAsList(futures),
+                        new ApiAsyncFunction<List<Long>, Long>() {
+                          @Override
+                          public ApiFuture<Long> apply(List<Long> input) throws Exception {
+                            long sum = 0L;
+                            for (Long l : input) {
+                              sum += l;
+                            }
+                            return ApiFutures.immediateFuture(sum);
+                          }
+                        },
+                        MoreExecutors.directExecutor());
+                  }
+                },
+                executor);
+    assertThat(updateCount.get()).isEqualTo(1L * numQueries);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithOnlyMutations()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    client
+        .runAsync()
+        .runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
+                transaction.buffer(Mutation.delete("FOO", Key.of(1L)));
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor)
+        .get();
+    // There should be 1 call to BeginTransaction because there is no statement that we can use to
+    // inline the BeginTransaction call with.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   private int countRequests(Class<? extends AbstractMessage> requestType) {

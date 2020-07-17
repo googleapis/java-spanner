@@ -58,7 +58,7 @@ public class GrpcResultSetTest {
     public void onTransactionMetadata(Transaction transaction) throws SpannerException {}
 
     @Override
-    public void onError(SpannerException e) {}
+    public void onError(SpannerException e, boolean withBeginTransaction) {}
 
     @Override
     public void onDone() {}
@@ -76,11 +76,11 @@ public class GrpcResultSetTest {
           public void request(int numMessages) {}
         });
     consumer = stream.consumer();
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
   }
 
   public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
-    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
   }
 
   @Test
@@ -641,7 +641,7 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
     PartialResultSet.Builder builder = PartialResultSet.newBuilder();
     List<Type.StructField> types = new ArrayList<>();
     for (Value value : values) {

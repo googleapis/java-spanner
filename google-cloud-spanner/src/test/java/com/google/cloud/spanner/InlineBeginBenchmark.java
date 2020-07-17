@@ -21,10 +21,12 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -46,10 +48,10 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Benchmarks for inlining the BeginTransaction RPC with the first statement of a transaction. The simulated execution times are based on
- * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
- * before and after changes have been made to the pool. The benchmarks are bound to the Maven
- * profile `benchmark` and can be executed like this: <code>
+ * Benchmarks for inlining the BeginTransaction RPC with the first statement of a transaction. The
+ * simulated execution times are based on reasonable estimates and are primarily intended to keep
+ * the benchmarks comparable with each other before and after changes have been made to the pool.
+ * The benchmarks are bound to the Maven profile `benchmark` and can be executed like this: <code>
  * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=InlineBeginBenchmark
  * </code>
  */
@@ -68,10 +70,13 @@ public class InlineBeginBenchmark {
 
   @State(Scope.Thread)
   public static class BenchmarkState {
+    private final boolean useRealServer = Boolean.valueOf(System.getProperty("useRealServer"));
+    private final String instance = System.getProperty("instance", TEST_INSTANCE);
+    private final String database = System.getProperty("database", TEST_DATABASE);
     private StandardBenchmarkMockServer mockServer;
     private Spanner spanner;
     private DatabaseClientImpl client;
-    
+
     @Param({"false", "true"})
     boolean inlineBegin;
 
@@ -80,36 +85,61 @@ public class InlineBeginBenchmark {
 
     @Setup(Level.Invocation)
     public void setup() throws Exception {
-      mockServer = new StandardBenchmarkMockServer();
-      TransportChannelProvider channelProvider = mockServer.start();
-
-      SpannerOptions options =
-          SpannerOptions.newBuilder()
-              .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
-              .setCredentials(NoCredentials.getInstance())
-              .setSessionPoolOption(
-                  SessionPoolOptions.newBuilder()
-                      .setWriteSessionsFraction(writeFraction)
-                      .build())
-              .setInlineBeginForReadWriteTransaction(inlineBegin)
-              .build();
+      System.out.println("useRealServer: " + System.getProperty("useRealServer"));
+      System.out.println("instance: " + System.getProperty("instance"));
+      SpannerOptions options;
+      if (useRealServer) {
+        System.out.println("running benchmark with **REAL** server");
+        System.out.println("instance: " + instance);
+        System.out.println("database: " + database);
+        options = createRealServerOptions();
+      } else {
+        System.out.println("running benchmark with **MOCK** server");
+        mockServer = new StandardBenchmarkMockServer();
+        TransportChannelProvider channelProvider = mockServer.start();
+        options = createBenchmarkServerOptions(channelProvider);
+      }
 
       spanner = options.getService();
       client =
           (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+              spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, database));
+      Stopwatch watch = Stopwatch.createStarted();
       // Wait until the session pool has initialized.
       while (client.pool.getNumberOfSessionsInPool()
           < spanner.getOptions().getSessionPoolOptions().getMinSessions()) {
         Thread.sleep(1L);
+        if (watch.elapsed(TimeUnit.SECONDS) > 10L) {
+          break;
+        }
       }
+    }
+
+    SpannerOptions createBenchmarkServerOptions(TransportChannelProvider channelProvider) {
+      return SpannerOptions.newBuilder()
+          .setProjectId(TEST_PROJECT)
+          .setChannelProvider(channelProvider)
+          .setCredentials(NoCredentials.getInstance())
+          .setSessionPoolOption(
+              SessionPoolOptions.newBuilder().setWriteSessionsFraction(writeFraction).build())
+          .setInlineBeginForReadWriteTransaction(inlineBegin)
+          .build();
+    }
+
+    SpannerOptions createRealServerOptions() throws IOException {
+      return SpannerOptions.newBuilder()
+          .setSessionPoolOption(
+              SessionPoolOptions.newBuilder().setWriteSessionsFraction(writeFraction).build())
+          .setInlineBeginForReadWriteTransaction(inlineBegin)
+          .build();
     }
 
     @TearDown(Level.Invocation)
     public void teardown() throws Exception {
       spanner.close();
-      mockServer.shutdown();
+      if (mockServer != null) {
+        mockServer.shutdown();
+      }
     }
   }
 
@@ -118,10 +148,9 @@ public class InlineBeginBenchmark {
   public void burstRead(final BenchmarkState server) throws Exception {
     int totalQueries = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 8;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    final DatabaseClient client =
-        server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+    SessionPool pool = server.client.pool;
+    assertThat(pool.totalSessions())
+        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -134,7 +163,7 @@ public class InlineBeginBenchmark {
                 public Void call() throws Exception {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                   try (ResultSet rs =
-                      client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                      server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                     while (rs.next()) {
                       Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                     }
@@ -152,10 +181,9 @@ public class InlineBeginBenchmark {
   public void burstWrite(final BenchmarkState server) throws Exception {
     int totalWrites = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 8;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    final DatabaseClient client =
-        server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+    SessionPool pool = server.client.pool;
+    assertThat(pool.totalSessions())
+        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -167,7 +195,7 @@ public class InlineBeginBenchmark {
                 @Override
                 public Long call() throws Exception {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = client.readWriteTransaction();
+                  TransactionRunner runner = server.client.readWriteTransaction();
                   return runner.run(
                       new TransactionCallable<Long>() {
                         @Override
@@ -189,10 +217,9 @@ public class InlineBeginBenchmark {
     int totalWrites = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 4;
     int totalReads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 4;
     int parallelThreads = server.spanner.getOptions().getSessionPoolOptions().getMaxSessions() * 2;
-    final DatabaseClient client =
-        server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+    SessionPool pool = server.client.pool;
+    assertThat(pool.totalSessions())
+        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -204,7 +231,7 @@ public class InlineBeginBenchmark {
                 @Override
                 public Long call() throws Exception {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = client.readWriteTransaction();
+                  TransactionRunner runner = server.client.readWriteTransaction();
                   return runner.run(
                       new TransactionCallable<Long>() {
                         @Override
@@ -224,7 +251,7 @@ public class InlineBeginBenchmark {
                 public Void call() throws Exception {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                   try (ResultSet rs =
-                      client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                      server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                     while (rs.next()) {
                       Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                     }

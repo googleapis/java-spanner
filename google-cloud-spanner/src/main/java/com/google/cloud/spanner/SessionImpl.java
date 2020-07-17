@@ -240,7 +240,10 @@ class SessionImpl implements Session {
     return new AsyncRunnerImpl(
         setActive(
             new TransactionRunnerImpl(
-                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), false)));
+                this,
+                spanner.getRpc(),
+                spanner.getDefaultPrefetchChunks(),
+                spanner.getOptions().isInlineBeginForReadWriteTransaction())));
   }
 
   @Override
