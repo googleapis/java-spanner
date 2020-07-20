@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.DeadlineExceededException;
+import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
@@ -53,23 +54,6 @@ class PartitionedDMLTransaction implements SessionTransaction {
   PartitionedDMLTransaction(SessionImpl session, SpannerRpc rpc) {
     this.session = session;
     this.rpc = rpc;
-  }
-
-  private ByteString initTransaction() {
-    final BeginTransactionRequest request =
-        BeginTransactionRequest.newBuilder()
-            .setSession(session.getName())
-            .setOptions(
-                TransactionOptions.newBuilder()
-                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance()))
-            .build();
-    Transaction txn = rpc.beginTransaction(request, session.getOptions());
-    if (txn.getId().isEmpty()) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INTERNAL,
-          "Failed to init transaction, missing transaction id\n" + session.getName());
-    }
-    return txn.getId();
   }
 
   /**
@@ -127,20 +111,24 @@ class PartitionedDMLTransaction implements SessionTransaction {
                 }
               }
               break;
-            } catch (UnavailableException e) {
+            } catch (UnavailableException | InternalException e) {
               // Retry the stream in the same transaction if the stream breaks with
               // UnavailableException and we have a resume token. Otherwise, we just retry the
               // entire transaction.
-              if (!ByteString.EMPTY.equals(resumeToken)) {
-                log.log(
-                    Level.FINER,
-                    "Retrying PartitionedDml stream using resume token '"
-                        + resumeToken.toStringUtf8()
-                        + "' because of broken stream",
-                    e);
+              if (shouldResumeOrRestartTransaction(e)) {
+                if (!ByteString.EMPTY.equals(resumeToken)) {
+                  log.log(
+                      Level.FINER,
+                      "Retrying PartitionedDml stream using resume token '"
+                          + resumeToken.toStringUtf8()
+                          + "' because of broken stream",
+                      e);
+                } else {
+                  throw new com.google.api.gax.rpc.AbortedException(
+                      e, GrpcStatusCode.of(Code.ABORTED), true);
+                }
               } else {
-                throw new com.google.api.gax.rpc.AbortedException(
-                    e, GrpcStatusCode.of(Code.ABORTED), true);
+                throw e;
               }
             }
           }
@@ -174,4 +162,27 @@ class PartitionedDMLTransaction implements SessionTransaction {
   // No-op method needed to implement SessionTransaction interface.
   @Override
   public void setSpan(Span span) {}
+
+  private ByteString initTransaction() {
+    final BeginTransactionRequest request =
+        BeginTransactionRequest.newBuilder()
+            .setSession(session.getName())
+            .setOptions(
+                TransactionOptions.newBuilder()
+                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance()))
+            .build();
+    Transaction txn = rpc.beginTransaction(request, session.getOptions());
+    if (txn.getId().isEmpty()) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INTERNAL,
+          "Failed to init transaction, missing transaction id\n" + session.getName());
+    }
+    return txn.getId();
+  }
+
+  private boolean shouldResumeOrRestartTransaction(Exception e) {
+    return e instanceof UnavailableException
+        || (e instanceof InternalException
+            && e.getMessage().contains("Received unexpected EOS on DATA frame from server"));
+  }
 }
