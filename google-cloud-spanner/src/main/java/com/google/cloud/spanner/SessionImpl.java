@@ -28,6 +28,7 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
@@ -114,7 +115,8 @@ class SessionImpl implements Session {
   @Override
   public long executePartitionedUpdate(Statement stmt) {
     setActive(null);
-    PartitionedDMLTransaction txn = new PartitionedDMLTransaction(this, spanner.getRpc());
+    PartitionedDmlTransaction txn =
+        new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
         stmt, spanner.getOptions().getPartitionedDmlTimeout());
   }
