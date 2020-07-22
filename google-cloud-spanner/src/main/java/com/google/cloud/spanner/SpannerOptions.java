@@ -331,47 +331,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                   .setRpcTimeoutMultiplier(1.5)
                   .setTotalTimeout(Duration.ofHours(48L))
                   .build());
-      RetrySettings longRunningRetrySettings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofSeconds(60L))
-              .setMaxRpcTimeout(Duration.ofSeconds(600L))
-              .setInitialRetryDelay(Duration.ofSeconds(20L))
-              .setMaxRetryDelay(Duration.ofSeconds(45L))
-              .setRetryDelayMultiplier(1.5)
-              .setRpcTimeoutMultiplier(1.5)
-              .setTotalTimeout(Duration.ofHours(48L))
-              .build();
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
-      databaseAdminStubSettingsBuilder
-          .deleteBackupSettings()
-          .setRetrySettings(longRunningRetrySettings);
-      databaseAdminStubSettingsBuilder
-          .updateBackupSettings()
-          .setRetrySettings(longRunningRetrySettings)
-          .setRetryableCodes(StatusCode.Code.DEADLINE_EXCEEDED, StatusCode.Code.UNAVAILABLE);
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
     }
 
     Builder(SpannerOptions options) {
