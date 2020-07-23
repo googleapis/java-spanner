@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.AbortedException;
 import com.google.api.gax.rpc.DeadlineExceededException;
+import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -43,6 +44,7 @@ import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
 public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction {
+
   private static final Logger LOGGER = Logger.getLogger(PartitionedDmlTransaction.class.getName());
 
   private final SessionImpl session;
@@ -95,6 +97,11 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
           request = resumeOrRestartRequest(resumeToken, statement, request);
+        } catch (InternalException e) {
+          if (!e.getMessage().contains("Received unexpected EOS on DATA frame from server")) throw e;
+          LOGGER.log(
+              Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
+          request = resumeOrRestartRequest(resumeToken, statement, request);
         } catch (AbortedException e) {
           LOGGER.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
           resumeToken = ByteString.EMPTY;
@@ -122,7 +129,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
   // No-op method needed to implement SessionTransaction interface.
   @Override
-  public void setSpan(Span span) {}
+  public void setSpan(Span span) {
+  }
 
   private Duration tryUpdateTimeout(final Duration timeout, final Stopwatch stopwatch) {
     final Duration remainingTimeout =

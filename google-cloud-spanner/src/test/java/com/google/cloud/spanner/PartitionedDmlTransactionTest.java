@@ -283,7 +283,7 @@ public class PartitionedDmlTransactionTest {
                 "INTERNAL: Received unexpected EOS on DATA frame from server.",
                 null,
                 GrpcStatusCode.of(Code.INTERNAL),
-                false));
+                true));
     when(stream1.iterator()).thenReturn(iterator);
     ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
     when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
@@ -294,7 +294,7 @@ public class PartitionedDmlTransactionTest {
             Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
         .thenReturn(stream2);
 
-    PartitionedDMLTransaction tx = new PartitionedDMLTransaction(session, rpc);
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
 
     assertThat(count).isEqualTo(1000L);
@@ -324,7 +324,7 @@ public class PartitionedDmlTransactionTest {
         .thenReturn(stream1);
 
     try {
-      PartitionedDMLTransaction tx = new PartitionedDMLTransaction(session, rpc);
+      PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
       tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
       fail("missing expected INTERNAL exception");
     } catch (SpannerException e) {
