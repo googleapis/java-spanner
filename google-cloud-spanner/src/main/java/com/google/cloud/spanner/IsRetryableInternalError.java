@@ -20,7 +20,6 @@ import com.google.api.gax.rpc.InternalException;
 import com.google.common.base.Predicate;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class IsRetryableInternalError implements Predicate<Throwable> {
 
@@ -31,7 +30,7 @@ public class IsRetryableInternalError implements Predicate<Throwable> {
       "Received unexpected EOS on DATA frame from server";
 
   @Override
-  public boolean apply(@NullableDecl Throwable cause) {
+  public boolean apply(Throwable cause) {
     if (isInternalError(cause)) {
       if (cause.getMessage().contains(HTTP2_ERROR_MESSAGE)) {
         // See b/25451313.
