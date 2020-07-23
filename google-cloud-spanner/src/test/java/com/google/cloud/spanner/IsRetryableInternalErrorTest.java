@@ -42,92 +42,83 @@ public class IsRetryableInternalErrorTest {
 
   @Test
   public void http2ErrorStatusRuntimeExceptionIsRetryable() {
-    final StatusRuntimeException e = new StatusRuntimeException(
-        Status
-            .fromCode(Code.INTERNAL)
-            .withDescription("INTERNAL: HTTP/2 error code: INTERNAL_ERROR.")
-    );
+    final StatusRuntimeException e =
+        new StatusRuntimeException(
+            Status.fromCode(Code.INTERNAL)
+                .withDescription("INTERNAL: HTTP/2 error code: INTERNAL_ERROR."));
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void http2ErrorInternalExceptionIsRetryable() {
-    final InternalException e = new InternalException(
-        "INTERNAL: HTTP/2 error code: INTERNAL_ERROR.",
-        null,
-        GrpcStatusCode.of(Code.INTERNAL),
-        false
-    );
+    final InternalException e =
+        new InternalException(
+            "INTERNAL: HTTP/2 error code: INTERNAL_ERROR.",
+            null,
+            GrpcStatusCode.of(Code.INTERNAL),
+            false);
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void connectionClosedStatusRuntimeExceptionIsRetryable() {
-    final StatusRuntimeException e = new StatusRuntimeException(
-        Status
-            .fromCode(Code.INTERNAL)
-            .withDescription("INTERNAL: Connection closed with unknown cause.")
-    );
+    final StatusRuntimeException e =
+        new StatusRuntimeException(
+            Status.fromCode(Code.INTERNAL)
+                .withDescription("INTERNAL: Connection closed with unknown cause."));
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void connectionClosedInternalExceptionIsRetryable() {
-    final InternalException e = new InternalException(
-        "INTERNAL: Connection closed with unknown cause.",
-        null,
-        GrpcStatusCode.of(Code.INTERNAL),
-        false
-    );
+    final InternalException e =
+        new InternalException(
+            "INTERNAL: Connection closed with unknown cause.",
+            null,
+            GrpcStatusCode.of(Code.INTERNAL),
+            false);
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void eosStatusRuntimeExceptionIsRetryable() {
-    final StatusRuntimeException e = new StatusRuntimeException(
-        Status
-            .fromCode(Code.INTERNAL)
-            .withDescription("INTERNAL: Received unexpected EOS on DATA frame from server.")
-    );
+    final StatusRuntimeException e =
+        new StatusRuntimeException(
+            Status.fromCode(Code.INTERNAL)
+                .withDescription("INTERNAL: Received unexpected EOS on DATA frame from server."));
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void eosInternalExceptionIsRetryable() {
-    final InternalException e = new InternalException(
-        "INTERNAL: Received unexpected EOS on DATA frame from server.",
-        null,
-        GrpcStatusCode.of(Code.INTERNAL),
-        false
-    );
+    final InternalException e =
+        new InternalException(
+            "INTERNAL: Received unexpected EOS on DATA frame from server.",
+            null,
+            GrpcStatusCode.of(Code.INTERNAL),
+            false);
 
     assertThat(predicate.apply(e)).isTrue();
   }
 
   @Test
   public void genericInternalStatusRuntimeExceptionIsRetryable() {
-    final StatusRuntimeException e = new StatusRuntimeException(
-        Status
-            .fromCode(Code.INTERNAL)
-            .withDescription("INTERNAL: Generic.")
-    );
+    final StatusRuntimeException e =
+        new StatusRuntimeException(
+            Status.fromCode(Code.INTERNAL).withDescription("INTERNAL: Generic."));
 
     assertThat(predicate.apply(e)).isFalse();
   }
 
   @Test
   public void genericInternalExceptionIsNotRetryable() {
-    final InternalException e = new InternalException(
-        "INTERNAL: Generic.",
-        null,
-        GrpcStatusCode.of(Code.INTERNAL),
-        false
-    );
+    final InternalException e =
+        new InternalException("INTERNAL: Generic.", null, GrpcStatusCode.of(Code.INTERNAL), false);
 
     assertThat(predicate.apply(e)).isFalse();
   }

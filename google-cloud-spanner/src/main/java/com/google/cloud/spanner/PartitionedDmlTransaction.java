@@ -134,8 +134,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
   // No-op method needed to implement SessionTransaction interface.
   @Override
-  public void setSpan(Span span) {
-  }
+  public void setSpan(Span span) {}
 
   private Duration tryUpdateTimeout(final Duration timeout, final Stopwatch stopwatch) {
     final Duration remainingTimeout =
