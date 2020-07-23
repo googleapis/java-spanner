@@ -50,12 +50,14 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
   private final SessionImpl session;
   private final SpannerRpc rpc;
   private final Ticker ticker;
+  private final IsRetryableInternalError isRetryableInternalErrorPredicate;
   private volatile boolean isValid = true;
 
   PartitionedDmlTransaction(SessionImpl session, SpannerRpc rpc, Ticker ticker) {
     this.session = session;
     this.rpc = rpc;
     this.ticker = ticker;
+    this.isRetryableInternalErrorPredicate = new IsRetryableInternalError();
   }
 
   /**
@@ -98,7 +100,10 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
           request = resumeOrRestartRequest(resumeToken, statement, request);
         } catch (InternalException e) {
-          if (!e.getMessage().contains("Received unexpected EOS on DATA frame from server")) throw e;
+          if (!isRetryableInternalErrorPredicate.apply(e)) {
+            throw e;
+          }
+
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
           request = resumeOrRestartRequest(resumeToken, statement, request);
