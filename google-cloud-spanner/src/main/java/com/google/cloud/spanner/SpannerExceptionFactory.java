@@ -26,12 +26,10 @@ import com.google.rpc.ResourceInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLHandshakeException;
 
 /**
  * A factory for creating instances of {@link SpannerException} and its subtypes. All creation of
@@ -40,6 +38,7 @@ import javax.net.ssl.SSLHandshakeException;
  * ErrorCode#ABORTED} are always represented by {@link AbortedException}.
  */
 public final class SpannerExceptionFactory {
+
   static final String SESSION_RESOURCE_TYPE = "type.googleapis.com/google.spanner.v1.Session";
   static final String DATABASE_RESOURCE_TYPE =
       "type.googleapis.com/google.spanner.admin.database.v1.Database";
@@ -257,35 +256,8 @@ public final class SpannerExceptionFactory {
   }
 
   private static class Matchers {
-    static final Predicate<Throwable> isRetryableInternalError =
-        new Predicate<Throwable>() {
-          @Override
-          public boolean apply(Throwable cause) {
-            if (cause instanceof StatusRuntimeException
-                && ((StatusRuntimeException) cause).getStatus().getCode() == Status.Code.INTERNAL) {
-              if (cause.getMessage().contains("HTTP/2 error code: INTERNAL_ERROR")) {
-                // See b/25451313.
-                return true;
-              }
-              if (cause.getMessage().contains("Connection closed with unknown cause")) {
-                // See b/27794742.
-                return true;
-              }
-              if (cause
-                  .getMessage()
-                  .contains("Received unexpected EOS on DATA frame from server")) {
-                return true;
-              }
-            }
-            return false;
-          }
-        };
-    static final Predicate<Throwable> isSSLHandshakeException =
-        new Predicate<Throwable>() {
-          @Override
-          public boolean apply(Throwable input) {
-            return input instanceof SSLHandshakeException;
-          }
-        };
+
+    static final Predicate<Throwable> isRetryableInternalError = new IsRetryableInternalError();
+    static final Predicate<Throwable> isSSLHandshakeException = new IsSslHandshakeException();
   }
 }

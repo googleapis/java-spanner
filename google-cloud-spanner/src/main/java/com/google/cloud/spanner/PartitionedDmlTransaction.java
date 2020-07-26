@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.AbortedException;
 import com.google.api.gax.rpc.DeadlineExceededException;
+import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -43,17 +44,20 @@ import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
 public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction {
+
   private static final Logger LOGGER = Logger.getLogger(PartitionedDmlTransaction.class.getName());
 
   private final SessionImpl session;
   private final SpannerRpc rpc;
   private final Ticker ticker;
+  private final IsRetryableInternalError isRetryableInternalErrorPredicate;
   private volatile boolean isValid = true;
 
   PartitionedDmlTransaction(SessionImpl session, SpannerRpc rpc, Ticker ticker) {
     this.session = session;
     this.rpc = rpc;
     this.ticker = ticker;
+    this.isRetryableInternalErrorPredicate = new IsRetryableInternalError();
   }
 
   /**
@@ -94,6 +98,14 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
         } catch (UnavailableException e) {
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
+          request = resumeOrRestartRequest(resumeToken, statement, request);
+        } catch (InternalException e) {
+          if (!isRetryableInternalErrorPredicate.apply(e)) {
+            throw e;
+          }
+
+          LOGGER.log(
+              Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
           request = resumeOrRestartRequest(resumeToken, statement, request);
         } catch (AbortedException e) {
           LOGGER.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
