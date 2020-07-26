@@ -33,10 +33,8 @@ public class IsRetryableInternalError implements Predicate<Throwable> {
   public boolean apply(Throwable cause) {
     if (isInternalError(cause)) {
       if (cause.getMessage().contains(HTTP2_ERROR_MESSAGE)) {
-        // See b/25451313.
         return true;
       } else if (cause.getMessage().contains(CONNECTION_CLOSED_ERROR_MESSAGE)) {
-        // See b/27794742.
         return true;
       } else if (cause.getMessage().contains(EOS_ERROR_MESSAGE)) {
         return true;
