@@ -220,8 +220,10 @@ public class BackendExhaustedTest {
       executor.submit(new WriteRunnable(failingClient));
     }
     while (failingClient.pool.getNumberOfSessionsBeingCreated()
-            + failingClient.pool.getNumberOfSessionsInPool()
-        < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions()) {
+                + failingClient.pool.getNumberOfSessionsInPool()
+            < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions()
+        || failingClient.pool.getNumberOfSessionsBeingPrepared()
+            < failingClient.pool.getNumberOfSessionsInPool()) {
       Thread.sleep(1L);
     }
     // Now try to execute a read. This will fail as the session pool has been exhausted.
@@ -233,6 +235,7 @@ public class BackendExhaustedTest {
       // There will be no sessions in use, as they are still blocked on being created and/or
       // prepared.
       assertThat(failingClient.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+      // The pool still only has MinSessions sessions, as creating new sessions is blocked.
       assertThat(failingClient.pool.getNumberOfSessionsInPool())
           .isEqualTo(failingSpanner.getOptions().getSessionPoolOptions().getMinSessions());
       assertThat(failingClient.pool.getNumberOfSessionsInPool()).isGreaterThan(0);
