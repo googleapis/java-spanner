@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -39,9 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -55,9 +54,9 @@ public class BackendExhaustedTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
-  private static MockSpannerServiceImpl mockSpanner;
-  private static Server server;
-  private static LocalChannelProvider channelProvider;
+  private MockSpannerServiceImpl mockSpanner;
+  private Server server;
+  private LocalChannelProvider channelProvider;
   private static final Statement UPDATE_STATEMENT =
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
   private static final Statement INVALID_UPDATE_STATEMENT =
@@ -86,11 +85,13 @@ public class BackendExhaustedTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
-  private Spanner spanner;
-  private DatabaseClientImpl client;
+  private Spanner blockingSpanner;
+  private DatabaseClientImpl blockingClient;
+  private Spanner failingSpanner;
+  private DatabaseClientImpl failingClient;
 
-  @BeforeClass
-  public static void startStaticServer() throws IOException {
+  @Before
+  public void startStaticServer() throws IOException, InterruptedException {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -101,25 +102,8 @@ public class BackendExhaustedTest {
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
 
     String uniqueName = InProcessServerBuilder.generateName();
-    server =
-        InProcessServerBuilder.forName(uniqueName)
-            // We need to use a real executor for timeouts to occur.
-            .scheduledExecutorService(new ScheduledThreadPoolExecutor(1))
-            .addService(mockSpanner)
-            .build()
-            .start();
+    server = InProcessServerBuilder.forName(uniqueName).addService(mockSpanner).build().start();
     channelProvider = LocalChannelProvider.create(uniqueName);
-  }
-
-  @AfterClass
-  public static void stopServer() throws InterruptedException {
-    // Force a shutdown as there are still requests stuck in the server.
-    server.shutdownNow();
-    server.awaitTermination();
-  }
-
-  @Before
-  public void setUp() throws Exception {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -129,44 +113,64 @@ public class BackendExhaustedTest {
     ExecutorFactory<ScheduledExecutorService> executorFactory =
         ((GrpcTransportOptions) options.getTransportOptions()).getExecutorFactory();
     ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) executorFactory.get();
-    options =
-        options
-            .toBuilder()
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(executor.getCorePoolSize())
-                    .setMaxSessions(executor.getCorePoolSize() * 3)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
-            .build();
+    SessionPoolOptions.Builder poolOptionsBuilder =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(executor.getCorePoolSize())
+            .setMaxSessions(executor.getCorePoolSize() * 3)
+            .setWriteSessionsFraction(0.0f);
+    options = options.toBuilder().setSessionPoolOption(poolOptionsBuilder.build()).build();
     executorFactory.release(executor);
 
-    spanner = options.getService();
-    client =
+    blockingSpanner = options.getService();
+    failingSpanner =
+        options
+            .toBuilder()
+            .setSessionPoolOption(poolOptionsBuilder.setFailIfPoolExhausted().build())
+            .build()
+            .getService();
+    blockingClient =
         (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+            blockingSpanner.getDatabaseClient(
+                DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    failingClient =
+        (DatabaseClientImpl)
+            failingSpanner.getDatabaseClient(
+                DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
     // Wait until the session pool has initialized.
-    while (client.pool.getNumberOfSessionsInPool()
-        < spanner.getOptions().getSessionPoolOptions().getMinSessions()) {
+    while (blockingClient.pool.getNumberOfSessionsInPool()
+        < blockingSpanner.getOptions().getSessionPoolOptions().getMinSessions()) {
+      Thread.sleep(1L);
+    }
+    while (failingClient.pool.getNumberOfSessionsInPool()
+        < failingSpanner.getOptions().getSessionPoolOptions().getMinSessions()) {
       Thread.sleep(1L);
     }
   }
 
   @After
-  public void tearDown() {
+  public void stopServer() throws InterruptedException {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     // This test case force-closes the Spanner instance as it would otherwise wait
     // forever on the BatchCreateSessions requests that are 'stuck'.
     try {
-      ((SpannerImpl) spanner).close(100L, TimeUnit.MILLISECONDS);
+      ((SpannerImpl) blockingSpanner).close(100L, TimeUnit.MILLISECONDS);
     } catch (SpannerException e) {
       // ignore any errors during close as they are expected.
     }
+    try {
+      ((SpannerImpl) failingSpanner).close(100L, TimeUnit.MILLISECONDS);
+    } catch (SpannerException e) {
+      // ignore any errors during close as they are expected.
+    }
+
+    // Force a shutdown as there are still requests stuck in the server.
+    server.shutdownNow();
   }
 
   @Test
-  public void test() throws Exception {
+  public void testBatchCreateSessionsBlocked() throws Exception {
     // Simulate very heavy load on the server by effectively stopping session creation.
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(Integer.MAX_VALUE, 0));
@@ -175,16 +179,20 @@ public class BackendExhaustedTest {
     // additional sessions.
     ScheduledExecutorService executor =
         Executors.newScheduledThreadPool(
-            spanner.getOptions().getSessionPoolOptions().getMinSessions() * 2);
+            blockingSpanner.getOptions().getSessionPoolOptions().getMinSessions() * 2);
     // Also temporarily freeze the server to ensure that the requests that can be served will
     // continue to be in-flight and keep the sessions in the pool checked out.
     mockSpanner.freeze();
-    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMinSessions() * 2; i++) {
-      executor.submit(new ReadRunnable());
+    for (int i = 0;
+        i < blockingSpanner.getOptions().getSessionPoolOptions().getMinSessions() * 2;
+        i++) {
+      executor.submit(new ReadRunnable(blockingClient));
     }
     // Now schedule as many write requests as there can be sessions in the pool.
-    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMaxSessions(); i++) {
-      executor.submit(new WriteRunnable());
+    for (int i = 0;
+        i < blockingSpanner.getOptions().getSessionPoolOptions().getMaxSessions();
+        i++) {
+      executor.submit(new WriteRunnable(blockingClient));
     }
     // Now unfreeze the server and verify that all requests can be served using the sessions that
     // were already present in the pool.
@@ -193,7 +201,52 @@ public class BackendExhaustedTest {
     assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
   }
 
+  @Test
+  public void testBeginTransactionBlocked() throws InterruptedException {
+    // Simulate very heavy load on the server by effectively stopping the creation of sessions and
+    // transactions.
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(Integer.MAX_VALUE, 0));
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(Integer.MAX_VALUE, 0));
+    // Create an executor that can handle as many requests as there can be sessions in the pool.
+    // This executor will request read/write sessions that cannot be served, as BeginTransaction is
+    // blocked.
+    ScheduledExecutorService executor =
+        Executors.newScheduledThreadPool(
+            failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions());
+    // Now schedule as many write requests as there can be sessions in the pool.
+    for (int i = 0; i < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions(); i++) {
+      executor.submit(new WriteRunnable(failingClient));
+    }
+    while (failingClient.pool.getNumberOfSessionsBeingCreated()
+            + failingClient.pool.getNumberOfSessionsInPool()
+        < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions()) {
+      Thread.sleep(1L);
+    }
+    // Now try to execute a read. This will fail as the session pool has been exhausted.
+    try (ResultSet rs = failingClient.singleUse().executeQuery(SELECT1)) {
+      while (rs.next()) {}
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      // There will be no sessions in use, as they are still blocked on being created and/or
+      // prepared.
+      assertThat(failingClient.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+      assertThat(failingClient.pool.getNumberOfSessionsInPool())
+          .isEqualTo(failingSpanner.getOptions().getSessionPoolOptions().getMinSessions());
+      assertThat(failingClient.pool.getNumberOfSessionsInPool()).isGreaterThan(0);
+    }
+    executor.shutdownNow();
+  }
+
   private final class ReadRunnable implements Runnable {
+    private final DatabaseClient client;
+
+    ReadRunnable(DatabaseClient client) {
+      this.client = client;
+    }
+
     @Override
     public void run() {
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
@@ -203,6 +256,12 @@ public class BackendExhaustedTest {
   }
 
   private final class WriteRunnable implements Runnable {
+    private final DatabaseClient client;
+
+    WriteRunnable(DatabaseClient client) {
+      this.client = client;
+    }
+
     @Override
     public void run() {
       TransactionRunner runner = client.readWriteTransaction();
