@@ -1939,6 +1939,11 @@ final class SessionPool {
   }
 
   @VisibleForTesting
+  int getPrepareThreadPoolSize() {
+    return prepareThreadPoolSize;
+  }
+
+  @VisibleForTesting
   long getNumWaiterTimeouts() {
     return numWaiterTimeouts.get();
   }
@@ -2108,7 +2113,7 @@ final class SessionPool {
       }
       sess = writePreparedSessions.poll();
       if (sess == null) {
-        if (!inProcessPrepare && numSessionsBeingPrepared <= prepareThreadPoolSize) {
+        if (!inProcessPrepare && numSessionsBeingPrepared < prepareThreadPoolSize) {
           if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
             PooledSession readSession = readSessions.poll();
             if (readSession != null) {

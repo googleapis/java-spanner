@@ -125,7 +125,12 @@ public class BackendExhaustedTest {
     failingSpanner =
         options
             .toBuilder()
-            .setSessionPoolOption(poolOptionsBuilder.setFailIfPoolExhausted().build())
+            .setSessionPoolOption(
+                poolOptionsBuilder
+                    .setFailIfPoolExhausted()
+                    .setMinSessions(100)
+                    .setMaxSessions(100)
+                    .build())
             .build()
             .getService();
     blockingClient =
@@ -207,8 +212,6 @@ public class BackendExhaustedTest {
     // transactions.
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(Integer.MAX_VALUE, 0));
-    mockSpanner.setBatchCreateSessionsExecutionTime(
-        SimulatedExecutionTime.ofMinimumAndRandomTime(Integer.MAX_VALUE, 0));
     // Create an executor that can handle as many requests as there can be sessions in the pool.
     // This executor will request read/write sessions that cannot be served, as BeginTransaction is
     // blocked.
@@ -219,11 +222,9 @@ public class BackendExhaustedTest {
     for (int i = 0; i < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions(); i++) {
       executor.submit(new WriteRunnable(failingClient));
     }
-    while (failingClient.pool.getNumberOfSessionsBeingCreated()
-                + failingClient.pool.getNumberOfSessionsInPool()
-            < failingSpanner.getOptions().getSessionPoolOptions().getMaxSessions()
-        || failingClient.pool.getNumberOfSessionsBeingPrepared()
-            < failingClient.pool.getNumberOfSessionsInPool()) {
+    while (failingClient.pool.getNumberOfSessionsBeingPrepared()
+            + failingClient.pool.getNumberOfSessionsInProcessPrepared()
+        < failingSpanner.getOptions().getSessionPoolOptions().getMinSessions()) {
       Thread.sleep(1L);
     }
     // Now try to execute a read. This will fail as the session pool has been exhausted.
@@ -232,13 +233,8 @@ public class BackendExhaustedTest {
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      // There will be no sessions in use, as they are still blocked on being created and/or
-      // prepared.
+      // There will be no sessions in use, as they are still blocked on BeginTransaction.
       assertThat(failingClient.pool.getNumberOfSessionsInUse()).isEqualTo(0);
-      // The pool still only has MinSessions sessions, as creating new sessions is blocked.
-      assertThat(failingClient.pool.getNumberOfSessionsInPool())
-          .isEqualTo(failingSpanner.getOptions().getSessionPoolOptions().getMinSessions());
-      assertThat(failingClient.pool.getNumberOfSessionsInPool()).isGreaterThan(0);
     }
     executor.shutdownNow();
   }
