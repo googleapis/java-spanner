@@ -28,7 +28,6 @@ import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -555,6 +554,10 @@ public class ITTransactionTest {
 
   @Test
   public void testTxWithCaughtError() {
+    assumeFalse(
+        "Emulator does not recover from an error within a transaction",
+        env.getTestHelper().isEmulator());
+
     long updateCount =
         client
             .readWriteTransaction()
@@ -595,8 +598,6 @@ public class ITTransactionTest {
 
   @Test
   public void testTxWithUncaughtErrorAfterSuccessfulBegin() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     try {
       client
           .readWriteTransaction()
