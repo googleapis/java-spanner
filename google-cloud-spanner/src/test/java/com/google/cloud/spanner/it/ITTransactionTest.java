@@ -28,6 +28,7 @@ import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -45,6 +46,8 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -111,6 +114,7 @@ public class ITTransactionTest {
 
   @After
   public void closeClient() {
+    client.writeAtLeastOnce(ImmutableList.of(Mutation.delete("T", KeySet.all())));
     spanner.close();
   }
 
@@ -547,5 +551,69 @@ public class ITTransactionTest {
                 return null;
               }
             });
+  }
+
+  @Test
+  public void testTxWithCaughtError() {
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    try {
+                      transaction.executeUpdate(
+                          Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                    }
+                    return transaction.executeUpdate(
+                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                  }
+                });
+    assertThat(updateCount).isEqualTo(1L);
+  }
+
+  @Test
+  public void testTxWithUncaughtError() {
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  return transaction.executeUpdate(
+                      Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+  }
+
+  @Test
+  public void testTxWithUncaughtErrorAfterSuccessfulBegin() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                  return transaction.executeUpdate(
+                      Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
   }
 }

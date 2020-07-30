@@ -38,7 +38,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
@@ -282,6 +285,63 @@ public class InlineBeginTransactionTest {
     // start a transaction on the mock server, but that transaction will never be returned to the
     // client.
     assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithUncaughtError() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    // The first update will start a transaction, but then fail the update statement. This will
+    // start a transaction on the mock server, but that transaction will never be returned to the
+    // client.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    // No rollback request will be initiated because the client does not receive any transaction id.
+    assertThat(countRequests(RollbackRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithUncaughtErrorAfterSuccessfulBegin() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  // This statement will start a transaction.
+                  transaction.executeUpdate(UPDATE_STATEMENT);
+                  // This statement will fail and cause a rollback as the exception is not caught.
+                  return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(RollbackRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
