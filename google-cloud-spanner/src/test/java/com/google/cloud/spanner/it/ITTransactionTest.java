@@ -563,8 +563,7 @@ public class ITTransactionTest {
                   @Override
                   public Long run(TransactionContext transaction) throws Exception {
                     try {
-                      transaction.executeUpdate(
-                          Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                      transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
                       fail("missing expected exception");
                     } catch (SpannerException e) {
                       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -585,8 +584,7 @@ public class ITTransactionTest {
               new TransactionCallable<Long>() {
                 @Override
                 public Long run(TransactionContext transaction) throws Exception {
-                  return transaction.executeUpdate(
-                      Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
                 }
               });
       fail("missing expected exception");
@@ -607,8 +605,7 @@ public class ITTransactionTest {
                 @Override
                 public Long run(TransactionContext transaction) throws Exception {
                   transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
-                  return transaction.executeUpdate(
-                      Statement.of("UPDATE NonExistingTable SET Foo=1 WHERE Bar=2"));
+                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
                 }
               });
       fail("missing expected exception");
