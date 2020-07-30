@@ -579,6 +579,45 @@ public class ITTransactionTest {
   }
 
   @Test
+  public void testTxWithConstraintError() {
+    assumeFalse(
+        "Emulator does not recover from an error within a transaction",
+        env.getTestHelper().isEmulator());
+
+    // First insert a single row.
+    client.writeAtLeastOnce(
+        ImmutableList.of(
+            Mutation.newInsertOrUpdateBuilder("T").set("K").to("One").set("V").to(1L).build()));
+
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    try {
+                      // Try to insert a duplicate row. This statement will fail. When the statement
+                      // is executed against an already existing transaction (i.e.
+                      // inlineBegin=false), the entire transaction will remain invalid and cannot
+                      // be committed. When it is executed as the first statement of a transaction
+                      // that also tries to start a transaction, then no transaction will be started
+                      // and the next statement will start the transaction. This will cause the
+                      // transaction to succeed.
+                      transaction.executeUpdate(
+                          Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+                    }
+                    return transaction.executeUpdate(
+                        Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
+                  }
+                });
+    assertThat(updateCount).isEqualTo(1L);
+  }
+
+  @Test
   public void testTxWithUncaughtError() {
     try {
       client
