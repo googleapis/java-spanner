@@ -55,7 +55,6 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -153,15 +152,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private long retryDelayInMillis = -1L;
 
     /**
-     * transactionLock guards that only one request can be beginning the transaction at any time. We
-     * only hold on to this lock while a request is creating a transaction. After a transaction has
-     * been created, the lock is released and concurrent requests can be executed on the
+     * transactionIdFuture will return the transaction id returned by the first statement in the
+     * transaction if the BeginTransaction option is included with the first statement of the
      * transaction.
      */
-    //    private final ReentrantLock transactionLock = new ReentrantLock();
-    private volatile CountDownLatch transactionLatch = new CountDownLatch(0);
+    private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
-    private volatile ByteString transactionId;
+    volatile ByteString transactionId;
     private Timestamp commitTimestamp;
 
     private TransactionContextImpl(Builder builder) {
@@ -402,39 +399,30 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         try {
           // Wait if another request is already beginning, committing or rolling back the
           // transaction.
-
-          //        transactionLock.lockInterruptibly();
-          while (true) {
-            CountDownLatch latch;
-            synchronized (lock) {
-              latch = transactionLatch;
-            }
-            latch.await();
-
-            synchronized (lock) {
-              if (transactionLatch.getCount() > 0L) {
-                continue;
-              }
-              // Check again if a transactionId is now available. It could be that the thread that
-              // was
-              // holding the lock and that had sent a statement with a BeginTransaction request
-              // caused
-              // an error and did not return a transaction.
-              if (transactionId == null) {
-                transactionLatch = new CountDownLatch(1);
-                // Return a TransactionSelector that will start a new transaction as part of the
-                // statement that is being executed.
-                return TransactionSelector.newBuilder()
-                    .setBegin(
-                        TransactionOptions.newBuilder()
-                            .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
-                    .build();
-              } else {
-                //                transactionLock.unlock();
-                break;
-              }
+          ApiFuture<ByteString> tx = null;
+          synchronized (lock) {
+            if (transactionIdFuture == null) {
+              transactionIdFuture = SettableApiFuture.create();
+            } else {
+              tx = transactionIdFuture;
             }
           }
+          if (tx == null) {
+            return TransactionSelector.newBuilder()
+                .setBegin(
+                    TransactionOptions.newBuilder()
+                        .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+                .build();
+          } else {
+            TransactionSelector.newBuilder().setId(tx.get()).build();
+          }
+        } catch (ExecutionException e) {
+          if (e.getCause() instanceof AbortedException) {
+            synchronized (lock) {
+              aborted = true;
+            }
+          }
+          throw SpannerExceptionFactory.newSpannerException(e.getCause());
         } catch (InterruptedException e) {
           throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
         }
@@ -449,8 +437,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // transaction on this instance and release the lock to allow other statements to proceed.
       if (this.transactionId == null && transaction != null && transaction.getId() != null) {
         this.transactionId = transaction.getId();
-        transactionLatch.countDown();
-        //        transactionLock.unlock();
+        this.transactionIdFuture.set(transaction.getId());
       }
     }
 
@@ -459,12 +446,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // Release the transactionLock if that is being held by this thread. That would mean that the
       // statement that was trying to start a transaction caused an error. The next statement should
       // in that case also include a BeginTransaction option.
-
-      //      if (transactionLock.isHeldByCurrentThread()) {
-      //        transactionLock.unlock();
-      //      }
       if (withBeginTransaction) {
-        transactionLatch.countDown();
+        // Simulate an aborted transaction to force a retry with a new transaction.
+        this.transactionIdFuture.setException(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED, "Aborted due to failed initial statement", e));
+        //        synchronized (lock) {
+        //          retryDelayInMillis = 0;
+        //          aborted = true;
+        //        }
       }
 
       if (e.getErrorCode() == ErrorCode.ABORTED) {
@@ -758,21 +748,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         new Callable<T>() {
           @Override
           public T call() {
+            boolean useInlinedBegin = inlineBegin;
             if (attempt.get() > 0) {
+              if (useInlinedBegin) {
+                // Do not inline the BeginTransaction during a retry if the initial attempt did not
+                // actually start a transaction.
+                useInlinedBegin = txn.transactionId != null;
+              }
               txn = session.newTransaction();
             }
             checkState(
                 isValid,
                 "TransactionRunner has been invalidated by a new operation on the session");
             attempt.incrementAndGet();
-            // TODO(user): When using streaming reads, consider using the first read to begin
-            // the txn.
             span.addAnnotation(
                 "Starting Transaction Attempt",
                 ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
             // Only ensure that there is a transaction if we should not inline the beginTransaction
             // with the first statement.
-            if (!inlineBegin) {
+            if (!useInlinedBegin) {
               txn.ensureTxn();
             }
 

@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -589,32 +588,35 @@ public class ITTransactionTest {
         ImmutableList.of(
             Mutation.newInsertOrUpdateBuilder("T").set("K").to("One").set("V").to(1L).build()));
 
-    long updateCount =
-        client
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    try {
-                      // Try to insert a duplicate row. This statement will fail. When the statement
-                      // is executed against an already existing transaction (i.e.
-                      // inlineBegin=false), the entire transaction will remain invalid and cannot
-                      // be committed. When it is executed as the first statement of a transaction
-                      // that also tries to start a transaction, then no transaction will be started
-                      // and the next statement will start the transaction. This will cause the
-                      // transaction to succeed.
-                      transaction.executeUpdate(
-                          Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
-                    }
-                    return transaction.executeUpdate(
-                        Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  try {
+                    // Try to insert a duplicate row. This statement will fail. When the statement
+                    // is executed against an already existing transaction (i.e.
+                    // inlineBegin=false), the entire transaction will remain invalid and cannot
+                    // be committed. When it is executed as the first statement of a transaction
+                    // that also tries to start a transaction, then no transaction will be started
+                    // and the next statement will start the transaction. This will cause the
+                    // transaction to succeed.
+                    transaction.executeUpdate(
+                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
                   }
-                });
-    assertThat(updateCount).isEqualTo(1L);
+                  return transaction.executeUpdate(
+                      Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
+                }
+              });
+      fail("missing expected ALREADY_EXISTS error");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
   }
 
   @Test

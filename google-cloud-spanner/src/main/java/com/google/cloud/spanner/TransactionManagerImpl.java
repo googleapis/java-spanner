@@ -105,8 +105,9 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
     try (Scope s = tracer.withSpan(span)) {
+      boolean useInlinedBegin = inlineBegin && txn.transactionId != null;
       txn = session.newTransaction();
-      if (!inlineBegin) {
+      if (!useInlinedBegin) {
         txn.ensureTxn();
       }
       txnState = TransactionState.STARTED;

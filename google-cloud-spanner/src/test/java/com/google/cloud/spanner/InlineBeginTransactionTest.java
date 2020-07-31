@@ -280,7 +280,10 @@ public class InlineBeginTransactionTest {
                   }
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // The transaction will be retried because the first statement that also tried to include the
+    // BeginTransaction statement failed and did not return a transaction. That forces a retry of
+    // the entire transaction with an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
     // The first update will start a transaction, but then fail the update statement. This will
     // start a transaction on the mock server, but that transaction will never be returned to the
     // client.
@@ -498,10 +501,34 @@ public class InlineBeginTransactionTest {
         }
       }
     }
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // The first statement will fail and not return a transaction id. This will trigger a retry of
+    // the entire transaction, and the retry will do an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
     // The first statement will start a transaction, but it will never be returned to the client as
     // the update statement fails.
     assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void testTransactionManagerInlinedBeginTxWithUncaughtError() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (TransactionManager txMgr = client.transactionManager()) {
+      TransactionContext txn = txMgr.begin();
+      while (true) {
+        try {
+          txn.executeUpdate(INVALID_UPDATE_STATEMENT);
+          fail("missing expected exception");
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetry();
+        }
+      }
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -631,7 +658,9 @@ public class InlineBeginTransactionTest {
                 },
                 executor);
     assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // The first statement will fail and not return a transaction id. This will trigger a retry of
+    // the entire transaction, and the retry will do an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
     // The first update will start a transaction, but then fail the update statement. This will
     // start a transaction on the mock server, but that transaction will never be returned to the
     // client.

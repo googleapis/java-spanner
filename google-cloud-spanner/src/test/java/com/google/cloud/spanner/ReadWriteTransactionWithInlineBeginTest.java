@@ -21,10 +21,11 @@ import static org.junit.Assert.fail;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
@@ -46,16 +47,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ReadWriteTransactionWithInlineBeginTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
-
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -139,9 +136,6 @@ public class ReadWriteTransactionWithInlineBeginTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .getService();
-    // Make sure that calling BeginTransaction would lead to an error.
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofException(Status.PERMISSION_DENIED.asRuntimeException()));
     client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
   }
 
@@ -163,6 +157,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -179,6 +175,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(updateCounts).isEqualTo(new long[] {UPDATE_COUNT, UPDATE_COUNT});
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -199,6 +197,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(value).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -221,6 +221,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(res).isEqualTo(new long[] {UPDATE_COUNT, 1L});
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -253,6 +255,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT * updates);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -288,6 +292,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT * updates * 2);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -325,52 +331,72 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   }
                 });
     assertThat(selectedTotal).isEqualTo(queries);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
   public void failedUpdate() {
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    client
-        .readWriteTransaction()
-        .run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) throws Exception {
-                return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-              }
-            });
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
   public void failedBatchUpdate() {
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    client
-        .readWriteTransaction()
-        .run(
-            new TransactionCallable<long[]>() {
-              @Override
-              public long[] run(TransactionContext transaction) throws Exception {
-                return transaction.batchUpdate(
-                    Arrays.asList(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
-              }
-            });
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<long[]>() {
+                @Override
+                public long[] run(TransactionContext transaction) throws Exception {
+                  return transaction.batchUpdate(
+                      Arrays.asList(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
   public void failedQuery() {
-    exception.expect(SpannerMatchers.isSpannerException(ErrorCode.INVALID_ARGUMENT));
-    client
-        .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                try (ResultSet rs = transaction.executeQuery(INVALID_SELECT_STATEMENT)) {
-                  rs.next();
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Void>() {
+                @Override
+                public Void run(TransactionContext transaction) throws Exception {
+                  try (ResultSet rs = transaction.executeQuery(INVALID_SELECT_STATEMENT)) {
+                    rs.next();
+                  }
+                  return null;
                 }
-                return null;
-              }
-            });
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -383,19 +409,21 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   @Override
                   public Long run(TransactionContext transaction) throws Exception {
                     try {
-                      // This update statement carries the BeginTransaction, but fails. The
-                      // BeginTransaction will then be carried by the subsequent statement.
+                      // This update statement carries the BeginTransaction, but fails. This will
+                      // cause the entire transaction to be retried with an explicit
+                      // BeginTransaction RPC to ensure all statements in the transaction are
+                      // actually executed against the same transaction.
                       transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
                       fail("Missing expected exception");
                     } catch (SpannerException e) {
-                      if (e.getErrorCode() != ErrorCode.INVALID_ARGUMENT) {
-                        fail("Error mismatch, expected INVALID_ARGUMENT");
-                      }
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
     assertThat(updateCount).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
   @Test
@@ -408,20 +436,22 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   @Override
                   public Long run(TransactionContext transaction) throws Exception {
                     try {
-                      // This update statement carries the BeginTransaction, but fails. The
-                      // BeginTransaction will then be carried by the subsequent statement.
+                      // This update statement carries the BeginTransaction, but fails. This will
+                      // cause the entire transaction to be retried with an explicit
+                      // BeginTransaction RPC to ensure all statements in the transaction are
+                      // actually executed against the same transaction.
                       transaction.batchUpdate(
                           Arrays.asList(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
                       fail("Missing expected exception");
                     } catch (SpannerException e) {
-                      if (e.getErrorCode() != ErrorCode.INVALID_ARGUMENT) {
-                        fail("Error mismatch, expected INVALID_ARGUMENT");
-                      }
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
     assertThat(updateCount).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
   @Test
@@ -439,14 +469,14 @@ public class ReadWriteTransactionWithInlineBeginTest {
                       rs.next();
                       fail("Missing expected exception");
                     } catch (SpannerException e) {
-                      if (e.getErrorCode() != ErrorCode.INVALID_ARGUMENT) {
-                        fail("Error mismatch, expected INVALID_ARGUMENT");
-                      }
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
     assertThat(updateCount).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
   @Test
@@ -469,6 +499,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     assertThat(attempt.get()).isEqualTo(2);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
   @Test
@@ -492,5 +524,21 @@ public class ReadWriteTransactionWithInlineBeginTest {
                 });
     assertThat(updateCounts).isEqualTo(new long[] {UPDATE_COUNT, UPDATE_COUNT});
     assertThat(attempt.get()).isEqualTo(2);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  private int countRequests(Class<? extends AbstractMessage> requestType) {
+    int count = 0;
+    for (AbstractMessage msg : mockSpanner.getRequests()) {
+      if (msg.getClass().equals(requestType)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  private int countTransactionsStarted() {
+    return mockSpanner.getTransactionsStarted().size();
   }
 }
