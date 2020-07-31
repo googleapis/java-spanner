@@ -568,6 +568,10 @@ public class ITTransactionTest {
                       transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
                       fail("missing expected exception");
                     } catch (SpannerException e) {
+                      if (e.getErrorCode() == ErrorCode.ABORTED) {
+                        // Aborted -> Let the transaction be retried
+                        throw e;
+                      }
                       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
                     return transaction.executeUpdate(
@@ -607,6 +611,10 @@ public class ITTransactionTest {
                         Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
                     fail("missing expected exception");
                   } catch (SpannerException e) {
+                    if (e.getErrorCode() == ErrorCode.ABORTED) {
+                      // Aborted -> Let the transaction be retried
+                      throw e;
+                    }
                     assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
                   }
                   return transaction.executeUpdate(
