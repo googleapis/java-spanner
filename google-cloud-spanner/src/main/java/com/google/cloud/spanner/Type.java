@@ -44,6 +44,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_BOOL = new Type(Code.BOOL, null, null);
   private static final Type TYPE_INT64 = new Type(Code.INT64, null, null);
   private static final Type TYPE_FLOAT64 = new Type(Code.FLOAT64, null, null);
+  private static final Type TYPE_NUMERIC = new Type(Code.NUMERIC, null, null);
   private static final Type TYPE_STRING = new Type(Code.STRING, null, null);
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
   private static final Type TYPE_TIMESTAMP = new Type(Code.TIMESTAMP, null, null);
@@ -51,6 +52,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_BOOL = new Type(Code.ARRAY, TYPE_BOOL, null);
   private static final Type TYPE_ARRAY_INT64 = new Type(Code.ARRAY, TYPE_INT64, null);
   private static final Type TYPE_ARRAY_FLOAT64 = new Type(Code.ARRAY, TYPE_FLOAT64, null);
+  private static final Type TYPE_ARRAY_NUMERIC = new Type(Code.ARRAY, TYPE_NUMERIC, null);
   private static final Type TYPE_ARRAY_STRING = new Type(Code.ARRAY, TYPE_STRING, null);
   private static final Type TYPE_ARRAY_BYTES = new Type(Code.ARRAY, TYPE_BYTES, null);
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
@@ -78,6 +80,11 @@ public final class Type implements Serializable {
    */
   public static Type float64() {
     return TYPE_FLOAT64;
+  }
+
+  /** Returns the descriptor for the {@code NUMERIC} type. */
+  public static Type numeric() {
+    return TYPE_NUMERIC;
   }
 
   /**
@@ -118,6 +125,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_INT64;
       case FLOAT64:
         return TYPE_ARRAY_FLOAT64;
+      case NUMERIC:
+        return TYPE_ARRAY_NUMERIC;
       case STRING:
         return TYPE_ARRAY_STRING;
       case BYTES:
@@ -170,6 +179,7 @@ public final class Type implements Serializable {
   public enum Code {
     BOOL(TypeCode.BOOL),
     INT64(TypeCode.INT64),
+    NUMERIC(TypeCode.NUMERIC),
     FLOAT64(TypeCode.FLOAT64),
     STRING(TypeCode.STRING),
     BYTES(TypeCode.BYTES),
@@ -380,6 +390,8 @@ public final class Type implements Serializable {
         return int64();
       case FLOAT64:
         return float64();
+      case NUMERIC:
+        return numeric();
       case STRING:
         return string();
       case BYTES:

@@ -27,6 +27,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.ResultSetStats;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -171,6 +172,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public BigDecimal getBigDecimal(int columnIndex) {
+    checkClosed();
+    return delegate.getBigDecimal(columnIndex);
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(String columnName) {
+    checkClosed();
+    return delegate.getBigDecimal(columnName);
+  }
+
+  @Override
   public String getString(int columnIndex) {
     checkClosed();
     return delegate.getString(columnIndex);
@@ -288,6 +301,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<Double> getDoubleList(String columnName) {
     checkClosed();
     return delegate.getDoubleList(columnName);
+  }
+
+  @Override
+  public List<BigDecimal> getBigDecimalList(int columnIndex) {
+    checkClosed();
+    return delegate.getBigDecimalList(columnIndex);
+  }
+
+  @Override
+  public List<BigDecimal> getBigDecimalList(String columnName) {
+    checkClosed();
+    return delegate.getBigDecimalList(columnName);
   }
 
   @Override

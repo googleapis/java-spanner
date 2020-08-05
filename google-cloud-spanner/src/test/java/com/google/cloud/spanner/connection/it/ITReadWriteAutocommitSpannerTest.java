@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -63,7 +64,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void test02_WriteMutation() throws Exception {
+  public void test02_WriteMutation() {
     try (ITConnection connection = createConnection()) {
       connection.write(
           Mutation.newInsertBuilder("TEST").set("ID").to(9999L).set("NAME").to("FOO").build());
@@ -72,7 +73,10 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   }
 
   @Test
-  public void test03_MultipleStatements_WithTimeouts() throws InterruptedException {
+  public void test03_MultipleStatements_WithTimeouts() {
+    assumeFalse(
+        "Rolling back a transaction while an update statement is still in flight can cause the transaction to remain active on the emulator",
+        env.getTestHelper().isEmulator());
     try (ITConnection connection = createConnection()) {
       // do an insert that should succeed
       assertThat(
@@ -91,10 +95,9 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
       connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
       try {
         connection.executeUpdate(Statement.of("UPDATE TEST SET NAME='test18' WHERE ID=1000"));
+        fail("missing expected exception");
       } catch (SpannerException e) {
-        if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-          throw e;
-        }
+        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.DEADLINE_EXCEEDED)));
       }
       // remove the timeout setting
       connection.clearStatementTimeout();

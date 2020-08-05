@@ -38,6 +38,7 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -184,11 +185,15 @@ public class ITVPCNegativeTest {
 
   @Test
   public void deniedRead() {
+    // Getting a session and starting a read is non-blocking and will not cause an exception. Trying
+    // to get results from the result set will.
+    ResultSet rs =
+        databaseClient
+            .singleUse()
+            .read("nonexistent-table", KeySet.all(), Arrays.asList("nonexistent-col"));
     try {
       // Tests that the initial create session request returns a permission denied.
-      databaseClient
-          .singleUse()
-          .read("nonexistent-table", KeySet.all(), Arrays.asList("nonexistent-col"));
+      rs.next();
       fail("Expected PERMISSION_DENIED SpannerException");
     } catch (SpannerException e) {
       checkExceptionForVPCError(e);

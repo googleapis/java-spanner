@@ -177,6 +177,10 @@ public abstract class AbstractMockServerTest {
         server.getPort());
   }
 
+  protected int getPort() {
+    return server.getPort();
+  }
+
   protected ExecuteSqlRequest getLastExecuteSqlRequest() {
     List<AbstractMessage> requests = mockSpanner.getRequests();
     for (int i = requests.size() - 1; i >= 0; i--) {

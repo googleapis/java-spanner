@@ -38,13 +38,16 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -54,6 +57,8 @@ import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -134,6 +139,7 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -163,7 +169,8 @@ public class GapicSpannerRpc implements SpannerRpc {
    * down when the {@link SpannerRpc} is closed.
    */
   private static final class ManagedInstantiatingExecutorProvider implements ExecutorProvider {
-    private static final int DEFAULT_THREAD_COUNT = 4;
+    // 4 Gapic clients * 4 channels per client.
+    private static final int DEFAULT_MIN_THREAD_COUNT = 16;
     private final List<ScheduledExecutorService> executors = new LinkedList<>();
     private final ThreadFactory threadFactory;
 
@@ -178,8 +185,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public ScheduledExecutorService getExecutor() {
+      int numCpus = Runtime.getRuntime().availableProcessors();
+      int numThreads = Math.max(DEFAULT_MIN_THREAD_COUNT, numCpus);
       ScheduledExecutorService executor =
-          new ScheduledThreadPoolExecutor(DEFAULT_THREAD_COUNT, threadFactory);
+          new ScheduledThreadPoolExecutor(numThreads, threadFactory);
       synchronized (this) {
         executors.add(executor);
       }
@@ -226,6 +235,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final String projectName;
   private final SpannerMetadataProvider metadataProvider;
   private final CallCredentialsProvider callCredentialsProvider;
+  private final String compressorName;
   private final Duration waitTimeout =
       systemProperty(PROPERTY_TIMEOUT_SECONDS, DEFAULT_TIMEOUT_SECONDS);
   private final Duration idleTimeout =
@@ -279,6 +289,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             mergedHeaderProvider.getHeaders(),
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
+    this.compressorName = options.getCompressorName();
 
     // Create a managed executor provider.
     this.executorProvider =
@@ -298,18 +309,20 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
                 .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
                 .setPoolSize(options.getNumChannels())
-                .setExecutorProvider(executorProvider)
+                .setExecutor(executorProvider.getExecutor())
 
                 // Set a keepalive time of 120 seconds to help long running
                 // commit GRPC calls succeed
-                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS * 1000))
+                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
 
                 // Then check if SpannerOptions provides an InterceptorProvider. Create a default
                 // SpannerInterceptorProvider if none is provided
                 .setInterceptorProvider(
-                    MoreObjects.firstNonNull(
-                        options.getInterceptorProvider(),
-                        SpannerInterceptorProvider.createDefault()))
+                    SpannerInterceptorProvider.create(
+                            MoreObjects.firstNonNull(
+                                options.getInterceptorProvider(),
+                                SpannerInterceptorProvider.createDefault()))
+                        .withEncoding(compressorName))
                 .setHeaderProvider(mergedHeaderProvider)
                 .build());
 
@@ -356,6 +369,22 @@ public class GapicSpannerRpc implements SpannerRpc {
           .setStreamWatchdogProvider(watchdogProvider)
           .executeSqlSettings()
           .setRetrySettings(partitionedDmlRetrySettings);
+      pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
+      // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
+      // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
+      // also change the StreamWatchdogCheckInterval.
+      if (options
+              .getPartitionedDmlTimeout()
+              .dividedBy(10L)
+              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+          < 0) {
+        pdmlSettings.setStreamWatchdogCheckInterval(
+            options.getPartitionedDmlTimeout().dividedBy(10));
+        pdmlSettings.setStreamWatchdogProvider(
+            pdmlSettings
+                .getStreamWatchdogProvider()
+                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+      }
       this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
       this.instanceAdminStub =
@@ -377,8 +406,54 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setStreamWatchdogProvider(watchdogProvider)
               .build();
       this.databaseAdminStub = GrpcDatabaseAdminStub.create(this.databaseAdminStubSettings);
+
+      // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
+      // actually running.
+      checkEmulatorConnection(options, channelProvider, credentialsProvider);
     } catch (Exception e) {
       throw newSpannerException(e);
+    }
+  }
+
+  private static void checkEmulatorConnection(
+      SpannerOptions options,
+      TransportChannelProvider channelProvider,
+      CredentialsProvider credentialsProvider)
+      throws IOException {
+    final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    // Only do the check if the emulator environment variable has been set to localhost.
+    if (options.getChannelProvider() == null
+        && emulatorHost != null
+        && options.getHost() != null
+        && options.getHost().startsWith("http://localhost")
+        && options.getHost().endsWith(emulatorHost)) {
+      // Do a quick check to see if the emulator is actually running.
+      try {
+        InstanceAdminStubSettings.Builder testEmulatorSettings =
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider);
+        testEmulatorSettings
+            .listInstanceConfigsSettings()
+            .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
+        try (GrpcInstanceAdminStub stub =
+            GrpcInstanceAdminStub.create(testEmulatorSettings.build())) {
+          stub.listInstanceConfigsCallable()
+              .call(
+                  ListInstanceConfigsRequest.newBuilder()
+                      .setParent(String.format("projects/%s", options.getProjectId()))
+                      .build());
+        }
+      } catch (UnavailableException e) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNAVAILABLE,
+            String.format(
+                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running emulator could be found at that address.\n"
+                    + "Did you forget to start the emulator, or to unset the environment variable?",
+                emulatorHost));
+      }
     }
   }
 
@@ -1074,6 +1149,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public RetrySettings getPartitionedDmlRetrySettings() {
     return partitionedDmlRetrySettings;
+  }
+
+  @Override
+  public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
+      ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
+    GrpcCallContext context = newCallContext(options, request.getSession());
+    context = context.withStreamWaitTimeout(timeout);
+    return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
   }
 
   @Override

@@ -19,20 +19,13 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.common.base.Stopwatch;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -57,142 +50,19 @@ public class ITSpannerOptionsTest {
     db.drop();
   }
 
-  private static final int NUMBER_OF_TEST_RUNS = 2;
-  private static final int DEFAULT_NUM_CHANNELS = 4;
-  private static final int NUM_THREADS_PER_CHANNEL = 4;
-  private static final String SPANNER_THREAD_NAME = "Cloud-Spanner-TransportChannel";
-  private static final String THREAD_PATTERN = "%s-[0-9]+";
-
   @Test
-  public void testCloseAllThreadsWhenClosingSpanner() throws InterruptedException {
-    int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
-    for (int i = 0; i < NUMBER_OF_TEST_RUNS; i++) {
-      waitForStartup();
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
-      // Create Spanner instance.
-      // We make a copy of the options instance, as SpannerOptions caches any service object
-      // that has been handed out.
-      SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
-      Spanner spanner = options.getService();
-      // Get a database client and do a query. This should initiate threads for the Spanner service.
-      DatabaseClient client = spanner.getDatabaseClient(db.getId());
-      List<ResultSet> resultSets = new ArrayList<>();
-      // SpannerStub affiliates a channel with a session, so we need to use multiple sessions
-      // to ensure we also hit multiple channels.
-      for (int i2 = 0; i2 < options.getSessionPoolOptions().getMaxSessions(); i2++) {
-        ResultSet rs =
-            client
-                .singleUse()
-                .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"));
-        // Execute ResultSet#next() to send the query to Spanner.
-        rs.next();
-        // Delay closing the result set in order to force the use of multiple sessions.
-        // As each session is linked to one transport channel, using multiple different
-        // sessions should initialize multiple transport channels.
-        resultSets.add(rs);
-        // Check whether the number of expected threads has been reached.
-        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME)
-            == DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount) {
-          break;
-        }
-      }
-      for (ResultSet rs : resultSets) {
-        rs.close();
-      }
-      // Check the number of threads after the query. Doing a request should initialize a thread
-      // pool for the underlying SpannerClient.
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
-
-      // Then do a request to the InstanceAdmin service and check the number of threads.
-      // Doing a request should initialize a thread pool for the underlying InstanceAdminClient.
-      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS * 2; i2++) {
-        InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-        instanceAdminClient.listInstances();
-      }
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(2 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
-
-      // Then do a request to the DatabaseAdmin service and check the number of threads.
-      // Doing a request should initialize a thread pool for the underlying DatabaseAdminClient.
-      for (int i2 = 0; i2 < DEFAULT_NUM_CHANNELS * 2; i2++) {
-        DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-        databaseAdminClient.listDatabases(db.getId().getInstanceId().getInstance());
-      }
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME))
-          .isEqualTo(3 * DEFAULT_NUM_CHANNELS * NUM_THREADS_PER_CHANNEL + baseThreadCount);
-
-      // Now close the Spanner instance and check whether the threads are shutdown or not.
-      spanner.close();
-      // Wait a little to allow the threads to actually shutdown.
-      Stopwatch watch = Stopwatch.createStarted();
-      while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME) > baseThreadCount
-          && watch.elapsed(TimeUnit.SECONDS) < 2) {
-        Thread.sleep(50L);
-      }
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
-    }
-  }
-
-  @Test
-  public void testMultipleSpannersFromSameSpannerOptions() throws InterruptedException {
-    waitForStartup();
-    int baseThreadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
-    SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
-    try (Spanner spanner1 = options.getService()) {
-      // Having both in the try-with-resources block is not possible, as it is the same instance.
-      // One will be closed before the other, and the closing of the second instance would fail.
-      Spanner spanner2 = options.getService();
-      assertThat(spanner1).isSameInstanceAs(spanner2);
-      DatabaseClient client1 = spanner1.getDatabaseClient(db.getId());
-      DatabaseClient client2 = spanner2.getDatabaseClient(db.getId());
-      assertThat(client1).isSameInstanceAs(client2);
-      try (ResultSet rs1 =
-              client1
-                  .singleUse()
-                  .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2"));
-          ResultSet rs2 =
-              client2
-                  .singleUse()
-                  .executeQuery(Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL2")); ) {
-        while (rs1.next() && rs2.next()) {
-          // Do nothing, just consume the result sets.
+  public void testCompression() {
+    for (String compressorName : new String[] {"gzip", "identity", null}) {
+      SpannerOptions options =
+          env.getTestHelper().getOptions().toBuilder().setCompressorName(compressorName).build();
+      try (Spanner spanner = options.getService()) {
+        DatabaseClient client = spanner.getDatabaseClient(db.getId());
+        try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1 AS COL1"))) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getLong(0)).isEqualTo(1L);
+          assertThat(rs.next()).isFalse();
         }
       }
     }
-    Stopwatch watch = Stopwatch.createStarted();
-    while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME) > baseThreadCount
-        && watch.elapsed(TimeUnit.SECONDS) < 2) {
-      Thread.sleep(50L);
-    }
-    assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME)).isAtMost(baseThreadCount);
-  }
-
-  private void waitForStartup() throws InterruptedException {
-    // Wait until the IT environment has already started all base worker threads.
-    int threadCount;
-    Stopwatch watch = Stopwatch.createStarted();
-    do {
-      threadCount = getNumberOfThreadsWithName(SPANNER_THREAD_NAME);
-      Thread.sleep(100L);
-    } while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME) > threadCount
-        && watch.elapsed(TimeUnit.SECONDS) < 5);
-  }
-
-  private int getNumberOfThreadsWithName(String serviceName) {
-    Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
-    ThreadGroup group = Thread.currentThread().getThreadGroup();
-    while (group.getParent() != null) {
-      group = group.getParent();
-    }
-    Thread[] threads = new Thread[100 * NUMBER_OF_TEST_RUNS];
-    int numberOfThreads = group.enumerate(threads);
-    int res = 0;
-    for (int i = 0; i < numberOfThreads; i++) {
-      if (pattern.matcher(threads[i].getName()).matches()) {
-        res++;
-      }
-    }
-    return res;
   }
 }

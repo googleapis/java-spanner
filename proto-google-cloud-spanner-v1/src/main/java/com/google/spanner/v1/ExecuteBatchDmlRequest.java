@@ -470,6 +470,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * @return The sql.
      */
+    @java.lang.Override
     public java.lang.String getSql() {
       java.lang.Object ref = sql_;
       if (ref instanceof java.lang.String) {
@@ -492,6 +493,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * @return The bytes for sql.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getSqlBytes() {
       java.lang.Object ref = sql_;
       if (ref instanceof java.lang.String) {
@@ -524,6 +526,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * @return Whether the params field is set.
      */
+    @java.lang.Override
     public boolean hasParams() {
       return params_ != null;
     }
@@ -545,6 +548,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * @return The params.
      */
+    @java.lang.Override
     public com.google.protobuf.Struct getParams() {
       return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
     }
@@ -564,6 +568,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>.google.protobuf.Struct params = 2;</code>
      */
+    @java.lang.Override
     public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
       return getParams();
     }
@@ -612,6 +617,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
+    @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -619,6 +625,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       return internalGetParamTypes().getMap().containsKey(key);
     }
     /** Use {@link #getParamTypesMap()} instead. */
+    @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
       return getParamTypesMap();
@@ -638,6 +645,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
+    @java.lang.Override
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
       return internalGetParamTypes().getMap();
     }
@@ -656,6 +664,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrDefault(
         java.lang.String key, com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
@@ -680,6 +689,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
+    @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -1479,6 +1489,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
        */
+      @java.lang.Override
       public boolean containsParamTypes(java.lang.String key) {
         if (key == null) {
           throw new java.lang.NullPointerException();
@@ -1486,6 +1497,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         return internalGetParamTypes().getMap().containsKey(key);
       }
       /** Use {@link #getParamTypesMap()} instead. */
+      @java.lang.Override
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes() {
         return getParamTypesMap();
@@ -1505,6 +1517,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
        */
+      @java.lang.Override
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap() {
         return internalGetParamTypes().getMap();
       }
@@ -1523,6 +1536,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
        */
+      @java.lang.Override
       public com.google.spanner.v1.Type getParamTypesOrDefault(
           java.lang.String key, com.google.spanner.v1.Type defaultValue) {
         if (key == null) {
@@ -1547,6 +1561,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
        */
+      @java.lang.Override
       public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
         if (key == null) {
           throw new java.lang.NullPointerException();
@@ -1703,6 +1718,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -1727,6 +1743,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -1757,6 +1774,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -1776,6 +1794,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelector getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
@@ -1795,6 +1814,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * .google.spanner.v1.TransactionSelector transaction = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }
@@ -1816,6 +1836,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>
       getStatementsList() {
     return statements_;
@@ -1835,6 +1856,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
       getStatementsOrBuilderList() {
     return statements_;
@@ -1854,6 +1876,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public int getStatementsCount() {
     return statements_.size();
   }
@@ -1872,6 +1895,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ExecuteBatchDmlRequest.Statement getStatements(int index) {
     return statements_.get(index);
   }
@@ -1890,6 +1914,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder getStatementsOrBuilder(
       int index) {
     return statements_.get(index);
@@ -1914,6 +1939,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * @return The seqno.
    */
+  @java.lang.Override
   public long getSeqno() {
     return seqno_;
   }
@@ -3168,6 +3194,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * @return The seqno.
      */
+    @java.lang.Override
     public long getSeqno() {
       return seqno_;
     }

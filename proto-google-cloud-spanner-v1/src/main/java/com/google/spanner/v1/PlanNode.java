@@ -317,6 +317,10 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -557,6 +561,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The childIndex.
      */
+    @java.lang.Override
     public int getChildIndex() {
       return childIndex_;
     }
@@ -577,6 +582,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The type.
      */
+    @java.lang.Override
     public java.lang.String getType() {
       java.lang.Object ref = type_;
       if (ref instanceof java.lang.String) {
@@ -602,6 +608,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for type.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getTypeBytes() {
       java.lang.Object ref = type_;
       if (ref instanceof java.lang.String) {
@@ -634,6 +641,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The variable.
      */
+    @java.lang.Override
     public java.lang.String getVariable() {
       java.lang.Object ref = variable_;
       if (ref instanceof java.lang.String) {
@@ -663,6 +671,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for variable.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getVariableBytes() {
       java.lang.Object ref = variable_;
       if (ref instanceof java.lang.String) {
@@ -1039,6 +1048,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        *
        * @return The childIndex.
        */
+      @java.lang.Override
       public int getChildIndex() {
         return childIndex_;
       }
@@ -1630,6 +1640,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The description.
      */
+    @java.lang.Override
     public java.lang.String getDescription() {
       java.lang.Object ref = description_;
       if (ref instanceof java.lang.String) {
@@ -1652,6 +1663,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for description.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getDescriptionBytes() {
       java.lang.Object ref = description_;
       if (ref instanceof java.lang.String) {
@@ -1704,6 +1716,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
+    @java.lang.Override
     public boolean containsSubqueries(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -1711,6 +1724,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       return internalGetSubqueries().getMap().containsKey(key);
     }
     /** Use {@link #getSubqueriesMap()} instead. */
+    @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.Integer> getSubqueries() {
       return getSubqueriesMap();
@@ -1728,6 +1742,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
+    @java.lang.Override
     public java.util.Map<java.lang.String, java.lang.Integer> getSubqueriesMap() {
       return internalGetSubqueries().getMap();
     }
@@ -1744,6 +1759,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
+    @java.lang.Override
     public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -1764,6 +1780,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, int32&gt; subqueries = 2;</code>
      */
+    @java.lang.Override
     public int getSubqueriesOrThrow(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -2289,6 +2306,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>map&lt;string, int32&gt; subqueries = 2;</code>
        */
+      @java.lang.Override
       public boolean containsSubqueries(java.lang.String key) {
         if (key == null) {
           throw new java.lang.NullPointerException();
@@ -2296,6 +2314,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
         return internalGetSubqueries().getMap().containsKey(key);
       }
       /** Use {@link #getSubqueriesMap()} instead. */
+      @java.lang.Override
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, java.lang.Integer> getSubqueries() {
         return getSubqueriesMap();
@@ -2313,6 +2332,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>map&lt;string, int32&gt; subqueries = 2;</code>
        */
+      @java.lang.Override
       public java.util.Map<java.lang.String, java.lang.Integer> getSubqueriesMap() {
         return internalGetSubqueries().getMap();
       }
@@ -2329,6 +2349,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>map&lt;string, int32&gt; subqueries = 2;</code>
        */
+      @java.lang.Override
       public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
         if (key == null) {
           throw new java.lang.NullPointerException();
@@ -2349,6 +2370,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>map&lt;string, int32&gt; subqueries = 2;</code>
        */
+      @java.lang.Override
       public int getSubqueriesOrThrow(java.lang.String key) {
         if (key == null) {
           throw new java.lang.NullPointerException();
@@ -2493,6 +2515,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The index.
    */
+  @java.lang.Override
   public int getIndex() {
     return index_;
   }
@@ -2514,6 +2537,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for kind.
    */
+  @java.lang.Override
   public int getKindValue() {
     return kind_;
   }
@@ -2532,6 +2556,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The kind.
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode.Kind getKind() {
     @SuppressWarnings("deprecation")
     com.google.spanner.v1.PlanNode.Kind result = com.google.spanner.v1.PlanNode.Kind.valueOf(kind_);
@@ -2551,6 +2576,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The displayName.
    */
+  @java.lang.Override
   public java.lang.String getDisplayName() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -2573,6 +2599,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for displayName.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDisplayNameBytes() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -2596,6 +2623,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.PlanNode.ChildLink> getChildLinksList() {
     return childLinks_;
   }
@@ -2608,6 +2636,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.PlanNode.ChildLinkOrBuilder>
       getChildLinksOrBuilderList() {
     return childLinks_;
@@ -2621,6 +2650,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
+  @java.lang.Override
   public int getChildLinksCount() {
     return childLinks_.size();
   }
@@ -2633,6 +2663,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode.ChildLink getChildLinks(int index) {
     return childLinks_.get(index);
   }
@@ -2645,6 +2676,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode.ChildLinkOrBuilder getChildLinksOrBuilder(int index) {
     return childLinks_.get(index);
   }
@@ -2662,6 +2694,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the shortRepresentation field is set.
    */
+  @java.lang.Override
   public boolean hasShortRepresentation() {
     return shortRepresentation_ != null;
   }
@@ -2676,6 +2709,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The shortRepresentation.
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode.ShortRepresentation getShortRepresentation() {
     return shortRepresentation_ == null
         ? com.google.spanner.v1.PlanNode.ShortRepresentation.getDefaultInstance()
@@ -2690,6 +2724,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.PlanNode.ShortRepresentation short_representation = 5;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode.ShortRepresentationOrBuilder
       getShortRepresentationOrBuilder() {
     return getShortRepresentation();
@@ -2714,6 +2749,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the metadata field is set.
    */
+  @java.lang.Override
   public boolean hasMetadata() {
     return metadata_ != null;
   }
@@ -2734,6 +2770,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The metadata.
    */
+  @java.lang.Override
   public com.google.protobuf.Struct getMetadata() {
     return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
   }
@@ -2752,6 +2789,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
     return getMetadata();
   }
@@ -2772,6 +2810,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the executionStats field is set.
    */
+  @java.lang.Override
   public boolean hasExecutionStats() {
     return executionStats_ != null;
   }
@@ -2789,6 +2828,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The executionStats.
    */
+  @java.lang.Override
   public com.google.protobuf.Struct getExecutionStats() {
     return executionStats_ == null
         ? com.google.protobuf.Struct.getDefaultInstance()
@@ -2806,6 +2846,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Struct execution_stats = 7;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.StructOrBuilder getExecutionStatsOrBuilder() {
     return getExecutionStats();
   }
@@ -3306,6 +3347,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The index.
      */
+    @java.lang.Override
     public int getIndex() {
       return index_;
     }
@@ -3361,6 +3403,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for kind.
      */
+    @java.lang.Override
     public int getKindValue() {
       return kind_;
     }
@@ -3381,6 +3424,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setKindValue(int value) {
+
       kind_ = value;
       onChanged();
       return this;
@@ -3400,6 +3444,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The kind.
      */
+    @java.lang.Override
     public com.google.spanner.v1.PlanNode.Kind getKind() {
       @SuppressWarnings("deprecation")
       com.google.spanner.v1.PlanNode.Kind result =

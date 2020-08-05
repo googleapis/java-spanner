@@ -153,6 +153,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -177,6 +178,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -202,6 +204,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The displayName.
    */
+  @java.lang.Override
   public java.lang.String getDisplayName() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -224,6 +227,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for displayName.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDisplayNameBytes() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -248,6 +252,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> getReplicasList() {
     return replicas_;
   }
@@ -261,6 +266,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>
       getReplicasOrBuilderList() {
     return replicas_;
@@ -275,6 +281,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
+  @java.lang.Override
   public int getReplicasCount() {
     return replicas_.size();
   }
@@ -288,6 +295,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.ReplicaInfo getReplicas(int index) {
     return replicas_.get(index);
   }
@@ -301,6 +309,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder getReplicasOrBuilder(int index) {
     return replicas_.get(index);
   }

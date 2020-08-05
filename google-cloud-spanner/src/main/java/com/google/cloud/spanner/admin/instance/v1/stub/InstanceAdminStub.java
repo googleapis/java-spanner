@@ -60,6 +60,26 @@ public abstract class InstanceAdminStub implements BackgroundResource {
     throw new UnsupportedOperationException("Not implemented: getOperationsStub()");
   }
 
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: createInstanceOperationCallable()");
+  }
+
+  public UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
+    throw new UnsupportedOperationException("Not implemented: createInstanceCallable()");
+  }
+
+  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
+  public OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateInstanceOperationCallable()");
+  }
+
+  public UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateInstanceCallable()");
+  }
+
   public UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
       listInstanceConfigsPagedCallable() {
     throw new UnsupportedOperationException("Not implemented: listInstanceConfigsPagedCallable()");
@@ -85,26 +105,6 @@ public abstract class InstanceAdminStub implements BackgroundResource {
 
   public UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     throw new UnsupportedOperationException("Not implemented: getInstanceCallable()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationCallable() {
-    throw new UnsupportedOperationException("Not implemented: createInstanceOperationCallable()");
-  }
-
-  public UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
-    throw new UnsupportedOperationException("Not implemented: createInstanceCallable()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationCallable() {
-    throw new UnsupportedOperationException("Not implemented: updateInstanceOperationCallable()");
-  }
-
-  public UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
-    throw new UnsupportedOperationException("Not implemented: updateInstanceCallable()");
   }
 
   public UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable() {

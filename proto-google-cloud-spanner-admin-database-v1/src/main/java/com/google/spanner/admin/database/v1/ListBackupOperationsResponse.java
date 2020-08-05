@@ -146,6 +146,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.longrunning.Operation> getOperationsList() {
     return operations_;
   }
@@ -166,6 +167,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.longrunning.OperationOrBuilder>
       getOperationsOrBuilderList() {
     return operations_;
@@ -187,6 +189,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
+  @java.lang.Override
   public int getOperationsCount() {
     return operations_.size();
   }
@@ -207,6 +210,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
+  @java.lang.Override
   public com.google.longrunning.Operation getOperations(int index) {
     return operations_.get(index);
   }
@@ -227,6 +231,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * <code>repeated .google.longrunning.Operation operations = 1;</code>
    */
+  @java.lang.Override
   public com.google.longrunning.OperationOrBuilder getOperationsOrBuilder(int index) {
     return operations_.get(index);
   }
@@ -246,6 +251,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * @return The nextPageToken.
    */
+  @java.lang.Override
   public java.lang.String getNextPageToken() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
@@ -270,6 +276,7 @@ public final class ListBackupOperationsResponse extends com.google.protobuf.Gene
    *
    * @return The bytes for nextPageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {

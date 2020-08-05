@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
@@ -25,12 +26,10 @@ import com.google.rpc.ResourceInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLHandshakeException;
 
 /**
  * A factory for creating instances of {@link SpannerException} and its subtypes. All creation of
@@ -39,6 +38,7 @@ import javax.net.ssl.SSLHandshakeException;
  * ErrorCode#ABORTED} are always represented by {@link AbortedException}.
  */
 public final class SpannerExceptionFactory {
+
   static final String SESSION_RESOURCE_TYPE = "type.googleapis.com/google.spanner.v1.Session";
   static final String DATABASE_RESOURCE_TYPE =
       "type.googleapis.com/google.spanner.admin.database.v1.Database";
@@ -187,7 +187,7 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
-  private static SpannerException newSpannerExceptionPreformatted(
+  static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
@@ -212,7 +212,14 @@ public final class SpannerExceptionFactory {
   }
 
   private static SpannerException fromApiException(ApiException exception) {
-    Status.Code code = ((GrpcStatusCode) exception.getStatusCode()).getTransportCode();
+    Status.Code code;
+    if (exception.getStatusCode() instanceof GrpcStatusCode) {
+      code = ((GrpcStatusCode) exception.getStatusCode()).getTransportCode();
+    } else if (exception instanceof WatchdogTimeoutException) {
+      code = Status.Code.DEADLINE_EXCEEDED;
+    } else {
+      code = Status.Code.UNKNOWN;
+    }
     ErrorCode errorCode = ErrorCode.fromGrpcStatus(Status.fromCode(code));
     if (exception.getCause() != null) {
       return SpannerExceptionFactory.newSpannerException(
@@ -249,35 +256,8 @@ public final class SpannerExceptionFactory {
   }
 
   private static class Matchers {
-    static final Predicate<Throwable> isRetryableInternalError =
-        new Predicate<Throwable>() {
-          @Override
-          public boolean apply(Throwable cause) {
-            if (cause instanceof StatusRuntimeException
-                && ((StatusRuntimeException) cause).getStatus().getCode() == Status.Code.INTERNAL) {
-              if (cause.getMessage().contains("HTTP/2 error code: INTERNAL_ERROR")) {
-                // See b/25451313.
-                return true;
-              }
-              if (cause.getMessage().contains("Connection closed with unknown cause")) {
-                // See b/27794742.
-                return true;
-              }
-              if (cause
-                  .getMessage()
-                  .contains("Received unexpected EOS on DATA frame from server")) {
-                return true;
-              }
-            }
-            return false;
-          }
-        };
-    static final Predicate<Throwable> isSSLHandshakeException =
-        new Predicate<Throwable>() {
-          @Override
-          public boolean apply(Throwable input) {
-            return input instanceof SSLHandshakeException;
-          }
-        };
+
+    static final Predicate<Throwable> isRetryableInternalError = new IsRetryableInternalError();
+    static final Predicate<Throwable> isSSLHandshakeException = new IsSslHandshakeException();
   }
 }

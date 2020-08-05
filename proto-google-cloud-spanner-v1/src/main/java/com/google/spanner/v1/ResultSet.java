@@ -163,6 +163,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the metadata field is set.
    */
+  @java.lang.Override
   public boolean hasMetadata() {
     return metadata_ != null;
   }
@@ -177,6 +178,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The metadata.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadata getMetadata() {
     return metadata_ == null
         ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
@@ -191,6 +193,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
     return getMetadata();
   }
@@ -211,6 +214,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.protobuf.ListValue> getRowsList() {
     return rows_;
   }
@@ -228,6 +232,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getRowsOrBuilderList() {
     return rows_;
   }
@@ -245,6 +250,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
    */
+  @java.lang.Override
   public int getRowsCount() {
     return rows_.size();
   }
@@ -262,6 +268,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getRows(int index) {
     return rows_.get(index);
   }
@@ -279,6 +286,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue rows = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getRowsOrBuilder(int index) {
     return rows_.get(index);
   }
@@ -303,6 +311,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the stats field is set.
    */
+  @java.lang.Override
   public boolean hasStats() {
     return stats_ != null;
   }
@@ -324,6 +333,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The stats.
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetStats getStats() {
     return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
@@ -343,6 +353,7 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.ResultSetStats stats = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
     return getStats();
   }

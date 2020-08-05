@@ -16,10 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -33,7 +33,6 @@ import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConne
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,17 +40,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.experimental.categories.Category;
 
 /**
  * Base class for integration tests. This class is located in this package to be able to access
  * package-private methods of the Connection API
  */
-@Category(IntegrationTest.class)
 public abstract class ITAbstractSpannerTest {
   protected class ITConnectionProvider implements GenericConnectionProvider {
     public ITConnectionProvider() {}
@@ -182,12 +179,20 @@ public abstract class ITAbstractSpannerTest {
       url.append(options.getHost().substring(options.getHost().indexOf(':') + 1));
     }
     url.append("/").append(database.getId().getName());
+    if (options.getCredentials() == NoCredentials.getInstance()) {
+      url.append(";usePlainText=true");
+    }
     return url;
   }
 
   @BeforeClass
-  public static void setup() throws IOException, InterruptedException, ExecutionException {
+  public static void setup() {
     database = env.getTestHelper().createTestDatabase();
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   /**
@@ -268,7 +273,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   @Before
-  public void createTestTable() throws Exception {
+  public void createTestTable() {
     if (doCreateDefaultTestTable()) {
       try (Connection connection = createConnection()) {
         connection.setAutocommit(true);

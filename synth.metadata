@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "3427141217038a3d5e3d50c6a8a5343aaaa71daa"
+        "sha": "e89c601493c527ca9b9dcdac7ae5e26440f3a4fb"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "d8a17933f650cf605196ef14f03edc246f0562b6",
-        "internalRef": "312582296"
+        "sha": "8f2eda119e11c8bd0c189b545da18bba9019c83e",
+        "internalRef": "322293383"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "c4f3059c27591eb24d6942a0e357ec94c80459f2"
+        "sha": "4f2c9f752a94042472fc03c5bd9e06e89817d2bd"
       }
     }
   ],

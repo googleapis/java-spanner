@@ -205,6 +205,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -229,6 +230,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -255,6 +257,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -270,6 +273,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelector getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
@@ -285,6 +289,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }
@@ -302,6 +307,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The table.
    */
+  @java.lang.Override
   public java.lang.String getTable() {
     java.lang.Object ref = table_;
     if (ref instanceof java.lang.String) {
@@ -324,6 +330,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for table.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getTableBytes() {
     java.lang.Object ref = table_;
     if (ref instanceof java.lang.String) {
@@ -351,6 +358,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The index.
    */
+  @java.lang.Override
   public java.lang.String getIndex() {
     java.lang.Object ref = index_;
     if (ref instanceof java.lang.String) {
@@ -375,6 +383,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for index.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getIndexBytes() {
     java.lang.Object ref = index_;
     if (ref instanceof java.lang.String) {
@@ -474,6 +483,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the keySet field is set.
    */
+  @java.lang.Override
   public boolean hasKeySet() {
     return keySet_ != null;
   }
@@ -497,6 +507,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The keySet.
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeySet getKeySet() {
     return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
@@ -518,6 +529,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
     return getKeySet();
   }
@@ -537,6 +549,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The limit.
    */
+  @java.lang.Override
   public long getLimit() {
     return limit_;
   }
@@ -559,6 +572,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The resumeToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getResumeToken() {
     return resumeToken_;
   }
@@ -579,6 +593,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The partitionToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getPartitionToken() {
     return partitionToken_;
   }
@@ -2050,6 +2065,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The limit.
      */
+    @java.lang.Override
     public long getLimit() {
       return limit_;
     }
@@ -2110,6 +2126,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The resumeToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
@@ -2177,6 +2194,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The partitionToken.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString getPartitionToken() {
       return partitionToken_;
     }

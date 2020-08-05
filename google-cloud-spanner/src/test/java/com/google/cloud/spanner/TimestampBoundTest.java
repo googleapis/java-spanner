@@ -39,7 +39,7 @@ public class TimestampBoundTest {
   private static final String TEST_TIME_ISO = "2015-10-12T15:14:54Z";
 
   @Test
-  public void serialization() throws Exception {
+  public void serialization() {
     reserializeAndAssert(TimestampBound.strong());
     reserializeAndAssert(TimestampBound.ofExactStaleness(10, TimeUnit.NANOSECONDS));
     reserializeAndAssert(TimestampBound.ofMaxStaleness(100, TimeUnit.DAYS));

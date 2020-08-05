@@ -165,6 +165,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -187,6 +188,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -212,6 +214,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -234,6 +237,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -260,6 +264,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the progress field is set.
    */
+  @java.lang.Override
   public boolean hasProgress() {
     return progress_ != null;
   }
@@ -275,6 +280,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The progress.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgress getProgress() {
     return progress_ == null
         ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
@@ -290,6 +296,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder() {
     return getProgress();
   }
@@ -317,6 +324,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return Whether the cancelTime field is set.
    */
+  @java.lang.Override
   public boolean hasCancelTime() {
     return cancelTime_ != null;
   }
@@ -341,6 +349,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * @return The cancelTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
@@ -363,6 +372,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <code>.google.protobuf.Timestamp cancel_time = 4;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
     return getCancelTime();
   }

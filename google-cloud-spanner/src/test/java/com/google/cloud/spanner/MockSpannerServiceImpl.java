@@ -1058,10 +1058,27 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
+      Statement statement =
+          buildStatement(request.getSql(), request.getParamTypesMap(), request.getParams());
+      ByteString transactionId = getTransactionId(session, request.getTransaction());
+      boolean isPartitioned = isPartitionedDmlTransaction(transactionId);
+      if (isPartitioned) {
+        StatementResult firstRes = getResult(statement);
+        switch (firstRes.getType()) {
+          case EXCEPTION:
+            throw firstRes.getException();
+          case UPDATE_COUNT:
+            returnPartialResultSet(
+                session, 0L, !isPartitioned, responseObserver, request.getTransaction(), false);
+            break;
+          case RESULT_SET:
+          default:
+            break;
+        }
+      }
       executeStreamingSqlExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
       // Get or start transaction
-      ByteString transactionId = getTransactionId(session, request.getTransaction());
       if (!request.getPartitionToken().isEmpty()) {
         List<ByteString> tokens =
             partitionTokens.get(partitionKey(session.getName(), transactionId));
@@ -1073,8 +1090,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       simulateAbort(session, transactionId);
-      Statement statement =
-          buildStatement(request.getSql(), request.getParamTypesMap(), request.getParams());
       StatementResult res = getResult(statement);
       switch (res.getType()) {
         case EXCEPTION:
@@ -1084,7 +1099,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
           break;
         case UPDATE_COUNT:
-          boolean isPartitioned = isPartitionedDmlTransaction(transactionId);
           if (isPartitioned) {
             commitTransaction(transactionId);
           }
@@ -1449,6 +1463,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       boolean exact,
       StreamObserver<PartialResultSet> responseObserver,
       TransactionSelector transaction) {
+    returnPartialResultSet(session, updateCount, exact, responseObserver, transaction, true);
+  }
+
+  private void returnPartialResultSet(
+      Session session,
+      Long updateCount,
+      boolean exact,
+      StreamObserver<PartialResultSet> responseObserver,
+      TransactionSelector transaction,
+      boolean complete) {
     Field field =
         Field.newBuilder()
             .setName("UPDATE_COUNT")
@@ -1475,7 +1499,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               .setStats(ResultSetStats.newBuilder().setRowCountLowerBound(updateCount).build())
               .build());
     }
-    responseObserver.onCompleted();
+    if (complete) {
+      responseObserver.onCompleted();
+    }
   }
 
   private boolean isPartitionedDmlTransaction(ByteString transactionId) {

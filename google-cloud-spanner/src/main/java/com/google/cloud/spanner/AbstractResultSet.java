@@ -52,6 +52,7 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -358,6 +359,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case FLOAT64:
             builder.set(fieldName).to((Double) value);
             break;
+          case NUMERIC:
+            builder.set(fieldName).to((BigDecimal) value);
+            break;
           case STRING:
             builder.set(fieldName).to((String) value);
             break;
@@ -380,6 +384,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case FLOAT64:
                 builder.set(fieldName).toFloat64Array((Iterable<Double>) value);
+                break;
+              case NUMERIC:
+                builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
                 break;
               case STRING:
                 builder.set(fieldName).toStringArray((Iterable<String>) value);
@@ -457,6 +464,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
           return valueProtoToFloat64(proto);
+        case NUMERIC:
+          return new BigDecimal(proto.getStringValue());
         case STRING:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
@@ -513,6 +522,18 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return new Int64Array(listValue);
         case FLOAT64:
           return new Float64Array(listValue);
+        case NUMERIC:
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : new BigDecimal(value.getStringValue()));
+            }
+            return list;
+          }
         case STRING:
           return Lists.transform(
               listValue.getValuesList(),
@@ -621,6 +642,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected BigDecimal getBigDecimalInternal(int columnIndex) {
+      return (BigDecimal) rowData.get(columnIndex);
+    }
+
+    @Override
     protected String getStringInternal(int columnIndex) {
       return (String) rowData.get(columnIndex);
     }
@@ -686,6 +712,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<NUMERIC> produces a List<BigDecimal>.
+    protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+      return (List<BigDecimal>) rowData.get(columnIndex);
+    }
+
+    @Override
     @SuppressWarnings("unchecked") // We know ARRAY<STRING> produces a List<String>.
     protected List<String> getStringListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
@@ -731,16 +763,24 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @VisibleForTesting
   static class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
       implements CloseableIterator<PartialResultSet> {
+    private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
     private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
 
     private final ConsumerImpl consumer = new ConsumerImpl();
     private final BlockingQueue<PartialResultSet> stream;
+    private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
     private SpannerException error;
 
-    // Visible for testing.
+    @VisibleForTesting
     GrpcStreamIterator(int prefetchChunks) {
+      this(null, prefetchChunks);
+    }
+
+    @VisibleForTesting
+    GrpcStreamIterator(Statement statement, int prefetchChunks) {
+      this.statement = statement;
       // One extra to allow for END_OF_STREAM message.
       this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
     }
@@ -807,6 +847,23 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
       @Override
       public void onError(SpannerException e) {
+        if (statement != null) {
+          if (logger.isLoggable(Level.FINEST)) {
+            // Include parameter values if logging level is set to FINEST or higher.
+            e =
+                SpannerExceptionFactory.newSpannerExceptionPreformatted(
+                    e.getErrorCode(),
+                    String.format("%s - Statement: '%s'", e.getMessage(), statement.toString()),
+                    e);
+            logger.log(Level.FINEST, "Error executing statement", e);
+          } else {
+            e =
+                SpannerExceptionFactory.newSpannerExceptionPreformatted(
+                    e.getErrorCode(),
+                    String.format("%s - Statement: '%s'", e.getMessage(), statement.getSql()),
+                    e);
+          }
+        }
         error = e;
         addToStream(END_OF_STREAM);
       }
@@ -855,8 +912,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return new ExponentialBackOff.Builder()
           .setMultiplier(STREAMING_RETRY_SETTINGS.getRetryDelayMultiplier())
           .setInitialIntervalMillis(
-              (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis())
-          .setMaxIntervalMillis((int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis())
+              Math.max(10, (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis()))
+          .setMaxIntervalMillis(
+              Math.max(1000, (int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis()))
           .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
           .build();
     }
@@ -1176,6 +1234,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected BigDecimal getBigDecimalInternal(int columnIndex) {
+    return currRow().getBigDecimalInternal(columnIndex);
+  }
+
+  @Override
   protected String getStringInternal(int columnIndex) {
     return currRow().getStringInternal(columnIndex);
   }
@@ -1223,6 +1286,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<Double> getDoubleListInternal(int columnIndex) {
     return currRow().getDoubleListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+    return currRow().getBigDecimalListInternal(columnIndex);
   }
 
   @Override

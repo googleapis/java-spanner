@@ -292,7 +292,7 @@ public class SpanTest {
     runner.run(
         new TransactionCallable<Void>() {
           @Override
-          public Void run(TransactionContext transaction) throws Exception {
+          public Void run(TransactionContext transaction) {
             transaction.executeUpdate(UPDATE_STATEMENT);
             return null;
           }
@@ -313,7 +313,7 @@ public class SpanTest {
       runner.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
               return null;
             }

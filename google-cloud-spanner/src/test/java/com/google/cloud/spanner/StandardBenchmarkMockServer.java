@@ -20,6 +20,7 @@ import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.protobuf.AbstractMessage;
@@ -76,6 +77,9 @@ class StandardBenchmarkMockServer {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  static final Statement SELECT_RANDOM = Statement.of("SELECT * FROM RANDOM_TABLE");
+  private static final com.google.spanner.v1.ResultSet SELECT_RANDOM_RESULTSET =
+      new RandomResultSetGenerator(100).generate();
   private MockSpannerServiceImpl mockSpanner;
   private Server server;
   private LocalChannelProvider channelProvider;
@@ -85,6 +89,7 @@ class StandardBenchmarkMockServer {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.query(SELECT_RANDOM, SELECT_RANDOM_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,

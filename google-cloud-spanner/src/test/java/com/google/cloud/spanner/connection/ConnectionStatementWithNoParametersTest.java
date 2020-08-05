@@ -32,7 +32,7 @@ public class ConnectionStatementWithNoParametersTest {
   private final StatementParser parser = StatementParser.INSTANCE;
 
   @Test
-  public void testExecuteGetAutocommit() throws Exception {
+  public void testExecuteGetAutocommit() {
     ParsedStatement statement = parser.parse(Statement.of("show variable autocommit"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -43,7 +43,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetReadOnly() throws Exception {
+  public void testExecuteGetReadOnly() {
     ParsedStatement statement = parser.parse(Statement.of("show variable readonly"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -54,7 +54,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetAutocommitDmlMode() throws Exception {
+  public void testExecuteGetAutocommitDmlMode() {
     ParsedStatement statement = parser.parse(Statement.of("show variable autocommit_dml_mode"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -66,7 +66,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetStatementTimeout() throws Exception {
+  public void testExecuteGetStatementTimeout() {
     ParsedStatement statement = parser.parse(Statement.of("show variable statement_timeout"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -79,7 +79,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetReadTimestamp() throws Exception {
+  public void testExecuteGetReadTimestamp() {
     ParsedStatement statement = parser.parse(Statement.of("show variable read_timestamp"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -91,7 +91,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetCommitTimestamp() throws Exception {
+  public void testExecuteGetCommitTimestamp() {
     ParsedStatement statement = parser.parse(Statement.of("show variable commit_timestamp"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -103,7 +103,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetReadOnlyStaleness() throws Exception {
+  public void testExecuteGetReadOnlyStaleness() {
     ParsedStatement statement = parser.parse(Statement.of("show variable read_only_staleness"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -115,7 +115,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteGetOptimizerVersion() throws Exception {
+  public void testExecuteGetOptimizerVersion() {
     ParsedStatement statement = parser.parse(Statement.of("show variable optimizer_version"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -127,7 +127,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteBegin() throws Exception {
+  public void testExecuteBegin() {
     ParsedStatement subject = parser.parse(Statement.of("begin"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
@@ -140,7 +140,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteCommit() throws Exception {
+  public void testExecuteCommit() {
     ParsedStatement subject = parser.parse(Statement.of("commit"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
@@ -153,7 +153,7 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
-  public void testExecuteRollback() throws Exception {
+  public void testExecuteRollback() {
     ParsedStatement subject = parser.parse(Statement.of("rollback"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);

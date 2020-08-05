@@ -177,6 +177,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return Whether the instance field is set.
    */
+  @java.lang.Override
   public boolean hasInstance() {
     return instance_ != null;
   }
@@ -191,6 +192,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return The instance.
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.Instance getInstance() {
     return instance_ == null
         ? com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()
@@ -205,6 +207,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * <code>.google.spanner.admin.instance.v1.Instance instance = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstanceOrBuilder() {
     return getInstance();
   }
@@ -224,6 +227,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return Whether the startTime field is set.
    */
+  @java.lang.Override
   public boolean hasStartTime() {
     return startTime_ != null;
   }
@@ -240,6 +244,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return The startTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getStartTime() {
     return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
   }
@@ -254,6 +259,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getStartTimeOrBuilder() {
     return getStartTime();
   }
@@ -273,6 +279,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return Whether the cancelTime field is set.
    */
+  @java.lang.Override
   public boolean hasCancelTime() {
     return cancelTime_ != null;
   }
@@ -289,6 +296,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return The cancelTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCancelTime() {
     return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
@@ -303,6 +311,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * <code>.google.protobuf.Timestamp cancel_time = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
     return getCancelTime();
   }
@@ -320,6 +329,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return Whether the endTime field is set.
    */
+  @java.lang.Override
   public boolean hasEndTime() {
     return endTime_ != null;
   }
@@ -334,6 +344,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * @return The endTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getEndTime() {
     return endTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : endTime_;
   }
@@ -346,6 +357,7 @@ public final class CreateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    * <code>.google.protobuf.Timestamp end_time = 4;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getEndTimeOrBuilder() {
     return getEndTime();
   }

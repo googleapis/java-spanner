@@ -1,6 +1,7 @@
 # Format:
 # module:released-version:current-version
 
+<<<<<<< HEAD
 proto-google-cloud-spanner-admin-instance-v1:1.56.0:1.56.0
 proto-google-cloud-spanner-v1:1.56.0:1.56.0
 proto-google-cloud-spanner-admin-database-v1:1.56.0:1.56.0
@@ -8,3 +9,12 @@ grpc-google-cloud-spanner-v1:1.56.0:1.56.0
 grpc-google-cloud-spanner-admin-instance-v1:1.56.0:1.56.0
 grpc-google-cloud-spanner-admin-database-v1:1.56.0:1.56.0
 google-cloud-spanner:1.56.0:1.56.0
+=======
+proto-google-cloud-spanner-admin-instance-v1:1.59.0:1.59.1-SNAPSHOT
+proto-google-cloud-spanner-v1:1.59.0:1.59.1-SNAPSHOT
+proto-google-cloud-spanner-admin-database-v1:1.59.0:1.59.1-SNAPSHOT
+grpc-google-cloud-spanner-v1:1.59.0:1.59.1-SNAPSHOT
+grpc-google-cloud-spanner-admin-instance-v1:1.59.0:1.59.1-SNAPSHOT
+grpc-google-cloud-spanner-admin-database-v1:1.59.0:1.59.1-SNAPSHOT
+google-cloud-spanner:1.59.0:1.59.1-SNAPSHOT
+>>>>>>> master

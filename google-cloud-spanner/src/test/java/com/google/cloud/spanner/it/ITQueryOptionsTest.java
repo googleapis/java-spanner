@@ -111,7 +111,7 @@ public class ITQueryOptionsTest {
                 .run(
                     new TransactionCallable<Long>() {
                       @Override
-                      public Long run(TransactionContext transaction) throws Exception {
+                      public Long run(TransactionContext transaction) {
                         return transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
@@ -132,7 +132,7 @@ public class ITQueryOptionsTest {
                 .run(
                     new TransactionCallable<Long>() {
                       @Override
-                      public Long run(TransactionContext transaction) throws Exception {
+                      public Long run(TransactionContext transaction) {
                         return transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
@@ -153,7 +153,7 @@ public class ITQueryOptionsTest {
           .run(
               new TransactionCallable<Long>() {
                 @Override
-                public Long run(TransactionContext transaction) throws Exception {
+                public Long run(TransactionContext transaction) {
                   return transaction.executeUpdate(
                       Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                           .bind("id")

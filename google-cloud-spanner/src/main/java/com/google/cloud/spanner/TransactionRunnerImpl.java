@@ -654,7 +654,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         new Callable<T>() {
           @Override
           public T call() {
-            if (txn.isAborted()) {
+            if (attempt.get() > 0) {
               txn = session.newTransaction();
             }
             checkState(

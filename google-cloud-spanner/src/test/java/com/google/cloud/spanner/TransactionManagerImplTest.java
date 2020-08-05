@@ -238,8 +238,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName((String) invocation.getArguments()[0] + "/sessions/1")
@@ -253,7 +252,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<ApiFuture<Transaction>>() {
               @Override
-              public ApiFuture<Transaction> answer(InvocationOnMock invocation) throws Throwable {
+              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
                 return ApiFutures.immediateFuture(
                     Transaction.newBuilder()
                         .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))

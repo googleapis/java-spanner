@@ -139,6 +139,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.admin.database.v1.Database> getDatabasesList() {
     return databases_;
   }
@@ -151,6 +152,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.admin.database.v1.DatabaseOrBuilder>
       getDatabasesOrBuilderList() {
     return databases_;
@@ -164,6 +166,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
+  @java.lang.Override
   public int getDatabasesCount() {
     return databases_.size();
   }
@@ -176,6 +179,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Database getDatabases(int index) {
     return databases_.get(index);
   }
@@ -188,6 +192,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <code>repeated .google.spanner.admin.database.v1.Database databases = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.DatabaseOrBuilder getDatabasesOrBuilder(int index) {
     return databases_.get(index);
   }
@@ -207,6 +212,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * @return The nextPageToken.
    */
+  @java.lang.Override
   public java.lang.String getNextPageToken() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
@@ -231,6 +237,7 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for nextPageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {

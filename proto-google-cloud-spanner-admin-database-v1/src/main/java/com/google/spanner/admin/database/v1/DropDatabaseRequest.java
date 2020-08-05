@@ -126,6 +126,7 @@ public final class DropDatabaseRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -150,6 +151,7 @@ public final class DropDatabaseRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {

@@ -185,6 +185,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for sourceType.
    */
+  @java.lang.Override
   public int getSourceTypeValue() {
     return sourceType_;
   }
@@ -199,6 +200,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The sourceType.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.RestoreSourceType result =
@@ -221,6 +223,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the backupInfo field is set.
    */
+  @java.lang.Override
   public boolean hasBackupInfo() {
     return sourceInfoCase_ == 2;
   }
@@ -236,6 +239,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The backupInfo.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupInfo getBackupInfo() {
     if (sourceInfoCase_ == 2) {
       return (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_;
@@ -252,6 +256,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.spanner.admin.database.v1.BackupInfo backup_info = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupInfoOrBuilder getBackupInfoOrBuilder() {
     if (sourceInfoCase_ == 2) {
       return (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_;
@@ -648,6 +653,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for sourceType.
      */
+    @java.lang.Override
     public int getSourceTypeValue() {
       return sourceType_;
     }
@@ -664,6 +670,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setSourceTypeValue(int value) {
+
       sourceType_ = value;
       onChanged();
       return this;
@@ -679,6 +686,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The sourceType.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.RestoreSourceType result =
@@ -743,6 +751,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the backupInfo field is set.
      */
+    @java.lang.Override
     public boolean hasBackupInfo() {
       return sourceInfoCase_ == 2;
     }
@@ -758,6 +767,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The backupInfo.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.BackupInfo getBackupInfo() {
       if (backupInfoBuilder_ == null) {
         if (sourceInfoCase_ == 2) {
@@ -897,6 +907,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.admin.database.v1.BackupInfo backup_info = 2;</code>
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.BackupInfoOrBuilder getBackupInfoOrBuilder() {
       if ((sourceInfoCase_ == 2) && (backupInfoBuilder_ != null)) {
         return backupInfoBuilder_.getMessageOrBuilder();

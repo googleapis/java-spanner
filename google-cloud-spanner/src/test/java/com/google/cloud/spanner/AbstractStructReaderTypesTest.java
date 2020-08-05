@@ -29,6 +29,7 @@ import com.google.cloud.Timestamp;
 import com.google.common.base.Throwables;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +57,11 @@ public class AbstractStructReaderTypesTest {
     @Override
     protected double getDoubleInternal(int columnIndex) {
       return 0;
+    }
+
+    @Override
+    protected BigDecimal getBigDecimalInternal(int columnIndex) {
+      return null;
     }
 
     @Override
@@ -109,6 +115,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected List<String> getStringListInternal(int columnIndex) {
       return null;
     }
@@ -154,6 +165,13 @@ public class AbstractStructReaderTypesTest {
           {Type.bool(), "getBooleanInternal", false, "getBoolean", null},
           {Type.int64(), "getLongInternal", 123L, "getLong", null},
           {Type.float64(), "getDoubleInternal", 2.0, "getDouble", null},
+          {
+            Type.numeric(),
+            "getBigDecimalInternal",
+            BigDecimal.valueOf(21, 1),
+            "getBigDecimal",
+            null
+          },
           {Type.string(), "getStringInternal", "a", "getString", null},
           {Type.bytes(), "getBytesInternal", ByteArray.copyFrom(new byte[] {0}), "getBytes", null},
           {
@@ -205,6 +223,13 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList(2.0, 4.0),
             "getDoubleList",
             Arrays.asList("getDoubleArray")
+          },
+          {
+            Type.array(Type.numeric()),
+            "getBigDecimalListInternal",
+            Arrays.asList(BigDecimal.valueOf(21, 1), BigDecimal.valueOf(41, 1)),
+            "getBigDecimalList",
+            null
           },
           {
             Type.array(Type.string()),
@@ -328,7 +353,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterForIncorrectType() throws Exception {
+  public void getterForIncorrectType() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     int columnIndex = 0;
     Mockito.when(reader.isNull(columnIndex)).thenReturn(false);
@@ -367,7 +392,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterWhenNull() throws Exception {
+  public void getterWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
     try {
@@ -379,7 +404,7 @@ public class AbstractStructReaderTypesTest {
   }
 
   @Test
-  public void getterByNameWhenNull() throws Exception {
+  public void getterByNameWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
     try {

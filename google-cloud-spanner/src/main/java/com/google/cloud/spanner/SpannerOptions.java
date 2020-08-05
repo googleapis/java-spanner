@@ -19,12 +19,9 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
-import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -52,6 +49,8 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.grpc.CallCredentials;
+import io.grpc.CompressorRegistry;
+import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -66,6 +65,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
@@ -113,6 +113,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private final CallCredentialsProvider callCredentialsProvider;
   private final CloseableExecutorProvider asyncExecutorProvider;
+  private final String compressorName;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -245,6 +246,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     callCredentialsProvider = builder.callCredentialsProvider;
     asyncExecutorProvider = builder.asyncExecutorProvider;
+    compressorName = builder.compressorName;
   }
 
   /**
@@ -310,6 +312,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
+    private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
 
     private Builder() {
@@ -325,51 +328,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
                   .setRpcTimeoutMultiplier(1.5)
                   .setTotalTimeout(Duration.ofHours(48L))
                   .build());
-      RetrySettings longRunningRetrySettings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofSeconds(60L))
-              .setMaxRpcTimeout(Duration.ofSeconds(600L))
-              .setInitialRetryDelay(Duration.ofSeconds(20L))
-              .setMaxRetryDelay(Duration.ofSeconds(45L))
-              .setRetryDelayMultiplier(1.5)
-              .setRpcTimeoutMultiplier(1.5)
-              .setTotalTimeout(Duration.ofHours(48L))
-              .build();
       databaseAdminStubSettingsBuilder
           .createDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .createBackupOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
       databaseAdminStubSettingsBuilder
           .restoreDatabaseOperationSettings()
-          .setPollingAlgorithm(longRunningPollingAlgorithm)
-          .setInitialCallSettings(
-              UnaryCallSettings
-                  .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetrySettings(longRunningRetrySettings)
-                  .build());
-      databaseAdminStubSettingsBuilder
-          .deleteBackupSettings()
-          .setRetrySettings(longRunningRetrySettings);
-      databaseAdminStubSettingsBuilder
-          .updateBackupSettings()
-          .setRetrySettings(longRunningRetrySettings)
-          .setRetryableCodes(StatusCode.Code.DEADLINE_EXCEEDED, StatusCode.Code.UNAVAILABLE);
+          .setPollingAlgorithm(longRunningPollingAlgorithm);
     }
 
     Builder(SpannerOptions options) {
       super(options);
+      if (options.getHost() != null
+          && this.emulatorHost != null
+          && !options.getHost().equals(this.emulatorHost)) {
+        this.emulatorHost = null;
+      }
       this.numChannels = options.numChannels;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
@@ -382,6 +358,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
+      this.compressorName = options.compressorName;
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
@@ -632,6 +609,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
+     * the {@link CompressorRegistry}.
+     *
+     * <p>Supported values are:
+     *
+     * <ul>
+     *   <li>gzip: Enable gzip compression
+     *   <li>identity: Disable compression
+     *   <li><code>null</code>: Use default compression
+     * </ul>
+     */
+    @ExperimentalApi("https://github.com/grpc/grpc-java/issues/1704")
+    public Builder setCompressorName(@Nullable String compressorName) {
+      Preconditions.checkArgument(
+          compressorName == null
+              || CompressorRegistry.getDefaultInstance().lookupCompressor(compressorName) != null,
+          String.format("%s is not a known compressor", compressorName));
+      this.compressorName = compressorName;
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -761,6 +760,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public CallCredentialsProvider getCallCredentialsProvider() {
     return callCredentialsProvider;
+  }
+
+  public String getCompressorName() {
+    return compressorName;
   }
 
   /** Returns the default query options to use for the specific database. */

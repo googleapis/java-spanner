@@ -48,12 +48,13 @@ public final class CommonProto {
           + "\030\n\020progress_percent\030\001 \001(\005\022.\n\nstart_time\030"
           + "\002 \001(\0132\032.google.protobuf.Timestamp\022,\n\010end"
           + "_time\030\003 \001(\0132\032.google.protobuf.TimestampB"
-          + "\321\001\n$com.google.spanner.admin.database.v1"
+          + "\377\001\n$com.google.spanner.admin.database.v1"
           + "B\013CommonProtoP\001ZHgoogle.golang.org/genpr"
           + "oto/googleapis/spanner/admin/database/v1"
           + ";database\252\002&Google.Cloud.Spanner.Admin.D"
           + "atabase.V1\312\002&Google\\Cloud\\Spanner\\Admin\\"
-          + "Database\\V1b\006proto3"
+          + "Database\\V1\352\002+Google::Cloud::Spanner::Ad"
+          + "min::Database::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

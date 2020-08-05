@@ -51,7 +51,7 @@ public class DatabaseTest {
         .thenAnswer(
             new Answer<Backup.Builder>() {
               @Override
-              public Backup.Builder answer(InvocationOnMock invocation) throws Throwable {
+              public Backup.Builder answer(InvocationOnMock invocation) {
                 return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
               }
             });
