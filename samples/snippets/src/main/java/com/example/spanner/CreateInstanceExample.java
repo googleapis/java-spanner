@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-//[START spanner_create_instance]
+// [START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
@@ -38,34 +38,36 @@ class CreateInstanceExample {
   }
 
   static void createInstance(String projectId, String instanceId) {
-    Spanner spanner = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
-    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+      InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
-    // Set Instance configuration.
-    String configId = "regional-us-central1";
-    int nodeCount = 2;
-    String displayName = "Descriptive name";
+      // Set Instance configuration.
+      String configId = "regional-us-central1";
+      int nodeCount = 2;
+      String displayName = "Descriptive name";
 
-    // Create an InstanceInfo object that will be used to create the instance.
-    InstanceInfo instanceInfo =
-        InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-            .setNodeCount(nodeCount)
-            .setDisplayName(displayName)
-            .build();
-    OperationFuture<Instance, CreateInstanceMetadata> operation =
-        instanceAdminClient.createInstance(instanceInfo);
-    try {
-      // Wait for the createInstance operation to finish.
-      Instance instance = operation.get();
-      System.out.printf("Instance %s was successfully created%n", instance.getId());
-    } catch (ExecutionException e) {
-      System.out.printf(
-          "Error: Creating instance %s failed with error message %s%n",
-          instanceInfo.getId(), e.getMessage());
-    } catch (InterruptedException e) {
-      System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      // Create an InstanceInfo object that will be used to create the instance.
+      InstanceInfo instanceInfo =
+          InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+              .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
+              .setNodeCount(nodeCount)
+              .setDisplayName(displayName)
+              .build();
+      OperationFuture<Instance, CreateInstanceMetadata> operation =
+          instanceAdminClient.createInstance(instanceInfo);
+      try {
+        // Wait for the createInstance operation to finish.
+        Instance instance = operation.get();
+        System.out.printf("Instance %s was successfully created%n", instance.getId());
+      } catch (ExecutionException e) {
+        System.out.printf(
+            "Error: Creating instance %s failed with error message %s%n",
+            instanceInfo.getId(), e.getMessage());
+      } catch (InterruptedException e) {
+        System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      }
     }
   }
 }
-//[END spanner_create_instance]
+// [END spanner_create_instance]

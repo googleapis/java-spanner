@@ -18,29 +18,59 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfig;
+import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Tests for quickstart sample.
- */
+/** Tests for quickstart sample. */
 @RunWith(JUnit4.class)
-@SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class QuickstartSampleIT {
+  private boolean ownedInstance = false;
   private String instanceId = System.getProperty("spanner.test.instance");
-  // This database needs to exist for test to pass.
-  private String dbId = System.getProperty("spanner.quickstart.database");
+  private String dbId =
+      System.getProperty("spanner.quickstart.database", SpannerSampleIT.formatForTest("sample"));
   private ByteArrayOutputStream bout;
   private PrintStream stdOut = System.out;
   private PrintStream out;
 
   @Before
-  public void setUp() {
+  public void setUp() throws SpannerException, InterruptedException, ExecutionException {
+    if (instanceId == null) {
+      instanceId = SpannerSampleIT.formatForTest("quick");
+      SpannerOptions options = SpannerOptions.newBuilder().build();
+      try (Spanner spanner = options.getService()) {
+        InstanceAdminClient instanceAdmin = spanner.getInstanceAdminClient();
+        // Get first available instance config and create an instance.
+        InstanceConfig config = instanceAdmin.listInstanceConfigs().iterateAll().iterator().next();
+        instanceAdmin
+            .createInstance(
+                InstanceInfo.newBuilder(InstanceId.of(options.getProjectId(), instanceId))
+                    .setDisplayName("samples-test")
+                    .setInstanceConfigId(config.getId())
+                    .setNodeCount(1)
+                    .build())
+            .get();
+        ownedInstance = true;
+        // Create a test database.
+        spanner
+            .getDatabaseAdminClient()
+            .createDatabase(instanceId, dbId, ImmutableList.<String>of())
+            .get();
+      }
+    }
     bout = new ByteArrayOutputStream();
     out = new PrintStream(bout);
     System.setOut(out);
@@ -49,6 +79,12 @@ public class QuickstartSampleIT {
   @After
   public void tearDown() {
     System.setOut(stdOut);
+    if (ownedInstance) {
+      SpannerOptions options = SpannerOptions.newBuilder().build();
+      try (Spanner spanner = options.getService()) {
+        spanner.getInstanceAdminClient().deleteInstance(instanceId);
+      }
+    }
   }
 
   @Test
