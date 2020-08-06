@@ -177,6 +177,9 @@ public class SpannerSample {
     if (restoredDbId.length() > 30) {
       restoredDbId = restoredDbId.substring(0, 30);
     }
+    if (restoredDbId.endsWith("-")) {
+      restoredDbId = restoredDbId.substring(0, restoredDbId.length() - 1);
+    }
     return restoredDbId;
   }
 

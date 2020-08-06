@@ -18,11 +18,15 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
@@ -42,12 +46,11 @@ import org.threeten.bp.temporal.ChronoField;
 
 /** Unit tests for {@code SpannerSample} */
 @RunWith(JUnit4.class)
-@SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class SpannerSampleIT {
-  // The instance needs to exist for tests to pass.
-  private static final String instanceId = System.getProperty("spanner.test.instance");
+  private static boolean ownedInstance = false;
+  private static String instanceId = System.getProperty("spanner.test.instance");
   private static final String databaseId =
-      formatForTest(System.getProperty("spanner.sample.database"));
+      formatForTest(System.getProperty("spanner.sample.database", "my-sample"));
   static Spanner spanner;
   static DatabaseId dbId;
   static DatabaseAdminClient dbClient;
@@ -67,6 +70,22 @@ public class SpannerSampleIT {
   public static void setUp() throws Exception {
     SpannerOptions options = SpannerOptions.newBuilder().build();
     spanner = options.getService();
+    if (instanceId == null) {
+      instanceId = formatForTest("samples");
+      InstanceAdminClient instanceAdmin = spanner.getInstanceAdminClient();
+      // Get first available instance config and create an instance.
+      InstanceConfig config = instanceAdmin.listInstanceConfigs().iterateAll().iterator().next();
+      instanceAdmin
+          .createInstance(
+              InstanceInfo.newBuilder(InstanceId.of(options.getProjectId(), instanceId))
+                  .setDisplayName("samples-test")
+                  .setInstanceConfigId(config.getId())
+                  .setNodeCount(1)
+                  .build())
+          .get();
+      ownedInstance = true;
+    }
+
     dbClient = spanner.getDatabaseAdminClient();
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
@@ -76,9 +95,16 @@ public class SpannerSampleIT {
 
   @AfterClass
   public static void tearDown() throws Exception {
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
-    dbClient.dropDatabase(
-        dbId.getInstanceId().getInstance(), SpannerSample.createRestoredSampleDbId(dbId));
+    if (ownedInstance) {
+      for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
+        dbClient.deleteBackup(instanceId, backup.getId().getBackup());
+      }
+      spanner.getInstanceAdminClient().deleteInstance(instanceId);
+    } else {
+      dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
+      dbClient.dropDatabase(
+          dbId.getInstanceId().getInstance(), SpannerSample.createRestoredSampleDbId(dbId));
+    }
   }
 
   @Test
@@ -259,36 +285,34 @@ public class SpannerSampleIT {
 
     String backupName =
         String.format(
-            "%s_%02d",
-            dbId.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
+            "%s_%02d", dbId.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
     BackupId backupId = BackupId.of(dbId.getInstanceId(), backupName);
 
     out = runSample("createbackup");
     assertThat(out).contains("Created backup [" + backupId + "]");
 
     out = runSample("cancelcreatebackup");
-    assertThat(out).contains(
-        "Backup operation for [" + backupId + "_cancel] successfully cancelled");
+    assertThat(out)
+        .contains("Backup operation for [" + backupId + "_cancel] successfully cancelled");
 
     out = runSample("listbackupoperations");
-    assertThat(out).contains(
-        String.format(
-            "Backup %s on database %s pending:",
-            backupId.getName(),
-            dbId.getName()));
+    assertThat(out)
+        .contains(
+            String.format("Backup %s on database %s pending:", backupId.getName(), dbId.getName()));
 
     out = runSample("listbackups");
     assertThat(out).contains("All backups:");
-    assertThat(out).contains(
-        String.format("All backups with backup name containing \"%s\":", backupId.getBackup()));
-    assertThat(out).contains(String.format(
-        "All backups for databases with a name containing \"%s\":",
-        dbId.getDatabase()));
-    assertThat(out).contains(
-        String.format("All backups that expire before"));
+    assertThat(out)
+        .contains(
+            String.format("All backups with backup name containing \"%s\":", backupId.getBackup()));
+    assertThat(out)
+        .contains(
+            String.format(
+                "All backups for databases with a name containing \"%s\":", dbId.getDatabase()));
+    assertThat(out).contains(String.format("All backups that expire before"));
     assertThat(out).contains("All backups with size greater than 100 bytes:");
-    assertThat(out).containsMatch(
-        Pattern.compile("All databases created after (.+) and that are ready:"));
+    assertThat(out)
+        .containsMatch(Pattern.compile("All databases created after (.+) and that are ready:"));
     assertThat(out).contains("All backups, listed using pagination:");
     // All the above tests should include the created backup exactly once, i.e. exactly 7 times.
     assertThat(countOccurrences(out, backupId.getName())).isEqualTo(7);
@@ -300,12 +324,9 @@ public class SpannerSampleIT {
     while (true) {
       try {
         out = runSample("restorebackup");
-        assertThat(out).contains(
-            "Restored database ["
-                + dbId.getName()
-                + "] from ["
-                + backupId.getName()
-                + "]");
+        assertThat(out)
+            .contains(
+                "Restored database [" + dbId.getName() + "] from [" + backupId.getName() + "]");
         break;
       } catch (SpannerException e) {
         if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
@@ -315,7 +336,7 @@ public class SpannerSampleIT {
           if (restoreAttempts == 10) {
             System.out.println(
                 "Restore operation failed 10 times because of other pending restores. "
-                + "Giving up restore.");
+                    + "Giving up restore.");
             break;
           }
           Uninterruptibles.sleepUninterruptibly(60L, TimeUnit.SECONDS);
@@ -326,17 +347,15 @@ public class SpannerSampleIT {
     }
 
     out = runSample("listdatabaseoperations");
-    assertThat(out).contains(
-        String.format(
-            "Database %s restored from backup",
-            DatabaseId.of(
-                dbId.getInstanceId(),
-                SpannerSample.createRestoredSampleDbId(dbId))
-            .getName()));
+    assertThat(out)
+        .contains(
+            String.format(
+                "Database %s restored from backup",
+                DatabaseId.of(dbId.getInstanceId(), SpannerSample.createRestoredSampleDbId(dbId))
+                    .getName()));
 
     out = runSample("updatebackup");
-    assertThat(out).contains(
-        String.format("Updated backup [" + backupId + "]"));
+    assertThat(out).contains(String.format("Updated backup [" + backupId + "]"));
 
     // Drop the restored database before we try to delete the backup.
     // Otherwise the delete backup operation might fail as the backup is still in use by
@@ -385,7 +404,11 @@ public class SpannerSampleIT {
     return input.split(search).length - 1;
   }
 
-  private static String formatForTest(String name) {
-    return name + "-" + UUID.randomUUID().toString().substring(0, 20);
+  static String formatForTest(String name) {
+    String res = name + "-" + UUID.randomUUID().toString().substring(0, 20);
+    if (res.endsWith("-")) {
+      res = res.substring(0, res.length() - 1);
+    }
+    return res;
   }
 }
