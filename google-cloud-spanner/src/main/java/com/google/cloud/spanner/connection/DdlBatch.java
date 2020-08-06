@@ -27,7 +27,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
+import com.google.cloud.spanner.connection.BaseConnection.InternalMetadataQuery;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.annotations.VisibleForTesting;

@@ -141,6 +141,10 @@ public abstract class AbstractMockServerTest {
   protected java.sql.Connection createJdbcConnection() throws SQLException {
     return DriverManager.getConnection("jdbc:" + getBaseUrl());
   }
+  
+  AsyncConnection createAsyncConnection() {
+    return null;
+  }
 
   ITConnection createConnection() {
     return createConnection(

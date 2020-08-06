@@ -684,11 +684,6 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
-  public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
-    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options);
-  }
-
-  @Override
   public ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode) {
     Preconditions.checkNotNull(queryMode);
     return parseAndExecuteQuery(query, AnalyzeMode.of(queryMode));

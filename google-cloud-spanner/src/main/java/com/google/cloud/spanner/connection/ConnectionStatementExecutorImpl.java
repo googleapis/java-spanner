@@ -73,13 +73,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   /** The connection to execute the statements on. */
-  private final ConnectionImpl connection;
+  private final AbstractBaseConnection connection;
 
-  ConnectionStatementExecutorImpl(ConnectionImpl connection) {
+  ConnectionStatementExecutorImpl(AbstractBaseConnection connection) {
     this.connection = connection;
   }
 
-  ConnectionImpl getConnection() {
+  AbstractBaseConnection getConnection() {
     return connection;
   }
 
