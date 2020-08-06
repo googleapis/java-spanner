@@ -402,6 +402,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
      * with an invalid optimizer version will fail with a syntax error
      * (`INVALID_ARGUMENT`) status.
+     * See
+     * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+     * for more information on managing the query optimizer.
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -426,6 +429,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
      * with an invalid optimizer version will fail with a syntax error
      * (`INVALID_ARGUMENT`) status.
+     * See
+     * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+     * for more information on managing the query optimizer.
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -434,6 +440,31 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * @return The bytes for optimizerVersion.
      */
     com.google.protobuf.ByteString getOptimizerVersionBytes();
+
+    /**
+     *
+     *
+     * <pre>
+     * Statistics package to use. Empty to use the database default.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The optimizerStatisticsPackage.
+     */
+    java.lang.String getOptimizerStatisticsPackage();
+    /**
+     *
+     *
+     * <pre>
+     * Statistics package to use. Empty to use the database default.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The bytes for optimizerStatisticsPackage.
+     */
+    com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes();
   }
   /**
    *
@@ -456,6 +487,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private QueryOptions() {
       optimizerVersion_ = "";
+      optimizerStatisticsPackage_ = "";
     }
 
     @java.lang.Override
@@ -492,6 +524,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 java.lang.String s = input.readStringRequireUtf8();
 
                 optimizerVersion_ = s;
+                break;
+              }
+            case 18:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+
+                optimizerStatisticsPackage_ = s;
                 break;
               }
             default:
@@ -546,6 +585,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
      * with an invalid optimizer version will fail with a syntax error
      * (`INVALID_ARGUMENT`) status.
+     * See
+     * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+     * for more information on managing the query optimizer.
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -581,6 +623,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
      * with an invalid optimizer version will fail with a syntax error
      * (`INVALID_ARGUMENT`) status.
+     * See
+     * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+     * for more information on managing the query optimizer.
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -595,6 +640,55 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         optimizerVersion_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int OPTIMIZER_STATISTICS_PACKAGE_FIELD_NUMBER = 2;
+    private volatile java.lang.Object optimizerStatisticsPackage_;
+    /**
+     *
+     *
+     * <pre>
+     * Statistics package to use. Empty to use the database default.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The optimizerStatisticsPackage.
+     */
+    @java.lang.Override
+    public java.lang.String getOptimizerStatisticsPackage() {
+      java.lang.Object ref = optimizerStatisticsPackage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        optimizerStatisticsPackage_ = s;
+        return s;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Statistics package to use. Empty to use the database default.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The bytes for optimizerStatisticsPackage.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes() {
+      java.lang.Object ref = optimizerStatisticsPackage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        optimizerStatisticsPackage_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -618,6 +712,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       if (!getOptimizerVersionBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, optimizerVersion_);
       }
+      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, optimizerStatisticsPackage_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -629,6 +726,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       size = 0;
       if (!getOptimizerVersionBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, optimizerVersion_);
+      }
+      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+        size +=
+            com.google.protobuf.GeneratedMessageV3.computeStringSize(
+                2, optimizerStatisticsPackage_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -647,6 +749,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           (com.google.spanner.v1.ExecuteSqlRequest.QueryOptions) obj;
 
       if (!getOptimizerVersion().equals(other.getOptimizerVersion())) return false;
+      if (!getOptimizerStatisticsPackage().equals(other.getOptimizerStatisticsPackage()))
+        return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -660,6 +764,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + OPTIMIZER_VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getOptimizerVersion().hashCode();
+      hash = (37 * hash) + OPTIMIZER_STATISTICS_PACKAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getOptimizerStatisticsPackage().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -810,6 +916,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         super.clear();
         optimizerVersion_ = "";
 
+        optimizerStatisticsPackage_ = "";
+
         return this;
       }
 
@@ -838,6 +946,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         com.google.spanner.v1.ExecuteSqlRequest.QueryOptions result =
             new com.google.spanner.v1.ExecuteSqlRequest.QueryOptions(this);
         result.optimizerVersion_ = optimizerVersion_;
+        result.optimizerStatisticsPackage_ = optimizerStatisticsPackage_;
         onBuilt();
         return result;
       }
@@ -894,6 +1003,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           optimizerVersion_ = other.optimizerVersion_;
           onChanged();
         }
+        if (!other.getOptimizerStatisticsPackage().isEmpty()) {
+          optimizerStatisticsPackage_ = other.optimizerStatisticsPackage_;
+          onChanged();
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -941,6 +1054,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
        * with an invalid optimizer version will fail with a syntax error
        * (`INVALID_ARGUMENT`) status.
+       * See
+       * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+       * for more information on managing the query optimizer.
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -975,6 +1091,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
        * with an invalid optimizer version will fail with a syntax error
        * (`INVALID_ARGUMENT`) status.
+       * See
+       * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+       * for more information on managing the query optimizer.
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1009,6 +1128,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
        * with an invalid optimizer version will fail with a syntax error
        * (`INVALID_ARGUMENT`) status.
+       * See
+       * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+       * for more information on managing the query optimizer.
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1042,6 +1164,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
        * with an invalid optimizer version will fail with a syntax error
        * (`INVALID_ARGUMENT`) status.
+       * See
+       * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+       * for more information on managing the query optimizer.
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1071,6 +1196,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
        * with an invalid optimizer version will fail with a syntax error
        * (`INVALID_ARGUMENT`) status.
+       * See
+       * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
+       * for more information on managing the query optimizer.
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1086,6 +1214,112 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         checkByteStringIsUtf8(value);
 
         optimizerVersion_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object optimizerStatisticsPackage_ = "";
+      /**
+       *
+       *
+       * <pre>
+       * Statistics package to use. Empty to use the database default.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return The optimizerStatisticsPackage.
+       */
+      public java.lang.String getOptimizerStatisticsPackage() {
+        java.lang.Object ref = optimizerStatisticsPackage_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          optimizerStatisticsPackage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Statistics package to use. Empty to use the database default.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return The bytes for optimizerStatisticsPackage.
+       */
+      public com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes() {
+        java.lang.Object ref = optimizerStatisticsPackage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          optimizerStatisticsPackage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Statistics package to use. Empty to use the database default.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @param value The optimizerStatisticsPackage to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOptimizerStatisticsPackage(java.lang.String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+
+        optimizerStatisticsPackage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Statistics package to use. Empty to use the database default.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearOptimizerStatisticsPackage() {
+
+        optimizerStatisticsPackage_ = getDefaultInstance().getOptimizerStatisticsPackage();
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Statistics package to use. Empty to use the database default.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @param value The bytes for optimizerStatisticsPackage to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOptimizerStatisticsPackageBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
+
+        optimizerStatisticsPackage_ = value;
         onChanged();
         return this;
       }
