@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
 import com.google.auth.oauth2.AccessToken;
@@ -71,6 +72,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -127,6 +129,13 @@ public class GapicSpannerRpcTest {
   private Server server;
   private InetSocketAddress address;
   private final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+
+  @BeforeClass
+  public static void checkNotEmulator() {
+    assumeTrue(
+        "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
+        System.getenv("SPANNER_EMULATOR_HOST") == null);
+  }
 
   @Before
   public void startServer() throws IOException {
