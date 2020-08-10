@@ -32,6 +32,7 @@ import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -40,6 +41,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.grpc.Context;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -1547,5 +1549,41 @@ public class DatabaseClientImplTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).doesNotContain("Statement:");
     }
+  }
+
+  @Test
+  public void testSpecificTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(10000, 0));
+    final DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Context.current()
+        .withValue(
+            SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
+            SpannerCallContextTimeoutConfigurator.create()
+                .withExecuteQueryTimeout(Duration.ofNanos(1L)))
+        .run(
+            new Runnable() {
+              @Override
+              public void run() {
+                // Query should fail with a timeout.
+                try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+                  rs.next();
+                  fail("missing expected DEADLINE_EXCEEDED exception");
+                } catch (SpannerException e) {
+                  assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+                }
+                // Update should succeed.
+                client
+                    .readWriteTransaction()
+                    .run(
+                        new TransactionCallable<Long>() {
+                          @Override
+                          public Long run(TransactionContext transaction) throws Exception {
+                            return transaction.executeUpdate(UPDATE_STATEMENT);
+                          }
+                        });
+              }
+            });
   }
 }

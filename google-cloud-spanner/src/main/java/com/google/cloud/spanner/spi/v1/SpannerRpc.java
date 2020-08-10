@@ -287,8 +287,6 @@ public interface SpannerRpc extends ServiceRpc {
   ApiFuture<ResultSet> executeQueryAsync(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
-  ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
-
   RetrySettings getPartitionedDmlRetrySettings();
 
   ServerStream<PartialResultSet> executeStreamingPartitionedDml(
