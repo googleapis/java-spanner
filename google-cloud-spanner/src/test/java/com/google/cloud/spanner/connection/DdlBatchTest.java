@@ -199,17 +199,6 @@ public class DdlBatchTest {
   }
 
   @Test
-  public void testWrite() {
-    DdlBatch batch = createSubject();
-    try {
-      batch.write(Mutation.newInsertBuilder("foo").build());
-      fail("expected FAILED_PRECONDITION");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-    }
-  }
-
-  @Test
   public void testWriteIterable() {
     DdlBatch batch = createSubject();
     try {

@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
@@ -24,6 +27,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.SpannerGrpc;
 import java.util.concurrent.Callable;
 
 /**
@@ -60,9 +64,16 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
+    return get(executeQueryAsync(statement, analyzeMode, options));
+  }
+
+  public ApiFuture<ResultSet> executeQueryAsync(
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
     checkValidTransaction();
-    return asyncExecuteStatement(
+    return executeStatementAsync(
         statement,
         new Callable<ResultSet>() {
           @Override
@@ -70,7 +81,8 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
             return DirectExecuteResultSet.ofResultSet(
                 internalExecuteQuery(statement, analyzeMode, options));
           }
-        });
+        },
+        SpannerGrpc.getExecuteStreamingSqlMethod());
   }
 
   ResultSet internalExecuteQuery(

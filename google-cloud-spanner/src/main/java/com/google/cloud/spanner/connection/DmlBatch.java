@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -94,6 +98,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
+  public ApiFuture<ResultSet> executeQueryAsync(
+      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DML batches.");
+  }
+
+  @Override
   public Timestamp getReadTimestamp() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "There is no read timestamp available for DML batches.");
@@ -123,6 +134,11 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public long executeUpdate(ParsedStatement update) {
+    return get(executeUpdateAsync(update));
+  }
+
+  @Override
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -132,23 +148,27 @@ class DmlBatch extends AbstractBaseUnitOfWork {
             + update.getSqlWithoutComments()
             + "\" is not a DML-statement.");
     statements.add(update);
-    return -1L;
+    return ApiFutures.immediateFuture(-1L);
   }
 
   @Override
   public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
+    return get(executeBatchUpdateAsync(updates));
+  }
+
+  @Override
+  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
   }
 
   @Override
-  public void write(Mutation mutation) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DML batches.");
+  public void write(Iterable<Mutation> mutations) {
+    get(writeAsync(mutations));
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DML batches.");
   }
@@ -181,12 +201,22 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public void commit() {
+    get(commitAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DML batches.");
   }
 
   @Override
   public void rollback() {
+    get(rollbackAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> rollbackAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DML batches.");
   }

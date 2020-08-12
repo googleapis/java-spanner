@@ -748,7 +748,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
     acquireAdministrativeRequestsRateLimiter();
     ListDatabaseOperationsRequest.Builder requestBuilder =
-        ListDatabaseOperationsRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+        ListDatabaseOperationsRequest.newBuilder().setParent(instanceName).setPageSize(1);
 
     if (filter != null) {
       requestBuilder.setFilter(filter);

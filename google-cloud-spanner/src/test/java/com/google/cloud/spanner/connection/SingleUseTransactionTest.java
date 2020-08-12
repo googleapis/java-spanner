@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -646,27 +647,6 @@ public class SingleUseTransactionTest {
   }
 
   @Test
-  public void testWrite() {
-    SingleUseTransaction subject = createSubject();
-    subject.write(Mutation.newInsertBuilder("FOO").build());
-    assertThat(subject.getCommitTimestamp()).isNotNull();
-    assertThat(subject.getState())
-        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
-  }
-
-  @Test
-  public void testWriteFail() {
-    SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
-    try {
-      subject.write(Mutation.newInsertBuilder("FOO").build());
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
-      assertThat(e.getMessage()).contains("commit failed");
-    }
-  }
-
-  @Test
   public void testWriteIterable() {
     SingleUseTransaction subject = createSubject();
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
@@ -727,10 +707,10 @@ public class SingleUseTransactionTest {
     }
 
     subject = createSubject();
-    subject.write(Mutation.newInsertBuilder("FOO").build());
+    subject.write(Collections.singleton(Mutation.newInsertBuilder("FOO").build()));
     assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
-      subject.write(Mutation.newInsertBuilder("FOO").build());
+      subject.write(Collections.singleton(Mutation.newInsertBuilder("FOO").build()));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
     }
@@ -751,10 +731,9 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubjectWithTimeout(1L);
     try {
       subject.executeQuery(createParsedQuery(SLOW_QUERY), AnalyzeMode.NONE);
+      fail("missing expected DEADLINE_EXCEEDED exception");
     } catch (SpannerException e) {
-      if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-        throw e;
-      }
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
     }
     assertThat(subject.getState())
         .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);

@@ -16,10 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ListenableFutureToApiFuture;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Duration;
@@ -27,11 +30,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.threeten.bp.temporal.ChronoUnit;
 
 /**
  * {@link StatementExecutor} is responsible for executing statements on a {@link Connection}.
@@ -55,7 +58,7 @@ class StatementExecutor {
     }
 
     /** The statement timeout. */
-    private Duration duration = null;
+    private volatile Duration duration = null;
 
     /** Creates a {@link StatementTimeout} that will never timeout. */
     @VisibleForTesting
@@ -115,6 +118,31 @@ class StatementExecutor {
             }
           });
     }
+
+    org.threeten.bp.Duration asDuration() {
+      if (!hasTimeout()) {
+        return org.threeten.bp.Duration.ZERO;
+      }
+      TimeUnit unit = getAppropriateTimeUnit();
+      switch (unit) {
+        case DAYS:
+          return org.threeten.bp.Duration.ofDays(getTimeoutValue(unit));
+        case HOURS:
+          return org.threeten.bp.Duration.ofHours(getTimeoutValue(unit));
+        case MICROSECONDS:
+          return org.threeten.bp.Duration.of(getTimeoutValue(unit), ChronoUnit.MICROS);
+        case MILLISECONDS:
+          return org.threeten.bp.Duration.ofMillis(getTimeoutValue(unit));
+        case MINUTES:
+          return org.threeten.bp.Duration.ofMinutes(getTimeoutValue(unit));
+        case NANOSECONDS:
+          return org.threeten.bp.Duration.ofNanos(getTimeoutValue(unit));
+        case SECONDS:
+          return org.threeten.bp.Duration.ofSeconds(getTimeoutValue(unit));
+        default:
+          throw new IllegalStateException("invalid time unit: " + unit);
+      }
+    }
   }
 
   /**
@@ -129,12 +157,13 @@ class StatementExecutor {
           .build();
 
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
-  private static ExecutorService createExecutorService() {
-    return new ThreadPoolExecutor(
-        1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), THREAD_FACTORY);
+  private static ListeningExecutorService createExecutorService() {
+    return MoreExecutors.listeningDecorator(
+        new ThreadPoolExecutor(
+            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), THREAD_FACTORY));
   }
 
-  private ExecutorService executor = createExecutorService();
+  private ListeningExecutorService executor = createExecutorService();
 
   /**
    * Interceptors that should be invoked before or after a statement is executed can be registered
@@ -171,8 +200,8 @@ class StatementExecutor {
   }
 
   /** Execute a statement on this {@link StatementExecutor}. */
-  <T> Future<T> submit(Callable<T> callable) {
-    return executor.submit(callable);
+  <T> ApiFuture<T> submit(Callable<T> callable) {
+    return new ListenableFutureToApiFuture<>(executor.submit(callable));
   }
 
   /**

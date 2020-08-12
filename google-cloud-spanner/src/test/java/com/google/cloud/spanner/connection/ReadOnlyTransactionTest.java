@@ -203,17 +203,6 @@ public class ReadOnlyTransactionTest {
   }
 
   @Test
-  public void testWrite() {
-    Mutation mutation = Mutation.newInsertBuilder("foo").build();
-    try {
-      createSubject().write(mutation);
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
-    }
-  }
-
-  @Test
   public void testWriteIterable() {
     Mutation mutation = Mutation.newInsertBuilder("foo").build();
     try {

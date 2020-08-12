@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
+import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,7 +34,9 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -133,13 +138,19 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
                 }
               };
-          return asyncExecuteStatement(statement, callable);
+          return executeStatement(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
         }
       }
     }
     // Queries are by default not allowed on DDL batches.
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DDL batches.");
+  }
+
+  public ApiFuture<ResultSet> executeQueryAsync(
+      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "not yet implemented");
   }
 
   @Override
@@ -179,24 +190,33 @@ class DdlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public long executeUpdate(ParsedStatement update) {
+    return get(executeUpdateAsync(update));
+  }
+
+  @Override
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
   }
 
   @Override
   public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
+    return get(executeBatchUpdateAsync(updates));
+  }
+
+  @Override
+  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DDL batches.");
   }
 
   @Override
-  public void write(Mutation mutation) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DDL batches.");
+  public void write(Iterable<Mutation> mutations) {
+    get(writeAsync(mutations));
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DDL batches.");
   }
@@ -244,7 +264,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                 }
               }
             };
-        asyncExecuteStatement(RUN_BATCH, callable);
+        get(
+            executeStatementAsync(
+                RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod()));
       }
       this.state = UnitOfWorkState.RAN;
       long[] updateCounts = new long[statements.size()];
@@ -291,12 +313,22 @@ class DdlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public void commit() {
+    get(commitAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DDL batches.");
   }
 
   @Override
   public void rollback() {
+    get(rollbackAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> rollbackAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DDL batches.");
   }

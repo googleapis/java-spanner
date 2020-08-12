@@ -23,7 +23,13 @@ import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.AbortInterceptor;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.longrunning.GetOperationRequest;
+import com.google.longrunning.Operation;
+import com.google.longrunning.OperationsGrpc.OperationsImplBase;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Any;
+import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -34,6 +40,7 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.DriverManager;
@@ -41,6 +48,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -87,11 +95,17 @@ public abstract class AbstractMockServerTest {
           .build();
   public static final Statement INSERT_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
-  public static final int UPDATE_COUNT = 1;
+  public static final long UPDATE_COUNT = 1L;
+
+  public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
+  public static final Statement SELECT_RANDOM_STATEMENT = Statement.of("SELECT * FROM RANDOM");
+  public static final com.google.spanner.v1.ResultSet RANDOM_RESULT_SET =
+      new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT).generate();
 
   public static MockSpannerServiceImpl mockSpanner;
   public static MockInstanceAdminImpl mockInstanceAdmin;
   public static MockDatabaseAdminImpl mockDatabaseAdmin;
+  public static OperationsImplBase mockOperations;
   private static Server server;
   private static InetSocketAddress address;
 
@@ -101,17 +115,34 @@ public abstract class AbstractMockServerTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockInstanceAdmin = new MockInstanceAdminImpl();
     mockDatabaseAdmin = new MockDatabaseAdminImpl();
+    mockOperations =
+        new OperationsImplBase() {
+          @Override
+          public void getOperation(
+              GetOperationRequest request, StreamObserver<Operation> responseObserver) {
+            responseObserver.onNext(
+                Operation.newBuilder()
+                    .setDone(false)
+                    .setName(request.getName())
+                    .setMetadata(Any.pack(Empty.getDefaultInstance()))
+                    .build());
+            responseObserver.onCompleted();
+          }
+        };
     address = new InetSocketAddress("localhost", 0);
     server =
         NettyServerBuilder.forAddress(address)
             .addService(mockSpanner)
             .addService(mockInstanceAdmin)
             .addService(mockDatabaseAdmin)
+            .addService(mockOperations)
             .build()
             .start();
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
   }
 
   @AfterClass
@@ -128,6 +159,7 @@ public abstract class AbstractMockServerTest {
 
   @After
   public void closeSpannerPool() {
+    Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(false);
     SpannerPool.closeSpannerPool();
   }
 

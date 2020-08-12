@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -137,6 +141,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public long executeUpdate(ParsedStatement update) {
+    return get(executeUpdateAsync(update));
+  }
+
+  @Override
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
@@ -144,35 +153,51 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
+    return get(executeBatchUpdateAsync(updates));
+  }
+
+  @Override
+  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }
 
   @Override
-  public void write(Mutation mutation) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
+  public void write(Iterable<Mutation> mutations) {
+    get(writeAsync(mutations));
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
   }
 
   @Override
   public void commit() {
+    get(commitAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> commitAsync() {
     if (this.transaction != null) {
       this.transaction.close();
     }
     this.state = UnitOfWorkState.COMMITTED;
+    return ApiFutures.immediateFuture(null);
   }
 
   @Override
   public void rollback() {
+    get(rollbackAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> rollbackAsync() {
     if (this.transaction != null) {
       this.transaction.close();
     }
     this.state = UnitOfWorkState.ROLLED_BACK;
+    return ApiFutures.immediateFuture(null);
   }
 }

@@ -16,10 +16,12 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -259,6 +261,8 @@ public interface Connection extends AutoCloseable {
    */
   void beginTransaction();
 
+  ApiFuture<Void> beginTransactionAsync();
+
   /**
    * Sets the transaction mode to use for current transaction. This method may only be called when
    * in a transaction, and before the transaction is actually started, i.e. before any statements
@@ -450,6 +454,8 @@ public interface Connection extends AutoCloseable {
    */
   void commit();
 
+  ApiFuture<Void> commitAsync();
+
   /**
    * Rollbacks the current transaction of this connection. All mutations or DDL statements that have
    * been buffered during the current transaction will be removed from the buffer.
@@ -480,6 +486,8 @@ public interface Connection extends AutoCloseable {
    * </ul>
    */
   void rollback();
+
+  ApiFuture<Void> rollbackAsync();
 
   /**
    * @return <code>true</code> if this connection has a transaction (that has not necessarily
@@ -608,6 +616,8 @@ public interface Connection extends AutoCloseable {
    */
   StatementResult execute(Statement statement);
 
+  AsyncStatementResult executeAsync(Statement statement);
+
   /**
    * Executes the given statement as a query and returns the result as a {@link ResultSet}. This
    * method blocks and waits for a response from Spanner. If the statement does not contain a valid
@@ -618,6 +628,8 @@ public interface Connection extends AutoCloseable {
    * @return a {@link ResultSet} with the results of the query
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
+
+  AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
    * Analyzes a query and returns query plan and/or query execution statistics information.
@@ -655,6 +667,8 @@ public interface Connection extends AutoCloseable {
    */
   long executeUpdate(Statement update);
 
+  ApiFuture<Long> executeUpdateAsync(Statement update);
+
   /**
    * Executes a list of DML statements in a single request. The statements will be executed in order
    * and the semantics is the same as if each statement is executed by {@link
@@ -677,6 +691,8 @@ public interface Connection extends AutoCloseable {
    */
   long[] executeBatchUpdate(Iterable<Statement> updates);
 
+  ApiFuture<long[]> executeBatchUpdateAsync(Iterable<Statement> updates);
+
   /**
    * Writes the specified mutation directly to the database and commits the change. The value is
    * readable after the successful completion of this method. Writing multiple mutations to a
@@ -692,6 +708,8 @@ public interface Connection extends AutoCloseable {
    */
   void write(Mutation mutation);
 
+  ApiFuture<Void> writeAsync(Mutation mutation);
+
   /**
    * Writes the specified mutations directly to the database and commits the changes. The values are
    * readable after the successful completion of this method.
@@ -703,6 +721,8 @@ public interface Connection extends AutoCloseable {
    * @throws SpannerException if the {@link Connection} is not in autocommit mode
    */
   void write(Iterable<Mutation> mutations);
+
+  ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 
   /**
    * Buffers the given mutation locally on the current transaction of this {@link Connection}. The

@@ -112,17 +112,6 @@ public class DmlBatchTest {
   }
 
   @Test
-  public void testWrite() {
-    DmlBatch batch = createSubject();
-    try {
-      batch.write(Mutation.newInsertBuilder("foo").build());
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-    }
-  }
-
-  @Test
   public void testWriteIterable() {
     DmlBatch batch = createSubject();
     try {

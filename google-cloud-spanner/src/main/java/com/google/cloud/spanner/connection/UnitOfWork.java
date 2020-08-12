@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
@@ -70,12 +71,16 @@ interface UnitOfWork {
    */
   void commit();
 
+  ApiFuture<Void> commitAsync();
+
   /**
    * Rollbacks any changes in this unit of work. For read-only transactions, this only closes the
    * {@link ReadContext}. This method will throw a {@link SpannerException} if called for a {@link
    * Type#BATCH}.
    */
   void rollback();
+
+  ApiFuture<Void> rollbackAsync();
 
   /**
    * Sends the currently buffered statements in this unit of work to the database and ends the
@@ -114,6 +119,9 @@ interface UnitOfWork {
   ResultSet executeQuery(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
 
+  ApiFuture<ResultSet> executeQueryAsync(
+      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
+
   /**
    * @return the read timestamp of this transaction. Will throw a {@link SpannerException} if there
    *     is no read timestamp.
@@ -150,6 +158,8 @@ interface UnitOfWork {
    */
   long executeUpdate(ParsedStatement update);
 
+  ApiFuture<Long> executeUpdateAsync(ParsedStatement update);
+
   /**
    * Execute a batch of DML statements on Spanner.
    *
@@ -160,15 +170,7 @@ interface UnitOfWork {
    */
   long[] executeBatchUpdate(Iterable<ParsedStatement> updates);
 
-  /**
-   * Writes a {@link Mutation} to Spanner. For {@link ReadWriteTransaction}s, this means buffering
-   * the {@link Mutation} locally and writing the {@link Mutation} to Spanner upon {@link
-   * UnitOfWork#commit()}. For {@link SingleUseTransaction}s, the {@link Mutation} will be sent
-   * directly to Spanner.
-   *
-   * @param mutation The mutation to write.
-   */
-  void write(Mutation mutation);
+  ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates);
 
   /**
    * Writes a batch of {@link Mutation}s to Spanner. For {@link ReadWriteTransaction}s, this means
@@ -179,4 +181,6 @@ interface UnitOfWork {
    * @param mutations The mutations to write.
    */
   void write(Iterable<Mutation> mutations);
+
+  ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 }
