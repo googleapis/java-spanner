@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
-import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ParallelIntegrationTest;

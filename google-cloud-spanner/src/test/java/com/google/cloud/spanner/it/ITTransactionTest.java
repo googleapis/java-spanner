@@ -18,7 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;

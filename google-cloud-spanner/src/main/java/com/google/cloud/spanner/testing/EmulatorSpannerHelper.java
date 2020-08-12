@@ -19,7 +19,9 @@ package com.google.cloud.spanner.testing;
 import com.google.common.base.Strings;
 
 /** Utility class for checking emulator state for tests */
-public class SpannerEmulatorHelper {
+public class EmulatorSpannerHelper {
+
+  public static final String SPANNER_EMULATOR_HOST = "SPANNER_EMULATOR_HOST";
 
   /**
    * Checks whether the emulator is being used. This is done by checking if the
@@ -28,6 +30,6 @@ public class SpannerEmulatorHelper {
    * @return true if the emulator is being used. Returns false otherwise.
    */
   public static boolean isUsingEmulator() {
-    return !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"));
+    return !Strings.isNullOrEmpty(System.getenv(SPANNER_EMULATOR_HOST));
   }
 }

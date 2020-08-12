@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.longrunning.OperationFuture;

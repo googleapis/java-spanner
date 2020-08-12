@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.Type.StructField;
-import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
