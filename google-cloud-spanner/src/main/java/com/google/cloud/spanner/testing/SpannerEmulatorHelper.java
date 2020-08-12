@@ -21,6 +21,12 @@ import com.google.common.base.Strings;
 /** Utility class for checking emulator state for tests */
 public class SpannerEmulatorHelper {
 
+  /**
+   * Checks whether the emulator is being used. This is done by checking if the
+   * SPANNER_EMULATOR_HOST environment variable is set.
+   *
+   * @return true if the emulator is being used. Returns false otherwise.
+   */
   public static boolean isUsingEmulator() {
     return !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"));
   }

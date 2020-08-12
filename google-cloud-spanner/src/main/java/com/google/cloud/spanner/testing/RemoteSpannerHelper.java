@@ -57,6 +57,17 @@ public class RemoteSpannerHelper {
     return options;
   }
 
+  /**
+   * Checks whether the emulator is being used.
+   *
+   * @deprecated use {@link SpannerEmulatorHelper#isUsingEmulator()} instead.
+   * @return true if the emulator is being used. Returns false otherwise.
+   */
+  @Deprecated
+  public boolean isEmulator() {
+    return SpannerEmulatorHelper.isUsingEmulator();
+  }
+
   public Spanner getClient() {
     return client;
   }
