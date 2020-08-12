@@ -18,9 +18,7 @@ package com.google.cloud.spanner.testing;
 
 import com.google.common.base.Strings;
 
-/**
- * Utility class for checking emulator state for tests
- */
+/** Utility class for checking emulator state for tests */
 public class SpannerEmulatorHelper {
 
   public static boolean isUsingEmulator() {

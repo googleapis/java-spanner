@@ -79,8 +79,7 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstance() throws Exception {
-    assumeFalse(
-        "The emulator does not support updating instances", isUsingEmulator());
+    assumeFalse("The emulator does not support updating instances", isUsingEmulator());
 
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
@@ -109,8 +108,7 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstanceViaEntity() throws Exception {
-    assumeFalse(
-        "The emulator does not support updating instances", isUsingEmulator());
+    assumeFalse("The emulator does not support updating instances", isUsingEmulator());
 
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());

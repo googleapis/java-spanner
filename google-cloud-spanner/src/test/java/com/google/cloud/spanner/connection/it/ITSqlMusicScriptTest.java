@@ -60,9 +60,7 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
 
   @Test
   public void test02_RunAbortedTest() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        isUsingEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
 
     final long SINGER_ID = 2L;
     final long VENUE_ID = 68L;

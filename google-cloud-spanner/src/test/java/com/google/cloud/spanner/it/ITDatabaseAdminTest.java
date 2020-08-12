@@ -266,8 +266,7 @@ public class ITDatabaseAdminTest {
   @Test
   public void testRetryNonIdempotentRpcsReturningLongRunningOperations() throws Exception {
     assumeFalse(
-        "Querying long-running operations is not supported on the emulator",
-        isUsingEmulator());
+        "Querying long-running operations is not supported on the emulator", isUsingEmulator());
 
     // RPCs that return a long-running operation such as CreateDatabase, CreateBackup and
     // RestoreDatabase are non-idempotent and can normally not be automatically retried in case of a

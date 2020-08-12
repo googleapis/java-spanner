@@ -65,8 +65,7 @@ public class ITDatabaseTest {
     // TODO: Remove the following line once the emulator returns ResourceInfo for Database not found
     // errors.
     assumeFalse(
-        "Emulator does not return ResourceInfo for Database not found errors",
-        isUsingEmulator());
+        "Emulator does not return ResourceInfo for Database not found errors", isUsingEmulator());
 
     // Create a test db, do a query, then delete it and verify that it returns
     // DatabaseNotFoundExceptions.
@@ -136,8 +135,7 @@ public class ITDatabaseTest {
     // TODO: Remove the following line when the emulator returns ResourceInfo for Instance not found
     // errors.
     assumeFalse(
-        "Emulator does not return ResourceInfo for Instance not found errors",
-        isUsingEmulator());
+        "Emulator does not return ResourceInfo for Instance not found errors", isUsingEmulator());
 
     InstanceId testId = env.getTestHelper().getInstanceId();
     InstanceId nonExistingInstanceId =

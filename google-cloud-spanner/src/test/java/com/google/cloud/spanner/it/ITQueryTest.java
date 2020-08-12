@@ -512,8 +512,7 @@ public class ITQueryTest {
   @Test
   public void unsupportedSelectArrayStructValue() {
     assumeFalse(
-        "Emulator evaluates this expression differently than Cloud Spanner",
-        isUsingEmulator());
+        "Emulator evaluates this expression differently than Cloud Spanner", isUsingEmulator());
 
     Struct p = structValue();
     try {
