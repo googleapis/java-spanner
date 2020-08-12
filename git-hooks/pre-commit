@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Copy this file into your .git/hooks folder
+
+set -e
+
+# Checks for formatting errors
+mvn com.coveo:fmt-maven-plugin:check
