@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -266,7 +267,7 @@ public class ITDatabaseAdminTest {
   public void testRetryNonIdempotentRpcsReturningLongRunningOperations() throws Exception {
     assumeFalse(
         "Querying long-running operations is not supported on the emulator",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     // RPCs that return a long-running operation such as CreateDatabase, CreateBackup and
     // RestoreDatabase are non-idempotent and can normally not be automatically retried in case of a

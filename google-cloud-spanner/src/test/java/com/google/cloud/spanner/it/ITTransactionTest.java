@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -155,7 +156,7 @@ public class ITTransactionTest {
   public void basicsUsingRead() throws InterruptedException {
     assumeFalse(
         "Emulator does not support multiple parallel transactions",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     doBasicsTest(
         new ReadStrategy() {
@@ -170,7 +171,7 @@ public class ITTransactionTest {
   public void basicsUsingQuery() throws InterruptedException {
     assumeFalse(
         "Emulator does not support multiple parallel transactions",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     doBasicsTest(
         new ReadStrategy() {
@@ -253,7 +254,7 @@ public class ITTransactionTest {
   public void readAbort() throws Exception {
     assumeFalse(
         "Emulator does not support multiple parallel transactions",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     final String key1 = uniqueKey();
     final String key2 = uniqueKey();
@@ -498,7 +499,7 @@ public class ITTransactionTest {
   public void nestedTxnSucceedsWhenAllowed() {
     assumeFalse(
         "Emulator does not support multiple parallel transactions",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     client
         .readWriteTransaction()

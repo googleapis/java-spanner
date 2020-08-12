@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -65,7 +66,7 @@ public class ITDatabaseTest {
     // errors.
     assumeFalse(
         "Emulator does not return ResourceInfo for Database not found errors",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     // Create a test db, do a query, then delete it and verify that it returns
     // DatabaseNotFoundExceptions.
@@ -136,7 +137,7 @@ public class ITDatabaseTest {
     // errors.
     assumeFalse(
         "Emulator does not return ResourceInfo for Instance not found errors",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     InstanceId testId = env.getTestHelper().getInstanceId();
     InstanceId nonExistingInstanceId =

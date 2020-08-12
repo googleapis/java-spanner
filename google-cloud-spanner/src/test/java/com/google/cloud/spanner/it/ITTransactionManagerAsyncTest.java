@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.SpannerEmulatorHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -218,7 +219,7 @@ public class ITTransactionManagerAsyncTest {
     assumeFalse(
         "Emulator does not support more than 1 simultanous transaction. "
             + "This test would therefore loop indefinetly on the emulator.",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
 
     client.write(
         Arrays.asList(
