@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -325,10 +324,7 @@ public class ITCommitTimestampTest {
                   .build()));
       fail("missing expected exception");
     } catch (SpannerException e) {
-      // TODO: Remove when the emulator returns the same error code as Cloud Spanner.
-      if (!env.getTestHelper().isEmulator()) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      }
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -336,8 +332,6 @@ public class ITCommitTimestampTest {
   // allowed if child tables are not allow_commmit_timestamp=true
   @Test
   public void interleavedTableHierarchy2() {
-    // TODO: Remove the following line once the emulator is as strict as Cloud Spanner.
-    assumeFalse("The emulator allows this situation", env.getTestHelper().isEmulator());
     Database db =
         testHelper.createTestDatabase(
             "CREATE TABLE T1 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "

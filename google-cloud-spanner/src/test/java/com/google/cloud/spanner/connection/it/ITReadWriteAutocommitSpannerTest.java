@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -76,7 +77,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   public void test03_MultipleStatements_WithTimeouts() {
     assumeFalse(
         "Rolling back a transaction while an update statement is still in flight can cause the transaction to remain active on the emulator",
-        env.getTestHelper().isEmulator());
+        isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       // do an insert that should succeed
       assertThat(

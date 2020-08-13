@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.longrunning.OperationFuture;
@@ -79,7 +80,7 @@ public class IntegrationTestEnv extends ExternalResource {
     SpannerOptions options = config.spannerOptions();
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
     InstanceId instanceId;
-    if (!instanceProperty.isEmpty()) {
+    if (!instanceProperty.isEmpty() && !isUsingEmulator()) {
       instanceId = InstanceId.of(instanceProperty);
       isOwnedInstance = false;
       logger.log(Level.INFO, "Using existing test instance: {0}", instanceId);

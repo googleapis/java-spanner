@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,9 +60,7 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
 
   @Test
   public void test02_RunAbortedTest() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
 
     final long SINGER_ID = 2L;
     final long VENUE_ID = 68L;
