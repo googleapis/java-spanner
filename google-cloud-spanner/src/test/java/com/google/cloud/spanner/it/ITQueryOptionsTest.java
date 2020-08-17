@@ -61,12 +61,17 @@ public class ITQueryOptionsTest {
   @Test
   public void executeQuery() {
     // Version '1' should work.
+    // Statistics package 'custom-package' should work.
     try (ResultSet rs =
         client
             .singleUse()
             .executeQuery(
                 Statement.newBuilder("SELECT 1")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build())) {
       while (rs.next()) {
         assertThat(rs.getLong(0)).isEqualTo(1L);
@@ -106,6 +111,7 @@ public class ITQueryOptionsTest {
   @Test
   public void executeUpdate() {
     // Optimizer version 1 should work.
+    // Optimizer statistics package 'custom-package' should work.
     assertThat(
             client
                 .readWriteTransaction()
@@ -120,7 +126,10 @@ public class ITQueryOptionsTest {
                                 .bind("name")
                                 .to("One")
                                 .withQueryOptions(
-                                    QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                                    QueryOptions.newBuilder()
+                                        .setOptimizerVersion("1")
+                                        .setOptimizerStatisticsPackage("custom-package")
+                                        .build())
                                 .build());
                       }
                     }))
@@ -172,11 +181,15 @@ public class ITQueryOptionsTest {
       assertThat(e.getMessage()).contains("Query optimizer version: 100000 is not supported");
     }
 
-    // Setting an optimizer version for PDML should also be allowed.
+    // Setting an optimizer version and statistics package for PDML should also be allowed.
     assertThat(
             client.executePartitionedUpdate(
                 Statement.newBuilder("UPDATE TEST SET NAME='updated' WHERE 1=1")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build()))
         .isEqualTo(2L);
   }
@@ -184,12 +197,17 @@ public class ITQueryOptionsTest {
   @Test
   public void spannerOptions() {
     // Version '1' should work.
+    // Statistics package 'custom-package' should work.
     try (Spanner spanner =
         env.getTestHelper()
             .getOptions()
             .toBuilder()
             .setDefaultQueryOptions(
-                db.getId(), QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                db.getId(),
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .build()
             .getService()) {
       DatabaseClient client = spanner.getDatabaseClient(db.getId());
