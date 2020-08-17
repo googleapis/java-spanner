@@ -653,6 +653,51 @@ public abstract class AbstractConnectionImplTest {
     }
   }
 
+  boolean isSetOptimizerStatisticsPackageAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testSetOptimizerStatisticsPackage() {
+    try (Connection connection = getConnection()) {
+      if (isSetOptimizerStatisticsPackageAllowed()) {
+        for (String statisticsPackage : new String[] {"custom-package", ""}) {
+          log("SET OPTIMIZER_STATISTICS_PACKAGE='" + statisticsPackage + "';");
+          connection.setOptimizerStatisticsPackage(statisticsPackage);
+
+          log("@EXPECT RESULT_SET 'OPTIMIZER_STATISTICS_PACKAGE','" + statisticsPackage + "'");
+          log("SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;");
+          assertThat(connection.getOptimizerStatisticsPackage(), is(equalTo(statisticsPackage)));
+        }
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        log("SET OPTIMIZER_STATISTICS_PACKAGE='custom-package';");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.setOptimizerStatisticsPackage("custom-package");
+      }
+    }
+  }
+
+  boolean isGetOptimizerStatisticsPackageAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testGetOptimizerStatisticsPackage() {
+    try (Connection connection = getConnection()) {
+      if (isGetOptimizerStatisticsPackageAllowed()) {
+        log("@EXPECT RESULT_SET 'OPTIMIZER_STATISTICS_PACKAGE'");
+        log("SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;");
+        assertThat(connection.getOptimizerStatisticsPackage(), is(notNullValue()));
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        log("SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getOptimizerStatisticsPackage();
+      }
+    }
+  }
+
   abstract boolean isCommitAllowed();
 
   @Test

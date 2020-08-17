@@ -601,6 +601,53 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testExecuteSetOptimizerStatisticsPackage() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+
+      StatementResult res =
+          subject.execute(Statement.of("set optimizer_statistics_package='custom-package'"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("custom-package")));
+
+      res = subject.execute(Statement.of("set optimizer_statistics_package=''"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+    }
+  }
+
+  @Test
+  public void testExecuteGetOptimizerStatisticsPackage() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+
+      StatementResult res =
+          subject.execute(Statement.of("show variable optimizer_statistics_package"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(res.getResultSet().getString("OPTIMIZER_STATISTICS_PACKAGE"), is(equalTo("")));
+
+      subject.execute(Statement.of("set optimizer_statistics_package='custom-package'"));
+      res = subject.execute(Statement.of("show variable optimizer_statistics_package"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(
+          res.getResultSet().getString("OPTIMIZER_STATISTICS_PACKAGE"),
+          is(equalTo("custom-package")));
+    }
+  }
+
+  @Test
   public void testExecuteSetStatementTimeout() {
     try (ConnectionImpl subject =
         createConnection(
@@ -1206,55 +1253,81 @@ public class ConnectionImplTest {
             return unitOfWork;
           }
         }) {
-      // Execute query with an optimizer version set on the connection.
+      // Execute query with an optimizer version and statistics package set on the connection.
       impl.setOptimizerVersion("1");
+      impl.setOptimizerStatisticsPackage("custom-package-1");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQuery(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("1")
+                              .setOptimizerStatisticsPackage("custom-package-1")
+                              .build())
                       .build()),
               AnalyzeMode.NONE);
 
-      // Execute query with an optimizer version set on the connection.
+      // Execute query with an optimizer version and statistics package set on the connection.
       impl.setOptimizerVersion("2");
+      impl.setOptimizerStatisticsPackage("custom-package-2");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQuery(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("2")
+                              .setOptimizerStatisticsPackage("custom-package-2")
+                              .build())
                       .build()),
               AnalyzeMode.NONE);
 
-      // Execute query with an optimizer version set on the connection and PrefetchChunks query
+      // Execute query with an optimizer version and statistics package set on the connection and
+      // PrefetchChunks query
       // option specified for the query.
       QueryOption prefetchOption = Options.prefetchChunks(100);
       impl.setOptimizerVersion("3");
+      impl.setOptimizerStatisticsPackage("custom-package-3");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
           .executeQuery(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("3").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("3")
+                              .setOptimizerStatisticsPackage("custom-package-3")
+                              .build())
                       .build()),
               AnalyzeMode.NONE,
               prefetchOption);
 
-      // Execute query with an optimizer version set on the connection, and the same options also
+      // Execute query with an optimizer version and statistics package set on the connection, and
+      // the same options also
       // passed in to the query. The specific options passed in to the query should take precedence.
       impl.setOptimizerVersion("4");
+      impl.setOptimizerStatisticsPackage("custom-package-4");
       impl.executeQuery(
           Statement.newBuilder("SELECT FOO FROM BAR")
-              .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+              .withQueryOptions(
+                  QueryOptions.newBuilder()
+                      .setOptimizerVersion("5")
+                      .setOptimizerStatisticsPackage("custom-package-5")
+                      .build())
               .build(),
           prefetchOption);
       verify(unitOfWork)
           .executeQuery(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("5")
+                              .setOptimizerStatisticsPackage("custom-package-5")
+                              .build())
                       .build()),
               AnalyzeMode.NONE,
               prefetchOption);

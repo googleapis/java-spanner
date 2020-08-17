@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -547,42 +548,74 @@ public class SpannerOptionsTest {
           public String getOptimizerVersion() {
             return "";
           }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "";
+          }
         });
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("1")
+                .setOptimizerStatisticsPackage("custom-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
         .isEqualTo(QueryOptions.getDefaultInstance());
 
-    // Now simulate that the user has set an environment variable for the query optimizer version.
+    // Now simulate that the user has set an environment variable for the query optimizer version
+    // and statistics package.
     SpannerOptions.useEnvironment(
         new SpannerOptions.SpannerEnvironment() {
           @Override
           public String getOptimizerVersion() {
             return "2";
           }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "env-package";
+          }
         });
-    // Create options with '1' as the default query optimizer version. This should be overridden by
+    // Create options with '1' as the default query optimizer version and 'custom-package' as the
+    // default query optimizer statistics package. These values should be overridden by
     // the environment variable.
     options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
   }
 
   @Test

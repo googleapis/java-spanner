@@ -23,6 +23,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
@@ -32,6 +33,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
@@ -54,7 +56,9 @@ import java.util.concurrent.TimeUnit;
  * calls are then forwarded into a {@link Connection}.
  */
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
+
   static final class StatementTimeoutGetter implements DurationValueGetter {
+
     private final Connection connection;
 
     public StatementTimeoutGetter(Connection connection) {
@@ -195,6 +199,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowOptimizerVersion() {
     return resultSet(
         "OPTIMIZER_VERSION", getConnection().getOptimizerVersion(), SHOW_OPTIMIZER_VERSION);
+  }
+
+  @Override
+  public StatementResult statementSetOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    getConnection().setOptimizerStatisticsPackage(optimizerStatisticsPackage);
+    return noResult(SET_OPTIMIZER_STATISTICS_PACKAGE);
+  }
+
+  @Override
+  public StatementResult statementShowOptimizerStatisticsPackage() {
+    return resultSet(
+        "OPTIMIZER_STATISTICS_PACKAGE",
+        getConnection().getOptimizerStatisticsPackage(),
+        SHOW_OPTIMIZER_STATISTICS_PACKAGE);
   }
 
   @Override

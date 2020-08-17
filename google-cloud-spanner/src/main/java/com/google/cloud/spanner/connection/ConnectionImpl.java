@@ -48,6 +48,7 @@ import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
+
   private static final String CLOSED_ERROR_MSG = "This connection is closed";
   private static final String ONLY_ALLOWED_IN_AUTOCOMMIT =
       "This method may only be called while in autocommit mode";
@@ -59,6 +60,7 @@ class ConnectionImpl implements Connection {
    * This exception is logged if the application closes without first closing the connection.
    */
   static class LeakedConnectionException extends RuntimeException {
+
     private static final long serialVersionUID = 7119433786832158700L;
 
     private LeakedConnectionException() {
@@ -80,6 +82,7 @@ class ConnectionImpl implements Connection {
 
   /** Simple thread factory that is used for fire-and-forget rollbacks. */
   static final class DaemonThreadFactory implements ThreadFactory {
+
     @Override
     public Thread newThread(Runnable r) {
       Thread t = new Thread(r);
@@ -117,6 +120,7 @@ class ConnectionImpl implements Connection {
    * is active.
    */
   static final class InternalMetadataQuery implements QueryOption {
+
     static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}
@@ -406,6 +410,20 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    Preconditions.checkNotNull(optimizerStatisticsPackage);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.queryOptions =
+        queryOptions.toBuilder().setOptimizerStatisticsPackage(optimizerStatisticsPackage).build();
+  }
+
+  @Override
+  public String getOptimizerStatisticsPackage() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.queryOptions.getOptimizerStatisticsPackage();
+  }
+
+  @Override
   public void setStatementTimeout(long timeout, TimeUnit unit) {
     Preconditions.checkArgument(timeout > 0L, "Zero or negative timeout values are not allowed");
     Preconditions.checkArgument(
@@ -600,10 +618,12 @@ class ConnectionImpl implements Connection {
 
   /** Internal interface for ending a transaction (commit/rollback). */
   private static interface EndTransactionMethod {
+
     public void end(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {
+
     @Override
     public void end(UnitOfWork t) {
       t.commit();
@@ -619,6 +639,7 @@ class ConnectionImpl implements Connection {
   }
 
   private static final class Rollback implements EndTransactionMethod {
+
     @Override
     public void end(UnitOfWork t) {
       t.rollback();

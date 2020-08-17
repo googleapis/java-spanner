@@ -96,7 +96,11 @@ public class SpannerImplTest {
 
   @Test
   public void queryOptions() {
-    QueryOptions queryOptions = QueryOptions.newBuilder().setOptimizerVersion("2").build();
+    QueryOptions queryOptions =
+        QueryOptions.newBuilder()
+            .setOptimizerVersion("2")
+            .setOptimizerStatisticsPackage("custom-package")
+            .build();
     QueryOptions defaultOptions = QueryOptions.getDefaultInstance();
     DatabaseId db = DatabaseId.of("p", "i", "d");
     DatabaseId otherDb = DatabaseId.of("p", "i", "other");

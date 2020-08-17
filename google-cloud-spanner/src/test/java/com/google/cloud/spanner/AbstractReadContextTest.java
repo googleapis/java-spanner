@@ -46,7 +46,12 @@ public class AbstractReadContextTest {
     List<Object[]> params = new ArrayList<>();
     params.add(new Object[] {QueryOptions.getDefaultInstance()});
     params.add(
-        new Object[] {QueryOptions.newBuilder().setOptimizerVersion("some-version").build()});
+        new Object[] {
+          QueryOptions.newBuilder()
+              .setOptimizerVersion("some-version")
+              .setOptimizerStatisticsPackage("some-package")
+              .build()
+        });
     return params;
   }
 
@@ -101,11 +106,17 @@ public class AbstractReadContextTest {
         context
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2.0").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("2.0")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build(),
                 QueryMode.NORMAL)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("2.0");
+    assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+        .isEqualTo("custom-package");
   }
 }

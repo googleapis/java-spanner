@@ -64,6 +64,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowOptimizerVersion();
 
+  StatementResult statementSetOptimizerStatisticsPackage(String optimizerStatisticsPackage);
+
+  StatementResult statementShowOptimizerStatisticsPackage();
+
   StatementResult statementBeginTransaction();
 
   StatementResult statementCommit();

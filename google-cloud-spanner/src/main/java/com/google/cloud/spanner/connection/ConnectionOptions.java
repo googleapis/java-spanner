@@ -152,6 +152,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -176,6 +177,9 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Query optimizer statistics package to use for a connection. */
+  private static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME =
+      "optimizerStatisticsPackage";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -194,7 +198,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty(
                       USE_PLAIN_TEXT_PROPERTY_NAME, "", DEFAULT_USE_PLAIN_TEXT),
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""))));
+                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""),
+                  ConnectionProperty.createStringProperty(
+                      OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -422,6 +428,7 @@ public class ConnectionOptions {
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
+    queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
 
     this.host =
@@ -531,6 +538,12 @@ public class ConnectionOptions {
   static String parseOptimizerVersion(String uri) {
     String value = parseUriProperty(uri, OPTIMIZER_VERSION_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OPTIMIZER_VERSION;
+  }
+
+  @VisibleForTesting
+  static String parseOptimizerStatisticsPackage(String uri) {
+    String value = parseUriProperty(uri, OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_OPTIMIZER_STATISTICS_PACKAGE;
   }
 
   @VisibleForTesting
