@@ -1182,6 +1182,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public ResultSet executePartitionedDml(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context =
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
+    return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
+  }
+
+  @Override
   public RetrySettings getPartitionedDmlRetrySettings() {
     return partitionedDmlRetrySettings;
   }

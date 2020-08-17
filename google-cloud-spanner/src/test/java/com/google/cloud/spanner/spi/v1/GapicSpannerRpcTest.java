@@ -398,7 +398,7 @@ public class GapicSpannerRpcTest {
                 && method.equals(SpannerGrpc.getExecuteSqlMethod())) {
               ExecuteSqlRequest sqlRequest = (ExecuteSqlRequest) request;
               // Sequence numbers are only assigned for DML statements, which means that
-              // this is an udate statement.
+              // this is an update statement.
               if (sqlRequest.getSeqno() > 0L) {
                 return context.withTimeout(timeoutHolder.timeout);
               }
