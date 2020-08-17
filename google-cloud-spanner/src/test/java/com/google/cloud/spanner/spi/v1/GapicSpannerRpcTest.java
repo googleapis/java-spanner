@@ -392,8 +392,8 @@ public class GapicSpannerRpcTest {
           @Override
           public <ReqT, RespT> ApiCallContext configure(
               ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
-            // Only configure a timeout for the ExecuteSql method when the request has a ,
-            // as this method is used for executing DML statements.
+            // Only configure a timeout for the ExecuteSql method as this method is used for
+            // executing DML statements.
             if (request instanceof ExecuteSqlRequest
                 && method.equals(SpannerGrpc.getExecuteSqlMethod())) {
               ExecuteSqlRequest sqlRequest = (ExecuteSqlRequest) request;
