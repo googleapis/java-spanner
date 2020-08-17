@@ -91,7 +91,7 @@ import java.util.concurrent.TimeUnit;
  *   <li><code>SHOW OPTIMIZER_STATISTICS_PACKAGE</code>: Returns the current value of <code>
  *       OPTIMIZER_STATISTICS_PACKAGE</code> of this connection as a {@link ResultSet}
  *   <li><code>
- *       SET OPTIMIZER_STATISTICS_PACKAGE='&lt;package&gt;'
+ *       SET OPTIMIZER_STATISTICS_PACKAGE='&lt;package&gt;' | ''
  *       </code>: Sets the value of <code>OPTIMIZER_STATISTICS_PACKAGE</code> for this connection.
  *   <li><code>BEGIN [TRANSACTION]</code>: Begins a new transaction. This statement is optional when
  *       the connection is not in autocommit mode, as a new transaction will automatically be
