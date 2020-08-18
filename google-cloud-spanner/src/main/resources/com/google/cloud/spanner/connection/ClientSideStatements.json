@@ -282,7 +282,7 @@
 		"setStatement": {
 			"propertyName": "OPTIMIZER_STATISTICS_PACKAGE",
 			"separator": "=",
-			"allowedValues": "'(([A-Za-z0-9\\-\\_]+)|())'",
+			"allowedValues": "'((\\S+)|())'",
 			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
 		}
 	}

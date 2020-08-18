@@ -622,6 +622,25 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testExecuteSetOptimizerStatisticsPackageInvalidValue() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+
+      try {
+        subject.execute(Statement.of("set optimizer_statistics_package='   '"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.INVALID_ARGUMENT)));
+      }
+    }
+  }
+
+  @Test
   public void testExecuteGetOptimizerStatisticsPackage() {
     try (ConnectionImpl subject =
         createConnection(
