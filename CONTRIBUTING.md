@@ -48,11 +48,7 @@ integration tests.
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account.json
-mvn \
-  -Penable-integration-tests \
-  -Dspanner.testenv.instance=projects/<your-project>/instances/<your-instance> \
-  -Dspanner.gce.config.project_id=<your-project> \
-  clean verify
+mvn -Penable-integration-tests clean verify
 ```
 
 ## Code Samples
