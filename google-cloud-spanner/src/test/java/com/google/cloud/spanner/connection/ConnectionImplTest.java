@@ -319,11 +319,16 @@ public class ConnectionImplTest {
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;
 
-                      @SuppressWarnings("unchecked")
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
                         this.commitTimestamp = Timestamp.now();
-                        return (T) Long.valueOf(1L);
+                        TransactionContext tx = mock(TransactionContext.class);
+                        when(tx.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                        try {
+                          return callable.run(tx);
+                        } catch (Exception e) {
+                          throw SpannerExceptionFactory.newSpannerException(e);
+                        }
                       }
 
                       @Override

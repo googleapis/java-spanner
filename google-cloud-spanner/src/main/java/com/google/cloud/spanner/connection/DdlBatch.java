@@ -245,12 +245,16 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                     ddlClient.executeDdl(statements);
                 try {
                   // Wait until the operation has finished.
-                  operation.get();
+                  getWithStatementTimeout(operation, RUN_BATCH);
                   // Return metadata.
                   return operation.getMetadata().get();
+                } catch (SpannerException e) {
+                  long[] updateCounts = extractUpdateCounts(operation);
+                  throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                      e.getErrorCode(), e.getMessage(), updateCounts);
                 } catch (ExecutionException e) {
                   SpannerException spannerException = extractSpannerCause(e);
-                  long[] updateCounts = extractUpdateCounts(operation.getMetadata().get());
+                  long[] updateCounts = extractUpdateCounts(operation);
                   throw SpannerExceptionFactory.newSpannerBatchUpdateException(
                       spannerException == null
                           ? ErrorCode.UNKNOWN
@@ -258,7 +262,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                       e.getMessage(),
                       updateCounts);
                 } catch (InterruptedException e) {
-                  long[] updateCounts = extractUpdateCounts(operation.getMetadata().get());
+                  long[] updateCounts = extractUpdateCounts(operation);
                   throw SpannerExceptionFactory.newSpannerBatchUpdateException(
                       ErrorCode.CANCELLED, e.getMessage(), updateCounts);
                 }
@@ -289,6 +293,14 @@ class DdlBatch extends AbstractBaseUnitOfWork {
       cause = cause.getCause();
     }
     return null;
+  }
+
+  long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {
+    try {
+      return extractUpdateCounts(operation.getMetadata().get());
+    } catch (Throwable t) {
+      return new long[0];
+    }
   }
 
   @VisibleForTesting

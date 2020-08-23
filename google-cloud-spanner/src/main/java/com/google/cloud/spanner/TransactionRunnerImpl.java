@@ -238,11 +238,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         commitTimestamp = commitAsync().get();
       } catch (InterruptedException e) {
+        if (commitFuture != null) {
+          commitFuture.cancel(true);
+        }
         throw SpannerExceptionFactory.propagateInterrupt(e);
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       }
     }
+
+    volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<Timestamp> commitAsync() {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
@@ -273,8 +278,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 span.addAnnotation("Starting Commit");
                 final Span opSpan =
                     tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-                final ApiFuture<CommitResponse> commitFuture =
-                    rpc.commitAsync(commitRequest, session.getOptions());
+                commitFuture = rpc.commitAsync(commitRequest, session.getOptions());
                 commitFuture.addListener(
                     tracer.withSpan(
                         opSpan,

@@ -48,6 +48,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import io.grpc.MethodDescriptor;
@@ -289,10 +290,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             public Void call() throws Exception {
               OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
                   ddlClient.executeDdl(ddl.getSqlWithoutComments());
-              return operation.get();
+              return getWithStatementTimeout(operation, ddl);
             }
           };
-      executeStatement(ddl, callable, null);
+      get(executeStatementAsync(ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod()));
       state = UnitOfWorkState.COMMITTED;
     } catch (Throwable e) {
       state = UnitOfWorkState.COMMIT_FAILED;
@@ -325,20 +326,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Unknown dml mode: " + autocommitDmlMode);
     }
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Long>() {
-          @Override
-          public void onFailure(Throwable t) {
-            state = UnitOfWorkState.COMMIT_FAILED;
-          }
-
-          @Override
-          public void onSuccess(Long result) {
-            state = UnitOfWorkState.COMMITTED;
-          }
-        },
-        MoreExecutors.directExecutor());
     return res;
   }
 
@@ -397,11 +384,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         !isReadOnly(), "Batch update statements are not allowed in read-only mode");
     checkAndMarkUsed();
 
-    ApiFuture<long[]> res;
     switch (autocommitDmlMode) {
       case TRANSACTIONAL:
-        res = executeTransactionalBatchUpdateAsync(updates);
-        break;
+        return executeTransactionalBatchUpdateAsync(updates);
       case PARTITIONED_NON_ATOMIC:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed in " + autocommitDmlMode);
@@ -409,26 +394,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Unknown dml mode: " + autocommitDmlMode);
     }
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<long[]>() {
-          @Override
-          public void onFailure(Throwable t) {
-            if (t instanceof SpannerBatchUpdateException) {
-              // Batch update exceptions does not cause a rollback.
-              state = UnitOfWorkState.COMMITTED;
-            } else {
-              state = UnitOfWorkState.COMMIT_FAILED;
-            }
-          }
-
-          @Override
-          public void onSuccess(long[] result) {
-            state = UnitOfWorkState.COMMITTED;
-          }
-        },
-        MoreExecutors.directExecutor());
-    return res;
   }
 
   /** Base class for executing DML updates (both single statements and batches). */
@@ -482,14 +447,22 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<Long>() {
           @Override
           public Long call() throws Exception {
-            writeTransaction = dbClient.readWriteTransaction();
-            return writeTransaction.run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    return transaction.executeUpdate(update.getStatement());
-                  }
-                });
+            try {
+              writeTransaction = dbClient.readWriteTransaction();
+              Long res =
+                  writeTransaction.run(
+                      new TransactionCallable<Long>() {
+                        @Override
+                        public Long run(TransactionContext transaction) throws Exception {
+                          return transaction.executeUpdate(update.getStatement());
+                        }
+                      });
+              state = UnitOfWorkState.COMMITTED;
+              return res;
+            } catch (Throwable t) {
+              state = UnitOfWorkState.COMMIT_FAILED;
+              throw t;
+            }
           }
         };
     return executeStatementAsync(
@@ -504,7 +477,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<Long>() {
           @Override
           public Long call() throws Exception {
-            return dbClient.executePartitionedUpdate(update.getStatement());
+            try {
+              Long res = dbClient.executePartitionedUpdate(update.getStatement());
+              state = UnitOfWorkState.COMMITTED;
+              return res;
+            } catch (Throwable t) {
+              state = UnitOfWorkState.COMMIT_FAILED;
+              throw t;
+            }
           }
         };
     return executeStatementAsync(update, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
@@ -521,15 +501,28 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 new TransactionCallable<long[]>() {
                   @Override
                   public long[] run(TransactionContext transaction) throws Exception {
-                    return transaction.batchUpdate(
-                        Iterables.transform(
-                            updates,
-                            new Function<ParsedStatement, Statement>() {
-                              @Override
-                              public Statement apply(ParsedStatement input) {
-                                return input.getStatement();
-                              }
-                            }));
+                    try {
+                      long[] res =
+                          transaction.batchUpdate(
+                              Iterables.transform(
+                                  updates,
+                                  new Function<ParsedStatement, Statement>() {
+                                    @Override
+                                    public Statement apply(ParsedStatement input) {
+                                      return input.getStatement();
+                                    }
+                                  }));
+                      state = UnitOfWorkState.COMMITTED;
+                      return res;
+                    } catch (Throwable t) {
+                      if (t instanceof SpannerBatchUpdateException) {
+                        // Batch update exceptions does not cause a rollback.
+                        state = UnitOfWorkState.COMMITTED;
+                      } else {
+                        state = UnitOfWorkState.COMMIT_FAILED;
+                      }
+                      throw t;
+                    }
                   }
                 });
           }
@@ -590,34 +583,26 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<Void>() {
           @Override
           public Void call() throws Exception {
-            writeTransaction = dbClient.readWriteTransaction();
-            return writeTransaction.run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    transaction.buffer(mutations);
-                    return null;
-                  }
-                });
+            try {
+              writeTransaction = dbClient.readWriteTransaction();
+              Void res =
+                  writeTransaction.run(
+                      new TransactionCallable<Void>() {
+                        @Override
+                        public Void run(TransactionContext transaction) throws Exception {
+                          transaction.buffer(mutations);
+                          return null;
+                        }
+                      });
+              state = UnitOfWorkState.COMMITTED;
+              return res;
+            } catch (Throwable t) {
+              state = UnitOfWorkState.COMMIT_FAILED;
+              throw t;
+            }
           }
         };
-    ApiFuture<Void> res =
-        executeStatementAsync(commitStatement, callable, SpannerGrpc.getCommitMethod());
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Void>() {
-          @Override
-          public void onFailure(Throwable t) {
-            state = UnitOfWorkState.COMMIT_FAILED;
-          }
-
-          @Override
-          public void onSuccess(Void result) {
-            state = UnitOfWorkState.COMMITTED;
-          }
-        },
-        MoreExecutors.directExecutor());
-    return res;
+    return executeStatementAsync(commitStatement, callable, SpannerGrpc.getCommitMethod());
   }
 
   @Override

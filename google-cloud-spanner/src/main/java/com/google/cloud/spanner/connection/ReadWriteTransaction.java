@@ -836,28 +836,33 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public ApiFuture<Void> rollbackAsync() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "This transaction has status " + state.name());
-    ApiFuture<Void> res =
-        executeStatementAsync(rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
     state = UnitOfWorkState.ROLLED_BACK;
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Void>() {
-          @Override
-          public void onFailure(Throwable t) {
-            try {
-              // Whatever happens, we should always call close in order to return the underlying
-              // session to the session pool to avoid any session leaks.
-              txManager.close();
-            } catch (Throwable e) {
-              // ignore
+    if (txContextFuture != null) {
+      ApiFuture<Void> res =
+          executeStatementAsync(
+              rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
+      ApiFutures.addCallback(
+          res,
+          new ApiFutureCallback<Void>() {
+            @Override
+            public void onFailure(Throwable t) {
+              try {
+                // Whatever happens, we should always call close in order to return the underlying
+                // session to the session pool to avoid any session leaks.
+                txManager.close();
+              } catch (Throwable e) {
+                // ignore
+              }
             }
-          }
 
-          @Override
-          public void onSuccess(Void result) {}
-        },
-        MoreExecutors.directExecutor());
-    return res;
+            @Override
+            public void onSuccess(Void result) {}
+          },
+          MoreExecutors.directExecutor());
+      return res;
+    } else {
+      return ApiFutures.immediateFuture(null);
+    }
   }
 
   /**

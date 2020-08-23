@@ -232,7 +232,9 @@ public class DdlBatchTest {
     assertThat(batch.isActive(), is(false));
 
     DdlClient client = mock(DdlClient.class);
-    doThrow(SpannerException.class).when(client).executeDdl(anyListOf(String.class));
+    SpannerException exception = mock(SpannerException.class);
+    when(exception.getErrorCode()).thenReturn(ErrorCode.FAILED_PRECONDITION);
+    doThrow(exception).when(client).executeDdl(anyListOf(String.class));
     batch = createSubject(client);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
@@ -241,13 +243,12 @@ public class DdlBatchTest {
     when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
     when(statement.getType()).thenReturn(StatementType.DDL);
     batch.executeDdl(statement);
-    boolean exception = false;
     try {
       batch.runBatch();
+      fail("Missing expected exception");
     } catch (SpannerException e) {
-      exception = true;
+      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
     }
-    assertThat(exception, is(true));
     assertThat(batch.getState(), is(UnitOfWorkState.RUN_FAILED));
     assertThat(batch.isActive(), is(false));
   }

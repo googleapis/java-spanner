@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
@@ -30,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Context;
 import io.grpc.MethodDescriptor;
+import io.grpc.Status;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,7 +55,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
    * unit of work.
    */
   @GuardedBy("this")
-  private Future<?> currentlyRunningStatementFuture = null;
+  private volatile Future<?> currentlyRunningStatementFuture = null;
 
   enum InterceptorsUsage {
     INVOKE_INTERCEPTORS,
@@ -140,19 +142,17 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethods);
   }
 
-  <T> T getWithStatementTimeout(ApiFuture<T> future, ParsedStatement statement) {
-    T res;
+  <ResponseT, MetadataT> ResponseT getWithStatementTimeout(
+      OperationFuture<ResponseT, MetadataT> operation, ParsedStatement statement) {
+    ResponseT res;
     try {
-      // TODO: Remove this and rely on RPC timeouts.
       if (statementTimeout.hasTimeout()) {
         TimeUnit unit = statementTimeout.getAppropriateTimeUnit();
-        res = future.get(statementTimeout.getTimeoutValue(unit), unit);
+        res = operation.get(statementTimeout.getTimeoutValue(unit), unit);
       } else {
-        res = future.get();
+        res = operation.get();
       }
     } catch (TimeoutException e) {
-      // statement timed out, cancel the execution
-      future.cancel(true);
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.DEADLINE_EXCEEDED,
           "Statement execution timeout occurred for " + statement.getSqlWithoutComments(),
@@ -168,7 +168,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         cause = cause.getCause();
       }
       throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNKNOWN,
+          ErrorCode.fromGrpcStatus(Status.fromThrowable(e)),
           "Statement execution failed for " + statement.getSqlWithoutComments(),
           e);
     } catch (InterruptedException e) {
@@ -267,7 +267,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 }
               });
     }
-    ApiFuture<T> future = statementExecutor.submit(context.wrap(callable));
+    final ApiFuture<T> future = statementExecutor.submit(context.wrap(callable));
     synchronized (this) {
       this.currentlyRunningStatementFuture = future;
     }
@@ -276,7 +276,9 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
           @Override
           public void run() {
             synchronized (this) {
-              currentlyRunningStatementFuture = null;
+              if (currentlyRunningStatementFuture == future) {
+                currentlyRunningStatementFuture = null;
+              }
             }
           }
         },

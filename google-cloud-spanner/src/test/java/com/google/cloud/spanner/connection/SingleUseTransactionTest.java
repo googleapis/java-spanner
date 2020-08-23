@@ -288,16 +288,6 @@ public class SingleUseTransactionTest {
         0L);
   }
 
-  private SingleUseTransaction createSubjectWithTimeout(long timeout) {
-    return createSubject(
-        createDefaultMockDdlClient(),
-        false,
-        TimestampBound.strong(),
-        AutocommitDmlMode.TRANSACTIONAL,
-        CommitBehavior.SUCCEED,
-        timeout);
-  }
-
   private SingleUseTransaction createSubject(AutocommitDmlMode dmlMode) {
     return createSubject(
         createDefaultMockDdlClient(),
@@ -350,7 +340,7 @@ public class SingleUseTransactionTest {
         new SimpleReadOnlyTransaction(staleness);
     when(dbClient.singleUseReadOnlyTransaction(staleness)).thenReturn(singleUse);
 
-    TransactionContext txContext = mock(TransactionContext.class);
+    final TransactionContext txContext = mock(TransactionContext.class);
     when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
     when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
         .thenAnswer(
@@ -382,12 +372,17 @@ public class SingleUseTransactionTest {
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;
 
-                      @SuppressWarnings("unchecked")
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
                         if (commitBehavior == CommitBehavior.SUCCEED) {
+                          T res;
+                          try {
+                            res = callable.run(txContext);
+                          } catch (Exception e) {
+                            throw SpannerExceptionFactory.newSpannerException(e);
+                          }
                           this.commitTimestamp = Timestamp.now();
-                          return (T) Long.valueOf(1L);
+                          return res;
                         } else if (commitBehavior == CommitBehavior.FAIL) {
                           throw SpannerExceptionFactory.newSpannerException(
                               ErrorCode.UNKNOWN, "commit failed");
@@ -612,18 +607,6 @@ public class SingleUseTransactionTest {
   }
 
   @Test
-  public void testExecuteUpdate_Transactional_Valid_AbortedCommit() {
-    ParsedStatement update = createParsedUpdate(VALID_UPDATE);
-    SingleUseTransaction subject = createSubject(CommitBehavior.ABORT);
-    // even though the transaction aborts at first, it will be retried and eventually succeed
-    long updateCount = subject.executeUpdate(update);
-    assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
-    assertThat(subject.getCommitTimestamp()).isNotNull();
-    assertThat(subject.getState())
-        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
-  }
-
-  @Test
   public void testExecuteUpdate_Partitioned_Valid() {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
@@ -723,44 +706,6 @@ public class SingleUseTransactionTest {
       subject.write(Arrays.asList(mutation, mutation));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
-    }
-  }
-
-  @Test
-  public void testExecuteQueryWithTimeout() {
-    SingleUseTransaction subject = createSubjectWithTimeout(1L);
-    try {
-      subject.executeQuery(createParsedQuery(SLOW_QUERY), AnalyzeMode.NONE);
-      fail("missing expected DEADLINE_EXCEEDED exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-    }
-    assertThat(subject.getState())
-        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);
-    try {
-      subject.getReadTimestamp();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-    }
-  }
-
-  @Test
-  public void testExecuteUpdateWithTimeout() {
-    SingleUseTransaction subject = createSubjectWithTimeout(1L);
-    try {
-      subject.executeUpdate(createParsedUpdate(SLOW_UPDATE));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-    }
-    assertThat(subject.getState())
-        .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMIT_FAILED);
-    try {
-      subject.getCommitTimestamp();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 }

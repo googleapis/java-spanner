@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
@@ -42,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
+import org.threeten.bp.Duration;
 
 /**
  * Pool for keeping track of {@link Spanner} instances needed for connections.
@@ -302,6 +305,18 @@ public class SpannerPool {
               return input;
             }
           });
+      // TODO: Externalize this configuration.
+      builder
+          .getDatabaseAdminStubSettingsBuilder()
+          .updateDatabaseDdlOperationSettings()
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(1L))
+                      .setMaxRetryDelay(Duration.ofMillis(1L))
+                      .setRetryDelayMultiplier(1.0)
+                      .setTotalTimeout(Duration.ofMinutes(10L))
+                      .build()));
     }
     return builder.build().getService();
   }

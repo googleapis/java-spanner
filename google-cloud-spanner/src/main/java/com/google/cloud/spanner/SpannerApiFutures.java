@@ -30,6 +30,9 @@ public class SpannerApiFutures {
     try {
       return future == null ? null : future.get();
     } catch (ExecutionException e) {
+      if (e.getCause() instanceof SpannerException) {
+        throw (SpannerException) e.getCause();
+      }
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);

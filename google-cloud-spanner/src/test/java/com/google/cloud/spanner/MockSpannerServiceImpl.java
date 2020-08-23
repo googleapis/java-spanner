@@ -1864,6 +1864,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public void waitForRequestsToContain(Class<? extends AbstractMessage> type, long timeoutMillis)
+      throws InterruptedException, TimeoutException {
+    Stopwatch watch = Stopwatch.createStarted();
+    while (countRequestsOfType(type) == 0) {
+      Thread.sleep(10L);
+      if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
+        throw new TimeoutException(
+            "Timeout while waiting for requests to contain " + type.getName());
+      }
+    }
+  }
+
   @Override
   public void addResponse(AbstractMessage response) {
     throw new UnsupportedOperationException();
