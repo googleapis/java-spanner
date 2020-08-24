@@ -39,6 +39,7 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
+import io.grpc.internal.LogExceptionRunnable;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
@@ -109,6 +110,9 @@ public abstract class AbstractMockServerTest {
   private static Server server;
   private static InetSocketAddress address;
 
+  private boolean futureParentHandlers;
+  private boolean exceptionRunnableParentHandlers;
+
   @BeforeClass
   public static void startStaticServer() throws IOException {
     mockSpanner = new MockSpannerServiceImpl();
@@ -157,12 +161,23 @@ public abstract class AbstractMockServerTest {
     mockSpanner.reset();
     mockDatabaseAdmin.reset();
     mockInstanceAdmin.reset();
+
+    futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
+    exceptionRunnableParentHandlers =
+        Logger.getLogger(LogExceptionRunnable.class.getName()).getUseParentHandlers();
+    Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(false);
+    Logger.getLogger(LogExceptionRunnable.class.getName()).setUseParentHandlers(false);
   }
 
   @After
   public void closeSpannerPool() {
-    Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(false);
-    SpannerPool.closeSpannerPool();
+    try {
+      SpannerPool.closeSpannerPool();
+    } finally {
+      Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
+      Logger.getLogger(LogExceptionRunnable.class.getName())
+          .setUseParentHandlers(exceptionRunnableParentHandlers);
+    }
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {

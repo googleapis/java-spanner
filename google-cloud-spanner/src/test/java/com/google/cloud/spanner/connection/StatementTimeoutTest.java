@@ -1021,7 +1021,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionDdlBatch() {
-    addSlowMockDdlOperation();
+    addSlowMockDdlOperations(10);
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
@@ -1040,13 +1040,14 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionDdlBatchMultipleStatements() {
+    addSlowMockDdlOperations(20);
+
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
       connection.setStatementTimeout(TIMEOUT_FOR_SLOW_STATEMENTS, TimeUnit.MILLISECONDS);
 
       // assert that multiple statements after each other also time out
       for (int i = 0; i < 2; i++) {
-        addSlowMockDdlOperation();
 
         connection.startBatchDdl();
         connection.execute(Statement.of(SLOW_DDL));
@@ -1058,6 +1059,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
         }
       }
       // try to do a new DDL statement that is fast.
+      mockDatabaseAdmin.reset();
       addFastMockDdlOperation();
       connection.setStatementTimeout(TIMEOUT_FOR_FAST_STATEMENTS, TimeUnit.MILLISECONDS);
       connection.startBatchDdl();
