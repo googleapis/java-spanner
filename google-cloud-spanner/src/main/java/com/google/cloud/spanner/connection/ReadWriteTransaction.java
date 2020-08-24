@@ -806,9 +806,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         @Override
         public Void call() throws Exception {
           // Make sure the transaction has actually started before we try to rollback.
-          get(txContextFuture);
-          txManager.rollback();
-          return null;
+          try {
+            get(txContextFuture);
+            txManager.rollback();
+            return null;
+          } finally {
+            txManager.close();
+          }
         }
       };
 
@@ -823,28 +827,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         state == UnitOfWorkState.STARTED, "This transaction has status " + state.name());
     state = UnitOfWorkState.ROLLED_BACK;
     if (txContextFuture != null) {
-      ApiFuture<Void> res =
-          executeStatementAsync(
-              rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
-      ApiFutures.addCallback(
-          res,
-          new ApiFutureCallback<Void>() {
-            @Override
-            public void onFailure(Throwable t) {
-              try {
-                // Whatever happens, we should always call close in order to return the underlying
-                // session to the session pool to avoid any session leaks.
-                txManager.close();
-              } catch (Throwable e) {
-                // ignore
-              }
-            }
-
-            @Override
-            public void onSuccess(Void result) {}
-          },
-          MoreExecutors.directExecutor());
-      return res;
+      return executeStatementAsync(
+          rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
       return ApiFutures.immediateFuture(null);
     }

@@ -325,42 +325,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
-    Preconditions.checkNotNull(updates);
-    for (ParsedStatement update : updates) {
-      Preconditions.checkArgument(
-          update.isUpdate(),
-          "Statement is not an update statement: " + update.getSqlWithoutComments());
-    }
-    ConnectionPreconditions.checkState(
-        !isReadOnly(), "Batch update statements are not allowed in read-only mode");
-    checkAndMarkUsed();
-
-    long[] res;
-    try {
-      switch (autocommitDmlMode) {
-        case TRANSACTIONAL:
-          res =
-              executeAsyncTransactionalUpdate(
-                  executeBatchUpdateStatement, new TransactionalBatchUpdateCallable(updates));
-          break;
-        case PARTITIONED_NON_ATOMIC:
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.FAILED_PRECONDITION,
-              "Batch updates are not allowed in " + autocommitDmlMode);
-        default:
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.FAILED_PRECONDITION, "Unknown dml mode: " + autocommitDmlMode);
-      }
-    } catch (SpannerBatchUpdateException e) {
-      // Batch update exceptions does not cause a rollback.
-      state = UnitOfWorkState.COMMITTED;
-      throw e;
-    } catch (Throwable e) {
-      state = UnitOfWorkState.COMMIT_FAILED;
-      throw e;
-    }
-    state = UnitOfWorkState.COMMITTED;
-    return res;
+    return get(executeBatchUpdateAsync(updates));
   }
 
   @Override
