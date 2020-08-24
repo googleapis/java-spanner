@@ -235,10 +235,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private boolean hasCommitTimestamp() {
-    return writeTransaction != null
-        || (txManager != null
-            && txManager.getState()
-                == com.google.cloud.spanner.TransactionManager.TransactionState.COMMITTED);
+    return state == UnitOfWorkState.COMMITTED
+        && (writeTransaction != null
+            || (txManager != null
+                && txManager.getState()
+                    == com.google.cloud.spanner.TransactionManager.TransactionState.COMMITTED));
   }
 
   @Override

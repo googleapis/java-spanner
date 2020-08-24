@@ -155,6 +155,8 @@ public abstract class AbstractMockServerTest {
   @Before
   public void setupResults() {
     mockSpanner.reset();
+    mockDatabaseAdmin.reset();
+    mockInstanceAdmin.reset();
   }
 
   @After

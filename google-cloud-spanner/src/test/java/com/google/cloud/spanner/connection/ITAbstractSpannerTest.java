@@ -32,6 +32,7 @@ import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConn
 import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -119,13 +121,27 @@ public abstract class ITAbstractSpannerTest {
           try {
             Field field = ReadWriteTransaction.class.getDeclaredField("txManager");
             field.setAccessible(true);
+            Stopwatch watch = Stopwatch.createStarted();
+            while (field.get(transaction) == null && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+              Thread.sleep(1L);
+            }
             TransactionManager tx = (TransactionManager) field.get(transaction);
+            if (tx == null) {
+              return;
+            }
             Class<?> cls = Class.forName("com.google.cloud.spanner.TransactionManagerImpl");
             Class<?> cls2 =
                 Class.forName("com.google.cloud.spanner.SessionPool$AutoClosingTransactionManager");
             Field delegateField = cls2.getDeclaredField("delegate");
             delegateField.setAccessible(true);
+            watch = watch.reset().start();
+            while (delegateField.get(tx) == null && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+              Thread.sleep(1L);
+            }
             TransactionManager delegate = (TransactionManager) delegateField.get(tx);
+            if (delegate == null) {
+              return;
+            }
             Field stateField = cls.getDeclaredField("txnState");
             stateField.setAccessible(true);
 
