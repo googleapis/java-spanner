@@ -19,8 +19,6 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutureCallback;
-import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
@@ -47,7 +45,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
@@ -195,39 +192,32 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<ResultSet>() {
           @Override
           public ResultSet call() throws Exception {
-            ResultSet rs;
-            if (analyzeMode == AnalyzeMode.NONE) {
-              rs = currentTransaction.executeQuery(statement.getStatement(), options);
-            } else {
-              rs =
-                  currentTransaction.analyzeQuery(
-                      statement.getStatement(), analyzeMode.getQueryAnalyzeMode());
+            try {
+              ResultSet rs;
+              if (analyzeMode == AnalyzeMode.NONE) {
+                rs = currentTransaction.executeQuery(statement.getStatement(), options);
+              } else {
+                rs =
+                    currentTransaction.analyzeQuery(
+                        statement.getStatement(), analyzeMode.getQueryAnalyzeMode());
+              }
+              // Return a DirectExecuteResultSet, which will directly do a next() call in order to
+              // ensure that the query is actually sent to Spanner.
+              ResultSet directRs = DirectExecuteResultSet.ofResultSet(rs);
+              state = UnitOfWorkState.COMMITTED;
+              readTimestamp.set(currentTransaction.getReadTimestamp());
+              return directRs;
+            } catch (Throwable t) {
+              state = UnitOfWorkState.COMMIT_FAILED;
+              readTimestamp.set(null);
+              currentTransaction.close();
+              throw t;
             }
-            // Return a DirectExecuteResultSet, which will directly do a next() call in order to
-            // ensure that the query is actually sent to Spanner.
-            return DirectExecuteResultSet.ofResultSet(rs);
           }
         };
+    readTimestamp = SettableApiFuture.create();
     ApiFuture<ResultSet> res =
         executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
-    readTimestamp = SettableApiFuture.create();
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<ResultSet>() {
-          @Override
-          public void onFailure(Throwable t) {
-            state = UnitOfWorkState.COMMIT_FAILED;
-            readTimestamp.set(null);
-            currentTransaction.close();
-          }
-
-          @Override
-          public void onSuccess(ResultSet result) {
-            state = UnitOfWorkState.COMMITTED;
-            readTimestamp.set(currentTransaction.getReadTimestamp());
-          }
-        },
-        MoreExecutors.directExecutor());
     return res;
   }
 

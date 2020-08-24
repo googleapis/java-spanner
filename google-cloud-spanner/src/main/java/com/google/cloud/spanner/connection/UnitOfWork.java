@@ -40,6 +40,7 @@ interface UnitOfWork {
 
   enum UnitOfWorkState {
     STARTED,
+    COMMITTING,
     COMMITTED,
     COMMIT_FAILED,
     ROLLED_BACK,

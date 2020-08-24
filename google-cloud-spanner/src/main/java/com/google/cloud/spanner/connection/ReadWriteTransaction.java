@@ -522,8 +522,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             get(txContextFuture).buffer(mutations);
             txManager.commit();
             commitTimestampFuture.set(txManager.getCommitTimestamp());
+            state = UnitOfWorkState.COMMITTED;
+            return null;
           } catch (Throwable t) {
             commitTimestampFuture.setException(t);
+            state = UnitOfWorkState.COMMIT_FAILED;
             throw t;
           } finally {
             try {
@@ -532,7 +535,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               // ignore.
             }
           }
-          return null;
         }
       };
 
@@ -544,6 +546,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   @Override
   public ApiFuture<Void> commitAsync() {
     checkValidTransaction();
+    state = UnitOfWorkState.COMMITTING;
     commitTimestampFuture = SettableApiFuture.create();
     ApiFuture<Void> res;
     if (retryAbortsInternally) {
@@ -573,24 +576,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res = executeStatementAsync(COMMIT_STATEMENT, commitCallable, SpannerGrpc.getCommitMethod());
     }
-    ReadWriteTransaction.this.state = UnitOfWorkState.COMMITTED;
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Void>() {
-          @Override
-          public void onFailure(Throwable t) {
-            try {
-              txManager.close();
-            } catch (Throwable t2) {
-              // ignore
-            }
-            state = UnitOfWorkState.COMMIT_FAILED;
-          }
-
-          @Override
-          public void onSuccess(Void result) {}
-        },
-        MoreExecutors.directExecutor());
     return res;
   }
 
