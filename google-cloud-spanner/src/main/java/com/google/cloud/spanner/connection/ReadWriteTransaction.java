@@ -317,11 +317,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
-    return get(executeUpdateAsync(update));
-  }
-
-  @Override
   public ApiFuture<Long> executeUpdateAsync(final ParsedStatement update) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
@@ -405,11 +400,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public long[] executeBatchUpdate(final Iterable<ParsedStatement> updates) {
-    return get(executeBatchUpdateAsync(updates));
-  }
-
-  @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     Preconditions.checkNotNull(updates);
     final List<Statement> updateStatements = new LinkedList<>();
@@ -487,11 +477,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
-    get(writeAsync(mutations));
-  }
-
-  @Override
   public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     Preconditions.checkNotNull(mutations);
     checkValidTransaction();
@@ -531,11 +516,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
         }
       };
-
-  @Override
-  public void commit() {
-    get(commitAsync());
-  }
 
   @Override
   public ApiFuture<Void> commitAsync() {
@@ -818,11 +798,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
         }
       };
-
-  @Override
-  public void rollback() {
-    get(rollbackAsync());
-  }
 
   @Override
   public ApiFuture<Void> rollbackAsync() {

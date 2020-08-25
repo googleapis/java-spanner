@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -140,20 +139,10 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
-    return get(executeUpdateAsync(update));
-  }
-
-  @Override
   public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
-  }
-
-  @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
-    return get(executeBatchUpdateAsync(updates));
   }
 
   @Override
@@ -163,19 +152,9 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
-    get(writeAsync(mutations));
-  }
-
-  @Override
   public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
-  }
-
-  @Override
-  public void commit() {
-    get(commitAsync());
   }
 
   @Override
@@ -185,11 +164,6 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     }
     this.state = UnitOfWorkState.COMMITTED;
     return ApiFutures.immediateFuture(null);
-  }
-
-  @Override
-  public void rollback() {
-    get(rollbackAsync());
   }
 
   @Override

@@ -27,6 +27,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
+import java.util.concurrent.ExecutionException;
 
 /** Internal interface for transactions and batches on {@link Connection}s. */
 @InternalApi
@@ -69,18 +70,18 @@ interface UnitOfWork {
    * Commits the changes in this unit of work to the database. For read-only transactions, this only
    * closes the {@link ReadContext}. This method will throw a {@link SpannerException} if called for
    * a {@link Type#BATCH}.
+   *
+   * @return An {@link ApiFuture} that is done when the commit has finished.
    */
-  void commit();
-
   ApiFuture<Void> commitAsync();
 
   /**
    * Rollbacks any changes in this unit of work. For read-only transactions, this only closes the
    * {@link ReadContext}. This method will throw a {@link SpannerException} if called for a {@link
    * Type#BATCH}.
+   *
+   * @return An {@link ApiFuture} that is done when the rollback has finished.
    */
-  void rollback();
-
   ApiFuture<Void> rollbackAsync();
 
   /**
@@ -113,13 +114,11 @@ interface UnitOfWork {
    *     ResultSet} or not. Cannot be used in combination with {@link QueryOption}s.
    * @param options the options to configure the query. May only be set if analyzeMode is set to
    *     {@link AnalyzeMode#NONE}.
-   * @return a {@link ResultSet} with the results of the query.
-   * @throws SpannerException if the query is not allowed on this {@link UnitOfWork}, or if a
-   *     database error occurs.
+   * @return an {@link ApiFuture} containing a {@link ResultSet} with the results of the query.
+   * @throws SpannerException if the query is not allowed on this {@link UnitOfWork}. The {@link
+   *     ApiFuture} will return a {@link SpannerException} wrapped in an {@link ExecutionException}
+   *     if a database error occurs.
    */
-  ResultSet executeQuery(
-      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
-
   ApiFuture<ResultSet> executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
 
@@ -155,22 +154,19 @@ interface UnitOfWork {
    * Execute a DML statement on Spanner.
    *
    * @param update The DML statement to execute.
-   * @return the number of records that were inserted/updated/deleted by this statement.
+   * @return an {@link ApiFuture} containing the number of records that were
+   *     inserted/updated/deleted by this statement.
    */
-  long executeUpdate(ParsedStatement update);
-
   ApiFuture<Long> executeUpdateAsync(ParsedStatement update);
 
   /**
    * Execute a batch of DML statements on Spanner.
    *
    * @param updates The DML statements to execute.
-   * @return an array containing the number of records that were inserted/updated/deleted per
-   *     statement.
+   * @return an {@link ApiFuture} containing an array with the number of records that were
+   *     inserted/updated/deleted per statement.
    * @see TransactionContext#batchUpdate(Iterable)
    */
-  long[] executeBatchUpdate(Iterable<ParsedStatement> updates);
-
   ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates);
 
   /**
@@ -180,8 +176,8 @@ interface UnitOfWork {
    * sent directly to Spanner.
    *
    * @param mutations The mutations to write.
+   * @return an {@link ApiFuture} that is done when the {@link Mutation}s have been successfully
+   *     buffered or written to Cloud Spanner.
    */
-  void write(Iterable<Mutation> mutations);
-
   ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 }

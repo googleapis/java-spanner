@@ -170,14 +170,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ResultSet executeQuery(
-      final ParsedStatement statement,
-      final AnalyzeMode analyzeMode,
-      final QueryOption... options) {
-    return get(executeQueryAsync(statement, analyzeMode, options));
-  }
-
-  @Override
   public ApiFuture<ResultSet> executeQueryAsync(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
@@ -293,11 +285,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
-    return get(executeUpdateAsync(update));
-  }
-
-  @Override
   public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
@@ -322,11 +309,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   private final ParsedStatement executeBatchUpdateStatement =
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
-
-  @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
-    return get(executeBatchUpdateAsync(updates));
-  }
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
@@ -520,11 +502,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
   }
 
-  @Override
-  public void write(Iterable<Mutation> mutations) {
-    get(writeAsync(mutations));
-  }
-
   private final ParsedStatement commitStatement =
       StatementParser.INSTANCE.parse(Statement.of("COMMIT"));
 
@@ -562,19 +539,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void commit() {
-    get(commitAsync());
-  }
-
-  @Override
   public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not supported for single-use transactions");
-  }
-
-  @Override
-  public void rollback() {
-    get(rollbackAsync());
   }
 
   @Override

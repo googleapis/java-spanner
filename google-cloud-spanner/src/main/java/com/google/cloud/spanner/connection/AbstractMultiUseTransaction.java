@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -58,14 +56,6 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
 
   /** Returns the {@link ReadContext} that can be used for queries on this transaction. */
   abstract ReadContext getReadContext();
-
-  @Override
-  public ResultSet executeQuery(
-      final ParsedStatement statement,
-      final AnalyzeMode analyzeMode,
-      final QueryOption... options) {
-    return get(executeQueryAsync(statement, analyzeMode, options));
-  }
 
   public ApiFuture<ResultSet> executeQueryAsync(
       final ParsedStatement statement,

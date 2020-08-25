@@ -261,6 +261,10 @@ public interface Connection extends AutoCloseable {
    */
   void beginTransaction();
 
+  /**
+   * Same as {@link #beginTransaction()}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that is done when the new transaction has been created.
+   */
   ApiFuture<Void> beginTransactionAsync();
 
   /**
@@ -454,6 +458,10 @@ public interface Connection extends AutoCloseable {
    */
   void commit();
 
+  /**
+   * Same as {@link #commit()}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that is done when the transaction has committed or the commit has failed.
+   */
   ApiFuture<Void> commitAsync();
 
   /**
@@ -487,6 +495,10 @@ public interface Connection extends AutoCloseable {
    */
   void rollback();
 
+  /**
+   * Same as {@link #rollback()}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that is done when the transaction has been rolled back.
+   */
   ApiFuture<Void> rollbackAsync();
 
   /**
@@ -616,6 +628,11 @@ public interface Connection extends AutoCloseable {
    */
   StatementResult execute(Statement statement);
 
+  /**
+   * Same as {@link #execute(Statement)}, but is guaranteed to be non-blocking. The result of the
+   * statement is returned as either an {@link AsyncResultSet} or an {@link ApiFuture} depending on
+   * the type of statement.
+   */
   AsyncStatementResult executeAsync(Statement statement);
 
   /**
@@ -629,6 +646,13 @@ public interface Connection extends AutoCloseable {
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
 
+  /**
+   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
+   * and returns the query result as an {@link AsyncResultSet}. See {@link
+   * AsyncResultSet#setCallback(java.util.concurrent.Executor,
+   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
+   * the results of the query asynchronously.
+   */
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
@@ -667,6 +691,10 @@ public interface Connection extends AutoCloseable {
    */
   long executeUpdate(Statement update);
 
+  /**
+   * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking and returns an
+   * {@link ApiFuture} that will return the update count.
+   */
   ApiFuture<Long> executeUpdateAsync(Statement update);
 
   /**
@@ -691,6 +719,10 @@ public interface Connection extends AutoCloseable {
    */
   long[] executeBatchUpdate(Iterable<Statement> updates);
 
+  /**
+   * Same as {@link #executeBatchUpdate(Iterable)}, but is guaranteed to be non-blocking and returns
+   * its result as an {@link ApiFuture} that will return the update counts.
+   */
   ApiFuture<long[]> executeBatchUpdateAsync(Iterable<Statement> updates);
 
   /**
@@ -708,6 +740,10 @@ public interface Connection extends AutoCloseable {
    */
   void write(Mutation mutation);
 
+  /**
+   * Same as {@link #write(Mutation)}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that is done when the {@link Mutation} has been written to Cloud Spanner.
+   */
   ApiFuture<Void> writeAsync(Mutation mutation);
 
   /**
@@ -722,6 +758,10 @@ public interface Connection extends AutoCloseable {
    */
   void write(Iterable<Mutation> mutations);
 
+  /**
+   * Same as {@link #write(Iterable)}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that is done when all {@link Mutation}s have been written to Cloud Spanner.
+   */
   ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 
   /**

@@ -687,7 +687,7 @@ class ConnectionImpl implements Connection {
       case QUERY:
         return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
-        return StatementResultImpl.of(internalExecuteUpdate(parsedStatement));
+        return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
       case DDL:
         executeDdl(parsedStatement);
         return StatementResultImpl.noResult();
@@ -712,7 +712,8 @@ class ConnectionImpl implements Connection {
                 .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments()),
             spanner.getAsyncExecutorProvider());
       case QUERY:
-        return AsyncStatementResultImpl.of(internalExecuteQueryAsync(parsedStatement));
+        return AsyncStatementResultImpl.of(
+            internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
         return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
       case DDL:
@@ -734,7 +735,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
-    return parseAndExecuteQueryAsync(query, options);
+    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options);
   }
 
   @Override
@@ -773,7 +774,8 @@ class ConnectionImpl implements Connection {
         "Statement is not a query: " + parsedStatement.getSqlWithoutComments());
   }
 
-  private AsyncResultSet parseAndExecuteQueryAsync(Statement query, QueryOption... options) {
+  private AsyncResultSet parseAndExecuteQueryAsync(
+      Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
@@ -787,7 +789,7 @@ class ConnectionImpl implements Connection {
                   .getResultSet(),
               spanner.getAsyncExecutorProvider());
         case QUERY:
-          return internalExecuteQueryAsync(parsedStatement, options);
+          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
         case DDL:
         case UNKNOWN:
@@ -807,7 +809,7 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
-          return internalExecuteUpdate(parsedStatement);
+          return get(internalExecuteUpdateAsync(parsedStatement));
         case CLIENT_SIDE:
         case QUERY:
         case DDL:
@@ -865,7 +867,7 @@ class ConnectionImpl implements Connection {
         }
       }
     }
-    return internalExecuteBatchUpdate(parsedStatements);
+    return get(internalExecuteBatchUpdateAsync(parsedStatements));
   }
 
   @Override
@@ -903,46 +905,19 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    try {
-      return transaction.executeQuery(statement, analyzeMode, options);
-    } catch (SpannerException e) {
-      // In case of a timed out or cancelled query we need to replace the executor to ensure that we
-      // have an executor that is not busy executing a statement. Although we try to cancel the
-      // current statement, it is not guaranteed to actually stop the execution directly.
-      if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED
-          || e.getErrorCode() == ErrorCode.CANCELLED) {
-        this.statementExecutor.recreate();
-      }
-      throw e;
-    }
+    return get(transaction.executeQueryAsync(statement, analyzeMode, options));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
-      final ParsedStatement statement, final QueryOption... options) {
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(statement, AnalyzeMode.NONE, options),
+        transaction.executeQueryAsync(statement, analyzeMode, options),
         spanner.getAsyncExecutorProvider());
-  }
-
-  private long internalExecuteUpdate(final ParsedStatement update) {
-    Preconditions.checkArgument(
-        update.getType() == StatementType.UPDATE, "Statement must be an update");
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    try {
-      return transaction.executeUpdate(update);
-    } catch (SpannerException e) {
-      // In case of a timed out or cancelled query we need to replace the executor to ensure that we
-      // have an executor that is not busy executing a statement. Although we try to cancel the
-      // current statement, it is not guaranteed to actually stop the execution directly.
-      if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED
-          || e.getErrorCode() == ErrorCode.CANCELLED) {
-        this.statementExecutor.recreate();
-      }
-      throw e;
-    }
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(final ParsedStatement update) {
@@ -950,22 +925,6 @@ class ConnectionImpl implements Connection {
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeUpdateAsync(update);
-  }
-
-  private long[] internalExecuteBatchUpdate(final List<ParsedStatement> updates) {
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    try {
-      return transaction.executeBatchUpdate(updates);
-    } catch (SpannerException e) {
-      // In case of a timed out or cancelled query we need to replace the executor to ensure that we
-      // have an executor that is not busy executing a statement. Although we try to cancel the
-      // current statement, it is not guaranteed to actually stop the execution directly.
-      if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED
-          || e.getErrorCode() == ErrorCode.CANCELLED) {
-        this.statementExecutor.recreate();
-      }
-      throw e;
-    }
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(List<ParsedStatement> updates) {
@@ -1087,7 +1046,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(mutations);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isAutocommit(), NOT_ALLOWED_IN_AUTOCOMMIT);
-    getCurrentUnitOfWorkOrStartNewUnitOfWork().write(mutations);
+    get(getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(mutations));
   }
 
   @Override

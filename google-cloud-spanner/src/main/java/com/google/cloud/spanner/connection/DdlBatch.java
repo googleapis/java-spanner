@@ -116,8 +116,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     return false;
   }
 
-  @Override
-  public ResultSet executeQuery(
+  public ApiFuture<ResultSet> executeQueryAsync(
       final ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
     if (options != null) {
       for (int i = 0; i < options.length; i++) {
@@ -138,19 +137,14 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
                 }
               };
-          return executeStatement(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+          return executeStatementAsync(
+              statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
         }
       }
     }
     // Queries are by default not allowed on DDL batches.
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DDL batches.");
-  }
-
-  public ApiFuture<ResultSet> executeQueryAsync(
-      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.UNIMPLEMENTED, "not yet implemented");
   }
 
   @Override
@@ -189,30 +183,15 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
-    return get(executeUpdateAsync(update));
-  }
-
-  @Override
   public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
   }
 
   @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
-    return get(executeBatchUpdateAsync(updates));
-  }
-
-  @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DDL batches.");
-  }
-
-  @Override
-  public void write(Iterable<Mutation> mutations) {
-    get(writeAsync(mutations));
   }
 
   @Override
@@ -324,19 +303,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void commit() {
-    get(commitAsync());
-  }
-
-  @Override
   public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DDL batches.");
-  }
-
-  @Override
-  public void rollback() {
-    get(rollbackAsync());
   }
 
   @Override

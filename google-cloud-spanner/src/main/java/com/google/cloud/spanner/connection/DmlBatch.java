@@ -91,13 +91,6 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ResultSet executeQuery(
-      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DML batches.");
-  }
-
-  @Override
   public ApiFuture<ResultSet> executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
@@ -133,11 +126,6 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
-    return get(executeUpdateAsync(update));
-  }
-
-  @Override
   public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
@@ -152,19 +140,9 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
-    return get(executeBatchUpdateAsync(updates));
-  }
-
-  @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
-  }
-
-  @Override
-  public void write(Iterable<Mutation> mutations) {
-    get(writeAsync(mutations));
   }
 
   @Override
@@ -182,7 +160,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
       if (statements.isEmpty()) {
         res = new long[0];
       } else {
-        res = transaction.executeBatchUpdate(statements);
+        res = get(transaction.executeBatchUpdateAsync(statements));
       }
       this.state = UnitOfWorkState.RAN;
       return res;
@@ -200,19 +178,9 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void commit() {
-    get(commitAsync());
-  }
-
-  @Override
   public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DML batches.");
-  }
-
-  @Override
-  public void rollback() {
-    get(rollbackAsync());
   }
 
   @Override

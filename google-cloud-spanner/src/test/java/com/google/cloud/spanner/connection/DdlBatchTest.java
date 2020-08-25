@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -137,7 +138,7 @@ public class DdlBatchTest {
   public void testExecuteQuery() {
     DdlBatch batch = createSubject();
     try {
-      batch.executeQuery(mock(ParsedStatement.class), AnalyzeMode.NONE);
+      batch.executeQueryAsync(mock(ParsedStatement.class), AnalyzeMode.NONE);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -157,8 +158,8 @@ public class DdlBatchTest {
     when(dbClient.singleUse()).thenReturn(singleUse);
     DdlBatch batch = createSubject(createDefaultMockDdlClient(), dbClient);
     assertThat(
-        batch
-            .executeQuery(parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE)
+        get(batch.executeQueryAsync(
+                parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE))
             .hashCode(),
         is(equalTo(resultSet.hashCode())));
   }
@@ -167,7 +168,7 @@ public class DdlBatchTest {
   public void testExecuteUpdate() {
     DdlBatch batch = createSubject();
     try {
-      batch.executeUpdate(mock(ParsedStatement.class));
+      batch.executeUpdateAsync(mock(ParsedStatement.class));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -202,7 +203,7 @@ public class DdlBatchTest {
   public void testWriteIterable() {
     DdlBatch batch = createSubject();
     try {
-      batch.write(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -494,7 +495,7 @@ public class DdlBatchTest {
   public void testCommit() {
     DdlBatch batch = createSubject();
     try {
-      batch.commit();
+      batch.commitAsync();
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -505,7 +506,7 @@ public class DdlBatchTest {
   public void testRollback() {
     DdlBatch batch = createSubject();
     try {
-      batch.rollback();
+      batch.rollbackAsync();
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
