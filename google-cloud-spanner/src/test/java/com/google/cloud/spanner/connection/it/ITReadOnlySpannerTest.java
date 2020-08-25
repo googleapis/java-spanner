@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -169,7 +170,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAnalyzeQuery() {
-    assumeFalse("analyze query is not supported on the emulator", env.getTestHelper().isEmulator());
+    assumeFalse("analyze query is not supported on the emulator", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       for (QueryAnalyzeMode mode : QueryAnalyzeMode.values()) {
         try (ResultSet rs =

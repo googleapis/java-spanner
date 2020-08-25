@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
@@ -279,9 +278,6 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncRunnerFireAndForgetInvalidUpdate() throws Exception {
-    assumeFalse(
-        "errors in read/write transactions on emulator are sticky",
-        env.getTestHelper().isEmulator());
     try {
       assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
       AsyncRunner runner = client.runAsync();

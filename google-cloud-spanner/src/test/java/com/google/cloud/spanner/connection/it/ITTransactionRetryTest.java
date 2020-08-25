@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -488,9 +489,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentInsert() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
@@ -525,9 +524,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentDelete() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -566,9 +563,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentUpdate() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -612,9 +607,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithUnseenConcurrentInsert() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
@@ -662,9 +655,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithUnseenConcurrentInsertAbortOnNext() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     // no calls to next(), this should succeed
     assertThat(testAbortWithUnseenConcurrentInsertAbortOnNext(0) >= 1, is(true));
     // 1 call to next() should also succeed, as there were 2 records in the original result set
@@ -686,9 +677,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   private int testAbortWithUnseenConcurrentInsertAbortOnNext(int callsToNext)
       throws AbortedDueToConcurrentModificationException {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     int retries = 0;
     clearTable();
     clearStatistics();
@@ -748,9 +737,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithConcurrentInsertAndContinue() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
@@ -960,9 +947,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testNestedAbortWithConcurrentInsert() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor =
         new AbortInterceptor(0) {
           private boolean alreadyAborted = false;
@@ -1025,9 +1010,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithDifferentUpdateCount() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -1074,8 +1057,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   @Test
   public void testAbortWithExceptionOnSelect() {
     assumeFalse(
-        "resume after error in transaction is not supported on the emulator",
-        env.getTestHelper().isEmulator());
+        "resume after error in transaction is not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
     try (ITConnection connection = createConnection()) {
@@ -1125,9 +1107,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithExceptionOnSelectAndConcurrentModification() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     boolean abortedDueToConcurrentModification = false;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
@@ -1195,9 +1175,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithExceptionOnInsertAndConcurrentModification() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     boolean abortedDueToConcurrentModification = false;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
@@ -1264,9 +1242,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithDroppedTableConcurrentModification() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     boolean abortedDueToConcurrentModification = false;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
@@ -1329,9 +1305,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithInsertOnDroppedTableConcurrentModification() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     boolean abortedDueToConcurrentModification = false;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
@@ -1391,9 +1365,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
    */
   @Test
   public void testAbortWithCursorHalfwayDroppedTableConcurrentModification() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     boolean abortedDueToConcurrentModification = false;
     AbortInterceptor interceptor = new AbortInterceptor(0);
     // first insert two test records
@@ -1546,9 +1518,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAbortWithConcurrentInsertOnEmptyTable() {
-    assumeFalse(
-        "concurrent transactions are not supported on the emulator",
-        env.getTestHelper().isEmulator());
+    assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {
