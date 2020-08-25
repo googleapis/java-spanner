@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
@@ -29,6 +30,8 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import java.util.concurrent.ExecutorService;
@@ -222,6 +225,67 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   @Test
   public void testBufferedWriteReadWrite() {
     testBufferedWrite(READ_WRITE);
+  }
+
+  @Test
+  public void testReadWriteMultipleAsyncStatements() {
+    try (Connection connection = createConnection()) {
+      assertThat(connection.isAutocommit()).isFalse();
+      ApiFuture<Long> update1 = connection.executeUpdateAsync(INSERT_STATEMENT);
+      ApiFuture<Long> update2 = connection.executeUpdateAsync(INSERT_STATEMENT);
+      ApiFuture<long[]> batch =
+          connection.executeBatchUpdateAsync(ImmutableList.of(INSERT_STATEMENT, INSERT_STATEMENT));
+      final SettableApiFuture<Integer> rowCount = SettableApiFuture.create();
+      try (AsyncResultSet rs = connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
+        rs.setCallback(
+            executor,
+            new ReadyCallback() {
+              int count = 0;
+
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        rowCount.set(count);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        count++;
+                    }
+                  }
+                } catch (SpannerException e) {
+                  rowCount.setException(e);
+                  return CallbackResponse.DONE;
+                }
+              }
+            });
+      }
+      connection.commitAsync();
+      assertThat(get(update1)).isEqualTo(UPDATE_COUNT);
+      assertThat(get(update2)).isEqualTo(UPDATE_COUNT);
+      assertThat(get(batch)).asList().containsExactly(1L, 1L);
+      assertThat(get(rowCount)).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+    }
+  }
+
+  @Test
+  public void testAutocommitRunBatchAsync() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.execute(Statement.of("START BATCH DML"));
+      connection.execute(INSERT_STATEMENT);
+      connection.execute(INSERT_STATEMENT);
+      StatementResult res = connection.execute(Statement.of("RUN BATCH"));
+      assertThat(res.getResultType()).isEqualTo(ResultType.RESULT_SET);
+      try (ResultSet rs = res.getResultSet()) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLongList(0)).containsExactly(1L, 1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
   }
 
   private void testExecuteQueryAsync(Function<Connection, Void> connectionConfigurator) {

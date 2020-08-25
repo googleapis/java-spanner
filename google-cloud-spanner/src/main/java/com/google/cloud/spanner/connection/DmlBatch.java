@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
@@ -26,14 +26,12 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.base.Preconditions;
-import com.google.spanner.v1.SpannerGrpc;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * {@link UnitOfWork} that is used when a DML batch is started. These batches only accept DML
@@ -153,15 +151,6 @@ class DmlBatch extends AbstractBaseUnitOfWork {
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DML batches.");
   }
 
-  /**
-   * Create a {@link ParsedStatement} that we can use as input for the generic execute method when
-   * the {@link #runBatch()} method is executed. This method uses the generic execute method that
-   * allows statements to be cancelled and to timeout, which requires the input to be a {@link
-   * ParsedStatement}.
-   */
-  private static final ParsedStatement RUN_BATCH =
-      StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
-
   @Override
   public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
@@ -170,22 +159,23 @@ class DmlBatch extends AbstractBaseUnitOfWork {
       this.state = UnitOfWorkState.RAN;
       return ApiFutures.immediateFuture(new long[0]);
     }
-    Callable<long[]> callable =
-        new Callable<long[]>() {
-          @Override
-          public long[] call() throws Exception {
-            try {
-              long[] res = get(transaction.executeBatchUpdateAsync(statements));
-              state = UnitOfWorkState.RAN;
-              return res;
-            } catch (Throwable t) {
-              state = UnitOfWorkState.RUN_FAILED;
-              throw t;
-            }
-          }
-        };
     this.state = UnitOfWorkState.RUNNING;
-    return executeStatementAsync(RUN_BATCH, callable, SpannerGrpc.getExecuteBatchDmlMethod());
+    ApiFuture<long[]> res = transaction.executeBatchUpdateAsync(statements);
+    ApiFutures.addCallback(
+        res,
+        new ApiFutureCallback<long[]>() {
+          @Override
+          public void onFailure(Throwable t) {
+            state = UnitOfWorkState.RUN_FAILED;
+          }
+
+          @Override
+          public void onSuccess(long[] result) {
+            state = UnitOfWorkState.RAN;
+          }
+        },
+        MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override
