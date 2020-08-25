@@ -524,16 +524,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             commitTimestampFuture.set(txManager.getCommitTimestamp());
             state = UnitOfWorkState.COMMITTED;
             return null;
+          } catch (AbortedException e) {
+            throw e;
           } catch (Throwable t) {
+            try {
+              txManager.close();
+            } catch (Throwable t2) {
+              // ignore.
+            }
             commitTimestampFuture.setException(t);
             state = UnitOfWorkState.COMMIT_FAILED;
             throw t;
-          } finally {
-            try {
-              txManager.close();
-            } catch (Throwable t) {
-              // ignore.
-            }
           }
         }
       };
