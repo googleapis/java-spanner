@@ -184,7 +184,7 @@ public class ReadWriteTransactionTest {
   public void testRunBatch() {
     ReadWriteTransaction subject = createSubject();
     try {
-      subject.runBatch();
+      subject.runBatchAsync();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());

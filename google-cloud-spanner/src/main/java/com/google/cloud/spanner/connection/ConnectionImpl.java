@@ -1086,13 +1086,18 @@ class ConnectionImpl implements Connection {
 
   @Override
   public long[] runBatch() {
+    return get(runBatchAsync());
+  }
+
+  @Override
+  public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(isBatchActive(), "This connection has no active batch");
     try {
       if (this.currentUnitOfWork != null) {
-        return this.currentUnitOfWork.runBatch();
+        return this.currentUnitOfWork.runBatchAsync();
       }
-      return new long[0];
+      return ApiFutures.immediateFuture(new long[0]);
     } finally {
       this.batchMode = BatchMode.NONE;
       setDefaultTransactionOptions();

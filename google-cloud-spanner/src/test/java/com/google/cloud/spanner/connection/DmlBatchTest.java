@@ -85,7 +85,7 @@ public class DmlBatchTest {
   @Test
   public void testGetReadTimestamp() {
     DmlBatch batch = createSubject();
-    batch.runBatch();
+    get(batch.runBatchAsync());
     try {
       batch.getReadTimestamp();
       fail("Expected exception");
@@ -103,7 +103,7 @@ public class DmlBatchTest {
   @Test
   public void testGetCommitTimestamp() {
     DmlBatch batch = createSubject();
-    batch.runBatch();
+    get(batch.runBatchAsync());
     try {
       batch.getCommitTimestamp();
       fail("Expected exception");
@@ -128,7 +128,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
-    batch.runBatch();
+    get(batch.runBatchAsync());
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     assertThat(batch.isActive(), is(false));
 
@@ -152,7 +152,7 @@ public class DmlBatchTest {
     get(batch.executeUpdateAsync(statement));
     boolean exception = false;
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
     } catch (SpannerException e) {
       exception = true;
     }

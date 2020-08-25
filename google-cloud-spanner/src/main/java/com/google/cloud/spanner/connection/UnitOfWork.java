@@ -45,6 +45,7 @@ interface UnitOfWork {
     COMMITTED,
     COMMIT_FAILED,
     ROLLED_BACK,
+    RUNNING,
     RAN,
     RUN_FAILED,
     ABORTED;
@@ -89,15 +90,16 @@ interface UnitOfWork {
    * batch. This method will throw a {@link SpannerException} if called for a {@link
    * Type#TRANSACTION}.
    *
-   * @return the update counts in case of a DML batch. Returns an array containing 1 for each
-   *     successful statement and 0 for each failed statement or statement that was not executed DDL
-   *     in case of a DDL batch.
+   * @return an {@link ApiFuture} containing the update counts in case of a DML batch. Returns an
+   *     array containing 1 for each successful statement and 0 for each failed statement or
+   *     statement that was not executed in case of a DDL batch.
    */
-  long[] runBatch();
+  ApiFuture<long[]> runBatchAsync();
 
   /**
    * Clears the currently buffered statements in this unit of work and ends the batch. This method
-   * will throw a {@link SpannerException} if called for a {@link Type#TRANSACTION}.
+   * will throw a {@link SpannerException} if called for a {@link Type#TRANSACTION}. This method is
+   * always non-blocking.
    */
   void abortBatch();
 

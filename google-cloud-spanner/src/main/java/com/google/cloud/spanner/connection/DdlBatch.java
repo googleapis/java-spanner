@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -212,55 +211,55 @@ class DdlBatch extends AbstractBaseUnitOfWork {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public long[] runBatch() {
+  public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
-    try {
-      if (!statements.isEmpty()) {
-        // create a statement that can be passed in to the execute method
-        Callable<UpdateDatabaseDdlMetadata> callable =
-            new Callable<UpdateDatabaseDdlMetadata>() {
-              @Override
-              public UpdateDatabaseDdlMetadata call() throws Exception {
-                OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                    ddlClient.executeDdl(statements);
-                try {
-                  // Wait until the operation has finished.
-                  getWithStatementTimeout(operation, RUN_BATCH);
-                  // Return metadata.
-                  return operation.getMetadata().get();
-                } catch (SpannerException e) {
-                  long[] updateCounts = extractUpdateCounts(operation);
-                  throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                      e.getErrorCode(), e.getMessage(), updateCounts);
-                } catch (ExecutionException e) {
-                  SpannerException spannerException = extractSpannerCause(e);
-                  long[] updateCounts = extractUpdateCounts(operation);
-                  throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                      spannerException == null
-                          ? ErrorCode.UNKNOWN
-                          : spannerException.getErrorCode(),
-                      e.getMessage(),
-                      updateCounts);
-                } catch (InterruptedException e) {
-                  long[] updateCounts = extractUpdateCounts(operation);
-                  throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                      ErrorCode.CANCELLED, e.getMessage(), updateCounts);
-                }
-              }
-            };
-        get(
-            executeStatementAsync(
-                RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod()));
-      }
+    if (statements.isEmpty()) {
       this.state = UnitOfWorkState.RAN;
-      long[] updateCounts = new long[statements.size()];
-      Arrays.fill(updateCounts, 1L);
-      return updateCounts;
-    } catch (SpannerException e) {
-      this.state = UnitOfWorkState.RUN_FAILED;
-      throw e;
+      return ApiFutures.immediateFuture(new long[0]);
     }
+    // create a statement that can be passed in to the execute method
+    Callable<long[]> callable =
+        new Callable<long[]>() {
+          @Override
+          public long[] call() throws Exception {
+            try {
+              OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+                  ddlClient.executeDdl(statements);
+              try {
+                // Wait until the operation has finished.
+                getWithStatementTimeout(operation, RUN_BATCH);
+                // Try to get metadata to trigger any errors that were returned.
+                operation.getMetadata().get();
+                long[] updateCounts = new long[statements.size()];
+                Arrays.fill(updateCounts, 1L);
+                state = UnitOfWorkState.RAN;
+                return updateCounts;
+              } catch (SpannerException e) {
+                long[] updateCounts = extractUpdateCounts(operation);
+                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                    e.getErrorCode(), e.getMessage(), updateCounts);
+              } catch (ExecutionException e) {
+                SpannerException spannerException = extractSpannerCause(e);
+                long[] updateCounts = extractUpdateCounts(operation);
+                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                    spannerException == null ? ErrorCode.UNKNOWN : spannerException.getErrorCode(),
+                    e.getMessage(),
+                    updateCounts);
+              } catch (InterruptedException e) {
+                long[] updateCounts = extractUpdateCounts(operation);
+                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                    ErrorCode.CANCELLED, e.getMessage(), updateCounts);
+              }
+            } catch (Throwable t) {
+              state = UnitOfWorkState.RUN_FAILED;
+              throw t;
+            }
+          }
+        };
+    this.state = UnitOfWorkState.RUNNING;
+    return executeStatementAsync(
+        RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   private SpannerException extractSpannerCause(ExecutionException e) {

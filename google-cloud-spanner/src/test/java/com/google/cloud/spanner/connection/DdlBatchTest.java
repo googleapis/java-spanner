@@ -178,7 +178,7 @@ public class DdlBatchTest {
   @Test
   public void testGetCommitTimestamp() {
     DdlBatch batch = createSubject();
-    batch.runBatch();
+    get(batch.runBatchAsync());
     try {
       batch.getCommitTimestamp();
       fail("expected FAILED_PRECONDITION");
@@ -190,7 +190,7 @@ public class DdlBatchTest {
   @Test
   public void testGetReadTimestamp() {
     DdlBatch batch = createSubject();
-    batch.runBatch();
+    get(batch.runBatchAsync());
     try {
       batch.getReadTimestamp();
       fail("expected FAILED_PRECONDITION");
@@ -221,7 +221,7 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject();
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
-    batch.runBatch();
+    get(batch.runBatchAsync());
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     assertThat(batch.isActive(), is(false));
 
@@ -245,7 +245,7 @@ public class DdlBatchTest {
     when(statement.getType()).thenReturn(StatementType.DDL);
     batch.executeDdlAsync(statement);
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
       fail("Missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
@@ -280,7 +280,7 @@ public class DdlBatchTest {
   public void testRunBatch() {
     DdlClient client = createDefaultMockDdlClient();
     DdlBatch batch = createSubject(client);
-    batch.runBatch();
+    get(batch.runBatchAsync());
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     verify(client, never()).executeDdl(anyString());
     verify(client, never()).executeDdl(argThat(isEmptyListOfStrings()));
@@ -293,19 +293,19 @@ public class DdlBatchTest {
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(statement);
-    batch.runBatch();
+    get(batch.runBatchAsync());
     verify(client).executeDdl(argThat(isListOfStringsWithSize(1)));
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(statement);
     batch.executeDdlAsync(statement);
-    batch.runBatch();
+    get(batch.runBatchAsync());
     verify(client).executeDdl(argThat(isListOfStringsWithSize(2)));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     boolean exception = false;
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -341,7 +341,7 @@ public class DdlBatchTest {
     batch.executeDdlAsync(statement);
     exception = false;
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
     } catch (SpannerException e) {
       exception = true;
     }
@@ -375,7 +375,7 @@ public class DdlBatchTest {
             .build();
     batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE BAR")));
-    long[] updateCounts = batch.runBatch();
+    long[] updateCounts = get(batch.runBatchAsync());
     assertThat(updateCounts.length, is(equalTo(2)));
     assertThat(updateCounts[0], is(equalTo(1L)));
     assertThat(updateCounts[1], is(equalTo(1L)));
@@ -409,7 +409,7 @@ public class DdlBatchTest {
     batch.executeDdlAsync(
         StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
       fail("missing expected exception");
     } catch (SpannerBatchUpdateException e) {
       assertThat(e.getUpdateCounts().length, is(equalTo(2)));
@@ -453,7 +453,7 @@ public class DdlBatchTest {
     verify(client, never()).executeDdl(anyListOf(String.class));
     boolean exception = false;
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -485,7 +485,7 @@ public class DdlBatchTest {
             100,
             TimeUnit.MILLISECONDS);
     try {
-      batch.runBatch();
+      get(batch.runBatchAsync());
       fail("expected CANCELLED");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.CANCELLED, e.getErrorCode());

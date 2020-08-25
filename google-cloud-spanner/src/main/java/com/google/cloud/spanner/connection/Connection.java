@@ -598,6 +598,12 @@ public interface Connection extends AutoCloseable {
   long[] runBatch();
 
   /**
+   * Same as {@link #runBatch()}, but is guaranteed to be non-blocking and returns an {@link
+   * ApiFuture} that will return the update counts.
+   */
+  ApiFuture<long[]> runBatchAsync();
+
+  /**
    * Clears all buffered statements in the current batch and ends the batch.
    *
    * <p>This method may only be called when a (possibly empty) batch is active.

@@ -483,7 +483,7 @@ public class SingleUseTransactionTest {
   public void testRunBatch() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.runBatch();
+      subject.runBatchAsync();
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
