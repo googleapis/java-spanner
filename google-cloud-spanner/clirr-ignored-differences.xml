@@ -340,6 +340,11 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture runBatchAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.api.core.ApiFuture writeAsync(com.google.cloud.spanner.Mutation)</method>
   </difference>
   <difference>
