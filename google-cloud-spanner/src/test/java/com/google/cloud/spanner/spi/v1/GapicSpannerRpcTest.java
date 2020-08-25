@@ -20,22 +20,30 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
@@ -46,7 +54,10 @@ import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
@@ -56,6 +67,7 @@ import io.grpc.Contexts;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
+import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
@@ -76,6 +88,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 /** Tests that opening and closing multiple Spanner instances does not leak any threads. */
 @RunWith(JUnit4.class)
@@ -108,6 +121,9 @@ public class GapicSpannerRpcTest {
                   .build())
           .setMetadata(SELECT1AND2_METADATA)
           .build();
+  private static final Statement UPDATE_FOO_STATEMENT =
+      Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
+
   private static final String STATIC_OAUTH_TOKEN = "STATIC_TEST_OAUTH_TOKEN";
   private static final String VARIABLE_OAUTH_TOKEN = "VARIABLE_TEST_OAUTH_TOKEN";
   private static final OAuth2Credentials STATIC_CREDENTIALS =
@@ -142,6 +158,7 @@ public class GapicSpannerRpcTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.update(UPDATE_FOO_STATEMENT, 1L));
 
     mockInstanceAdmin = new MockInstanceAdminImpl();
     mockDatabaseAdmin = new MockDatabaseAdminImpl();
@@ -303,7 +320,14 @@ public class GapicSpannerRpcTest {
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
     // existence.
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNotNull();
     rpc.shutdown();
   }
@@ -323,7 +347,14 @@ public class GapicSpannerRpcTest {
                 })
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNull();
     rpc.shutdown();
   }
@@ -336,9 +367,91 @@ public class GapicSpannerRpcTest {
             .setCredentials(STATIC_CREDENTIALS)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNull();
     rpc.shutdown();
+  }
+
+  private static final class TimeoutHolder {
+    private Duration timeout;
+  }
+
+  @Test
+  public void testCallContextTimeout() {
+    // Create a CallContextConfigurator that uses a variable timeout value.
+    final TimeoutHolder timeoutHolder = new TimeoutHolder();
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            // Only configure a timeout for the ExecuteSql method as this method is used for
+            // executing DML statements.
+            if (request instanceof ExecuteSqlRequest
+                && method.equals(SpannerGrpc.getExecuteSqlMethod())) {
+              ExecuteSqlRequest sqlRequest = (ExecuteSqlRequest) request;
+              // Sequence numbers are only assigned for DML statements, which means that
+              // this is an update statement.
+              if (sqlRequest.getSeqno() > 0L) {
+                return context.withTimeout(timeoutHolder.timeout);
+              }
+            }
+            return null;
+          }
+        };
+
+    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
+    SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      Context context =
+          Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+      context.run(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
+                // exception.
+                timeoutHolder.timeout = Duration.ofNanos(1L);
+                client
+                    .readWriteTransaction()
+                    .run(
+                        new TransactionCallable<Long>() {
+                          @Override
+                          public Long run(TransactionContext transaction) throws Exception {
+                            return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+                          }
+                        });
+                fail("missing expected timeout exception");
+              } catch (SpannerException e) {
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+              }
+
+              // Then try with a longer timeout. This should now succeed.
+              timeoutHolder.timeout = Duration.ofMinutes(1L);
+              Long updateCount =
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          new TransactionCallable<Long>() {
+                            @Override
+                            public Long run(TransactionContext transaction) throws Exception {
+                              return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+                            }
+                          });
+              assertThat(updateCount).isEqualTo(1L);
+            }
+          });
+    }
   }
 
   @SuppressWarnings("rawtypes")
