@@ -1519,6 +1519,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   @Test
   public void testAbortWithConcurrentInsertOnEmptyTable() {
     assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
+
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {

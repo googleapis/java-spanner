@@ -524,14 +524,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             commitTimestampFuture.set(txManager.getCommitTimestamp());
             state = UnitOfWorkState.COMMITTED;
             return null;
-          } catch (AbortedException e) {
-            throw e;
           } catch (Throwable t) {
-            try {
-              txManager.close();
-            } catch (Throwable t2) {
-              // ignore.
-            }
             commitTimestampFuture.setException(t);
             state = UnitOfWorkState.COMMIT_FAILED;
             throw t;
@@ -557,19 +550,28 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                  return runWithRetry(
-                      new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                          getStatementExecutor()
-                              .invokeInterceptors(
-                                  COMMIT_STATEMENT,
-                                  StatementExecutionStep.EXECUTE_STATEMENT,
-                                  ReadWriteTransaction.this);
-                          commitCallable.call();
-                          return null;
-                        }
-                      });
+                  try {
+                    return runWithRetry(
+                        new Callable<Void>() {
+                          @Override
+                          public Void call() throws Exception {
+                            getStatementExecutor()
+                                .invokeInterceptors(
+                                    COMMIT_STATEMENT,
+                                    StatementExecutionStep.EXECUTE_STATEMENT,
+                                    ReadWriteTransaction.this);
+                            commitCallable.call();
+                            return null;
+                          }
+                        });
+                  } catch (Throwable t) {
+                    try {
+                      txManager.close();
+                    } catch (Throwable t2) {
+                      // Ignore.
+                    }
+                    throw t;
+                  }
                 }
               },
               InterceptorsUsage.IGNORE_INTERCEPTORS,
