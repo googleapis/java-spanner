@@ -173,7 +173,7 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     try {
-      transaction.executeDdl(statement);
+      transaction.executeDdlAsync(statement);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());

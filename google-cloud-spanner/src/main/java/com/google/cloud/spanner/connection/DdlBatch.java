@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
@@ -170,7 +171,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void executeDdl(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -180,6 +181,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
             + ddl.getSqlWithoutComments()
             + "\" is not a DDL-statement.");
     statements.add(ddl.getSqlWithoutComments());
+    return ApiFutures.immediateFuture(null);
   }
 
   @Override

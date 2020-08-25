@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
@@ -254,7 +253,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void executeDdl(final ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(final ParsedStatement ddl) {
     Preconditions.checkNotNull(ddl);
     Preconditions.checkArgument(
         ddl.getType() == StatementType.DDL, "Statement is not a ddl statement");
@@ -262,22 +261,23 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         !isReadOnly(), "DDL statements are not allowed in read-only mode");
     checkAndMarkUsed();
 
-    try {
-      Callable<Void> callable =
-          new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
+    Callable<Void> callable =
+        new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            try {
               OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
                   ddlClient.executeDdl(ddl.getSqlWithoutComments());
-              return getWithStatementTimeout(operation, ddl);
+              Void res = getWithStatementTimeout(operation, ddl);
+              state = UnitOfWorkState.COMMITTED;
+              return res;
+            } catch (Throwable t) {
+              state = UnitOfWorkState.COMMIT_FAILED;
+              throw t;
             }
-          };
-      get(executeStatementAsync(ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod()));
-      state = UnitOfWorkState.COMMITTED;
-    } catch (Throwable e) {
-      state = UnitOfWorkState.COMMIT_FAILED;
-      throw e;
-    }
+          }
+        };
+    return executeStatementAsync(ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   @Override

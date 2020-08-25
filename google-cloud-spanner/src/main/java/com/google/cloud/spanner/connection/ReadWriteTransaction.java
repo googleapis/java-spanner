@@ -238,7 +238,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public void executeDdl(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "DDL-statements are not allowed inside a read/write transaction.");

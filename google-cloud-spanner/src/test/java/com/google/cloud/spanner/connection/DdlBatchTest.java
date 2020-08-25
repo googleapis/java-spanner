@@ -243,7 +243,7 @@ public class DdlBatchTest {
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
     when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
     when(statement.getType()).thenReturn(StatementType.DDL);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
     try {
       batch.runBatch();
       fail("Missing expected exception");
@@ -292,14 +292,14 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
     batch.runBatch();
     verify(client).executeDdl(argThat(isListOfStringsWithSize(1)));
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdl(statement);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(statement);
     batch.runBatch();
     verify(client).executeDdl(argThat(isListOfStringsWithSize(2)));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
@@ -316,7 +316,7 @@ public class DdlBatchTest {
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     exception = false;
     try {
-      batch.executeDdl(statement);
+      batch.executeDdlAsync(statement);
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -326,7 +326,7 @@ public class DdlBatchTest {
     assertThat(exception, is(true));
     exception = false;
     try {
-      batch.executeDdl(statement);
+      batch.executeDdlAsync(statement);
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -337,8 +337,8 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient(true);
     batch = createSubject(client);
-    batch.executeDdl(statement);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(statement);
     exception = false;
     try {
       batch.runBatch();
@@ -373,8 +373,8 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdl(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
-    batch.executeDdl(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE BAR")));
+    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE BAR")));
     long[] updateCounts = batch.runBatch();
     assertThat(updateCounts.length, is(equalTo(2)));
     assertThat(updateCounts[0], is(equalTo(1L)));
@@ -405,8 +405,9 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdl(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
-    batch.executeDdl(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
       batch.runBatch();
       fail("missing expected exception");
@@ -433,21 +434,21 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyListOf(String.class));
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdl(statement);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyListOf(String.class));
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdl(statement);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyListOf(String.class));
     boolean exception = false;
@@ -472,7 +473,7 @@ public class DdlBatchTest {
 
     DdlClient client = createDefaultMockDdlClient(10000L);
     final DdlBatch batch = createSubject(client);
-    batch.executeDdl(statement);
+    batch.executeDdlAsync(statement);
     Executors.newSingleThreadScheduledExecutor()
         .schedule(
             new Runnable() {

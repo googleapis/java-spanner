@@ -184,7 +184,7 @@ public class ReadOnlyTransactionTest {
     ParsedStatement ddl = mock(ParsedStatement.class);
     when(ddl.getType()).thenReturn(StatementType.DDL);
     try {
-      createSubject().executeDdl(ddl);
+      createSubject().executeDdlAsync(ddl);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());

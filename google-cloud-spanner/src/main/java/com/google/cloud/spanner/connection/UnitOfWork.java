@@ -147,8 +147,9 @@ interface UnitOfWork {
    * statement directly on Spanner.
    *
    * @param ddl The DDL statement to execute.
+   * @return an {@link ApiFuture} that is done when the DDL operation has finished.
    */
-  void executeDdl(ParsedStatement ddl);
+  ApiFuture<Void> executeDdlAsync(ParsedStatement ddl);
 
   /**
    * Execute a DML statement on Spanner.

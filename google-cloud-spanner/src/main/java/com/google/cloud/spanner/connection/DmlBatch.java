@@ -120,7 +120,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void executeDdl(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing DDL statements is not allowed for DML batches.");
   }

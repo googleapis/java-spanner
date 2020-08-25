@@ -507,7 +507,7 @@ public class SingleUseTransactionTest {
     ParsedStatement ddl = createParsedDdl(sql);
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
-    subject.executeDdl(ddl);
+    get(subject.executeDdlAsync(ddl));
     verify(ddlClient).executeDdl(sql);
   }
 
@@ -673,10 +673,10 @@ public class SingleUseTransactionTest {
     ParsedStatement ddl = createParsedDdl(sql);
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
-    subject.executeDdl(ddl);
+    get(subject.executeDdlAsync(ddl));
     verify(ddlClient).executeDdl(sql);
     try {
-      subject.executeDdl(ddl);
+      get(subject.executeDdlAsync(ddl));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
     }

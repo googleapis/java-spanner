@@ -75,7 +75,7 @@ public class DmlBatchTest {
   public void testExecuteDdl() {
     DmlBatch batch = createSubject();
     try {
-      batch.executeDdl(mock(ParsedStatement.class));
+      batch.executeDdlAsync(mock(ParsedStatement.class));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());

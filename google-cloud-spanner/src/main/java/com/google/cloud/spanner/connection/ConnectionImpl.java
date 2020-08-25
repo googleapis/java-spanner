@@ -689,7 +689,7 @@ class ConnectionImpl implements Connection {
       case UPDATE:
         return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
       case DDL:
-        executeDdl(parsedStatement);
+        get(executeDdlAsync(parsedStatement));
         return StatementResultImpl.noResult();
       case UNKNOWN:
       default:
@@ -717,9 +717,7 @@ class ConnectionImpl implements Connection {
       case UPDATE:
         return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
       case DDL:
-        // TODO: Make DDL async.
-        executeDdl(parsedStatement);
-        return AsyncStatementResultImpl.noResult(ApiFutures.<Void>immediateFuture(null));
+        return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
       case UNKNOWN:
       default:
     }
@@ -1009,8 +1007,8 @@ class ConnectionImpl implements Connection {
     this.currentUnitOfWork = transactionStack.pop();
   }
 
-  private void executeDdl(ParsedStatement ddl) {
-    getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdl(ddl);
+  private ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(ddl);
   }
 
   @Override
