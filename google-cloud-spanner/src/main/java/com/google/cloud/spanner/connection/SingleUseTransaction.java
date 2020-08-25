@@ -22,7 +22,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -49,10 +48,7 @@ import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import io.grpc.MethodDescriptor;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Transaction that is used when a {@link Connection} is in autocommit mode. Each method on this
@@ -334,52 +330,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
   }
 
-  /** Base class for executing DML updates (both single statements and batches). */
-  private abstract class AbstractUpdateCallable<T> implements Callable<T> {
-    abstract T executeUpdate(TransactionContext txContext);
-
-    @Override
-    public T call() throws Exception {
-      try {
-        txManager = dbClient.transactionManager();
-        // Check the interrupted state after each (possible) round-trip to the db to allow the
-        // statement to be cancelled.
-        checkInterrupted();
-        try (TransactionContext txContext = txManager.begin()) {
-          checkInterrupted();
-          T res = executeUpdate(txContext);
-          checkInterrupted();
-          txManager.commit();
-          checkInterrupted();
-          return res;
-        }
-      } finally {
-        if (txManager != null) {
-          // Calling txManager.close() will rollback the transaction if it is still active, i.e. if
-          // an error occurred before the commit() call returned successfully.
-          txManager.close();
-        }
-      }
-    }
-  }
-
-  /** {@link Callable} for a batch update. */
-  private final class TransactionalBatchUpdateCallable extends AbstractUpdateCallable<long[]> {
-    private final List<Statement> updates;
-
-    private TransactionalBatchUpdateCallable(Iterable<ParsedStatement> updates) {
-      this.updates = new LinkedList<>();
-      for (ParsedStatement update : updates) {
-        this.updates.add(update.getStatement());
-      }
-    }
-
-    @Override
-    long[] executeUpdate(TransactionContext txContext) {
-      return txContext.batchUpdate(updates);
-    }
-  }
-
   private ApiFuture<Long> executeTransactionalUpdateAsync(final ParsedStatement update) {
     Callable<Long> callable =
         new Callable<Long>() {
@@ -467,39 +417,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         };
     return executeStatementAsync(
         executeBatchUpdateStatement, callable, SpannerGrpc.getExecuteBatchDmlMethod());
-  }
-
-  private <T> T executeAsyncTransactionalUpdate(
-      final ParsedStatement update, final AbstractUpdateCallable<T> callable) {
-    long startedTime = System.currentTimeMillis();
-    // This method uses a TransactionManager instead of the TransactionRunner in order to be able to
-    // handle timeouts and canceling of a statement.
-    while (true) {
-      try {
-        return executeStatement(update, callable, SpannerGrpc.getExecuteSqlMethod());
-      } catch (AbortedException e) {
-        try {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
-        } catch (InterruptedException e1) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.CANCELLED, "Statement execution was interrupted", e1);
-        }
-        // Check whether the timeout time has been exceeded.
-        long executionTime = System.currentTimeMillis() - startedTime;
-        if (getStatementTimeout().hasTimeout()
-            && executionTime > getStatementTimeout().getTimeoutValue(TimeUnit.MILLISECONDS)) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.DEADLINE_EXCEEDED,
-              "Statement execution timeout occurred for " + update.getSqlWithoutComments());
-        }
-      }
-    }
-  }
-
-  private void checkInterrupted() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException();
-    }
   }
 
   private final ParsedStatement commitStatement =

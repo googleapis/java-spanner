@@ -181,18 +181,6 @@ class StatementExecutor {
   }
 
   /**
-   * Recreates this {@link StatementExecutor} and its {@link ExecutorService}. This can be necessary
-   * if a statement times out or is cancelled, and it cannot be guaranteed that the statement
-   * execution can be terminated. In order to prevent the single threaded {@link ExecutorService} to
-   * continue to block on the timed out/cancelled statement, a new {@link ExecutorService} is
-   * created.
-   */
-  void recreate() {
-    executor.shutdown();
-    executor = createExecutorService();
-  }
-
-  /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */
   List<Runnable> shutdownNow() {

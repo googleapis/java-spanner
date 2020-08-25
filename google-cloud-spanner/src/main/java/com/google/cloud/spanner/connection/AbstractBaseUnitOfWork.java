@@ -113,14 +113,6 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     }
   }
 
-  <T> T executeStatement(
-      ParsedStatement statement,
-      Callable<T> callable,
-      @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
-    return executeStatement(
-        statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethod);
-  }
-
   <T> ApiFuture<T> executeStatementAsync(
       ParsedStatement statement,
       Callable<T> callable,
@@ -177,62 +169,6 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     } catch (CancellationException e) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.CANCELLED, "Statement execution was cancelled", e);
-    }
-    return res;
-  }
-
-  <T> T executeStatement(
-      ParsedStatement statement,
-      Callable<T> callable,
-      InterceptorsUsage interceptorUsage,
-      @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
-    Future<T> future =
-        executeStatementAsync(
-            statement,
-            callable,
-            interceptorUsage,
-            applyStatementTimeoutToMethod == null
-                ? Collections.<MethodDescriptor<?, ?>>emptySet()
-                : ImmutableList.<MethodDescriptor<?, ?>>of(applyStatementTimeoutToMethod));
-    T res;
-    try {
-      if (statementTimeout.hasTimeout()) {
-        TimeUnit unit = statementTimeout.getAppropriateTimeUnit();
-        res = future.get(statementTimeout.getTimeoutValue(unit), unit);
-      } else {
-        res = future.get();
-      }
-    } catch (TimeoutException e) {
-      // statement timed out, cancel the execution
-      future.cancel(true);
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.DEADLINE_EXCEEDED,
-          "Statement execution timeout occurred for " + statement.getSqlWithoutComments(),
-          e);
-    } catch (ExecutionException e) {
-      Throwable cause = e.getCause();
-      Set<Throwable> causes = new HashSet<>();
-      while (cause != null && !causes.contains(cause)) {
-        if (cause instanceof SpannerException) {
-          throw (SpannerException) cause;
-        }
-        causes.add(cause);
-        cause = cause.getCause();
-      }
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNKNOWN,
-          "Statement execution failed for " + statement.getSqlWithoutComments(),
-          e);
-    } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.CANCELLED, "Statement execution was interrupted", e);
-    } catch (CancellationException e) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.CANCELLED, "Statement execution was cancelled", e);
-    } finally {
-      synchronized (this) {
-        this.currentlyRunningStatementFuture = null;
-      }
     }
     return res;
   }
