@@ -305,4 +305,46 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getNumericArray()</method>
   </difference>
+  
+  <!-- Async Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture commitAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.AsyncStatementResult executeAsync(com.google.cloud.spanner.Statement)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture executeBatchUpdateAsync(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture rollbackAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture writeAsync(com.google.cloud.spanner.Mutation)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture writeAsync(java.lang.Iterable)</method>
+  </difference>
 </differences>
