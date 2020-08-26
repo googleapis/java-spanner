@@ -1745,6 +1745,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                     .build());
       } else if (request.getTransactionId() != null) {
         transaction = transactions.get(request.getTransactionId());
+        Optional<Boolean> aborted =
+            Optional.fromNullable(abortedTransactions.get(request.getTransactionId()));
+        if (aborted.or(Boolean.FALSE)) {
+          throwTransactionAborted(request.getTransactionId());
+        }
       } else {
         // No transaction mode specified
         responseObserver.onError(

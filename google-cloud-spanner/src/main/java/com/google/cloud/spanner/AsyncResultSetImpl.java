@@ -267,7 +267,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
                 // we'll keep the cancelled state.
                 return;
               }
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               cursorReturnedDoneOrException = true;
             }
             return;
@@ -334,7 +334,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         hasNext = delegateResultSet.get().next();
       } catch (Throwable e) {
         synchronized (monitor) {
-          executionException = SpannerExceptionFactory.newSpannerException(e);
+          executionException = SpannerExceptionFactory.asSpannerException(e);
         }
       }
       try {
@@ -369,7 +369,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
             }
           } catch (Throwable e) {
             synchronized (monitor) {
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               stop = true;
             }
           }
@@ -551,9 +551,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     try {
       return future.get();
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (Throwable e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.asSpannerException(e);
     }
   }
 

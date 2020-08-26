@@ -66,11 +66,12 @@ import java.util.concurrent.Callable;
 @VisibleForTesting
 class ChecksumResultSet extends ReplaceableForwardingResultSet implements RetriableStatement {
   private final ReadWriteTransaction transaction;
-  private long numberOfNextCalls;
+  private volatile long numberOfNextCalls;
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
   private final ChecksumResultSet.ChecksumCalculator checksumCalculator = new ChecksumCalculator();
+  private final Object lock = new Object();
 
   ChecksumResultSet(
       ReadWriteTransaction transaction,
@@ -106,14 +107,16 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
 
   @Override
   public boolean next() {
-    // Call next() with retry.
-    boolean res = transaction.runWithRetry(nextCallable);
-    // Only update the checksum if there was another row to be consumed.
-    if (res) {
-      checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
+    synchronized (lock) {
+      // Call next() with retry.
+      boolean res = transaction.runWithRetry(nextCallable);
+      // Only update the checksum if there was another row to be consumed.
+      if (res) {
+        checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
+      }
+      numberOfNextCalls++;
+      return res;
     }
-    numberOfNextCalls++;
-    return res;
   }
 
   @VisibleForTesting
@@ -130,56 +133,58 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
    */
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
-    // Execute the same query and consume the result set to the same point as the original.
-    ChecksumResultSet.ChecksumCalculator newChecksumCalculator = new ChecksumCalculator();
-    ResultSet resultSet = null;
-    long counter = 0L;
-    try {
-      transaction
-          .getStatementExecutor()
-          .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
-      resultSet =
-          DirectExecuteResultSet.ofResultSet(
-              transaction.internalExecuteQuery(statement, analyzeMode, options));
-      boolean next = true;
-      while (counter < numberOfNextCalls && next) {
+    synchronized (lock) {
+      // Execute the same query and consume the result set to the same point as the original.
+      ChecksumResultSet.ChecksumCalculator newChecksumCalculator = new ChecksumCalculator();
+      ResultSet resultSet = null;
+      long counter = 0L;
+      try {
         transaction
             .getStatementExecutor()
-            .invokeInterceptors(
-                statement, StatementExecutionStep.RETRY_NEXT_ON_RESULT_SET, transaction);
-        next = resultSet.next();
-        if (next) {
-          newChecksumCalculator.calculateNextChecksum(resultSet.getCurrentRowAsStruct());
+            .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
+        resultSet =
+            DirectExecuteResultSet.ofResultSet(
+                transaction.internalExecuteQuery(statement, analyzeMode, options));
+        boolean next = true;
+        while (counter < numberOfNextCalls && next) {
+          transaction
+              .getStatementExecutor()
+              .invokeInterceptors(
+                  statement, StatementExecutionStep.RETRY_NEXT_ON_RESULT_SET, transaction);
+          next = resultSet.next();
+          if (next) {
+            newChecksumCalculator.calculateNextChecksum(resultSet.getCurrentRowAsStruct());
+          }
+          counter++;
         }
-        counter++;
+      } catch (Throwable e) {
+        if (resultSet != null) {
+          resultSet.close();
+        }
+        // If it was a SpannerException other than an AbortedException, the retry should fail
+        // because of different results from the database.
+        if (e instanceof SpannerException && !(e instanceof AbortedException)) {
+          throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(
+              aborted, (SpannerException) e);
+        }
+        // For other types of exceptions we should just re-throw the exception.
+        throw e;
       }
-    } catch (Throwable e) {
-      if (resultSet != null) {
-        resultSet.close();
-      }
-      // If it was a SpannerException other than an AbortedException, the retry should fail
-      // because of different results from the database.
-      if (e instanceof SpannerException && !(e instanceof AbortedException)) {
-        throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(
-            aborted, (SpannerException) e);
-      }
-      // For other types of exceptions we should just re-throw the exception.
-      throw e;
-    }
-    // Check that we have the same number of rows and the same checksum.
-    HashCode newChecksum = newChecksumCalculator.getChecksum();
-    HashCode currentChecksum = checksumCalculator.getChecksum();
-    if (counter == numberOfNextCalls && Objects.equals(newChecksum, currentChecksum)) {
-      // Checksum is ok, we only need to replace the delegate result set if it's still open.
-      if (isClosed()) {
-        resultSet.close();
+      // Check that we have the same number of rows and the same checksum.
+      HashCode newChecksum = newChecksumCalculator.getChecksum();
+      HashCode currentChecksum = checksumCalculator.getChecksum();
+      if (counter == numberOfNextCalls && Objects.equals(newChecksum, currentChecksum)) {
+        // Checksum is ok, we only need to replace the delegate result set if it's still open.
+        if (isClosed()) {
+          resultSet.close();
+        } else {
+          replaceDelegate(resultSet);
+        }
       } else {
-        replaceDelegate(resultSet);
+        // The results are not equal, there is an actual concurrent modification, so we cannot
+        // continue the transaction.
+        throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(aborted);
       }
-    } else {
-      // The results are not equal, there is an actual concurrent modification, so we cannot
-      // continue the transaction.
-      throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(aborted);
     }
   }
 

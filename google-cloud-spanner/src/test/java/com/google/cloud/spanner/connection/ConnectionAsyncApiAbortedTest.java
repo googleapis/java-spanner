@@ -18,10 +18,12 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
@@ -41,6 +43,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +89,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   }
 
   private static final ExecutorService singleThreadedExecutor = Executors.newSingleThreadExecutor();
+  private static final ExecutorService multiThreadedExecutor = Executors.newFixedThreadPool(8);
   public static final int RANDOM_RESULT_SET_ROW_COUNT_2 = 50;
   public static final Statement SELECT_RANDOM_STATEMENT_2 = Statement.of("SELECT * FROM RANDOM2");
   public static final com.google.spanner.v1.ResultSet RANDOM_RESULT_SET_2 =
@@ -100,6 +104,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   @AfterClass
   public static void stopExecutor() {
     singleThreadedExecutor.shutdown();
+    multiThreadedExecutor.shutdown();
   }
 
   @After
@@ -206,6 +211,30 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testTwoQueriesOneAbortedMidway() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(
+            Status.ABORTED.asRuntimeException(),
+            Math.min(RANDOM_RESULT_SET_ROW_COUNT / 2, RANDOM_RESULT_SET_ROW_COUNT_2 / 2)));
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      assertThat(counter.retryCount).isEqualTo(0);
+      // These AsyncResultSets will be consumed in parallel. One of them will (at random) abort
+      // halfway.
+      QueryResult res1 =
+          executeQueryAsync(connection, SELECT_RANDOM_STATEMENT, multiThreadedExecutor);
+      QueryResult res2 =
+          executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2, multiThreadedExecutor);
+
+      assertThat(get(res1.finished)).isNull();
+      assertThat(res1.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+      assertThat(get(res2.finished)).isNull();
+      assertThat(res2.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT_2);
+      assertThat(counter.retryCount).isEqualTo(1);
+    }
+  }
+
+  @Test
   public void testUpdateAndQueryAbortedMidway() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
@@ -283,6 +312,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
                       return input instanceof ExecuteSqlRequest;
                     }
                   }));
+      // The entire transaction should be retried.
       assertThat(requests).hasSize(4);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSql())
@@ -299,13 +329,184 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     }
   }
 
+  @Test
+  public void testUpdateAndQueryAbortedMidway_UpdateCountChanged() throws InterruptedException {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(
+            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+    final RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      assertThat(counter.retryCount).isEqualTo(0);
+      final CountDownLatch updateLatch = new CountDownLatch(1);
+      final CountDownLatch queryLatch = new CountDownLatch(1);
+      ApiFuture<Void> finished;
+      try (AsyncResultSet rs =
+          connection.executeQueryAsync(
+              SELECT_RANDOM_STATEMENT, Options.bufferRows(RANDOM_RESULT_SET_ROW_COUNT / 2 - 1))) {
+        finished =
+            rs.setCallback(
+                singleThreadedExecutor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    // Indicate that the query has been executed.
+                    queryLatch.countDown();
+                    try {
+                      // Wait until the update is on its way.
+                      updateLatch.await(10L, TimeUnit.SECONDS);
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                        }
+                      }
+                    } catch (InterruptedException e) {
+                      throw SpannerExceptionFactory.propagateInterrupt(e);
+                    }
+                  }
+                });
+      }
+      // Wait until the query has actually executed.
+      queryLatch.await(10L, TimeUnit.SECONDS);
+      // Execute an update statement and wait until it has finished before allowing the
+      // AsyncResultSet to continue processing. Also change the result of the update statement after
+      // it has finished. The AsyncResultSet will see an aborted transaction halfway, and then
+      // during the retry, it will get a different result for this update statement. That will cause
+      // the retry to be aborted.
+      get(connection.executeUpdateAsync(INSERT_STATEMENT));
+      try {
+        mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT + 1));
+        updateLatch.countDown();
+        get(finished);
+        fail("Missing expected exception");
+      } catch (AbortedDueToConcurrentModificationException e) {
+        assertThat(counter.retryCount).isEqualTo(1);
+      } finally {
+        mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
+      }
+
+      // Verify the order of the statements on the server.
+      List<? extends AbstractMessage> requests =
+          Lists.newArrayList(
+              Collections2.filter(
+                  mockSpanner.getRequests(),
+                  new Predicate<AbstractMessage>() {
+                    @Override
+                    public boolean apply(AbstractMessage input) {
+                      return input instanceof ExecuteSqlRequest;
+                    }
+                  }));
+      // The entire transaction should be retried, but will not succeed as the result of the update
+      // statement was different during the retry.
+      assertThat(requests).hasSize(4);
+      assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
+      assertThat(((ExecuteSqlRequest) requests.get(0)).getSql())
+          .isEqualTo(SELECT_RANDOM_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(1)).getSeqno()).isEqualTo(2L);
+      assertThat(((ExecuteSqlRequest) requests.get(1)).getSql())
+          .isEqualTo(INSERT_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(2)).getSeqno()).isEqualTo(1L);
+      assertThat(((ExecuteSqlRequest) requests.get(2)).getSql())
+          .isEqualTo(SELECT_RANDOM_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(3)).getSeqno()).isEqualTo(2L);
+      assertThat(((ExecuteSqlRequest) requests.get(3)).getSql())
+          .isEqualTo(INSERT_STATEMENT.getSql());
+    }
+  }
+
+  @Test
+  public void testQueriesAbortedMidway_ResultsChanged() throws InterruptedException {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(
+            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT - 1));
+    final Statement statement = Statement.of("SELECT * FROM TEST_TABLE");
+    final RandomResultSetGenerator generator =
+        new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT - 10);
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    final RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      ApiFuture<Void> res1;
+      try (AsyncResultSet rs =
+          connection.executeQueryAsync(SELECT_RANDOM_STATEMENT, Options.bufferRows(5))) {
+        res1 =
+            rs.setCallback(
+                multiThreadedExecutor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    try {
+                      latch.await(10L, TimeUnit.SECONDS);
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                        }
+                      }
+                    } catch (Throwable t) {
+                      throw SpannerExceptionFactory.asSpannerException(t);
+                    }
+                  }
+                });
+      }
+      try (AsyncResultSet rs = connection.executeQueryAsync(statement, Options.bufferRows(5))) {
+        rs.setCallback(
+            multiThreadedExecutor,
+            new ReadyCallback() {
+              boolean replaced;
+
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                if (!replaced) {
+                  // Replace the result of the query on the server after the first execution.
+                  mockSpanner.putStatementResult(
+                      StatementResult.query(statement, generator.generate()));
+                  replaced = true;
+                }
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      break;
+                    case DONE:
+                      latch.countDown();
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                  }
+                }
+              }
+            });
+      }
+      try {
+        get(res1);
+        fail("Missing expected exception");
+      } catch (AbortedDueToConcurrentModificationException e) {
+        assertThat(counter.retryCount).isEqualTo(1);
+      }
+    }
+  }
+
   private QueryResult executeQueryAsync(Connection connection, Statement statement) {
+    return executeQueryAsync(connection, statement, singleThreadedExecutor);
+  }
+
+  private QueryResult executeQueryAsync(
+      Connection connection, Statement statement, Executor executor) {
     ApiFuture<Void> res;
     final AtomicInteger rowCount = new AtomicInteger();
-    try (AsyncResultSet rs = connection.executeQueryAsync(statement)) {
+    try (AsyncResultSet rs = connection.executeQueryAsync(statement, Options.bufferRows(5))) {
       res =
           rs.setCallback(
-              singleThreadedExecutor,
+              executor,
               new ReadyCallback() {
                 @Override
                 public CallbackResponse cursorReady(AsyncResultSet resultSet) {

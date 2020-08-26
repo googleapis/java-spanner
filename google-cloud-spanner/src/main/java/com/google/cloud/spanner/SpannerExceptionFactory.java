@@ -84,6 +84,18 @@ public final class SpannerExceptionFactory {
   }
 
   /**
+   * Converts the given {@link Throwable} to a {@link SpannerException}. If <code>t</code> is
+   * already a (subclass of a) {@link SpannerException}, <code>t</code> is returned unaltered.
+   * Otherwise, a new {@link SpannerException} is created with <code>t</code> as its cause.
+   */
+  public static SpannerException asSpannerException(Throwable t) {
+    if (t instanceof SpannerException) {
+      return (SpannerException) t;
+    }
+    return newSpannerException(t);
+  }
+
+  /**
    * Creates a new exception based on {@code cause}.
    *
    * <p>Intended for internal library use; user code should use {@link

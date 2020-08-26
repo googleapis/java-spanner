@@ -112,6 +112,7 @@ public abstract class AbstractMockServerTest {
 
   private boolean futureParentHandlers;
   private boolean exceptionRunnableParentHandlers;
+  private boolean nettyServerParentHandlers;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -165,8 +166,13 @@ public abstract class AbstractMockServerTest {
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =
         Logger.getLogger(LogExceptionRunnable.class.getName()).getUseParentHandlers();
+    nettyServerParentHandlers =
+        Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
+            .getUseParentHandlers();
     Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(false);
     Logger.getLogger(LogExceptionRunnable.class.getName()).setUseParentHandlers(false);
+    Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
+        .setUseParentHandlers(false);
   }
 
   @After
@@ -177,6 +183,8 @@ public abstract class AbstractMockServerTest {
       Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
       Logger.getLogger(LogExceptionRunnable.class.getName())
           .setUseParentHandlers(exceptionRunnableParentHandlers);
+      Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
+          .setUseParentHandlers(nettyServerParentHandlers);
     }
   }
 
