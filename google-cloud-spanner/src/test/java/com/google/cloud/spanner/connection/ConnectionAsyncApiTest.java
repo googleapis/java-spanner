@@ -33,7 +33,14 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.protobuf.AbstractMessage;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -268,6 +275,28 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
       assertThat(get(update2)).isEqualTo(UPDATE_COUNT);
       assertThat(get(batch)).asList().containsExactly(1L, 1L);
       assertThat(get(rowCount)).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+
+      // Verify the order of the statements on the server.
+      List<? extends AbstractMessage> requests =
+          Lists.newArrayList(
+              Collections2.filter(
+                  mockSpanner.getRequests(),
+                  new Predicate<AbstractMessage>() {
+                    @Override
+                    public boolean apply(AbstractMessage input) {
+                      return input instanceof ExecuteSqlRequest
+                          || input instanceof ExecuteBatchDmlRequest;
+                    }
+                  }));
+      assertThat(requests).hasSize(4);
+      assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
+      assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
+      assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
+      assertThat(((ExecuteSqlRequest) requests.get(1)).getSeqno()).isEqualTo(2L);
+      assertThat(requests.get(2)).isInstanceOf(ExecuteBatchDmlRequest.class);
+      assertThat(((ExecuteBatchDmlRequest) requests.get(2)).getSeqno()).isEqualTo(3L);
+      assertThat(requests.get(3)).isInstanceOf(ExecuteSqlRequest.class);
+      assertThat(((ExecuteSqlRequest) requests.get(3)).getSeqno()).isEqualTo(4L);
     }
   }
 

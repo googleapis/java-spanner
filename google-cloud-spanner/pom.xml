@@ -89,7 +89,7 @@
             <configuration>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
               <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
-              <forkCount>1</forkCount>
+              <forkCount>8</forkCount>
               <reuseForks>true</reuseForks>
             </configuration>
           </execution>

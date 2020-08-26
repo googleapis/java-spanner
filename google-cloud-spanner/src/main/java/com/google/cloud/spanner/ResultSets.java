@@ -22,6 +22,7 @@ import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
@@ -67,17 +68,28 @@ public final class ResultSets {
    * ExecutorProvider}.
    */
   public static AsyncResultSet toAsyncResultSet(
-      ResultSet delegate, ExecutorProvider executorProvider) {
-    return new AsyncResultSetImpl(
-        executorProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE);
+      ResultSet delegate, ExecutorProvider executorProvider, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(executorProvider, delegate, bufferRows);
   }
 
+  /**
+   * Converts the {@link ResultSet} that will be returned by the given {@link ApiFuture} to an
+   * {@link AsyncResultSet} using the given {@link ExecutorProvider}.
+   */
   public static AsyncResultSet toAsyncResultSet(
-      ApiFuture<ResultSet> delegate, ExecutorProvider executorProvider) {
+      ApiFuture<ResultSet> delegate, ExecutorProvider executorProvider, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
     return new AsyncResultSetImpl(
-        executorProvider,
-        new FutureResultSetSupplier(delegate),
-        AsyncResultSetImpl.DEFAULT_BUFFER_SIZE);
+        executorProvider, new FutureResultSetSupplier(delegate), bufferRows);
   }
 
   private static class FutureResultSetSupplier implements Supplier<ResultSet> {

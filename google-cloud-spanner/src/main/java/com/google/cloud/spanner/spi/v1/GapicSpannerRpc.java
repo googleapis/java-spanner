@@ -591,7 +591,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           break;
         }
       }
-    } while (operations.getNextPageToken() != null);
+    } while (nextPageToken != null);
     return res;
   }
 

@@ -20,16 +20,26 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.AbstractMessage;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -157,6 +167,135 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       assertThat(get(res2.finished)).isNull();
       assertThat(res2.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT_2);
       assertThat(counter.retryCount).isEqualTo(2);
+    }
+  }
+
+  @Test
+  public void testSingleQueryAbortedMidway() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(
+            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      assertThat(counter.retryCount).isEqualTo(0);
+      QueryResult res = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
+
+      assertThat(get(res.finished)).isNull();
+      assertThat(res.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+      assertThat(counter.retryCount).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void testTwoQueriesSecondAbortedMidway() {
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      assertThat(counter.retryCount).isEqualTo(0);
+      QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
+      mockSpanner.setExecuteStreamingSqlExecutionTime(
+          SimulatedExecutionTime.ofStreamException(
+              Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT_2 / 2));
+      QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
+
+      assertThat(get(res1.finished)).isNull();
+      assertThat(res1.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+      assertThat(get(res2.finished)).isNull();
+      assertThat(res2.rowCount.get()).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT_2);
+      assertThat(counter.retryCount).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void testUpdateAndQueryAbortedMidway() throws InterruptedException {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(
+            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+    final RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      assertThat(counter.retryCount).isEqualTo(0);
+      final SettableApiFuture<Long> rowCount = SettableApiFuture.create();
+      final CountDownLatch updateLatch = new CountDownLatch(1);
+      final CountDownLatch queryLatch = new CountDownLatch(1);
+      ApiFuture<Void> finished;
+      try (AsyncResultSet rs =
+          connection.executeQueryAsync(
+              SELECT_RANDOM_STATEMENT, Options.bufferRows(RANDOM_RESULT_SET_ROW_COUNT / 2 - 1))) {
+        finished =
+            rs.setCallback(
+                singleThreadedExecutor,
+                new ReadyCallback() {
+                  long count;
+
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    // Indicate that the query has been executed.
+                    queryLatch.countDown();
+                    try {
+                      // Wait until the update is on its way.
+                      updateLatch.await(10L, TimeUnit.SECONDS);
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            count++;
+                            break;
+                          case DONE:
+                            rowCount.set(count);
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                        }
+                      }
+                    } catch (InterruptedException e) {
+                      throw SpannerExceptionFactory.propagateInterrupt(e);
+                    }
+                  }
+                });
+      }
+      // Wait until the query has actually executed.
+      queryLatch.await(10L, TimeUnit.SECONDS);
+      ApiFuture<Long> updateCount = connection.executeUpdateAsync(INSERT_STATEMENT);
+      updateCount.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              updateLatch.countDown();
+            }
+          },
+          MoreExecutors.directExecutor());
+
+      // We should not commit before the AsyncResultSet has finished.
+      assertThat(get(finished)).isNull();
+      ApiFuture<Void> commit = connection.commitAsync();
+
+      assertThat(get(rowCount)).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+      assertThat(get(updateCount)).isEqualTo(UPDATE_COUNT);
+      assertThat(get(commit)).isNull();
+      assertThat(counter.retryCount).isEqualTo(1);
+
+      // Verify the order of the statements on the server.
+      List<? extends AbstractMessage> requests =
+          Lists.newArrayList(
+              Collections2.filter(
+                  mockSpanner.getRequests(),
+                  new Predicate<AbstractMessage>() {
+                    @Override
+                    public boolean apply(AbstractMessage input) {
+                      return input instanceof ExecuteSqlRequest;
+                    }
+                  }));
+      assertThat(requests).hasSize(4);
+      assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
+      assertThat(((ExecuteSqlRequest) requests.get(0)).getSql())
+          .isEqualTo(SELECT_RANDOM_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(1)).getSeqno()).isEqualTo(2L);
+      assertThat(((ExecuteSqlRequest) requests.get(1)).getSql())
+          .isEqualTo(INSERT_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(2)).getSeqno()).isEqualTo(1L);
+      assertThat(((ExecuteSqlRequest) requests.get(2)).getSql())
+          .isEqualTo(SELECT_RANDOM_STATEMENT.getSql());
+      assertThat(((ExecuteSqlRequest) requests.get(3)).getSeqno()).isEqualTo(2L);
+      assertThat(((ExecuteSqlRequest) requests.get(3)).getSql())
+          .isEqualTo(INSERT_STATEMENT.getSql());
     }
   }
 

@@ -212,6 +212,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       int recordCount = 0;
       while (recordCount < MAX_ROWS_IN_CHUNK && currentRow < resultSet.getRowsCount()) {
         builder.addAllValues(resultSet.getRows(currentRow).getValuesList());
+        builder.setResumeToken(ByteString.copyFromUtf8(String.format("%010d", currentRow)));
         recordCount++;
         currentRow++;
       }
@@ -408,6 +409,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private final int randomExecutionTime;
     private final Queue<Exception> exceptions;
     private final boolean stickyException;
+    private final Queue<Long> streamIndices;
 
     /**
      * Creates a simulated execution time that will always be somewhere between <code>
@@ -430,11 +432,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     public static SimulatedExecutionTime ofException(Exception exception) {
-      return new SimulatedExecutionTime(0, 0, Arrays.asList(exception), false);
+      return new SimulatedExecutionTime(
+          0, 0, Arrays.asList(exception), false, Collections.<Long>emptySet());
     }
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
-      return new SimulatedExecutionTime(0, 0, Arrays.asList(exception), true);
+      return new SimulatedExecutionTime(
+          0, 0, Arrays.asList(exception), true, Collections.<Long>emptySet());
+    }
+
+    public static SimulatedExecutionTime ofStreamException(Exception exception, long streamIndex) {
+      return new SimulatedExecutionTime(
+          0, 0, Arrays.asList(exception), false, Collections.singleton(streamIndex));
     }
 
     public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {
@@ -443,27 +452,37 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     public static SimulatedExecutionTime ofExceptions(Collection<Exception> exceptions) {
-      return new SimulatedExecutionTime(0, 0, exceptions, false);
+      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.<Long>emptySet());
     }
 
     public static SimulatedExecutionTime ofMinimumAndRandomTimeAndExceptions(
         int minimumExecutionTime, int randomExecutionTime, Collection<Exception> exceptions) {
       return new SimulatedExecutionTime(
-          minimumExecutionTime, randomExecutionTime, exceptions, false);
+          minimumExecutionTime,
+          randomExecutionTime,
+          exceptions,
+          false,
+          Collections.<Long>emptySet());
     }
 
     private SimulatedExecutionTime(int minimum, int random) {
-      this(minimum, random, Collections.<Exception>emptyList(), false);
+      this(
+          minimum, random, Collections.<Exception>emptyList(), false, Collections.<Long>emptySet());
     }
 
     private SimulatedExecutionTime(
-        int minimum, int random, Collection<Exception> exceptions, boolean stickyException) {
+        int minimum,
+        int random,
+        Collection<Exception> exceptions,
+        boolean stickyException,
+        Collection<Long> streamIndices) {
       Preconditions.checkArgument(minimum >= 0, "Minimum execution time must be >= 0");
       Preconditions.checkArgument(random >= 0, "Random execution time must be >= 0");
       this.minimumExecutionTime = minimum;
       this.randomExecutionTime = random;
       this.exceptions = new LinkedList<>(exceptions);
       this.stickyException = stickyException;
+      this.streamIndices = new LinkedList<>(streamIndices);
     }
 
     void simulateExecutionTime(
@@ -472,7 +491,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         CountDownLatch freezeLock) {
       Uninterruptibles.awaitUninterruptibly(freezeLock);
       checkException(globalExceptions, stickyGlobalExceptions);
-      checkException(this.exceptions, stickyException);
+      if (streamIndices.isEmpty()) {
+        checkException(this.exceptions, stickyException);
+      }
       if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
         Uninterruptibles.sleepUninterruptibly(
             (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
@@ -484,6 +505,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private static void checkException(Queue<Exception> exceptions, boolean keepException) {
       Exception e = keepException ? exceptions.peek() : exceptions.poll();
       if (e != null) {
+        Throwables.throwIfUnchecked(e);
+        throw Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+      }
+    }
+
+    private static void checkStreamException(
+        long streamIndex, Queue<Exception> exceptions, Queue<Long> streamIndices) {
+      Exception e = exceptions.peek();
+      Long index = streamIndices.peek();
+      if (e != null && index != null && index == streamIndex) {
+        exceptions.poll();
+        streamIndices.poll();
         Throwables.throwIfUnchecked(e);
         throw Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       }
@@ -1096,7 +1129,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw res.getException();
         case RESULT_SET:
           returnPartialResultSet(
-              res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+              res.getResultSet(),
+              transactionId,
+              request.getTransaction(),
+              responseObserver,
+              getExecuteStreamingSqlExecutionTime());
           break;
         case UPDATE_COUNT:
           if (isPartitioned) {
@@ -1425,7 +1462,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .asRuntimeException();
       }
       returnPartialResultSet(
-          res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+          res.getResultSet(),
+          transactionId,
+          request.getTransaction(),
+          responseObserver,
+          getStreamingReadExecutionTime());
     } catch (StatusRuntimeException e) {
       responseObserver.onError(e);
     } catch (Throwable t) {
@@ -1437,7 +1478,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ResultSet resultSet,
       ByteString transactionId,
       TransactionSelector transactionSelector,
-      StreamObserver<PartialResultSet> responseObserver) {
+      StreamObserver<PartialResultSet> responseObserver,
+      SimulatedExecutionTime executionTime) {
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId == null) {
       Transaction transaction = getTemporaryTransactionOrNull(transactionSelector);
@@ -1451,8 +1493,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     resultSet = resultSet.toBuilder().setMetadata(metadata).build();
     PartialResultSetsIterator iterator = new PartialResultSetsIterator(resultSet);
+    long index = 0L;
     while (iterator.hasNext()) {
+      SimulatedExecutionTime.checkStreamException(
+          index, executionTime.exceptions, executionTime.streamIndices);
       responseObserver.onNext(iterator.next());
+      index++;
     }
     responseObserver.onCompleted();
   }

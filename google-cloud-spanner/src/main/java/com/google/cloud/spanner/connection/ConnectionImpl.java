@@ -785,7 +785,8 @@ class ConnectionImpl implements Connection {
                   .getClientSideStatement()
                   .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
                   .getResultSet(),
-              spanner.getAsyncExecutorProvider());
+              spanner.getAsyncExecutorProvider(),
+              options);
         case QUERY:
           return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
@@ -915,7 +916,8 @@ class ConnectionImpl implements Connection {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(statement, analyzeMode, options),
-        spanner.getAsyncExecutorProvider());
+        spanner.getAsyncExecutorProvider(),
+        options);
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(final ParsedStatement update) {
