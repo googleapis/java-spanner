@@ -16,10 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
-
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -160,18 +160,26 @@ class DmlBatch extends AbstractBaseUnitOfWork {
       return ApiFutures.immediateFuture(new long[0]);
     }
     this.state = UnitOfWorkState.RUNNING;
-    ApiFuture<long[]> res = transaction.executeBatchUpdateAsync(statements);
+    // Use a SettableApiFuture to return the result, instead of directly returning the future that
+    // is returned by the executeBatchUpdateAsync method. This is needed because the state of the
+    // batch is set after the update has finished, and this happens in a listener. A listener is
+    // executed AFTER a Future is done, which means that a user could read the state of the Batch
+    // before it has been changed.
+    final SettableApiFuture<long[]> res = SettableApiFuture.create();
+    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements);
     ApiFutures.addCallback(
-        res,
+        updateCounts,
         new ApiFutureCallback<long[]>() {
           @Override
           public void onFailure(Throwable t) {
             state = UnitOfWorkState.RUN_FAILED;
+            res.setException(t);
           }
 
           @Override
           public void onSuccess(long[] result) {
             state = UnitOfWorkState.RAN;
+            res.set(result);
           }
         },
         MoreExecutors.directExecutor());

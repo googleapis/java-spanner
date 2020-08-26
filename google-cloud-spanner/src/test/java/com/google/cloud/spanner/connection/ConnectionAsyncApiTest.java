@@ -272,7 +272,7 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testAutocommitRunBatchAsync() {
+  public void testAutocommitRunBatch() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.execute(Statement.of("START BATCH DML"));
@@ -285,6 +285,18 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
         assertThat(rs.getLongList(0)).containsExactly(1L, 1L);
         assertThat(rs.next()).isFalse();
       }
+    }
+  }
+
+  @Test
+  public void testAutocommitRunBatchAsync() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.startBatchDml();
+      connection.execute(INSERT_STATEMENT);
+      connection.execute(INSERT_STATEMENT);
+      ApiFuture<long[]> res = connection.runBatchAsync();
+      assertThat(get(res)).asList().containsExactly(1L, 1L);
     }
   }
 

@@ -575,6 +575,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     Paginated<Operation> operations;
     do {
       operations = lister.listOperations(nextPageToken);
+      nextPageToken = operations.getNextPageToken();
       for (Operation op : operations.getResults()) {
         Timestamp startTime = getStartTimeFunction.apply(op);
         if (res == null
