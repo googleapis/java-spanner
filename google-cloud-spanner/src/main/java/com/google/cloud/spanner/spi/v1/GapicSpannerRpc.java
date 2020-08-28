@@ -320,9 +320,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             // SpannerInterceptorProvider if none is provided
             .setInterceptorProvider(
                 SpannerInterceptorProvider.create(
-                    MoreObjects.firstNonNull(
-                        options.getInterceptorProvider(),
-                        SpannerInterceptorProvider.createDefault()))
+                        MoreObjects.firstNonNull(
+                            options.getInterceptorProvider(),
+                            SpannerInterceptorProvider.createDefault()))
                     .withEncoding(compressorName))
             .setHeaderProvider(mergedHeaderProvider);
 
@@ -333,8 +333,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(
-            options.getChannelProvider(),
-            defaultChannelProviderBuilder.build());
+            options.getChannelProvider(), defaultChannelProviderBuilder.build());
 
     CredentialsProvider credentialsProvider =
         GrpcTransportOptions.setUpCredentialsProvider(options);

@@ -79,10 +79,10 @@ public class GceTestEnvConfig implements TestEnvConfig {
       }
     }
     SpannerInterceptorProvider interceptorProvider =
-        SpannerInterceptorProvider.createDefault()
-            .with(new GrpcErrorInjector(errorProbability));
+        SpannerInterceptorProvider.createDefault().with(new GrpcErrorInjector(errorProbability));
     if (attemptDirectPath) {
-      interceptorProvider = interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
+      interceptorProvider =
+          interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
     }
     builder.setInterceptorProvider(interceptorProvider);
     options = builder.build();
