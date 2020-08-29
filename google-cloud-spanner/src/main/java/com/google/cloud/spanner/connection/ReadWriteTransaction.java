@@ -77,6 +77,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private volatile ApiFuture<TransactionContext> txContextFuture;
   private volatile SettableApiFuture<Timestamp> commitTimestampFuture;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
+  private volatile AbortedException abortedException;
   private boolean timedOutOrCancelled = false;
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
@@ -169,18 +170,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   void checkValidTransaction() {
-    ConnectionPreconditions.checkState(
-        state == UnitOfWorkState.STARTED,
-        "This transaction has status "
-            + state.name()
-            + ", only "
-            + UnitOfWorkState.STARTED
-            + " is allowed.");
-    ConnectionPreconditions.checkState(
-        !timedOutOrCancelled,
-        "The last statement of this transaction timed out or was cancelled. "
-            + "The transaction is no longer usable. "
-            + "Rollback the transaction and start a new one.");
+    checkValidState();
     if (txContextFuture == null) {
       transactionStarted = Timestamp.now();
       txContextFuture =
@@ -194,13 +184,45 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               SpannerGrpc.getBeginTransactionMethod());
     } else {
-      if (txManager.getState() != null
-          && txManager.getState()
-              != com.google.cloud.spanner.TransactionManager.TransactionState.STARTED) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.FAILED_PRECONDITION,
-            String.format("Invalid transaction state: %s", txManager.getState()));
-      }
+      //      if (txManager.getState() != null
+      //          && txManager.getState()
+      //              != com.google.cloud.spanner.TransactionManager.TransactionState.STARTED) {
+      //        throw SpannerExceptionFactory.newSpannerException(
+      //            ErrorCode.FAILED_PRECONDITION,
+      //            String.format("Invalid transaction state: %s", txManager.getState()));
+      //      }
+    }
+  }
+
+  private void checkValidState() {
+    ConnectionPreconditions.checkState(
+        this.state == UnitOfWorkState.STARTED || this.state == UnitOfWorkState.ABORTED,
+        "This transaction has status "
+            + this.state.name()
+            + ", only "
+            + UnitOfWorkState.STARTED
+            + "or "
+            + UnitOfWorkState.ABORTED
+            + " is allowed.");
+    ConnectionPreconditions.checkState(
+        !timedOutOrCancelled,
+        "The last statement of this transaction timed out or was cancelled. "
+            + "The transaction is no longer usable. "
+            + "Rollback the transaction and start a new one.");
+  }
+
+  @Override
+  public boolean isActive() {
+    // Consider ABORTED an active state, as it is something that is automatically set if the
+    // transaction is aborted by the backend. That means that we should not automatically create a
+    // new transaction for the following statement after a transaction has aborted, and instead we
+    // should wait until the application has rolled back the current transaction.
+    return getState().isActive() || state == UnitOfWorkState.ABORTED;
+  }
+
+  void checkAborted() {
+    if (this.state == UnitOfWorkState.ABORTED && this.abortedException != null) {
+      throw this.abortedException;
     }
   }
 
@@ -363,6 +385,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               new Callable<Long>() {
                 @Override
                 public Long call() throws Exception {
+                  checkAborted();
                   return get(txContextFuture).executeUpdate(update.getStatement());
                 }
               },
@@ -453,6 +476,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               new Callable<long[]>() {
                 @Override
                 public long[] call() throws Exception {
+                  checkAborted();
                   return get(txContextFuture).batchUpdate(updateStatements);
                 }
               },
@@ -503,6 +527,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       new Callable<Void>() {
         @Override
         public Void call() throws Exception {
+          checkAborted();
           try {
             get(txContextFuture).buffer(mutations);
             txManager.commit();
@@ -583,6 +608,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
+      checkAborted();
       try {
         return callable.call();
       } catch (final AbortedException aborted) {
@@ -594,7 +620,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       } catch (SpannerException e) {
         throw e;
       } catch (Exception e) {
-        throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, e.getMessage(), e);
+        throw SpannerExceptionFactory.asSpannerException(e);
       }
     }
   }
@@ -712,6 +738,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             // ignore.
           }
           this.state = UnitOfWorkState.ABORTED;
+          this.abortedException = e;
           throw e;
         } catch (AbortedException e) {
           // Retry aborted, do another retry of the transaction.
@@ -734,6 +761,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
           // Set transaction state to aborted as the retry failed.
           this.state = UnitOfWorkState.ABORTED;
+          this.abortedException = aborted;
           // Re-throw underlying exception.
           throw e;
         }
@@ -746,6 +774,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       }
       // Internal retry is not enabled.
       this.state = UnitOfWorkState.ABORTED;
+      this.abortedException = aborted;
       throw aborted;
     }
   }
@@ -764,8 +793,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       // ignore.
     }
     this.state = UnitOfWorkState.ABORTED;
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.ABORTED, MAX_INTERNAL_RETRIES_EXCEEDED);
+    this.abortedException =
+        (AbortedException)
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED, MAX_INTERNAL_RETRIES_EXCEEDED);
+    throw this.abortedException;
   }
 
   private void invokeTransactionRetryListenersOnStart() {
@@ -788,10 +820,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       new Callable<Void>() {
         @Override
         public Void call() throws Exception {
-          // Make sure the transaction has actually started before we try to rollback.
           try {
-            get(txContextFuture);
-            txManager.rollback();
+            if (state != UnitOfWorkState.ABORTED) {
+              // Make sure the transaction has actually started before we try to rollback.
+              get(txContextFuture);
+              txManager.rollback();
+            }
             return null;
           } finally {
             txManager.close();
@@ -802,7 +836,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   @Override
   public ApiFuture<Void> rollbackAsync() {
     ConnectionPreconditions.checkState(
-        state == UnitOfWorkState.STARTED, "This transaction has status " + state.name());
+        state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
+        "This transaction has status " + state.name());
     state = UnitOfWorkState.ROLLED_BACK;
     if (txContextFuture != null) {
       return executeStatementAsync(

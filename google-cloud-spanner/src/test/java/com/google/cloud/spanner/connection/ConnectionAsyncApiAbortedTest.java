@@ -41,6 +41,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -492,6 +493,134 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       } catch (AbortedDueToConcurrentModificationException e) {
         assertThat(counter.retryCount).isEqualTo(1);
       }
+    }
+  }
+
+  @Test
+  public void testBlindUpdateAborted() {
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      mockSpanner.abortNextStatement();
+      ApiFuture<Long> updateCount = connection.executeUpdateAsync(INSERT_STATEMENT);
+      get(connection.commitAsync());
+
+      assertThat(get(updateCount)).isEqualTo(UPDATE_COUNT);
+      assertThat(counter.retryCount).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void testBlindUpdateAborted_WithConcurrentModification() {
+    Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
+    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
+
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      // Execute an update statement and then change the result for the next time it is executed.
+      get(connection.executeUpdateAsync(update1));
+      mockSpanner.putStatementResult(StatementResult.update(update1, 200));
+
+      // Abort on the next statement. The retry should now fail because of the changed result of the
+      // first update.
+      mockSpanner.abortNextStatement();
+      connection.executeUpdateAsync(INSERT_STATEMENT);
+
+      try {
+        get(connection.commitAsync());
+        fail("Missing expected exception");
+      } catch (AbortedDueToConcurrentModificationException e) {
+        assertThat(counter.retryCount).isEqualTo(1);
+      }
+    }
+  }
+
+  @Test
+  public void testMultipleBlindUpdatesAborted_WithConcurrentModification() {
+    Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
+    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
+
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      // Execute an update statement and then change the result for the next time it is executed.
+      get(connection.executeUpdateAsync(update1));
+      mockSpanner.putStatementResult(StatementResult.update(update1, 200));
+
+      // Abort the transaction on the next statement. The retry should now fail because of the
+      // changed result of the first update.
+      mockSpanner.abortNextStatement();
+
+      // Continue to (try to) execute blind updates. This should not cause any exceptions, although
+      // all of the returned futures will fail.
+      List<ApiFuture<Long>> futures = new ArrayList<>();
+      for (int i = 0; i < 3; i++) {
+        futures.add(connection.executeUpdateAsync(INSERT_STATEMENT));
+      }
+
+      for (ApiFuture<Long> fut : futures) {
+        try {
+          get(fut);
+          fail("Missing expected exception");
+        } catch (AbortedDueToConcurrentModificationException e) {
+          assertThat(counter.retryCount).isEqualTo(1);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testBlindUpdateAborted_ThenAsyncQuery_WithConcurrentModification() {
+    Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
+    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
+
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      // Execute an update statement and then change the result for the next time it is executed.
+      get(connection.executeUpdateAsync(update1));
+      mockSpanner.putStatementResult(StatementResult.update(update1, 200));
+
+      // Abort on the next statement. The retry should now fail because of the changed result of the
+      // first update.
+      mockSpanner.abortNextStatement();
+      connection.executeUpdateAsync(INSERT_STATEMENT);
+
+      // Try to execute an async query. The callback should also receive the
+      // AbortedDueToConcurrentModificationException.
+      try (AsyncResultSet rs = connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
+        ApiFuture<Void> fut =
+            rs.setCallback(
+                singleThreadedExecutor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    // The following line should throw AbortedDueToConcurrentModificationException.
+                    resultSet.tryNext();
+                    return CallbackResponse.DONE;
+                  }
+                });
+        try {
+          assertThat(get(fut)).isNull();
+          fail("Missing expected exception");
+        } catch (AbortedDueToConcurrentModificationException e) {
+          assertThat(counter.retryCount).isEqualTo(1);
+        }
+      }
+
+      // Ensure that a rollback and then a new statement does succeed.
+      connection.rollbackAsync();
+      try (AsyncResultSet rs = connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
+        ApiFuture<Void> fut =
+            rs.setCallback(
+                singleThreadedExecutor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    resultSet.tryNext();
+                    return CallbackResponse.DONE;
+                  }
+                });
+        assertThat(get(fut)).isNull();
+      }
+      get(connection.commitAsync());
     }
   }
 

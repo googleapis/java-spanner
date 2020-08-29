@@ -48,6 +48,8 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
     return getState().isActive();
   }
 
+  abstract void checkAborted();
+
   /**
    * Check that the current transaction actually has a valid underlying transaction. If not, the
    * method will throw a {@link SpannerException}.
@@ -68,6 +70,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<ResultSet>() {
           @Override
           public ResultSet call() throws Exception {
+            checkAborted();
             return DirectExecuteResultSet.ofResultSet(
                 internalExecuteQuery(statement, analyzeMode, options));
           }

@@ -85,6 +85,10 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     return true;
   }
 
+  void checkAborted() {
+    // No-op for read-only transactions as they cannot abort.
+  }
+
   @Override
   void checkValidTransaction() {
     if (transaction == null) {
