@@ -33,6 +33,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -262,8 +263,21 @@ public interface Connection extends AutoCloseable {
   void beginTransaction();
 
   /**
-   * Same as {@link #beginTransaction()}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that is done when the new transaction has been created.
+   * Begins a new transaction for this connection. This method is guaranteed to be non-blocking. The
+   * returned {@link ApiFuture} will be done when the transaction has been initialized.
+   *
+   * <ul>
+   *   <li>Calling this method on a connection that has no transaction and that is
+   *       <strong>not</strong> in autocommit mode, will register a new transaction that has not yet
+   *       started on this connection
+   *   <li>Calling this method on a connection that has no transaction and that <strong>is</strong>
+   *       in autocommit mode, will register a new transaction that has not yet started on this
+   *       connection, and temporarily turn off autocommit mode until the next commit/rollback
+   *   <li>Calling this method on a connection that already has a transaction that has not yet
+   *       started, will cause a {@link SpannerException}
+   *   <li>Calling this method on a connection that already has a transaction that has started, will
+   *       cause a {@link SpannerException} (no nested transactions)
+   * </ul>
    */
   ApiFuture<Void> beginTransactionAsync();
 
@@ -459,8 +473,43 @@ public interface Connection extends AutoCloseable {
   void commit();
 
   /**
-   * Same as {@link #commit()}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that is done when the transaction has committed or the commit has failed.
+   * Commits the current transaction of this connection. All mutations that have been buffered
+   * during the current transaction will be written to the database.
+   *
+   * <p>This method is guaranteed to be non-blocking. The returned {@link ApiFuture} will be done
+   * when the transaction has committed or the commit has failed.
+   *
+   * <p>If the connection is in autocommit mode, and there is a temporary transaction active on this
+   * connection, calling this method will cause the connection to go back to autocommit mode after
+   * calling this method.
+   *
+   * <p>This method will throw a {@link SpannerException} with code {@link
+   * ErrorCode#DEADLINE_EXCEEDED} if a statement timeout has been set on this connection, and the
+   * commit operation takes longer than this timeout.
+   *
+   * <ul>
+   *   <li>Calling this method on a connection in autocommit mode and with no temporary transaction,
+   *       will cause an exception
+   *   <li>Calling this method while a DDL batch is active will cause an exception
+   *   <li>Calling this method on a connection with a transaction that has not yet started, will end
+   *       that transaction and any properties that might have been set on that transaction, and
+   *       return the connection to its previous state. This means that if a transaction is created
+   *       and set to read-only, and then committed before any statements have been executed, the
+   *       read-only transaction is ended and any subsequent statements will be executed in a new
+   *       transaction. If the connection is in read-write mode, the default for new transactions
+   *       will be {@link TransactionMode#READ_WRITE_TRANSACTION}. Committing an empty transaction
+   *       also does not generate a read timestamp or a commit timestamp, and calling one of the
+   *       methods {@link Connection#getReadTimestamp()} or {@link Connection#getCommitTimestamp()}
+   *       will cause an exception.
+   *   <li>Calling this method on a connection with a {@link TransactionMode#READ_ONLY_TRANSACTION}
+   *       transaction will end that transaction. If the connection is in read-write mode, any
+   *       subsequent transaction will by default be a {@link
+   *       TransactionMode#READ_WRITE_TRANSACTION} transaction, unless any following transaction is
+   *       explicitly set to {@link TransactionMode#READ_ONLY_TRANSACTION}
+   *   <li>Calling this method on a connection with a {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *       transaction will send all buffered mutations to the database, commit any DML statements
+   *       that have been executed during this transaction and end the transaction.
+   * </ul>
    */
   ApiFuture<Void> commitAsync();
 
@@ -496,8 +545,36 @@ public interface Connection extends AutoCloseable {
   void rollback();
 
   /**
-   * Same as {@link #rollback()}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that is done when the transaction has been rolled back.
+   * Rollbacks the current transaction of this connection. All mutations or DDL statements that have
+   * been buffered during the current transaction will be removed from the buffer.
+   *
+   * <p>This method is guaranteed to be non-blocking. The returned {@link ApiFuture} will be done
+   * when the transaction has been rolled back.
+   *
+   * <p>If the connection is in autocommit mode, and there is a temporary transaction active on this
+   * connection, calling this method will cause the connection to go back to autocommit mode after
+   * calling this method.
+   *
+   * <ul>
+   *   <li>Calling this method on a connection in autocommit mode and with no temporary transaction
+   *       will cause an exception
+   *   <li>Calling this method while a DDL batch is active will cause an exception
+   *   <li>Calling this method on a connection with a transaction that has not yet started, will end
+   *       that transaction and any properties that might have been set on that transaction, and
+   *       return the connection to its previous state. This means that if a transaction is created
+   *       and set to read-only, and then rolled back before any statements have been executed, the
+   *       read-only transaction is ended and any subsequent statements will be executed in a new
+   *       transaction. If the connection is in read-write mode, the default for new transactions
+   *       will be {@link TransactionMode#READ_WRITE_TRANSACTION}.
+   *   <li>Calling this method on a connection with a {@link TransactionMode#READ_ONLY_TRANSACTION}
+   *       transaction will end that transaction. If the connection is in read-write mode, any
+   *       subsequent transaction will by default be a {@link
+   *       TransactionMode#READ_WRITE_TRANSACTION} transaction, unless any following transaction is
+   *       explicitly set to {@link TransactionMode#READ_ONLY_TRANSACTION}
+   *   <li>Calling this method on a connection with a {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *       transaction will clear all buffered mutations, rollback any DML statements that have been
+   *       executed during this transaction and end the transaction.
+   * </ul>
    */
   ApiFuture<Void> rollbackAsync();
 
@@ -592,14 +669,27 @@ public interface Connection extends AutoCloseable {
    * <p>This method may only be called when a (possibly empty) batch is active.
    *
    * @return the update counts in case of a DML batch. Returns an array containing 1 for each
-   *     successful statement and 0 for each failed statement or statement that was not executed DDL
-   *     in case of a DDL batch.
+   *     successful statement and 0 for each failed statement or statement that was not executed in
+   *     case of a DDL batch.
    */
   long[] runBatch();
 
   /**
-   * Same as {@link #runBatch()}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that will return the update counts.
+   * Sends all buffered DML or DDL statements of the current batch to the database, waits for these
+   * to be executed and ends the current batch. The method will throw an exception for the first
+   * statement that cannot be executed, or return successfully if all statements could be executed.
+   * If an exception is thrown for a statement in the batch, the preceding statements in the same
+   * batch may still have been applied to the database.
+   *
+   * <p>This method is guaranteed to be non-blocking. The returned {@link ApiFuture} will be done
+   * when the batch has been successfully applied, or when one or more of the statements in the
+   * batch has failed and the further execution of the batch has been halted.
+   *
+   * <p>This method may only be called when a (possibly empty) batch is active.
+   *
+   * @return an {@link ApiFuture} containing the update counts in case of a DML batch. The {@link
+   *     ApiFuture} contains an array containing 1 for each successful statement and 0 for each
+   *     failed statement or statement that was not executed in case of a DDL batch.
    */
   ApiFuture<long[]> runBatchAsync();
 
@@ -635,9 +725,26 @@ public interface Connection extends AutoCloseable {
   StatementResult execute(Statement statement);
 
   /**
-   * Same as {@link #execute(Statement)}, but is guaranteed to be non-blocking. The result of the
-   * statement is returned as either an {@link AsyncResultSet} or an {@link ApiFuture} depending on
-   * the type of statement.
+   * Executes the given statement if allowed in the current {@link TransactionMode} and connection
+   * state asynchronously. The returned value depends on the type of statement:
+   *
+   * <ul>
+   *   <li>Queries will return an {@link AsyncResultSet}
+   *   <li>DML statements will return an {@link ApiFuture} with an update count that is done when
+   *       the DML statement has been applied successfully, or that throws an {@link
+   *       ExecutionException} if the DML statement failed.
+   *   <li>DDL statements will return an {@link ApiFuture} containing a {@link Void} that is done
+   *       when the DDL statement has been applied successfully, or that throws an {@link
+   *       ExecutionException} if the DDL statement failed.
+   *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
+   *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
+   *       ResultType#NO_RESULT}, depending on the type of statement (SHOW or SET)
+   * </ul>
+   *
+   * This method is guaranteed to be non-blocking.
+   *
+   * @param statement The statement to execute
+   * @return the result of the statement
    */
   AsyncStatementResult executeAsync(Statement statement);
 
@@ -658,6 +765,22 @@ public interface Connection extends AutoCloseable {
    * AsyncResultSet#setCallback(java.util.concurrent.Executor,
    * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
    * the results of the query asynchronously.
+   */
+  /**
+   * Executes the given statement asynchronously as a query and returns the result as an {@link
+   * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
+   * contain a valid query, the method will throw a {@link SpannerException}.
+   *
+   * <p>See {@link AsyncResultSet#setCallback(java.util.concurrent.Executor,
+   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
+   * the results of the query asynchronously.
+   *
+   * <p>It is also possible to consume the returned {@link AsyncResultSet} in the same way as a
+   * normal {@link ResultSet}, i.e. in a while-loop calling {@link AsyncResultSet#next()}.
+   *
+   * @param query The query statement to execute
+   * @param options the options to configure the query
+   * @return an {@link AsyncResultSet} with the results of the query
    */
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
@@ -698,8 +821,14 @@ public interface Connection extends AutoCloseable {
   long executeUpdate(Statement update);
 
   /**
-   * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking and returns an
-   * {@link ApiFuture} that will return the update count.
+   * Executes the given statement asynchronously as a DML statement. If the statement does not
+   * contain a valid DML statement, the method will throw a {@link SpannerException}.
+   *
+   * <p>This method is guaranteed to be non-blocking.
+   *
+   * @param update The update statement to execute
+   * @return an {@link ApiFuture} containing the number of records that were
+   *     inserted/updated/deleted by this statement
    */
   ApiFuture<Long> executeUpdateAsync(Statement update);
 
@@ -726,8 +855,27 @@ public interface Connection extends AutoCloseable {
   long[] executeBatchUpdate(Iterable<Statement> updates);
 
   /**
-   * Same as {@link #executeBatchUpdate(Iterable)}, but is guaranteed to be non-blocking and returns
-   * its result as an {@link ApiFuture} that will return the update counts.
+   * Executes a list of DML statements in a single request. The statements will be executed in order
+   * and the semantics is the same as if each statement is executed by {@link
+   * Connection#executeUpdate(Statement)} in a loop. This method returns an {@link ApiFuture} that
+   * contains an array of long integers, each representing the number of rows modified by each
+   * statement.
+   *
+   * <p>This method is guaranteed to be non-blocking.
+   *
+   * <p>If an individual statement fails, execution stops and a {@code SpannerBatchUpdateException}
+   * is returned, which includes the error and the number of rows affected by the statements that
+   * are run prior to the error.
+   *
+   * <p>For example, if statements contains 3 statements, and the 2nd one is not a valid DML. This
+   * method throws a {@code SpannerBatchUpdateException} that contains the error message from the
+   * 2nd statement, and an array of length 1 that contains the number of rows modified by the 1st
+   * statement. The 3rd statement will not run. Executes the given statements as DML statements in
+   * one batch. If one of the statements does not contain a valid DML statement, the method will
+   * throw a {@link SpannerException}.
+   *
+   * @param updates The update statements that will be executed as one batch.
+   * @return an {@link ApiFuture} containing an array with the update counts per statement.
    */
   ApiFuture<long[]> executeBatchUpdateAsync(Iterable<Statement> updates);
 
@@ -747,8 +895,19 @@ public interface Connection extends AutoCloseable {
   void write(Mutation mutation);
 
   /**
-   * Same as {@link #write(Mutation)}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that is done when the {@link Mutation} has been written to Cloud Spanner.
+   * Writes the specified mutation directly to the database and commits the change. The value is
+   * readable after the successful completion of the returned {@link ApiFuture}. Writing multiple
+   * mutations to a database by calling this method multiple times mode is inefficient, as each call
+   * will need a round trip to the database. Instead, you should consider writing the mutations
+   * together by calling {@link Connection#writeAsync(Iterable)}.
+   *
+   * <p>This method is guaranteed to be non-blocking.
+   *
+   * <p>Calling this method is only allowed in autocommit mode. See {@link
+   * Connection#bufferedWrite(Iterable)} for writing mutations in transactions.
+   *
+   * @param mutation The {@link Mutation} to write to the database
+   * @throws SpannerException if the {@link Connection} is not in autocommit mode
    */
   ApiFuture<Void> writeAsync(Mutation mutation);
 
@@ -765,8 +924,16 @@ public interface Connection extends AutoCloseable {
   void write(Iterable<Mutation> mutations);
 
   /**
-   * Same as {@link #write(Iterable)}, but is guaranteed to be non-blocking and returns an {@link
-   * ApiFuture} that is done when all {@link Mutation}s have been written to Cloud Spanner.
+   * Writes the specified mutations directly to the database and commits the changes. The values are
+   * readable after the successful completion of the returned {@link ApiFuture}.
+   *
+   * <p>This method is guaranteed to be non-blocking.
+   *
+   * <p>Calling this method is only allowed in autocommit mode. See {@link
+   * Connection#bufferedWrite(Iterable)} for writing mutations in transactions.
+   *
+   * @param mutations The {@link Mutation}s to write to the database
+   * @throws SpannerException if the {@link Connection} is not in autocommit mode
    */
   ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 
