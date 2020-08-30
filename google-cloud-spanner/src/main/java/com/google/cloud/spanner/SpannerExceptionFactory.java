@@ -139,6 +139,20 @@ public final class SpannerExceptionFactory {
   }
 
   /**
+   * Constructs a new {@link AbortedDueToConcurrentModificationException} that can be re-thrown for
+   * a transaction that had already been aborted, but that the client application tried to use for
+   * additional statements.
+   */
+  public static AbortedDueToConcurrentModificationException
+      newAbortedDueToConcurrentModificationException(
+          AbortedDueToConcurrentModificationException cause) {
+    return new AbortedDueToConcurrentModificationException(
+        DoNotConstructDirectly.ALLOWED,
+        "This transaction has already been aborted and could not be retried due to a concurrent modification. Rollback this transaction to start a new one.",
+        cause);
+  }
+
+  /**
    * Creates a new exception based on {@code cause}. If {@code cause} indicates cancellation, {@code
    * context} will be inspected to establish the type of cancellation.
    *

@@ -222,7 +222,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   void checkAborted() {
     if (this.state == UnitOfWorkState.ABORTED && this.abortedException != null) {
-      throw this.abortedException;
+      if (this.abortedException instanceof AbortedDueToConcurrentModificationException) {
+        throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(
+            (AbortedDueToConcurrentModificationException) this.abortedException);
+      } else {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.ABORTED,
+            "This transaction has already been aborted. Rollback this transaction to start a new one.",
+            this.abortedException);
+      }
     }
   }
 
