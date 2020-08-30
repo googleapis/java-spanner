@@ -150,7 +150,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private long retryDelayInMillis = -1L;
 
-    private ByteString transactionId;
+    private volatile ByteString transactionId;
     private Timestamp commitTimestamp;
 
     private TransactionContextImpl(Builder builder) {

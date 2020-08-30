@@ -82,6 +82,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
+  final Object abortedLock = new Object();
 
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
@@ -616,19 +617,21 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
-      checkAborted();
-      try {
-        return callable.call();
-      } catch (final AbortedException aborted) {
-        if (retryAbortsInternally) {
-          handleAborted(aborted);
-        } else {
-          throw aborted;
+      synchronized (abortedLock) {
+        checkAborted();
+        try {
+          return callable.call();
+        } catch (final AbortedException aborted) {
+          if (retryAbortsInternally) {
+            handleAborted(aborted);
+          } else {
+            throw aborted;
+          }
+        } catch (SpannerException e) {
+          throw e;
+        } catch (Exception e) {
+          throw SpannerExceptionFactory.asSpannerException(e);
         }
-      } catch (SpannerException e) {
-        throw e;
-      } catch (Exception e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
       }
     }
   }
