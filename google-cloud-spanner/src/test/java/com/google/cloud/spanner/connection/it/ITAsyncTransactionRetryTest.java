@@ -978,9 +978,9 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
               .bind("max_id")
               .to(UPDATED_RECORDS)
               .build());
-      connection.commitAsync();
+      get(connection.commitAsync());
       // verify that the update succeeded
-      try (ResultSet rs =
+      try (AsyncResultSet rs =
           connection.executeQueryAsync(
               Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE NAME='updated'"))) {
         assertThat(rs.next()).isTrue();
