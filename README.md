@@ -157,9 +157,10 @@ with `grpc.io/client/`.
 * `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
   number of sessions allowed.
 
-* `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
-   see instance-level and database-level data for the total number of sessions in
-   use (or checked out from the pool) at this very moment.
+* `cloud.google.com/java/spanner/num_sessions_in_pool`: This metric allows users to
+   see number of sessions in the pool. You can breakdown this metric by
+   num_in_use_sessions, num_sessions_being_prepared, num_read_sessions and
+   num_write_prepared_sessions.
 
 * `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
   users to see the total number of acquired sessions.
