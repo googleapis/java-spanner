@@ -21,17 +21,34 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStreamingCallSettings;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Strings;
+import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
+import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.GetSessionRequest;
+import com.google.spanner.v1.ListSessionsRequest;
+import com.google.spanner.v1.PartitionQueryRequest;
+import com.google.spanner.v1.PartitionReadRequest;
+import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +98,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testSpannerDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings witRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
@@ -91,21 +108,28 @@ public class SpannerOptionsTest {
             .setMaxRpcTimeout(Duration.ofMillis(3600000L))
             .setTotalTimeout(Duration.ofMillis(3600000L))
             .build();
-    RetrySettings streamingRetrySettings =
+    RetrySettings witRetryPolicy2 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+            .setInitialRpcTimeout(Duration.ofMillis(60000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(60000L))
+            .setTotalTimeout(Duration.ofMillis(60000L))
             .build();
-    RetrySettings longRunningRetrySettings =
+    RetrySettings witRetryPolicy3 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(250L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetry1 =
+        RetrySettings.newBuilder()
             .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
             .setMaxRpcTimeout(Duration.ofMillis(3600000L))
@@ -113,33 +137,37 @@ public class SpannerOptionsTest {
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     SpannerStubSettings stubSettings = options.getSpannerStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
+        Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
+        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
-            stubSettings.beginTransactionSettings(),
             stubSettings.createSessionSettings(),
-            stubSettings.deleteSessionSettings(),
-            stubSettings.executeBatchDmlSettings(),
-            stubSettings.executeSqlSettings(),
             stubSettings.getSessionSettings(),
-            stubSettings.listSessionsSettings(),
-            stubSettings.partitionQuerySettings(),
-            stubSettings.partitionReadSettings(),
+            stubSettings.deleteSessionSettings(),
+            stubSettings.executeSqlSettings(),
+            stubSettings.executeBatchDmlSettings(),
             stubSettings.readSettings(),
-            stubSettings.rollbackSettings());
-    List<? extends ServerStreamingCallSettings<?, ?>> callsWithStreamingSettings =
+            stubSettings.beginTransactionSettings(),
+            stubSettings.rollbackSettings(),
+            stubSettings.partitionQuerySettings(),
+            stubSettings.partitionReadSettings());
+    List<? extends ServerStreamingCallSettings<?, ?>> callsWithNoRetry1 =
         Arrays.asList(
             stubSettings.executeStreamingSqlSettings(), stubSettings.streamingReadSettings());
-    List<? extends UnaryCallSettings<?, ?>> callsWithLongRunningSettings =
-        Arrays.asList(stubSettings.commitSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy1);
     }
-    for (ServerStreamingCallSettings<?, ?> callSettings : callsWithStreamingSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(streamingRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy2);
     }
-    for (UnaryCallSettings<?, ?> callSettings : callsWithLongRunningSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(longRunningRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetry3) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(witRetryPolicy3);
+    }
+    for (ServerStreamingCallSettings<?, ?> callSettings : callsWithNoRetry1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetry1);
     }
   }
 
@@ -213,26 +241,54 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDatabaseAdminDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings withRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1000L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(60000L))
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(60000L))
-            .setTotalTimeout(Duration.ofMillis(600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings withRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1000L))
+            .setRetryDelayMultiplier(1.3)
+            .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     DatabaseAdminStubSettings stubSettings = options.getDatabaseAdminStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy1 =
         Arrays.asList(
             stubSettings.dropDatabaseSettings(),
-            stubSettings.getDatabaseDdlSettings(),
-            stubSettings.getDatabaseSettings());
+            stubSettings.getDatabaseSettings(),
+            stubSettings.getDatabaseDdlSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
+        Arrays.asList(stubSettings.getIamPolicySettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
+        Arrays.asList(
+            stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy2);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetry2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy2);
     }
   }
 
@@ -275,28 +331,68 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInstanceAdminDefaultRetrySettings() {
-    RetrySettings defaultRetrySettings =
+    RetrySettings withRetryPolicy1 =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1000L))
             .setRetryDelayMultiplier(1.3)
             .setMaxRetryDelay(Duration.ofMillis(32000L))
-            .setInitialRpcTimeout(Duration.ofMillis(60000L))
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
             .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(60000L))
-            .setTotalTimeout(Duration.ofMillis(600000L))
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings withRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(1000L))
+            .setRetryDelayMultiplier(1.3)
+            .setMaxRetryDelay(Duration.ofMillis(32000L))
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
+            .build();
+    RetrySettings noRetryPolicy1 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+            .setTotalTimeout(Duration.ofMillis(3600000L))
+            .build();
+    RetrySettings noRetryPolicy2 =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofMillis(30000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(30000L))
+            .setTotalTimeout(Duration.ofMillis(30000L))
             .build();
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
     InstanceAdminStubSettings stubSettings = options.getInstanceAdminStubSettings();
-    List<? extends UnaryCallSettings<?, ?>> callsWithDefaultSettings =
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy1 =
         Arrays.asList(
             stubSettings.getInstanceConfigSettings(),
             stubSettings.listInstanceConfigsSettings(),
             stubSettings.deleteInstanceSettings(),
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
+        Arrays.asList(stubSettings.getIamPolicySettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
+        Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
+    List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =
+        Arrays.asList(
+            stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
 
-    for (UnaryCallSettings<?, ?> callSettings : callsWithDefaultSettings) {
-      assertThat(callSettings.getRetrySettings()).isEqualTo(defaultRetrySettings);
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(withRetryPolicy2);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetryPolicy1) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy1);
+    }
+    for (UnaryCallSettings<?, ?> callSettings : callsWithNoRetryPolicy2) {
+      assertThat(callSettings.getRetrySettings()).isEqualTo(noRetryPolicy2);
     }
   }
 
@@ -504,5 +600,269 @@ public class SpannerOptionsTest {
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
         .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+  }
+
+  @Test
+  public void testCompressorName() {
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("gzip")
+                .build()
+                .getCompressorName())
+        .isEqualTo("gzip");
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName("identity")
+                .build()
+                .getCompressorName())
+        .isEqualTo("identity");
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setCompressorName(null)
+                .build()
+                .getCompressorName())
+        .isNull();
+    try {
+      SpannerOptions.newBuilder().setCompressorName("foo");
+      fail("missing expected exception");
+    } catch (IllegalArgumentException e) {
+      // ignore, this is the expected exception.
+    }
+  }
+
+  @Test
+  public void testSpannerCallContextTimeoutConfigurator_NullValues() {
+    SpannerCallContextTimeoutConfigurator configurator =
+        SpannerCallContextTimeoutConfigurator.create();
+    ApiCallContext inputCallContext = GrpcCallContext.createDefault();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BatchCreateSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getBatchCreateSessionsMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CreateSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getCreateSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ListSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getListSessionsMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BeginTransactionRequest.getDefaultInstance(),
+                SpannerGrpc.getBeginTransactionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CommitRequest.getDefaultInstance(),
+                SpannerGrpc.getCommitMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                RollbackRequest.getDefaultInstance(),
+                SpannerGrpc.getRollbackMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteStreamingSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteBatchDmlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteBatchDmlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ReadRequest.getDefaultInstance(),
+                SpannerGrpc.getStreamingReadMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                PartitionQueryRequest.getDefaultInstance(),
+                SpannerGrpc.getPartitionQueryMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                PartitionReadRequest.getDefaultInstance(),
+                SpannerGrpc.getPartitionReadMethod()))
+        .isNull();
+  }
+
+  @Test
+  public void testSpannerCallContextTimeoutConfigurator_WithTimeouts() {
+    SpannerCallContextTimeoutConfigurator configurator =
+        SpannerCallContextTimeoutConfigurator.create();
+    configurator.withBatchUpdateTimeout(Duration.ofSeconds(1L));
+    configurator.withCommitTimeout(Duration.ofSeconds(2L));
+    configurator.withExecuteQueryTimeout(Duration.ofSeconds(3L));
+    configurator.withExecuteUpdateTimeout(Duration.ofSeconds(4L));
+    configurator.withPartitionQueryTimeout(Duration.ofSeconds(5L));
+    configurator.withPartitionReadTimeout(Duration.ofSeconds(6L));
+    configurator.withReadTimeout(Duration.ofSeconds(7L));
+    configurator.withRollbackTimeout(Duration.ofSeconds(8L));
+
+    ApiCallContext inputCallContext = GrpcCallContext.createDefault();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BatchCreateSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getBatchCreateSessionsMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CreateSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getCreateSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ListSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getListSessionsMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BeginTransactionRequest.getDefaultInstance(),
+                SpannerGrpc.getBeginTransactionMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    CommitRequest.getDefaultInstance(),
+                    SpannerGrpc.getCommitMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(2L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    RollbackRequest.getDefaultInstance(),
+                    SpannerGrpc.getRollbackMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(8L));
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ExecuteSqlRequest.getDefaultInstance(),
+                    SpannerGrpc.getExecuteStreamingSqlMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(3L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ExecuteBatchDmlRequest.getDefaultInstance(),
+                    SpannerGrpc.getExecuteBatchDmlMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(1L));
+    assertThat(
+            configurator.configure(
+                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ReadRequest.getDefaultInstance(),
+                    SpannerGrpc.getStreamingReadMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(7L));
+
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    PartitionQueryRequest.getDefaultInstance(),
+                    SpannerGrpc.getPartitionQueryMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(5L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    PartitionReadRequest.getDefaultInstance(),
+                    SpannerGrpc.getPartitionReadMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(6L));
   }
 }

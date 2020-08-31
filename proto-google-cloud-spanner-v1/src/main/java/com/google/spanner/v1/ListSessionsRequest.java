@@ -147,6 +147,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -171,6 +172,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -197,6 +199,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The pageSize.
    */
+  @java.lang.Override
   public int getPageSize() {
     return pageSize_;
   }
@@ -216,6 +219,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The pageToken.
    */
+  @java.lang.Override
   public java.lang.String getPageToken() {
     java.lang.Object ref = pageToken_;
     if (ref instanceof java.lang.String) {
@@ -240,6 +244,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for pageToken.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getPageTokenBytes() {
     java.lang.Object ref = pageToken_;
     if (ref instanceof java.lang.String) {
@@ -271,6 +276,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The filter.
    */
+  @java.lang.Override
   public java.lang.String getFilter() {
     java.lang.Object ref = filter_;
     if (ref instanceof java.lang.String) {
@@ -299,6 +305,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    *
    * @return The bytes for filter.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getFilterBytes() {
     java.lang.Object ref = filter_;
     if (ref instanceof java.lang.String) {
@@ -803,6 +810,7 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      *
      * @return The pageSize.
      */
+    @java.lang.Override
     public int getPageSize() {
       return pageSize_;
     }

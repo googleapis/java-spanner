@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -28,7 +29,9 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.v1.SpannerClient;
 import com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 import com.google.cloud.spanner.v1.SpannerSettings;
+import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -41,6 +44,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -54,6 +60,14 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class RetryOnInvalidatedSessionTest {
+  private static final class ToLongTransformer implements Function<StructReader, Long> {
+    @Override
+    public Long apply(StructReader input) {
+      return input.getLong(0);
+    }
+  }
+
+  private static final ToLongTransformer TO_LONG = new ToLongTransformer();
 
   @Parameter(0)
   public boolean failOnInvalidatedSession;
@@ -138,6 +152,7 @@ public class RetryOnInvalidatedSessionTest {
   private static SpannerClient spannerClient;
   private static Spanner spanner;
   private static DatabaseClient client;
+  private static ExecutorService executor;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -166,6 +181,7 @@ public class RetryOnInvalidatedSessionTest {
             .setCredentialsProvider(NoCredentialsProvider.create())
             .build();
     spannerClient = SpannerClient.create(settings);
+    executor = Executors.newSingleThreadExecutor();
   }
 
   @AfterClass
@@ -173,13 +189,16 @@ public class RetryOnInvalidatedSessionTest {
     spannerClient.close();
     server.shutdown();
     server.awaitTermination();
+    executor.shutdown();
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     mockSpanner.reset();
     SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder().setWriteSessionsFraction(WRITE_SESSIONS_FRACTION);
+        SessionPoolOptions.newBuilder()
+            .setWriteSessionsFraction(WRITE_SESSIONS_FRACTION)
+            .setFailOnSessionLeak();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
     }
@@ -195,7 +214,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 
@@ -249,6 +268,20 @@ public class RetryOnInvalidatedSessionTest {
       assertThat(count).isEqualTo(2);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void singleUseSelectAsync() throws Exception {
+    invalidateSessionPool();
+    ApiFuture<ImmutableList<Long>> list;
+    try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1AND2)) {
+      list = rs.toListAsync(TO_LONG, executor);
+      assertThat(list.get()).containsExactly(1L, 2L);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SessionNotFoundException.class);
       assertThat(failOnInvalidatedSession).isTrue();
     }
   }
@@ -573,7 +606,7 @@ public class RetryOnInvalidatedSessionTest {
         runner.run(
             new TransactionCallable<Integer>() {
               @Override
-              public Integer run(TransactionContext transaction) throws Exception {
+              public Integer run(TransactionContext transaction) {
                 int count = 0;
                 try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
                   while (rs.next()) {
@@ -596,7 +629,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Integer>() {
                 @Override
-                public Integer run(TransactionContext transaction) throws Exception {
+                public Integer run(TransactionContext transaction) {
                   int count = 0;
                   try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
                     while (rs.next()) {
@@ -623,7 +656,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Integer>() {
                 @Override
-                public Integer run(TransactionContext transaction) throws Exception {
+                public Integer run(TransactionContext transaction) {
                   int count = 0;
                   try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
                     while (rs.next()) {
@@ -650,7 +683,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Integer>() {
                 @Override
-                public Integer run(TransactionContext transaction) throws Exception {
+                public Integer run(TransactionContext transaction) {
                   int count = 0;
                   try (ResultSet rs =
                       transaction.readUsingIndex(
@@ -679,7 +712,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Struct>() {
                 @Override
-                public Struct run(TransactionContext transaction) throws Exception {
+                public Struct run(TransactionContext transaction) {
                   return transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
                 }
               });
@@ -700,7 +733,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Struct>() {
                 @Override
-                public Struct run(TransactionContext transaction) throws Exception {
+                public Struct run(TransactionContext transaction) {
                   return transaction.readRowUsingIndex(
                       "FOO", "IDX", Key.of(), Arrays.asList("BAR"));
                 }
@@ -722,7 +755,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<Long>() {
                 @Override
-                public Long run(TransactionContext transaction) throws Exception {
+                public Long run(TransactionContext transaction) {
                   return transaction.executeUpdate(UPDATE_STATEMENT);
                 }
               });
@@ -743,7 +776,7 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               new TransactionCallable<long[]>() {
                 @Override
-                public long[] run(TransactionContext transaction) throws Exception {
+                public long[] run(TransactionContext transaction) {
                   return transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
                 }
               });
@@ -764,7 +797,7 @@ public class RetryOnInvalidatedSessionTest {
       runner.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               transaction.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
               return null;
             }
@@ -777,7 +810,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void readWriteTransactionSelectInvalidatedDuringTransaction() throws InterruptedException {
+  public void readWriteTransactionSelectInvalidatedDuringTransaction() {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       int attempts =
@@ -814,7 +847,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void readWriteTransactionReadInvalidatedDuringTransaction() throws InterruptedException {
+  public void readWriteTransactionReadInvalidatedDuringTransaction() {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       int attempts =
@@ -851,8 +884,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void readWriteTransactionReadUsingIndexInvalidatedDuringTransaction()
-      throws InterruptedException {
+  public void readWriteTransactionReadUsingIndexInvalidatedDuringTransaction() {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       int attempts =
@@ -893,8 +925,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void readWriteTransactionReadRowInvalidatedDuringTransaction()
-      throws InterruptedException {
+  public void readWriteTransactionReadRowInvalidatedDuringTransaction() {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       int attempts =
@@ -922,8 +953,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void readWriteTransactionReadRowUsingIndexInvalidatedDuringTransaction()
-      throws InterruptedException {
+  public void readWriteTransactionReadRowUsingIndexInvalidatedDuringTransaction() {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       int attempts =

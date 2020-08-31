@@ -279,6 +279,127 @@ public interface DatabaseClient {
   TransactionManager transactionManager();
 
   /**
+   * Returns an asynchronous transaction runner for executing a single logical transaction with
+   * retries. The returned runner can only be used once.
+   *
+   * <p>Example of a read write transaction.
+   *
+   * <pre> <code>
+   * Executor executor = Executors.newSingleThreadExecutor();
+   * final long singerId = my_singer_id;
+   * AsyncRunner runner = client.runAsync();
+   * ApiFuture<Long> rowCount =
+   *     runner.runAsync(
+   *         new AsyncWork<Long>() {
+   *           @Override
+   *           public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+   *             String column = "FirstName";
+   *             Struct row =
+   *                 txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
+   *             String name = row.getString("Name");
+   *             return txn.executeUpdateAsync(
+   *                 Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
+   *                     .bind("id")
+   *                     .to(singerId)
+   *                     .bind("name")
+   *                     .to(name.toUpperCase())
+   *                     .build());
+   *           }
+   *         },
+   *         executor);
+   * </code></pre>
+   */
+  AsyncRunner runAsync();
+
+  /**
+   * Returns an asynchronous transaction manager which allows manual management of transaction
+   * lifecycle. This API is meant for advanced users. Most users should instead use the {@link
+   * #runAsync()} API instead.
+   *
+   * <p>Example of using {@link AsyncTransactionManager} with lambda expressions (Java 8 and
+   * higher).
+   *
+   * <pre>{@code
+   * long singerId = 1L;
+   * try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+   *   TransactionContextFuture txnFut = manager.beginAsync();
+   *   while (true) {
+   *     String column = "FirstName";
+   *     CommitTimestampFuture commitTimestamp =
+   *         txnFut
+   *             .then(
+   *                 (txn, __) ->
+   *                     txn.readRowAsync(
+   *                         "Singers", Key.of(singerId), Collections.singleton(column)))
+   *             .then(
+   *                 (txn, row) -> {
+   *                   String name = row.getString(column);
+   *                   txn.buffer(
+   *                       Mutation.newUpdateBuilder("Singers")
+   *                           .set(column)
+   *                           .to(name.toUpperCase())
+   *                           .build());
+   *                   return ApiFutures.immediateFuture(null);
+   *                 })
+   *             .commitAsync();
+   *     try {
+   *       commitTimestamp.get();
+   *       break;
+   *     } catch (AbortedException e) {
+   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
+   *       txnFut = manager.resetForRetryAsync();
+   *     }
+   *   }
+   * }
+   * }</pre>
+   *
+   * <p>Example of using {@link AsyncTransactionManager} (Java 7).
+   *
+   * <pre>{@code
+   * final long singerId = 1L;
+   * try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+   *   TransactionContextFuture txn = manager.beginAsync();
+   *   while (true) {
+   *     final String column = "FirstName";
+   *     CommitTimestampFuture commitTimestamp =
+   *         txn.then(
+   *                 new AsyncTransactionFunction<Void, Struct>() {
+   *                   @Override
+   *                   public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+   *                       throws Exception {
+   *                     return txn.readRowAsync(
+   *                         "Singers", Key.of(singerId), Collections.singleton(column));
+   *                   }
+   *                 })
+   *             .then(
+   *                 new AsyncTransactionFunction<Struct, Void>() {
+   *                   @Override
+   *                   public ApiFuture<Void> apply(TransactionContext txn, Struct input)
+   *                       throws Exception {
+   *                     String name = input.getString(column);
+   *                     txn.buffer(
+   *                         Mutation.newUpdateBuilder("Singers")
+   *                             .set(column)
+   *                             .to(name.toUpperCase())
+   *                             .build());
+   *                     return ApiFutures.immediateFuture(null);
+   *                   }
+   *                 })
+   *             .commitAsync();
+   *     try {
+   *       commitTimestamp.get();
+   *       break;
+   *     } catch (AbortedException e) {
+   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
+   *       txn = manager.resetForRetryAsync();
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  AsyncTransactionManager transactionManagerAsync();
+
+  /**
    * Returns the lower bound of rows modified by this DML statement.
    *
    * <p>The method will block until the update is complete. Running a DML statement with this method

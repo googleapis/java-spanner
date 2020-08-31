@@ -16,35 +16,48 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
-import com.google.spanner.v1.StructType.Field;
-import com.google.spanner.v1.TypeCode;
+import io.grpc.Context;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,37 +85,17 @@ public class DatabaseClientImplTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
-  private static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
-  private static final ResultSetMetadata SELECT1_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-  private static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
-      com.google.spanner.v1.ResultSet.newBuilder()
-          .addRows(
-              ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
-                  .build())
-          .setMetadata(SELECT1_METADATA)
-          .build();
   private Spanner spanner;
+  private Spanner spannerWithEmptySessionPool;
+  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-    mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT1, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
@@ -123,24 +116,481 @@ public class DatabaseClientImplTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
+    executor.shutdown();
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
+            .build()
+            .getService();
+    spannerWithEmptySessionPool =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setMinSessions(0).setFailOnSessionLeak().build())
             .build()
             .getService();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
+    mockSpanner.unfreeze();
     spanner.close();
+    spannerWithEmptySessionPool.close();
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+  }
+
+  @Test
+  public void write() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.write(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+  }
+
+  @Test
+  public void writeAtLeastOnce() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnce(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+  }
+
+  @Test
+  public void singleUse() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseIsNonBlocking() {
+    mockSpanner.freeze();
+    // Use a Spanner instance with no initial sessions in the pool to show that getting a session
+    // from the pool and then preparing a query is non-blocking (i.e. does not wait on a reply from
+    // the server).
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+      mockSpanner.unfreeze();
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    ApiFuture<Void> res;
+    try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1)) {
+      res =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                    }
+                  }
+                }
+              });
+    }
+    res.get();
+    assertThat(rowCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void singleUseBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseBoundIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      mockSpanner.unfreeze();
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseBoundAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    ApiFuture<Void> res;
+    try (AsyncResultSet rs =
+        client
+            .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQueryAsync(SELECT1)) {
+      res =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                    }
+                  }
+                }
+              });
+    }
+    res.get();
+    assertThat(rowCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void singleUseTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUseReadOnlyTransaction().executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseTransactionIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs = client.singleUseReadOnlyTransaction().executeQuery(SELECT1)) {
+      mockSpanner.unfreeze();
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseTransactionBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUseReadOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void singleUseTransactionBoundIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUseReadOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
+            .executeQuery(SELECT1)) {
+      mockSpanner.unfreeze();
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getLong(0)).isEqualTo(1L);
+      assertThat(rs.next()).isFalse();
+    }
+  }
+
+  @Test
+  public void readOnlyTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readOnlyTransactionIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        mockSpanner.unfreeze();
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readOnlyTransactionBound() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readOnlyTransactionBoundIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))) {
+      try (ResultSet rs = tx.executeQuery(SELECT1)) {
+        mockSpanner.unfreeze();
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(0)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void readWriteTransaction() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.executeUpdate(UPDATE_STATEMENT);
+            return null;
+          }
+        });
+  }
+
+  @Test
+  public void readWriteTransactionIsNonBlocking() {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    // The runner.run(...) method cannot be made non-blocking, as it returns the result of the
+    // transaction.
+    mockSpanner.unfreeze();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.executeUpdate(UPDATE_STATEMENT);
+            return null;
+          }
+        });
+  }
+
+  @Test
+  public void runAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
+    ApiFuture<Long> fut =
+        runner.runAsync(
+            new AsyncWork<Long>() {
+              @Override
+              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    assertThat(fut.get()).isEqualTo(UPDATE_COUNT);
+    executor.shutdown();
+  }
+
+  @Test
+  public void runAsyncIsNonBlocking() throws Exception {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
+    ApiFuture<Long> fut =
+        runner.runAsync(
+            new AsyncWork<Long>() {
+              @Override
+              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    mockSpanner.unfreeze();
+    assertThat(fut.get()).isEqualTo(UPDATE_COUNT);
+    executor.shutdown();
+  }
+
+  @Test
+  public void runAsyncWithException() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync();
+    ApiFuture<Long> fut =
+        runner.runAsync(
+            new AsyncWork<Long>() {
+              @Override
+              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                return ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT));
+              }
+            },
+            executor);
+    try {
+      fut.get();
+      fail("missing expected exception");
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+      SpannerException se = (SpannerException) e.getCause();
+      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+    executor.shutdown();
+  }
+
+  @Test
+  public void transactionManager() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager txManager = client.transactionManager()) {
+      while (true) {
+        TransactionContext tx = txManager.begin();
+        try {
+          tx.executeUpdate(UPDATE_STATEMENT);
+          txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void transactionManagerIsNonBlocking() throws Exception {
+    mockSpanner.freeze();
+    DatabaseClient client =
+        spannerWithEmptySessionPool.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager txManager = client.transactionManager()) {
+      while (true) {
+        mockSpanner.unfreeze();
+        TransactionContext tx = txManager.begin();
+        try {
+          tx.executeUpdate(UPDATE_STATEMENT);
+          txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void transactionManagerExecuteQueryAsync() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    final AtomicInteger rowCount = new AtomicInteger();
+    try (TransactionManager txManager = client.transactionManager()) {
+      while (true) {
+        TransactionContext tx = txManager.begin();
+        try {
+          try (AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
+            rs.setCallback(
+                executor,
+                new ReadyCallback() {
+                  @Override
+                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                    try {
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            rowCount.incrementAndGet();
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
+                        }
+                      }
+                    } catch (Throwable t) {
+                      return CallbackResponse.DONE;
+                    }
+                  }
+                });
+          }
+          txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
+    assertThat(rowCount.get()).isEqualTo(1);
   }
 
   /**
@@ -169,7 +619,7 @@ public class DatabaseClientImplTest {
    * A valid query that returns a {@link ResultSet} should not be accepted by a partitioned dml
    * transaction.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithQuery() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -185,7 +635,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlDoesNotTimeout() throws Exception {
+  public void testPartitionedDmlDoesNotTimeout() {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
@@ -218,7 +668,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Void>() {
                   @Override
-                  public Void run(TransactionContext transaction) throws Exception {
+                  public Void run(TransactionContext transaction) {
                     transaction.executeUpdate(UPDATE_STATEMENT);
                     return null;
                   }
@@ -233,21 +683,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlWithLowerTimeout() throws Exception {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+  public void testPartitionedDmlWithLowerTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Set PDML timeout value.
-    builder.setPartitionedDmlTimeout(Duration.ofMillis(100L));
+    builder.setPartitionedDmlTimeout(Duration.ofMillis(10L));
     try (Spanner spanner = builder.build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      assertThat(spanner.getOptions().getPartitionedDmlTimeout())
-          .isEqualTo(Duration.ofMillis(100L));
+      assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
       // PDML should timeout with these settings.
+      mockSpanner.setExecuteSqlExecutionTime(
+          SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
       try {
         client.executePartitionedUpdate(UPDATE_STATEMENT);
         fail("expected DEADLINE_EXCEEDED");
@@ -265,7 +717,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Long>() {
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       return transaction.executeUpdate(UPDATE_STATEMENT);
                     }
                   });
@@ -274,8 +726,9 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlWithHigherTimeout() throws Exception {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+  public void testPartitionedDmlWithHigherTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -307,13 +760,14 @@ public class DatabaseClientImplTest {
       long updateCount = client.executePartitionedUpdate(UPDATE_STATEMENT);
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
+      mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
       try {
         client
             .readWriteTransaction()
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
                 });
@@ -326,7 +780,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPartitionedDmlRetriesOnUnavailable() throws Exception {
+  public void testPartitionedDmlRetriesOnUnavailable() {
     mockSpanner.setExecuteSqlExecutionTime(
         SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
     SpannerOptions.Builder builder =
@@ -387,7 +841,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -440,7 +894,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testDatabaseOrInstanceDoesNotExistOnCreate() throws Exception {
+  public void testDatabaseOrInstanceDoesNotExistOnCreate() {
     StatusRuntimeException[] exceptions =
         new StatusRuntimeException[] {
           SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
@@ -466,6 +920,7 @@ public class DatabaseClientImplTest {
                     DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
         // The create session failure should propagate to the client and not retry.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+          rs.next();
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
           // The server should only receive one BatchCreateSessions request.
@@ -578,7 +1033,7 @@ public class DatabaseClientImplTest {
           .run(
               new TransactionCallable<Void>() {
                 @Override
-                public Void run(TransactionContext transaction) throws Exception {
+                public Void run(TransactionContext transaction) {
                   return null;
                 }
               });
@@ -594,7 +1049,7 @@ public class DatabaseClientImplTest {
         .run(
             new TransactionCallable<Void>() {
               @Override
-              public Void run(TransactionContext transaction) throws Exception {
+              public Void run(TransactionContext transaction) {
                 return null;
               }
             });
@@ -665,7 +1120,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -690,7 +1145,7 @@ public class DatabaseClientImplTest {
               .run(
                   new TransactionCallable<Void>() {
                     @Override
-                    public Void run(TransactionContext transaction) throws Exception {
+                    public Void run(TransactionContext transaction) {
                       return null;
                     }
                   });
@@ -737,7 +1192,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   }
@@ -772,7 +1227,7 @@ public class DatabaseClientImplTest {
             .run(
                 new TransactionCallable<Long>() {
                   @Override
-                  public Long run(TransactionContext transaction) throws Exception {
+                  public Long run(TransactionContext transaction) {
                     // Client1 should have 1 session checked out.
                     // Client2 should have 0 sessions checked out.
                     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
@@ -783,7 +1238,7 @@ public class DatabaseClientImplTest {
                             .run(
                                 new TransactionCallable<Long>() {
                                   @Override
-                                  public Long run(TransactionContext transaction) throws Exception {
+                                  public Long run(TransactionContext transaction) {
                                     // Both clients should now have 1 session checked out.
                                     assertThat(client1.pool.getNumberOfSessionsInPool())
                                         .isEqualTo(minSessions - 1);
@@ -930,6 +1385,54 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testAsyncQuery() throws Exception {
+    final int EXPECTED_ROW_COUNT = 10;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(EXPECTED_ROW_COUNT);
+    com.google.spanner.v1.ResultSet resultSet = generator.generate();
+    mockSpanner.putStatementResult(
+        StatementResult.query(Statement.of("SELECT * FROM RANDOM"), resultSet));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    ApiFuture<Void> resultSetClosed;
+    final SettableFuture<Boolean> finished = SettableFuture.create();
+    final List<Struct> receivedResults = new ArrayList<>();
+    try (AsyncResultSet rs =
+        client.singleUse().executeQueryAsync(Statement.of("SELECT * FROM RANDOM"))) {
+      resultSetClosed =
+          rs.setCallback(
+              executor,
+              new ReadyCallback() {
+                @Override
+                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                  try {
+                    while (true) {
+                      switch (rs.tryNext()) {
+                        case DONE:
+                          finished.set(true);
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          receivedResults.add(resultSet.getCurrentRowAsStruct());
+                          break;
+                        default:
+                          throw new IllegalStateException("Unknown cursor state");
+                      }
+                    }
+                  } catch (Throwable t) {
+                    finished.setException(t);
+                    return CallbackResponse.DONE;
+                  }
+                }
+              });
+    }
+    assertThat(finished.get()).isTrue();
+    assertThat(receivedResults.size()).isEqualTo(EXPECTED_ROW_COUNT);
+    resultSetClosed.get();
+  }
+
+  @Test
   public void testClientIdReusedOnDatabaseNotFound() {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
@@ -959,5 +1462,128 @@ public class DatabaseClientImplTest {
         }
       }
     }
+  }
+
+  @Test
+  public void testBatchCreateSessionsPermissionDenied() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+      // The following call is non-blocking and will not generate an exception.
+      ResultSet rs = client.singleUse().executeQuery(SELECT1);
+      try {
+        // Actually trying to get any results will cause an exception.
+        rs.next();
+        fail("missing PERMISSION_DENIED exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PERMISSION_DENIED);
+      }
+    }
+  }
+
+  @Test
+  public void testExceptionIncludesStatement() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid query").asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id'");
+      // The error message should normally not include the parameter values to prevent sensitive
+      // information from accidentally being logged.
+      assertThat(e.getMessage()).doesNotContain("id: 1");
+    }
+
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid query").asRuntimeException()));
+    Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
+    Level currentLevel = logger.getLevel();
+    try (ResultSet rs =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
+      logger.setLevel(Level.FINEST);
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      // With log level set to FINEST the error should also include the parameter values.
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id {id: 1}'");
+    } finally {
+      logger.setLevel(currentLevel);
+    }
+  }
+
+  @Test
+  public void testReadDoesNotIncludeStatement() {
+    mockSpanner.setStreamingReadExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INVALID_ARGUMENT.withDescription("Invalid read").asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client.singleUse().read("FOO", KeySet.singleKey(Key.of(1L)), ImmutableList.of("BAR"))) {
+      rs.next();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).doesNotContain("Statement:");
+    }
+  }
+
+  @Test
+  public void testSpecificTimeout() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(10000, 0));
+    final DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Context.current()
+        .withValue(
+            SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
+            SpannerCallContextTimeoutConfigurator.create()
+                .withExecuteQueryTimeout(Duration.ofNanos(1L)))
+        .run(
+            new Runnable() {
+              @Override
+              public void run() {
+                // Query should fail with a timeout.
+                try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+                  rs.next();
+                  fail("missing expected DEADLINE_EXCEEDED exception");
+                } catch (SpannerException e) {
+                  assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+                }
+                // Update should succeed.
+                client
+                    .readWriteTransaction()
+                    .run(
+                        new TransactionCallable<Long>() {
+                          @Override
+                          public Long run(TransactionContext transaction) throws Exception {
+                            return transaction.executeUpdate(UPDATE_STATEMENT);
+                          }
+                        });
+              }
+            });
   }
 }

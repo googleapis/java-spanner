@@ -19,7 +19,6 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -61,10 +60,6 @@ public class ITClosedSessionTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    // TODO: Enable when the emulator returns ResourceInfo for Session not found errors.
-    assumeFalse(
-        "Emulator does not return ResourceInfo for Session not found errors",
-        env.getTestHelper().isEmulator());
     // Empty database.
     db = env.getTestHelper().createTestDatabase();
     client = (DatabaseClientWithClosedSessionImpl) env.getTestHelper().getDatabaseClient(db);
@@ -207,7 +202,7 @@ public class ITClosedSessionTest {
       txn.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               for (int i = 0; i < 2; i++) {
                 try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
                   assertThat(rs.next()).isTrue();
@@ -230,7 +225,7 @@ public class ITClosedSessionTest {
       txn.run(
           new TransactionCallable<Void>() {
             @Override
-            public Void run(TransactionContext transaction) throws Exception {
+            public Void run(TransactionContext transaction) {
               try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
                 rs.next();
                 fail("Expected exception");
@@ -271,7 +266,7 @@ public class ITClosedSessionTest {
   }
 
   @Test
-  public void testTransactionManagerNoRecreation() throws InterruptedException {
+  public void testTransactionManagerNoRecreation() {
     client.setAllowSessionReplacing(false);
     client.invalidateNextSession();
     try (TransactionManager manager = client.transactionManager()) {

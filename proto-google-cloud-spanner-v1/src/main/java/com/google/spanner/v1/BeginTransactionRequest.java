@@ -142,6 +142,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * @return The session.
    */
+  @java.lang.Override
   public java.lang.String getSession() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -166,6 +167,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * @return The bytes for session.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getSessionBytes() {
     java.lang.Object ref = session_;
     if (ref instanceof java.lang.String) {
@@ -193,6 +195,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * @return Whether the options field is set.
    */
+  @java.lang.Override
   public boolean hasOptions() {
     return options_ != null;
   }
@@ -209,6 +212,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * @return The options.
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptions getOptions() {
     return options_ == null
         ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
@@ -225,6 +229,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOptionsOrBuilder getOptionsOrBuilder() {
     return getOptions();
   }

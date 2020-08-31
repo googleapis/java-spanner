@@ -317,6 +317,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -366,6 +370,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The database.
    */
+  @java.lang.Override
   public java.lang.String getDatabase() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -392,6 +397,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for database.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDatabaseBytes() {
     java.lang.Object ref = database_;
     if (ref instanceof java.lang.String) {
@@ -422,6 +428,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the expireTime field is set.
    */
+  @java.lang.Override
   public boolean hasExpireTime() {
     return expireTime_ != null;
   }
@@ -441,6 +448,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The expireTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getExpireTime() {
     return expireTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : expireTime_;
   }
@@ -458,6 +466,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>.google.protobuf.Timestamp expire_time = 3;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getExpireTimeOrBuilder() {
     return getExpireTime();
   }
@@ -485,6 +494,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -517,6 +527,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -546,6 +557,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the createTime field is set.
    */
+  @java.lang.Override
   public boolean hasCreateTime() {
     return createTime_ != null;
   }
@@ -564,6 +576,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The createTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCreateTime() {
     return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
@@ -580,6 +593,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
     return getCreateTime();
   }
@@ -597,6 +611,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The sizeBytes.
    */
+  @java.lang.Override
   public long getSizeBytes() {
     return sizeBytes_;
   }
@@ -616,6 +631,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for state.
    */
+  @java.lang.Override
   public int getStateValue() {
     return state_;
   }
@@ -632,6 +648,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The state.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Backup.State getState() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.Backup.State result =
@@ -2018,6 +2035,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The sizeBytes.
      */
+    @java.lang.Override
     public long getSizeBytes() {
       return sizeBytes_;
     }
@@ -2071,6 +2089,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for state.
      */
+    @java.lang.Override
     public int getStateValue() {
       return state_;
     }
@@ -2089,6 +2108,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
+
       state_ = value;
       onChanged();
       return this;
@@ -2106,6 +2126,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The state.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.Backup.State getState() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.Backup.State result =

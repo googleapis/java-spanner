@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.ResultSetStats;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -165,6 +166,18 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public BigDecimal getBigDecimal(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getBigDecimal(columnName);
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getBigDecimal(columnIndex);
+  }
+
+  @Override
   public double getDouble(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDouble(columnName);
@@ -288,6 +301,18 @@ class DirectExecuteResultSet implements ResultSet {
   public List<Double> getDoubleList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDoubleList(columnName);
+  }
+
+  @Override
+  public List<BigDecimal> getBigDecimalList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getBigDecimalList(columnIndex);
+  }
+
+  @Override
+  public List<BigDecimal> getBigDecimalList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getBigDecimalList(columnName);
   }
 
   @Override

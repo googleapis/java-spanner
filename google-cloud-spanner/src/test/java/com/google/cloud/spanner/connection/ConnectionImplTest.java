@@ -216,7 +216,7 @@ public class ConnectionImplTest {
         .thenAnswer(
             new Answer<ResultSet>() {
               @Override
-              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) {
                 if (select1ResultSet.nextCalled) {
                   // create a new mock
                   return new SimpleResultSet(createSelect1MockResultSet());
@@ -232,7 +232,7 @@ public class ConnectionImplTest {
         .then(
             new Answer<Timestamp>() {
               @Override
-              public Timestamp answer(InvocationOnMock invocation) throws Throwable {
+              public Timestamp answer(InvocationOnMock invocation) {
                 if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
                   return Timestamp.now();
                 }
@@ -247,13 +247,13 @@ public class ConnectionImplTest {
         .thenAnswer(
             new Answer<TransactionManager>() {
               @Override
-              public TransactionManager answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionManager answer(InvocationOnMock invocation) {
                 TransactionContext txContext = mock(TransactionContext.class);
                 when(txContext.executeQuery(Statement.of(SELECT)))
                     .thenAnswer(
                         new Answer<ResultSet>() {
                           @Override
-                          public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+                          public ResultSet answer(InvocationOnMock invocation) {
                             if (select1ResultSet.nextCalled) {
                               // create a new mock
                               return new SimpleResultSet(createSelect1MockResultSet());
@@ -274,13 +274,13 @@ public class ConnectionImplTest {
         .thenAnswer(
             new Answer<ReadOnlyTransaction>() {
               @Override
-              public ReadOnlyTransaction answer(InvocationOnMock invocation) throws Throwable {
+              public ReadOnlyTransaction answer(InvocationOnMock invocation) {
                 ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
                 when(tx.executeQuery(Statement.of(SELECT)))
                     .thenAnswer(
                         new Answer<ResultSet>() {
                           @Override
-                          public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+                          public ResultSet answer(InvocationOnMock invocation) {
                             if (select1ResultSet.nextCalled) {
                               // create a new mock
                               return new SimpleResultSet(createSelect1MockResultSet());
@@ -296,7 +296,7 @@ public class ConnectionImplTest {
                     .then(
                         new Answer<Timestamp>() {
                           @Override
-                          public Timestamp answer(InvocationOnMock invocation) throws Throwable {
+                          public Timestamp answer(InvocationOnMock invocation) {
                             if (select1ResultSet.isNextCalled()
                                 || select1ResultSetWithStats.isNextCalled()) {
                               return Timestamp.now();
@@ -314,7 +314,7 @@ public class ConnectionImplTest {
         .thenAnswer(
             new Answer<TransactionRunner>() {
               @Override
-              public TransactionRunner answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionRunner answer(InvocationOnMock invocation) {
                 TransactionRunner runner =
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;

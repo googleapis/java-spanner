@@ -154,6 +154,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.protobuf.ListValue> getKeysList() {
     return keys_;
   }
@@ -169,6 +170,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getKeysOrBuilderList() {
     return keys_;
   }
@@ -184,6 +186,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
+  @java.lang.Override
   public int getKeysCount() {
     return keys_.size();
   }
@@ -199,6 +202,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValue getKeys(int index) {
     return keys_.get(index);
   }
@@ -214,6 +218,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getKeysOrBuilder(int index) {
     return keys_.get(index);
   }
@@ -230,6 +235,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.KeyRange> getRangesList() {
     return ranges_;
   }
@@ -243,6 +249,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.KeyRangeOrBuilder>
       getRangesOrBuilderList() {
     return ranges_;
@@ -257,6 +264,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
+  @java.lang.Override
   public int getRangesCount() {
     return ranges_.size();
   }
@@ -270,6 +278,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeyRange getRanges(int index) {
     return ranges_.get(index);
   }
@@ -283,6 +292,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.KeyRangeOrBuilder getRangesOrBuilder(int index) {
     return ranges_.get(index);
   }
@@ -302,6 +312,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The all.
    */
+  @java.lang.Override
   public boolean getAll() {
     return all_;
   }
@@ -1506,6 +1517,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The all.
      */
+    @java.lang.Override
     public boolean getAll() {
       return all_;
     }

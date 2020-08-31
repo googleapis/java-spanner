@@ -24,6 +24,7 @@ import com.google.common.io.Resources;
 import com.google.protobuf.util.JsonFormat;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Transaction;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -159,6 +160,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           case FLOAT64:
             assertThat(actualRow.getDouble(i)).isEqualTo(expectedRow.getDouble(i));
             break;
+          case NUMERIC:
+            assertThat(actualRow.getBigDecimal(i)).isEqualTo(expectedRow.getBigDecimal(i));
+            break;
           case BYTES:
             assertThat(actualRow.getBytes(i))
                 .isEqualTo(ByteArray.fromBase64(expectedRow.getString(i)));
@@ -191,6 +195,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
         case FLOAT64:
           rawList = actualRow.getDoubleList(index);
           break;
+        case NUMERIC:
+          rawList = actualRow.getBigDecimalList(index);
+          break;
         case STRUCT:
           rawList = actualRow.getStructList(index);
           break;
@@ -220,6 +227,8 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
             } else {
               assertThat((Double) actualValue).isEqualTo(expectedList.getDouble(i));
             }
+          } else if (actualValue instanceof BigDecimal) {
+            assertThat((BigDecimal) actualValue).isEqualTo(expectedList.getBigDecimal(i));
           } else if (actualValue instanceof ByteArray) {
             assertThat((ByteArray) actualValue)
                 .isEqualTo(ByteArray.fromBase64(expectedList.getString(i)));

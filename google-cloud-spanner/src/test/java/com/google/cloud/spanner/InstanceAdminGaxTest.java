@@ -229,7 +229,7 @@ public class InstanceAdminGaxTest {
             .setMaxRpcTimeout(Duration.ofMillis(200L))
             .setRetryDelayMultiplier(1000.0d)
             .setMaxAttempts(10)
-            .setTotalTimeout(Duration.ofMillis(200L))
+            .setTotalTimeout(Duration.ofMillis(20000L))
             .build();
     RetrySettings retrySettingsWithHighTimeout =
         RetrySettings.newBuilder()
@@ -300,7 +300,7 @@ public class InstanceAdminGaxTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 

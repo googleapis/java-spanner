@@ -43,7 +43,7 @@ public class StatementTest {
   }
 
   @Test
-  public void serialization() throws Exception {
+  public void serialization() {
     Statement stmt =
         Statement.newBuilder("SELECT * FROM table WHERE ")
             .append("bool_field = @bool_field ")

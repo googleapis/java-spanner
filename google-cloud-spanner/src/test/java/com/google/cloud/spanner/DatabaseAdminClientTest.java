@@ -50,7 +50,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,7 +111,7 @@ public class DatabaseAdminClientTest {
 
   @SuppressWarnings("rawtypes")
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     mockDatabaseAdmin.reset();
     mockOperations.reset();
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
@@ -216,7 +215,7 @@ public class DatabaseAdminClientTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     mockDatabaseAdmin.reset();
     mockDatabaseAdmin.removeAllExecutionTimes();
     mockOperations.reset();
@@ -313,7 +312,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void dbAdminCreateBackupAlreadyExists() throws InterruptedException, ExecutionException {
+  public void dbAdminCreateBackupAlreadyExists() throws InterruptedException {
     OperationFuture<Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, after7Days());
     try {
@@ -327,7 +326,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void backupCreateAlreadyExists() throws InterruptedException, ExecutionException {
+  public void backupCreateAlreadyExists() throws InterruptedException {
     Backup backup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID))
@@ -345,7 +344,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void databaseBackupAlreadyExists() throws InterruptedException, ExecutionException {
+  public void databaseBackupAlreadyExists() throws InterruptedException {
     Database db = client.getDatabase(INSTANCE_ID, DB_ID);
     OperationFuture<Backup, CreateBackupMetadata> op =
         db.backup(
@@ -364,7 +363,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void dbAdminCreateBackupDbNotFound() throws InterruptedException, ExecutionException {
+  public void dbAdminCreateBackupDbNotFound() throws InterruptedException {
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, backupId, "does-not-exist", after7Days());
@@ -378,7 +377,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void backupCreateDbNotFound() throws InterruptedException, ExecutionException {
+  public void backupCreateDbNotFound() throws InterruptedException {
     final String backupId = "other-backup-id";
     Backup backup =
         client
@@ -396,7 +395,7 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
-  public void databaseBackupDbNotFound() throws InterruptedException, ExecutionException {
+  public void databaseBackupDbNotFound() throws InterruptedException {
     final String backupId = "other-backup-id";
     Database db =
         new Database(

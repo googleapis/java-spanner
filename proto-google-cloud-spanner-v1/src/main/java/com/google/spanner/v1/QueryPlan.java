@@ -130,6 +130,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.PlanNode> getPlanNodesList() {
     return planNodes_;
   }
@@ -144,6 +145,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.PlanNodeOrBuilder>
       getPlanNodesOrBuilderList() {
     return planNodes_;
@@ -159,6 +161,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
+  @java.lang.Override
   public int getPlanNodesCount() {
     return planNodes_.size();
   }
@@ -173,6 +176,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNode getPlanNodes(int index) {
     return planNodes_.get(index);
   }
@@ -187,6 +191,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.PlanNode plan_nodes = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PlanNodeOrBuilder getPlanNodesOrBuilder(int index) {
     return planNodes_.get(index);
   }

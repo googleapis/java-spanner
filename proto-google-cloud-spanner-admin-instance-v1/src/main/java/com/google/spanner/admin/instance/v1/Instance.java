@@ -306,6 +306,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -354,6 +358,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -379,6 +384,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -407,6 +413,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The config.
    */
+  @java.lang.Override
   public java.lang.String getConfig() {
     java.lang.Object ref = config_;
     if (ref instanceof java.lang.String) {
@@ -432,6 +439,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for config.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getConfigBytes() {
     java.lang.Object ref = config_;
     if (ref instanceof java.lang.String) {
@@ -458,6 +466,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The displayName.
    */
+  @java.lang.Override
   public java.lang.String getDisplayName() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -481,6 +490,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for displayName.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getDisplayNameBytes() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
@@ -510,6 +520,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The nodeCount.
    */
+  @java.lang.Override
   public int getNodeCount() {
     return nodeCount_;
   }
@@ -531,6 +542,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for state.
    */
+  @java.lang.Override
   public int getStateValue() {
     return state_;
   }
@@ -549,6 +561,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The state.
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.Instance.State getState() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.Instance.State result =
@@ -609,6 +622,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
+  @java.lang.Override
   public boolean containsLabels(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -616,6 +630,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return internalGetLabels().getMap().containsKey(key);
   }
   /** Use {@link #getLabelsMap()} instead. */
+  @java.lang.Override
   @java.lang.Deprecated
   public java.util.Map<java.lang.String, java.lang.String> getLabels() {
     return getLabelsMap();
@@ -646,6 +661,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
+  @java.lang.Override
   public java.util.Map<java.lang.String, java.lang.String> getLabelsMap() {
     return internalGetLabels().getMap();
   }
@@ -675,6 +691,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
+  @java.lang.Override
   public java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -708,6 +725,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
+  @java.lang.Override
   public java.lang.String getLabelsOrThrow(java.lang.String key) {
     if (key == null) {
       throw new java.lang.NullPointerException();
@@ -1606,6 +1624,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The nodeCount.
      */
+    @java.lang.Override
     public int getNodeCount() {
       return nodeCount_;
     }
@@ -1669,6 +1688,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for state.
      */
+    @java.lang.Override
     public int getStateValue() {
       return state_;
     }
@@ -1689,6 +1709,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
+
       state_ = value;
       onChanged();
       return this;
@@ -1708,6 +1729,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The state.
      */
+    @java.lang.Override
     public com.google.spanner.admin.instance.v1.Instance.State getState() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.Instance.State result =
@@ -1814,6 +1836,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, string&gt; labels = 7;</code>
      */
+    @java.lang.Override
     public boolean containsLabels(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();
@@ -1821,6 +1844,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       return internalGetLabels().getMap().containsKey(key);
     }
     /** Use {@link #getLabelsMap()} instead. */
+    @java.lang.Override
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getLabels() {
       return getLabelsMap();
@@ -1851,6 +1875,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, string&gt; labels = 7;</code>
      */
+    @java.lang.Override
     public java.util.Map<java.lang.String, java.lang.String> getLabelsMap() {
       return internalGetLabels().getMap();
     }
@@ -1880,6 +1905,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, string&gt; labels = 7;</code>
      */
+    @java.lang.Override
     public java.lang.String getLabelsOrDefault(
         java.lang.String key, java.lang.String defaultValue) {
       if (key == null) {
@@ -1914,6 +1940,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>map&lt;string, string&gt; labels = 7;</code>
      */
+    @java.lang.Override
     public java.lang.String getLabelsOrThrow(java.lang.String key) {
       if (key == null) {
         throw new java.lang.NullPointerException();

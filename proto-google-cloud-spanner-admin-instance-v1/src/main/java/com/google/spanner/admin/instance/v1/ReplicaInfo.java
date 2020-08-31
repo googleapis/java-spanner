@@ -289,6 +289,10 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -334,6 +338,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The location.
    */
+  @java.lang.Override
   public java.lang.String getLocation() {
     java.lang.Object ref = location_;
     if (ref instanceof java.lang.String) {
@@ -356,6 +361,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for location.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getLocationBytes() {
     java.lang.Object ref = location_;
     if (ref instanceof java.lang.String) {
@@ -381,6 +387,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for type.
    */
+  @java.lang.Override
   public int getTypeValue() {
     return type_;
   }
@@ -395,6 +402,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The type.
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
@@ -420,6 +428,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The defaultLeaderLocation.
    */
+  @java.lang.Override
   public boolean getDefaultLeaderLocation() {
     return defaultLeaderLocation_;
   }
@@ -885,6 +894,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for type.
      */
+    @java.lang.Override
     public int getTypeValue() {
       return type_;
     }
@@ -901,6 +911,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setTypeValue(int value) {
+
       type_ = value;
       onChanged();
       return this;
@@ -916,6 +927,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The type.
      */
+    @java.lang.Override
     public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
@@ -978,6 +990,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The defaultLeaderLocation.
      */
+    @java.lang.Override
     public boolean getDefaultLeaderLocation() {
       return defaultLeaderLocation_;
     }

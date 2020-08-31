@@ -35,7 +35,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -174,13 +173,13 @@ public class SpannerPoolTest {
     log.addHandler(customLogHandler);
   }
 
-  public String getTestCapturedLog() throws IOException {
+  public String getTestCapturedLog() {
     customLogHandler.flush();
     return logCapturingStream.toString();
   }
 
   @Test
-  public void testRemoveConnectionOptionsNotRegistered() throws IOException {
+  public void testRemoveConnectionOptionsNotRegistered() {
     attachLogCapturer();
     final String expectedLogPart = "There is no Spanner registered for ConnectionOptions";
     SpannerPool pool = createSubjectAndMocks();
@@ -191,7 +190,7 @@ public class SpannerPoolTest {
   }
 
   @Test
-  public void testRemoveConnectionConnectionNotRegistered() throws IOException {
+  public void testRemoveConnectionConnectionNotRegistered() {
     attachLogCapturer();
     final String expectedLogPart = "There are no connections registered for ConnectionOptions";
     SpannerPool pool = createSubjectAndMocks();
@@ -202,7 +201,7 @@ public class SpannerPoolTest {
   }
 
   @Test
-  public void testRemoveConnectionConnectionAlreadyRemoved() throws IOException {
+  public void testRemoveConnectionConnectionAlreadyRemoved() {
     attachLogCapturer();
     final String expectedLogPart = "There are no connections registered for ConnectionOptions";
     SpannerPool pool = createSubjectAndMocks();
@@ -214,7 +213,7 @@ public class SpannerPoolTest {
   }
 
   @Test
-  public void testCloseSpanner() throws IOException {
+  public void testCloseSpanner() {
     SpannerPool pool = createSubjectAndMocks();
     Spanner spanner = pool.getSpanner(options1, connection1);
     // verify that closing is not possible until all connections have been removed
@@ -246,7 +245,7 @@ public class SpannerPoolTest {
   }
 
   @Test
-  public void testLeakedConnection() throws IOException {
+  public void testLeakedConnection() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setCredentials(NoCredentials.getInstance())

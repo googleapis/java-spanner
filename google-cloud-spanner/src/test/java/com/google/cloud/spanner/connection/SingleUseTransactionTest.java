@@ -24,8 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -230,6 +232,34 @@ public class SingleUseTransactionTest {
     public Timestamp getReadTimestamp() {
       return readTimestamp;
     }
+
+    @Override
+    public AsyncResultSet readAsync(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return null;
+    }
+
+    @Override
+    public AsyncResultSet readUsingIndexAsync(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return null;
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+      return null;
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowUsingIndexAsync(
+        String table, String index, Key key, Iterable<String> columns) {
+      return null;
+    }
+
+    @Override
+    public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+      return null;
+    }
   }
 
   private DdlClient createDefaultMockDdlClient() {
@@ -346,7 +376,7 @@ public class SingleUseTransactionTest {
         .thenAnswer(
             new Answer<TransactionRunner>() {
               @Override
-              public TransactionRunner answer(InvocationOnMock invocation) throws Throwable {
+              public TransactionRunner answer(InvocationOnMock invocation) {
                 TransactionRunner runner =
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;

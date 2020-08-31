@@ -21,16 +21,24 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.AbstractResultSet.GrpcResultSet;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -62,6 +70,7 @@ abstract class AbstractReadContext
     private Span span = Tracing.getTracer().getCurrentSpan();
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private ExecutorProvider executorProvider;
 
     Builder() {}
 
@@ -95,7 +104,23 @@ abstract class AbstractReadContext
       return self();
     }
 
+    B setExecutorProvider(ExecutorProvider executorProvider) {
+      this.executorProvider = executorProvider;
+      return self();
+    }
+
     abstract T build();
+  }
+
+  /**
+   * {@link AsyncResultSet} that supports adding listeners that are called when all rows from the
+   * underlying result stream have been fetched.
+   */
+  interface ListenableAsyncResultSet extends AsyncResultSet {
+    /** Adds a listener to this {@link AsyncResultSet}. */
+    void addListener(Runnable listener);
+
+    void removeListener(Runnable listener);
   }
 
   /**
@@ -350,7 +375,8 @@ abstract class AbstractReadContext
   final Object lock = new Object();
   final SessionImpl session;
   final SpannerRpc rpc;
-  final Span span;
+  final ExecutorProvider executorProvider;
+  Span span;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -374,6 +400,12 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
+    this.executorProvider = builder.executorProvider;
+  }
+
+  @Override
+  public void setSpan(Span span) {
+    this.span = span;
   }
 
   long getSeqNo() {
@@ -387,9 +419,35 @@ abstract class AbstractReadContext
   }
 
   @Override
+  public ListenableAsyncResultSet readAsync(
+      String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+    Options readOptions = Options.fromReadOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(
+        executorProvider, readInternal(table, null, keys, columns, options), bufferRows);
+  }
+
+  @Override
   public final ResultSet readUsingIndex(
       String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
     return readInternal(table, checkNotNull(index), keys, columns, options);
+  }
+
+  @Override
+  public ListenableAsyncResultSet readUsingIndexAsync(
+      String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+    Options readOptions = Options.fromReadOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(
+        executorProvider,
+        readInternal(table, checkNotNull(index), keys, columns, options),
+        bufferRows);
   }
 
   @Nullable
@@ -397,6 +455,13 @@ abstract class AbstractReadContext
   public final Struct readRow(String table, Key key, Iterable<String> columns) {
     try (ResultSet resultSet = read(table, KeySet.singleKey(key), columns)) {
       return consumeSingleRow(resultSet);
+    }
+  }
+
+  @Override
+  public final ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+    try (AsyncResultSet resultSet = readAsync(table, KeySet.singleKey(key), columns)) {
+      return consumeSingleRowAsync(resultSet);
     }
   }
 
@@ -410,9 +475,32 @@ abstract class AbstractReadContext
   }
 
   @Override
+  public final ApiFuture<Struct> readRowUsingIndexAsync(
+      String table, String index, Key key, Iterable<String> columns) {
+    try (AsyncResultSet resultSet =
+        readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+      return consumeSingleRowAsync(resultSet);
+    }
+  }
+
+  @Override
   public final ResultSet executeQuery(Statement statement, QueryOption... options) {
     return executeQueryInternal(
         statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL, options);
+  }
+
+  @Override
+  public ListenableAsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(
+        executorProvider,
+        executeQueryInternal(
+            statement, com.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL, options),
+        bufferRows);
   }
 
   @Override
@@ -519,7 +607,7 @@ abstract class AbstractReadContext
   }
 
   ResultSet executeQueryInternalWithOptions(
-      Statement statement,
+      final Statement statement,
       com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
       Options options,
       ByteString partitionToken) {
@@ -534,7 +622,7 @@ abstract class AbstractReadContext
         new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
-            GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
+            GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
             if (resumeToken != null) {
               request.setResumeToken(resumeToken);
             }
@@ -665,5 +753,72 @@ abstract class AbstractReadContext
       throw newSpannerException(ErrorCode.INTERNAL, "Multiple rows returned for single key");
     }
     return row;
+  }
+
+  static ApiFuture<Struct> consumeSingleRowAsync(AsyncResultSet resultSet) {
+    final SettableApiFuture<Struct> result = SettableApiFuture.create();
+    // We can safely use a directExecutor here, as we will only be consuming one row, and we will
+    // not be doing any blocking stuff in the handler.
+    final SettableApiFuture<Struct> row = SettableApiFuture.create();
+    ApiFutures.addCallback(
+        resultSet.setCallback(MoreExecutors.directExecutor(), ConsumeSingleRowCallback.create(row)),
+        new ApiFutureCallback<Void>() {
+          @Override
+          public void onFailure(Throwable t) {
+            result.setException(t);
+          }
+
+          @Override
+          public void onSuccess(Void input) {
+            try {
+              result.set(row.get());
+            } catch (Throwable t) {
+              result.setException(t);
+            }
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
+  }
+
+  /**
+   * {@link ReadyCallback} for returning the first row in a result set as a future {@link Struct}.
+   */
+  private static class ConsumeSingleRowCallback implements ReadyCallback {
+    private final SettableApiFuture<Struct> result;
+    private Struct row;
+
+    static ConsumeSingleRowCallback create(SettableApiFuture<Struct> result) {
+      return new ConsumeSingleRowCallback(result);
+    }
+
+    private ConsumeSingleRowCallback(SettableApiFuture<Struct> result) {
+      this.result = result;
+    }
+
+    @Override
+    public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+      try {
+        switch (resultSet.tryNext()) {
+          case DONE:
+            result.set(row);
+            return CallbackResponse.DONE;
+          case NOT_READY:
+            return CallbackResponse.CONTINUE;
+          case OK:
+            if (row != null) {
+              throw newSpannerException(
+                  ErrorCode.INTERNAL, "Multiple rows returned for single key");
+            }
+            row = resultSet.getCurrentRowAsStruct();
+            return CallbackResponse.CONTINUE;
+          default:
+            throw new IllegalStateException();
+        }
+      } catch (Throwable t) {
+        result.setException(t);
+        return CallbackResponse.DONE;
+      }
+    }
   }
 }

@@ -109,6 +109,127 @@ public class InstanceAdminClientTest {
 
   @Test
   @SuppressWarnings("all")
+  public void createInstanceTest() throws Exception {
+    InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    InstanceConfigName config = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+    String displayName = "displayName1615086568";
+    int nodeCount = 1539922066;
+    Instance expectedResponse =
+        Instance.newBuilder()
+            .setName(name.toString())
+            .setConfig(config.toString())
+            .setDisplayName(displayName)
+            .setNodeCount(nodeCount)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("createInstanceTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    ProjectName parent = ProjectName.of("[PROJECT]");
+    String instanceId = "instanceId-2101995259";
+    Instance instance = Instance.newBuilder().build();
+
+    Instance actualResponse = client.createInstanceAsync(parent, instanceId, instance).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateInstanceRequest actualRequest = (CreateInstanceRequest) actualRequests.get(0);
+
+    Assert.assertEquals(parent, ProjectName.parse(actualRequest.getParent()));
+    Assert.assertEquals(instanceId, actualRequest.getInstanceId());
+    Assert.assertEquals(instance, actualRequest.getInstance());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void createInstanceExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      ProjectName parent = ProjectName.of("[PROJECT]");
+      String instanceId = "instanceId-2101995259";
+      Instance instance = Instance.newBuilder().build();
+
+      client.createInstanceAsync(parent, instanceId, instance).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void updateInstanceTest() throws Exception {
+    InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    InstanceConfigName config = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+    String displayName = "displayName1615086568";
+    int nodeCount = 1539922066;
+    Instance expectedResponse =
+        Instance.newBuilder()
+            .setName(name.toString())
+            .setConfig(config.toString())
+            .setDisplayName(displayName)
+            .setNodeCount(nodeCount)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("updateInstanceTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    Instance instance = Instance.newBuilder().build();
+    FieldMask fieldMask = FieldMask.newBuilder().build();
+
+    Instance actualResponse = client.updateInstanceAsync(instance, fieldMask).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateInstanceRequest actualRequest = (UpdateInstanceRequest) actualRequests.get(0);
+
+    Assert.assertEquals(instance, actualRequest.getInstance());
+    Assert.assertEquals(fieldMask, actualRequest.getFieldMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  @SuppressWarnings("all")
+  public void updateInstanceExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      Instance instance = Instance.newBuilder().build();
+      FieldMask fieldMask = FieldMask.newBuilder().build();
+
+      client.updateInstanceAsync(instance, fieldMask).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("all")
   public void listInstanceConfigsTest() {
     String nextPageToken = "";
     InstanceConfig instanceConfigsElement = InstanceConfig.newBuilder().build();
@@ -289,127 +410,6 @@ public class InstanceAdminClientTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception
-    }
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void createInstanceTest() throws Exception {
-    InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    InstanceConfigName config = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-    String displayName = "displayName1615086568";
-    int nodeCount = 1539922066;
-    Instance expectedResponse =
-        Instance.newBuilder()
-            .setName(name.toString())
-            .setConfig(config.toString())
-            .setDisplayName(displayName)
-            .setNodeCount(nodeCount)
-            .build();
-    Operation resultOperation =
-        Operation.newBuilder()
-            .setName("createInstanceTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    mockInstanceAdmin.addResponse(resultOperation);
-
-    ProjectName parent = ProjectName.of("[PROJECT]");
-    String instanceId = "instanceId-2101995259";
-    Instance instance = Instance.newBuilder().build();
-
-    Instance actualResponse = client.createInstanceAsync(parent, instanceId, instance).get();
-    Assert.assertEquals(expectedResponse, actualResponse);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    CreateInstanceRequest actualRequest = (CreateInstanceRequest) actualRequests.get(0);
-
-    Assert.assertEquals(parent, ProjectName.parse(actualRequest.getParent()));
-    Assert.assertEquals(instanceId, actualRequest.getInstanceId());
-    Assert.assertEquals(instance, actualRequest.getInstance());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void createInstanceExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      ProjectName parent = ProjectName.of("[PROJECT]");
-      String instanceId = "instanceId-2101995259";
-      Instance instance = Instance.newBuilder().build();
-
-      client.createInstanceAsync(parent, instanceId, instance).get();
-      Assert.fail("No exception raised");
-    } catch (ExecutionException e) {
-      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
-      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void updateInstanceTest() throws Exception {
-    InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    InstanceConfigName config = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-    String displayName = "displayName1615086568";
-    int nodeCount = 1539922066;
-    Instance expectedResponse =
-        Instance.newBuilder()
-            .setName(name.toString())
-            .setConfig(config.toString())
-            .setDisplayName(displayName)
-            .setNodeCount(nodeCount)
-            .build();
-    Operation resultOperation =
-        Operation.newBuilder()
-            .setName("updateInstanceTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    mockInstanceAdmin.addResponse(resultOperation);
-
-    Instance instance = Instance.newBuilder().build();
-    FieldMask fieldMask = FieldMask.newBuilder().build();
-
-    Instance actualResponse = client.updateInstanceAsync(instance, fieldMask).get();
-    Assert.assertEquals(expectedResponse, actualResponse);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    UpdateInstanceRequest actualRequest = (UpdateInstanceRequest) actualRequests.get(0);
-
-    Assert.assertEquals(instance, actualRequest.getInstance());
-    Assert.assertEquals(fieldMask, actualRequest.getFieldMask());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  @SuppressWarnings("all")
-  public void updateInstanceExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      Instance instance = Instance.newBuilder().build();
-      FieldMask fieldMask = FieldMask.newBuilder().build();
-
-      client.updateInstanceAsync(instance, fieldMask).get();
-      Assert.fail("No exception raised");
-    } catch (ExecutionException e) {
-      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
-      InvalidArgumentException apiException = (InvalidArgumentException) e.getCause();
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
     }
   }
 

@@ -130,7 +130,7 @@ public class KeyRangeTest {
   }
 
   @Test
-  public void serialization() throws Exception {
+  public void serialization() {
     reserializeAndAssert(KeyRange.closedOpen(Key.of(1), Key.of(2)));
     reserializeAndAssert(KeyRange.closedClosed(Key.of(1), Key.of(2)));
     reserializeAndAssert(KeyRange.openOpen(Key.of(1), Key.of(2)));

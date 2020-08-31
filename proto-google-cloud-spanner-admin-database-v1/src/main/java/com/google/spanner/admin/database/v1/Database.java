@@ -324,6 +324,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         };
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
       return getDescriptor().getValues().get(ordinal());
     }
 
@@ -373,6 +377,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The name.
    */
+  @java.lang.Override
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -399,6 +404,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The bytes for name.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
@@ -426,6 +432,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The enum numeric value on the wire for state.
    */
+  @java.lang.Override
   public int getStateValue() {
     return state_;
   }
@@ -442,6 +449,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The state.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.Database.State getState() {
     @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.Database.State result =
@@ -465,6 +473,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the createTime field is set.
    */
+  @java.lang.Override
   public boolean hasCreateTime() {
     return createTime_ != null;
   }
@@ -480,6 +489,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The createTime.
    */
+  @java.lang.Override
   public com.google.protobuf.Timestamp getCreateTime() {
     return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
@@ -493,6 +503,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    */
+  @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
     return getCreateTime();
   }
@@ -513,6 +524,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return Whether the restoreInfo field is set.
    */
+  @java.lang.Override
   public boolean hasRestoreInfo() {
     return restoreInfo_ != null;
   }
@@ -530,6 +542,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The restoreInfo.
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreInfo getRestoreInfo() {
     return restoreInfo_ == null
         ? com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()
@@ -547,6 +560,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * .google.spanner.admin.database.v1.RestoreInfo restore_info = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder() {
     return getRestoreInfo();
   }
@@ -1166,6 +1180,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The enum numeric value on the wire for state.
      */
+    @java.lang.Override
     public int getStateValue() {
       return state_;
     }
@@ -1184,6 +1199,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
+
       state_ = value;
       onChanged();
       return this;
@@ -1201,6 +1217,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The state.
      */
+    @java.lang.Override
     public com.google.spanner.admin.database.v1.Database.State getState() {
       @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.Database.State result =

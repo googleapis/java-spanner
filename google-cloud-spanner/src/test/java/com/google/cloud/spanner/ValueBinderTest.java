@@ -25,6 +25,7 @@ import com.google.cloud.Timestamp;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -184,6 +185,10 @@ public class ValueBinderTest {
       return 1.0;
     }
 
+    public static BigDecimal defaultBigDecimal() {
+      return BigDecimal.valueOf(123, 2);
+    }
+
     public static String defaultString() {
       return "x";
     }
@@ -222,6 +227,10 @@ public class ValueBinderTest {
 
     public static Iterable<Double> defaultDoubleIterable() {
       return Arrays.asList(1.0, 2.0);
+    }
+
+    public static Iterable<BigDecimal> defaultBigDecimalIterable() {
+      return Arrays.asList(BigDecimal.valueOf(123, 2), BigDecimal.valueOf(456, 2));
     }
 
     public static Iterable<String> defaultStringIterable() {

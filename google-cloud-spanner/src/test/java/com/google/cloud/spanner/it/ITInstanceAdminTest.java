@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
@@ -64,7 +65,7 @@ public class ITInstanceAdminTest {
   }
 
   @Test
-  public void listInstances() throws Exception {
+  public void listInstances() {
     Instance instance =
         Iterators.getOnlyElement(
             instanceClient
@@ -78,8 +79,7 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstance() throws Exception {
-    assumeFalse(
-        "The emulator does not support updating instances", env.getTestHelper().isEmulator());
+    assumeFalse("The emulator does not support updating instances", isUsingEmulator());
 
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
@@ -108,8 +108,7 @@ public class ITInstanceAdminTest {
 
   @Test
   public void updateInstanceViaEntity() throws Exception {
-    assumeFalse(
-        "The emulator does not support updating instances", env.getTestHelper().isEmulator());
+    assumeFalse("The emulator does not support updating instances", isUsingEmulator());
 
     Instance instance =
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());

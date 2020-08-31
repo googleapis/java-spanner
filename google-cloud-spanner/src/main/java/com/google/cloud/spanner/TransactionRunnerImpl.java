@@ -21,18 +21,29 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.ApiAsyncFunction;
+import com.google.api.core.ApiFunction;
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.common.Scope;
@@ -43,6 +54,8 @@ import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +89,57 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return new Builder();
     }
 
+    /**
+     * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
+     * running for this {@link TransactionContext} and that should finish before the {@link
+     * TransactionContext} can commit and release its session back into the pool.
+     */
+    private class TransactionContextAsyncResultSetImpl extends ForwardingAsyncResultSet
+        implements ListenableAsyncResultSet {
+      private TransactionContextAsyncResultSetImpl(ListenableAsyncResultSet delegate) {
+        super(delegate);
+      }
+
+      @Override
+      public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
+        Runnable listener =
+            new Runnable() {
+              @Override
+              public void run() {
+                decreaseAsyncOperations();
+              }
+            };
+        try {
+          increaseAsynOperations();
+          addListener(listener);
+          return super.setCallback(exec, cb);
+        } catch (Throwable t) {
+          removeListener(listener);
+          decreaseAsyncOperations();
+          throw t;
+        }
+      }
+
+      @Override
+      public void addListener(Runnable listener) {
+        ((ListenableAsyncResultSet) this.delegate).addListener(listener);
+      }
+
+      @Override
+      public void removeListener(Runnable listener) {
+        ((ListenableAsyncResultSet) this.delegate).removeListener(listener);
+      }
+    }
+
+    @GuardedBy("lock")
+    private volatile boolean committing;
+
+    @GuardedBy("lock")
+    private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
+
+    @GuardedBy("lock")
+    private volatile int runningAsyncOperations;
+
     @GuardedBy("lock")
     private List<Mutation> mutations = new ArrayList<>();
 
@@ -92,25 +156,70 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
+      this.finishedAsyncOperations.set(null);
+    }
+
+    private void increaseAsynOperations() {
+      synchronized (lock) {
+        if (runningAsyncOperations == 0) {
+          finishedAsyncOperations = SettableApiFuture.create();
+        }
+        runningAsyncOperations++;
+      }
+    }
+
+    private void decreaseAsyncOperations() {
+      synchronized (lock) {
+        runningAsyncOperations--;
+        if (runningAsyncOperations == 0) {
+          finishedAsyncOperations.set(null);
+        }
+      }
     }
 
     void ensureTxn() {
+      try {
+        ensureTxnAsync().get();
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+
+    ApiFuture<Void> ensureTxnAsync() {
+      final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
         span.addAnnotation("Creating Transaction");
-        try {
-          transactionId = session.beginTransaction();
-          span.addAnnotation(
-              "Transaction Creation Done",
-              ImmutableMap.of(
-                  "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-          txnLogger.log(
-              Level.FINER,
-              "Started transaction {0}",
-              txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
-        } catch (SpannerException e) {
-          span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e));
-          throw e;
-        }
+        final ApiFuture<ByteString> fut = session.beginTransactionAsync();
+        fut.addListener(
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  transactionId = fut.get();
+                  span.addAnnotation(
+                      "Transaction Creation Done",
+                      ImmutableMap.of(
+                          "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+                  txnLogger.log(
+                      Level.FINER,
+                      "Started transaction {0}",
+                      txnLogger.isLoggable(Level.FINER)
+                          ? transactionId.asReadOnlyByteBuffer()
+                          : null);
+                  res.set(null);
+                } catch (ExecutionException e) {
+                  span.addAnnotation(
+                      "Transaction Creation Failed",
+                      TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+                  res.setException(e.getCause() == null ? e : e.getCause());
+                } catch (InterruptedException e) {
+                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                }
+              }
+            },
+            MoreExecutors.directExecutor());
       } else {
         span.addAnnotation(
             "Transaction Initialized",
@@ -120,41 +229,102 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             Level.FINER,
             "Using prepared transaction {0}",
             txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+        res.set(null);
       }
+      return res;
     }
 
     void commit() {
-      span.addAnnotation("Starting Commit");
-      CommitRequest.Builder builder =
-          CommitRequest.newBuilder().setSession(session.getName()).setTransactionId(transactionId);
+      try {
+        commitTimestamp = commitAsync().get();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
+      }
+    }
+
+    ApiFuture<Timestamp> commitAsync() {
+      final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
+      final SettableApiFuture<Void> latch;
       synchronized (lock) {
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
+        latch = finishedAsyncOperations;
       }
-      final CommitRequest commitRequest = builder.build();
-      Span opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-      try (Scope s = tracer.withSpan(opSpan)) {
-        CommitResponse commitResponse = rpc.commit(commitRequest, session.getOptions());
-        if (!commitResponse.hasCommitTimestamp()) {
-          throw newSpannerException(
-              ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-        }
-        commitTimestamp = Timestamp.fromProto(commitResponse.getCommitTimestamp());
-        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-      } catch (RuntimeException e) {
-        span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-        TraceUtil.endSpanWithFailure(opSpan, e);
-        if (e instanceof SpannerException) {
-          onError((SpannerException) e);
-        }
-        throw e;
-      }
-      span.addAnnotation("Commit Done");
+      latch.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                latch.get();
+                CommitRequest.Builder builder =
+                    CommitRequest.newBuilder()
+                        .setSession(session.getName())
+                        .setTransactionId(transactionId);
+                synchronized (lock) {
+                  if (!mutations.isEmpty()) {
+                    List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+                    Mutation.toProto(mutations, mutationsProto);
+                    builder.addAllMutations(mutationsProto);
+                  }
+                  // Ensure that no call to buffer mutations that would be lost can succeed.
+                  mutations = null;
+                }
+                final CommitRequest commitRequest = builder.build();
+                span.addAnnotation("Starting Commit");
+                final Span opSpan =
+                    tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
+                final ApiFuture<CommitResponse> commitFuture =
+                    rpc.commitAsync(commitRequest, session.getOptions());
+                commitFuture.addListener(
+                    tracer.withSpan(
+                        opSpan,
+                        new Runnable() {
+                          @Override
+                          public void run() {
+                            try {
+                              CommitResponse commitResponse = commitFuture.get();
+                              if (!commitResponse.hasCommitTimestamp()) {
+                                throw newSpannerException(
+                                    ErrorCode.INTERNAL,
+                                    "Missing commitTimestamp:\n" + session.getName());
+                              }
+                              Timestamp ts =
+                                  Timestamp.fromProto(commitResponse.getCommitTimestamp());
+                              span.addAnnotation("Commit Done");
+                              opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                              res.set(ts);
+                            } catch (Throwable e) {
+                              if (e instanceof ExecutionException) {
+                                e =
+                                    SpannerExceptionFactory.newSpannerException(
+                                        e.getCause() == null ? e : e.getCause());
+                              } else if (e instanceof InterruptedException) {
+                                e =
+                                    SpannerExceptionFactory.propagateInterrupt(
+                                        (InterruptedException) e);
+                              } else {
+                                e = SpannerExceptionFactory.newSpannerException(e);
+                              }
+                              span.addAnnotation(
+                                  "Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                              TraceUtil.endSpanWithFailure(opSpan, e);
+                              onError((SpannerException) e);
+                              res.setException(e);
+                            }
+                          }
+                        }),
+                    MoreExecutors.directExecutor());
+              } catch (InterruptedException e) {
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              } catch (ExecutionException e) {
+                res.setException(
+                    SpannerExceptionFactory.newSpannerException(
+                        e.getCause() == null ? e : e.getCause()));
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+      return res;
     }
 
     Timestamp commitTimestamp() {
@@ -188,6 +358,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         txnLogger.log(Level.FINE, "Exception during rollback", e);
         span.addAnnotation("Rollback Failed", TraceUtil.getExceptionAnnotations(e));
       }
+    }
+
+    ApiFuture<Void> rollbackAsync() {
+      span.addAnnotation("Starting Rollback");
+      return ApiFutures.transformAsync(
+          rpc.rollbackAsync(
+              RollbackRequest.newBuilder()
+                  .setSession(session.getName())
+                  .setTransactionId(transactionId)
+                  .build(),
+              session.getOptions()),
+          new ApiAsyncFunction<Empty, Void>() {
+            @Override
+            public ApiFuture<Void> apply(Empty input) throws Exception {
+              span.addAnnotation("Rollback Done");
+              return ApiFutures.immediateFuture(null);
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Nullable
@@ -253,6 +442,61 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+      beforeReadOrQuery();
+      final ExecuteSqlRequest.Builder builder =
+          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
+      ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
+      try {
+        // Register the update as an async operation that must finish before the transaction may
+        // commit.
+        increaseAsynOperations();
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions());
+      } catch (Throwable t) {
+        decreaseAsyncOperations();
+        throw t;
+      }
+      ApiFuture<Long> updateCount =
+          ApiFutures.transform(
+              resultSet,
+              new ApiFunction<com.google.spanner.v1.ResultSet, Long>() {
+                @Override
+                public Long apply(ResultSet input) {
+                  if (!input.hasStats()) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.INVALID_ARGUMENT,
+                        "DML response missing stats possibly due to non-DML statement as input");
+                  }
+                  // For standard DML, using the exact row count.
+                  return input.getStats().getRowCountExact();
+                }
+              },
+              MoreExecutors.directExecutor());
+      updateCount =
+          ApiFutures.catching(
+              updateCount,
+              Throwable.class,
+              new ApiFunction<Throwable, Long>() {
+                @Override
+                public Long apply(Throwable input) {
+                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
+                  onError(e);
+                  throw e;
+                }
+              },
+              MoreExecutors.directExecutor());
+      updateCount.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              decreaseAsyncOperations();
+            }
+          },
+          MoreExecutors.directExecutor());
+      return updateCount;
+    }
+
+    @Override
     public long[] batchUpdate(Iterable<Statement> statements) {
       beforeReadOrQuery();
       final ExecuteBatchDmlRequest.Builder builder = getExecuteBatchDmlRequestBuilder(statements);
@@ -281,11 +525,91 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         throw e;
       }
     }
+
+    @Override
+    public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+      beforeReadOrQuery();
+      final ExecuteBatchDmlRequest.Builder builder = getExecuteBatchDmlRequestBuilder(statements);
+      ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
+      try {
+        // Register the update as an async operation that must finish before the transaction may
+        // commit.
+        increaseAsynOperations();
+        response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
+      } catch (Throwable t) {
+        decreaseAsyncOperations();
+        throw t;
+      }
+      final ApiFuture<long[]> updateCounts =
+          ApiFutures.transform(
+              response,
+              new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
+                @Override
+                public long[] apply(ExecuteBatchDmlResponse input) {
+                  long[] results = new long[input.getResultSetsCount()];
+                  for (int i = 0; i < input.getResultSetsCount(); ++i) {
+                    results[i] = input.getResultSets(i).getStats().getRowCountExact();
+                  }
+                  // If one of the DML statements was aborted, we should throw an aborted exception.
+                  // In all other cases, we should throw a BatchUpdateException.
+                  if (input.getStatus().getCode() == Code.ABORTED_VALUE) {
+                    throw newSpannerException(
+                        ErrorCode.fromRpcStatus(input.getStatus()), input.getStatus().getMessage());
+                  } else if (input.getStatus().getCode() != 0) {
+                    throw newSpannerBatchUpdateException(
+                        ErrorCode.fromRpcStatus(input.getStatus()),
+                        input.getStatus().getMessage(),
+                        results);
+                  }
+                  return results;
+                }
+              },
+              MoreExecutors.directExecutor());
+      updateCounts.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                updateCounts.get();
+              } catch (ExecutionException e) {
+                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
+              } catch (InterruptedException e) {
+                onError(SpannerExceptionFactory.propagateInterrupt(e));
+              } finally {
+                decreaseAsyncOperations();
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+      return updateCounts;
+    }
+
+    private ListenableAsyncResultSet wrap(ListenableAsyncResultSet delegate) {
+      return new TransactionContextAsyncResultSetImpl(delegate);
+    }
+
+    @Override
+    public ListenableAsyncResultSet readAsync(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return wrap(super.readAsync(table, keys, columns, options));
+    }
+
+    @Override
+    public ListenableAsyncResultSet readUsingIndexAsync(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return wrap(super.readUsingIndexAsync(table, index, keys, columns, options));
+    }
+
+    @Override
+    public ListenableAsyncResultSet executeQueryAsync(
+        final Statement statement, final QueryOption... options) {
+      return wrap(super.executeQueryAsync(statement, options));
+    }
   }
 
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
-  private final Span span;
+  private Span span;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -297,8 +621,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   TransactionRunnerImpl(SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks) {
     this.session = session;
-    this.span = Tracing.getTracer().getCurrentSpan();
     this.txn = session.newTransaction();
+  }
+
+  @Override
+  public void setSpan(Span span) {
+    this.span = span;
   }
 
   @Nullable
@@ -326,7 +654,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         new Callable<T>() {
           @Override
           public T call() {
-            if (txn.isAborted()) {
+            if (attempt.get() > 0) {
               txn = session.newTransaction();
             }
             checkState(

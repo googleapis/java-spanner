@@ -167,6 +167,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The parent.
    */
+  @java.lang.Override
   public java.lang.String getParent() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -192,6 +193,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for parent.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getParentBytes() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
@@ -221,6 +223,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The createStatement.
    */
+  @java.lang.Override
   public java.lang.String getCreateStatement() {
     java.lang.Object ref = createStatement_;
     if (ref instanceof java.lang.String) {
@@ -247,6 +250,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The bytes for createStatement.
    */
+  @java.lang.Override
   public com.google.protobuf.ByteString getCreateStatementBytes() {
     java.lang.Object ref = createStatement_;
     if (ref instanceof java.lang.String) {

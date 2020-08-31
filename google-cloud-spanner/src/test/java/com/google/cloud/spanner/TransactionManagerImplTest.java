@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
@@ -38,6 +39,7 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Transaction;
+import io.opencensus.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -75,7 +77,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session);
+    manager = new TransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test
@@ -236,8 +238,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName((String) invocation.getArguments()[0] + "/sessions/1")
@@ -247,26 +248,29 @@ public class TransactionManagerImplTest {
                         .build());
               }
             });
-    when(rpc.beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<Transaction>() {
+            new Answer<ApiFuture<Transaction>>() {
               @Override
-              public Transaction answer(InvocationOnMock invocation) throws Throwable {
-                return Transaction.newBuilder()
-                    .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                    .build();
+              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
+                return ApiFutures.immediateFuture(
+                    Transaction.newBuilder()
+                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                        .build());
               }
             });
-    when(rpc.commit(Mockito.any(CommitRequest.class), Mockito.anyMap()))
+    when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<CommitResponse>() {
+            new Answer<ApiFuture<CommitResponse>>() {
               @Override
-              public CommitResponse answer(InvocationOnMock invocation) throws Throwable {
-                return CommitResponse.newBuilder()
-                    .setCommitTimestamp(
-                        com.google.protobuf.Timestamp.newBuilder()
-                            .setSeconds(System.currentTimeMillis() * 1000))
-                    .build();
+              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
+                  throws Throwable {
+                return ApiFutures.immediateFuture(
+                    CommitResponse.newBuilder()
+                        .setCommitTimestamp(
+                            com.google.protobuf.Timestamp.newBuilder()
+                                .setSeconds(System.currentTimeMillis() * 1000))
+                        .build());
               }
             });
     DatabaseId db = DatabaseId.of("test", "test", "test");
@@ -277,7 +281,7 @@ public class TransactionManagerImplTest {
         mgr.commit();
       }
       verify(rpc, times(1))
-          .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
     }
   }
 }

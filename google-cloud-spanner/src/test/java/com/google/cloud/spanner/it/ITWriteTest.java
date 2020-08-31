@@ -612,7 +612,7 @@ public class ITWriteTest {
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      assertThat(ex.getMessage()).contains("Expected STRING");
+      assertThat(ex.getMessage()).contains("STRING");
     }
   }
 

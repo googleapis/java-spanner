@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -34,11 +33,13 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class ITCommitTimestampTest {
   private static String databaseId;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     testHelper = env.getTestHelper();
     db =
         testHelper.createTestDatabase(
@@ -75,6 +76,11 @@ public class ITCommitTimestampTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     instanceId = testHelper.getInstanceId().getInstance();
     databaseId = db.getId().getDatabase();
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   @After
@@ -318,10 +324,7 @@ public class ITCommitTimestampTest {
                   .build()));
       fail("missing expected exception");
     } catch (SpannerException e) {
-      // TODO: Remove when the emulator returns the same error code as Cloud Spanner.
-      if (!env.getTestHelper().isEmulator()) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      }
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -329,8 +332,6 @@ public class ITCommitTimestampTest {
   // allowed if child tables are not allow_commmit_timestamp=true
   @Test
   public void interleavedTableHierarchy2() {
-    // TODO: Remove the following line once the emulator is as strict as Cloud Spanner.
-    assumeFalse("The emulator allows this situation", env.getTestHelper().isEmulator());
     Database db =
         testHelper.createTestDatabase(
             "CREATE TABLE T1 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "

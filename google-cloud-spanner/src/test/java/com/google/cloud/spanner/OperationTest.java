@@ -149,7 +149,7 @@ public class OperationTest {
   }
 
   @Test
-  public void waitForCompletes() throws Exception {
+  public void waitForCompletes() {
     com.google.longrunning.Operation proto = newBuilder().setName("op1").setDone(false).build();
     Operation<Database, String> op = Operation.create(rpc, proto, new ParserImpl());
     com.google.spanner.admin.database.v1.Database db =
@@ -174,7 +174,7 @@ public class OperationTest {
   }
 
   @Test
-  public void waitForTimesout() throws Exception {
+  public void waitForTimesout() {
     com.google.longrunning.Operation proto = newBuilder().setName("op1").setDone(false).build();
     Operation<Database, String> op = Operation.create(rpc, proto, new ParserImpl(), clock);
     when(rpc.getOperation("op1")).thenReturn(proto);

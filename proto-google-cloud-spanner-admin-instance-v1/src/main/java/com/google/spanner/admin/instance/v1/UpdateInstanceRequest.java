@@ -149,6 +149,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    *
    * @return Whether the instance field is set.
    */
+  @java.lang.Override
   public boolean hasInstance() {
     return instance_ != null;
   }
@@ -166,6 +167,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The instance.
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.Instance getInstance() {
     return instance_ == null
         ? com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()
@@ -183,6 +185,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    * .google.spanner.admin.instance.v1.Instance instance = 1 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstanceOrBuilder() {
     return getInstance();
   }
@@ -204,6 +207,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    *
    * @return Whether the fieldMask field is set.
    */
+  @java.lang.Override
   public boolean hasFieldMask() {
     return fieldMask_ != null;
   }
@@ -222,6 +226,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    *
    * @return The fieldMask.
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMask getFieldMask() {
     return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
   }
@@ -238,6 +243,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    * <code>.google.protobuf.FieldMask field_mask = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
+  @java.lang.Override
   public com.google.protobuf.FieldMaskOrBuilder getFieldMaskOrBuilder() {
     return getFieldMask();
   }

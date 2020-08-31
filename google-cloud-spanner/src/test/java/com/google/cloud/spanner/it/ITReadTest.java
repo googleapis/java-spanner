@@ -358,6 +358,7 @@ public class ITReadTest {
 
     try {
       work.run();
+      fail("missing expected exception");
     } catch (SpannerException e) {
       MatcherAssert.assertThat(e, isSpannerException(ErrorCode.CANCELLED));
     }
@@ -381,6 +382,7 @@ public class ITReadTest {
 
     try {
       work.run();
+      fail("missing expected exception");
     } catch (SpannerException e) {
       MatcherAssert.assertThat(e, isSpannerException(ErrorCode.DEADLINE_EXCEEDED));
     } finally {

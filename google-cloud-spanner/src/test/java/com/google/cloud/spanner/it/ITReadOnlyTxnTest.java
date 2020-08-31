@@ -310,9 +310,12 @@ public class ITReadOnlyTxnTest {
   @Test
   public void multiMinReadTimestamp() {
     // Cannot use bounded modes with multi-read transactions.
-    try {
-      client.readOnlyTransaction(TimestampBound.ofMinReadTimestamp(history.get(2).timestamp));
-      fail("Expected exception");
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofMinReadTimestamp(history.get(2).timestamp))) {
+      try (ResultSet rs = tx.executeQuery(Statement.of("SELECT 1"))) {
+        rs.next();
+        fail("Expected exception");
+      }
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }
@@ -341,9 +344,12 @@ public class ITReadOnlyTxnTest {
   @Test
   public void multiMaxStaleness() {
     // Cannot use bounded modes with multi-read transactions.
-    try {
-      client.readOnlyTransaction(TimestampBound.ofMaxStaleness(1, TimeUnit.SECONDS));
-      fail("Expected exception");
+    try (ReadOnlyTransaction tx =
+        client.readOnlyTransaction(TimestampBound.ofMaxStaleness(1, TimeUnit.SECONDS))) {
+      try (ResultSet rs = tx.executeQuery(Statement.of("SELECT 1"))) {
+        rs.next();
+        fail("Expected exception");
+      }
     } catch (IllegalArgumentException ex) {
       assertNotNull(ex.getMessage());
     }

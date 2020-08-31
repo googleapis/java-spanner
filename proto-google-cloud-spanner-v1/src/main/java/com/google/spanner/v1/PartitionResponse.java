@@ -145,6 +145,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.Partition> getPartitionsList() {
     return partitions_;
   }
@@ -157,6 +158,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.PartitionOrBuilder>
       getPartitionsOrBuilderList() {
     return partitions_;
@@ -170,6 +172,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
+  @java.lang.Override
   public int getPartitionsCount() {
     return partitions_.size();
   }
@@ -182,6 +185,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Partition getPartitions(int index) {
     return partitions_.get(index);
   }
@@ -194,6 +198,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.PartitionOrBuilder getPartitionsOrBuilder(int index) {
     return partitions_.get(index);
   }
@@ -211,6 +216,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * @return Whether the transaction field is set.
    */
+  @java.lang.Override
   public boolean hasTransaction() {
     return transaction_ != null;
   }
@@ -225,6 +231,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * @return The transaction.
    */
+  @java.lang.Override
   public com.google.spanner.v1.Transaction getTransaction() {
     return transaction_ == null
         ? com.google.spanner.v1.Transaction.getDefaultInstance()
@@ -239,6 +246,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    *
    * <code>.google.spanner.v1.Transaction transaction = 2;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder() {
     return getTransaction();
   }

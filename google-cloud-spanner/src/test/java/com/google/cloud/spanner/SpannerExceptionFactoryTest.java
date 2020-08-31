@@ -52,6 +52,11 @@ public class SpannerExceptionFactoryTest {
             "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, name);
   }
 
+  static StatusRuntimeException newStatusDatabaseNotFoundException(String name) {
+    return newStatusResourceNotFoundException(
+        "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, name);
+  }
+
   static InstanceNotFoundException newInstanceNotFoundException(String name) {
     return (InstanceNotFoundException)
         newResourceNotFoundException(

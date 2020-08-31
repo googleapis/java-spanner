@@ -129,6 +129,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<com.google.spanner.v1.Session> getSessionList() {
     return session_;
   }
@@ -141,6 +142,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
+  @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.SessionOrBuilder>
       getSessionOrBuilderList() {
     return session_;
@@ -154,6 +156,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
+  @java.lang.Override
   public int getSessionCount() {
     return session_.size();
   }
@@ -166,6 +169,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.Session getSession(int index) {
     return session_.get(index);
   }
@@ -178,6 +182,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
+  @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder(int index) {
     return session_.get(index);
   }

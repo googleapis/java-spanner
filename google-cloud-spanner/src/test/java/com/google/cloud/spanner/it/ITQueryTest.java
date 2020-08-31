@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.Type.StructField;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
@@ -495,7 +496,7 @@ public class ITQueryTest {
 
   @Test
   public void unsupportedSelectStructValue() {
-    assumeFalse("The emulator accepts this query", env.getTestHelper().isEmulator());
+    assumeFalse("The emulator accepts this query", isUsingEmulator());
     Struct p = structValue();
     try {
       execute(Statement.newBuilder("SELECT @p").bind("p").to(p).build(), p.getType());
@@ -511,8 +512,7 @@ public class ITQueryTest {
   @Test
   public void unsupportedSelectArrayStructValue() {
     assumeFalse(
-        "Emulator evaluates this expression differently than Cloud Spanner",
-        env.getTestHelper().isEmulator());
+        "Emulator evaluates this expression differently than Cloud Spanner", isUsingEmulator());
 
     Struct p = structValue();
     try {
@@ -829,7 +829,7 @@ public class ITQueryTest {
 
   @Test
   public void analyzePlan() {
-    assumeFalse("Emulator does not support Analyze Plan", env.getTestHelper().isEmulator());
+    assumeFalse("Emulator does not support Analyze Plan", isUsingEmulator());
 
     Statement statement = Statement.of("SELECT 1 AS column UNION ALL SELECT 2");
     ResultSet resultSet =
@@ -844,7 +844,7 @@ public class ITQueryTest {
 
   @Test
   public void analyzeProfile() {
-    assumeFalse("Emulator does not support Analyze Profile", env.getTestHelper().isEmulator());
+    assumeFalse("Emulator does not support Analyze Profile", isUsingEmulator());
 
     Statement statement =
         Statement.of("SELECT 1 AS column UNION ALL SELECT 2 AS column ORDER BY column");
