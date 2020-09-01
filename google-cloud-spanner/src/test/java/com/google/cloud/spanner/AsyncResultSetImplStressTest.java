@@ -176,7 +176,7 @@ public class AsyncResultSetImplStressTest {
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSetImpl impl =
             new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
-          ImmutableList<Row> list =
+          List<Row> list =
               impl.toList(
                   new Function<StructReader, Row>() {
                     @Override
@@ -198,7 +198,7 @@ public class AsyncResultSetImplStressTest {
         try (AsyncResultSetImpl impl =
             new AsyncResultSetImpl(
                 executorProvider, createResultSetWithErrors(1.0 / resultSetSize), bufferSize)) {
-          ImmutableList<Row> list =
+          List<Row> list =
               impl.toList(
                   new Function<StructReader, Row>() {
                     @Override
@@ -219,7 +219,7 @@ public class AsyncResultSetImplStressTest {
   public void asyncToList() throws Exception {
     ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
-      List<ApiFuture<ImmutableList<Row>>> futures = new ArrayList<>(TEST_RUNS);
+      List<ApiFuture<List<Row>>> futures = new ArrayList<>(TEST_RUNS);
       ExecutorService executor = createExecService(32);
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSet impl =
@@ -235,8 +235,8 @@ public class AsyncResultSetImplStressTest {
                   executor));
         }
       }
-      List<ImmutableList<Row>> lists = ApiFutures.allAsList(futures).get();
-      for (ImmutableList<Row> list : lists) {
+      List<List<Row>> lists = ApiFutures.allAsList(futures).get();
+      for (List<Row> list : lists) {
         assertThat(list).containsExactlyElementsIn(createExpectedRows());
       }
       executor.shutdown();

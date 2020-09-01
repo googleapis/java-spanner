@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -203,8 +203,7 @@ public interface AsyncResultSet extends ResultSet {
    *     inline executor such as {@code MoreExecutors.directExecutor()}; using such an executor may
    *     degrade the performance of the Spanner library.
    */
-  <T> ApiFuture<ImmutableList<T>> toListAsync(
-      Function<StructReader, T> transformer, Executor executor);
+  <T> ApiFuture<List<T>> toListAsync(Function<StructReader, T> transformer, Executor executor);
 
   /**
    * Transforms the row cursor into an immutable list using the given transformer function. {@code
@@ -222,5 +221,5 @@ public interface AsyncResultSet extends ResultSet {
    *
    * @param transformer function which will be used to transform the row. It should not return null.
    */
-  <T> ImmutableList<T> toList(Function<StructReader, T> transformer) throws SpannerException;
+  <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException;
 }

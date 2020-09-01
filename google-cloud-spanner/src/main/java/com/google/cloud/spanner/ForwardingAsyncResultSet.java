@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFuture;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /** Forwarding implementation of {@link AsyncResultSet} that forwards all calls to a delegate. */
@@ -52,14 +52,13 @@ public class ForwardingAsyncResultSet extends ForwardingResultSet implements Asy
   }
 
   @Override
-  public <T> ApiFuture<ImmutableList<T>> toListAsync(
+  public <T> ApiFuture<List<T>> toListAsync(
       Function<StructReader, T> transformer, Executor executor) {
     return delegate.toListAsync(transformer, executor);
   }
 
   @Override
-  public <T> ImmutableList<T> toList(Function<StructReader, T> transformer)
-      throws SpannerException {
+  public <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException {
     return delegate.toList(transformer);
   }
 }

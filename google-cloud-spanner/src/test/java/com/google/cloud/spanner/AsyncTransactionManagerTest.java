@@ -51,6 +51,7 @@ import io.grpc.Status;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -960,17 +961,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerRead() throws Exception {
-    AsyncTransactionStep<Void, ImmutableList<String>> res;
+    AsyncTransactionStep<Void, List<String>> res;
     try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
       while (true) {
         try {
           res =
               txn.then(
-                  new AsyncTransactionFunction<Void, ImmutableList<String>>() {
+                  new AsyncTransactionFunction<Void, List<String>>() {
                     @Override
-                    public ApiFuture<ImmutableList<String>> apply(
-                        TransactionContext txn, Void input) throws Exception {
+                    public ApiFuture<List<String>> apply(TransactionContext txn, Void input)
+                        throws Exception {
                       return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
                           .toListAsync(
                               new Function<StructReader, String>() {
