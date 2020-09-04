@@ -90,7 +90,7 @@ public class ITWriteTest {
                     + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
                     + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
                     + "  DateArrayValue      ARRAY<DATE>,"
-                    + "  NumericArrayValue   ARRAY<NUMERIC>,"
+                    + "  NumericArrayValue   ARRAY<NUMERIC>"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
   }
