@@ -978,6 +978,8 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
               .bind("max_id")
               .to(UPDATED_RECORDS)
               .build());
+      // Wait for the commit to finish, as it could be that the transaction is aborted so many times
+      // that the last update does not succeed.
       get(connection.commitAsync());
       // verify that the update succeeded
       try (AsyncResultSet rs =

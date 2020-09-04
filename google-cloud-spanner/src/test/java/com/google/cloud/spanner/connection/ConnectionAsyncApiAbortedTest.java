@@ -624,6 +624,36 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     }
   }
 
+  @Test
+  public void testBlindUpdateAborted_SelectResults() {
+    final Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
+    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
+
+    RetryCounter counter = new RetryCounter();
+    try (Connection connection = createConnection(counter)) {
+      // Execute an update statement and then change the result for the next time it is executed.
+      connection.executeUpdate(update1);
+      // Abort on the next statement. The retry should now fail because of the changed result of the
+      // first update.
+      mockSpanner.abortNextStatement();
+      mockSpanner.putStatementResult(StatementResult.update(update1, 200));
+      connection.executeUpdateAsync(INSERT_STATEMENT);
+      ApiFuture<Void> commit = connection.commitAsync();
+
+      try (AsyncResultSet rs = connection.executeQueryAsync(SELECT_RANDOM_STATEMENT)) {
+        while (rs.next()) {}
+      }
+      get(connection.commitAsync());
+
+      try {
+        get(commit);
+        fail("Missing expected exception");
+      } catch (AbortedDueToConcurrentModificationException e) {
+        assertThat(counter.retryCount).isEqualTo(1);
+      }
+    }
+  }
+
   private QueryResult executeQueryAsync(Connection connection, Statement statement) {
     return executeQueryAsync(connection, statement, singleThreadedExecutor);
   }

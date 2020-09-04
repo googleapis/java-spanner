@@ -537,17 +537,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         @Override
         public Void call() throws Exception {
           checkAborted();
-          try {
-            get(txContextFuture).buffer(mutations);
-            txManager.commit();
-            commitTimestampFuture.set(txManager.getCommitTimestamp());
-            state = UnitOfWorkState.COMMITTED;
-            return null;
-          } catch (Throwable t) {
-            commitTimestampFuture.setException(t);
-            state = UnitOfWorkState.COMMIT_FAILED;
-            throw t;
-          }
+          get(txContextFuture).buffer(mutations);
+          txManager.commit();
+          commitTimestampFuture.set(txManager.getCommitTimestamp());
+          state = UnitOfWorkState.COMMITTED;
+          return null;
         }
       };
 
@@ -574,11 +568,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                     COMMIT_STATEMENT,
                                     StatementExecutionStep.EXECUTE_STATEMENT,
                                     ReadWriteTransaction.this);
-                            commitCallable.call();
-                            return null;
+                            return commitCallable.call();
                           }
                         });
                   } catch (Throwable t) {
+                    commitTimestampFuture.setException(t);
+                    state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
                     } catch (Throwable t2) {
@@ -591,7 +586,27 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               InterceptorsUsage.IGNORE_INTERCEPTORS,
               ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getCommitMethod()));
     } else {
-      res = executeStatementAsync(COMMIT_STATEMENT, commitCallable, SpannerGrpc.getCommitMethod());
+      res =
+          executeStatementAsync(
+              COMMIT_STATEMENT,
+              new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                  try {
+                    return commitCallable.call();
+                  } catch (Throwable t) {
+                    commitTimestampFuture.setException(t);
+                    state = UnitOfWorkState.COMMIT_FAILED;
+                    try {
+                      txManager.close();
+                    } catch (Throwable t2) {
+                      // Ignore.
+                    }
+                    throw t;
+                  }
+                }
+              },
+              SpannerGrpc.getCommitMethod());
     }
     return res;
   }
@@ -850,7 +865,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
     state = UnitOfWorkState.ROLLED_BACK;
-    if (txContextFuture != null) {
+    if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
           rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
