@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -37,6 +38,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
 import java.math.BigDecimal;
@@ -62,6 +64,47 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITWriteTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  // TODO: Remove when the emulator supports NUMERIC
+  private static final String SCHEMA_WITH_NUMERIC =
+      "CREATE TABLE T ("
+          + "  K                   STRING(MAX) NOT NULL,"
+          + "  BoolValue           BOOL,"
+          + "  Int64Value          INT64,"
+          + "  Float64Value        FLOAT64,"
+          + "  StringValue         STRING(MAX),"
+          + "  BytesValue          BYTES(MAX),"
+          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+          + "  DateValue           DATE,"
+          + "  NumericValue        NUMERIC,"
+          + "  BoolArrayValue      ARRAY<BOOL>,"
+          + "  Int64ArrayValue     ARRAY<INT64>,"
+          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+          + "  DateArrayValue      ARRAY<DATE>,"
+          + "  NumericArrayValue   ARRAY<NUMERIC>,"
+          + ") PRIMARY KEY (K)";
+  private static final String SCHEMA_WITHOUT_NUMERIC =
+      "CREATE TABLE T ("
+          + "  K                   STRING(MAX) NOT NULL,"
+          + "  BoolValue           BOOL,"
+          + "  Int64Value          INT64,"
+          + "  Float64Value        FLOAT64,"
+          + "  StringValue         STRING(MAX),"
+          + "  BytesValue          BYTES(MAX),"
+          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+          + "  DateValue           DATE,"
+          + "  BoolArrayValue      ARRAY<BOOL>,"
+          + "  Int64ArrayValue     ARRAY<INT64>,"
+          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+          + "  DateArrayValue      ARRAY<DATE>,"
+          + ") PRIMARY KEY (K)";
+
   private static Database db;
   /** Sequence used to generate unique keys. */
   private static int seq;
@@ -70,28 +113,12 @@ public class ITWriteTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    db =
-        env.getTestHelper()
-            .createTestDatabase(
-                "CREATE TABLE T ("
-                    + "  K                   STRING(MAX) NOT NULL,"
-                    + "  BoolValue           BOOL,"
-                    + "  Int64Value          INT64,"
-                    + "  Float64Value        FLOAT64,"
-                    + "  StringValue         STRING(MAX),"
-                    + "  BytesValue          BYTES(MAX),"
-                    + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
-                    + "  DateValue           DATE,"
-                    + "  NumericValue        NUMERIC,"
-                    + "  BoolArrayValue      ARRAY<BOOL>,"
-                    + "  Int64ArrayValue     ARRAY<INT64>,"
-                    + "  Float64ArrayValue   ARRAY<FLOAT64>,"
-                    + "  StringArrayValue    ARRAY<STRING(MAX)>,"
-                    + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
-                    + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
-                    + "  DateArrayValue      ARRAY<DATE>,"
-                    + "  NumericArrayValue   ARRAY<NUMERIC>"
-                    + ") PRIMARY KEY (K)");
+    if (EmulatorSpannerHelper.isUsingEmulator()) {
+      // The emulator does not yet support NUMERIC.
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITHOUT_NUMERIC);
+    } else {
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITH_NUMERIC);
+    }
     client = env.getTestHelper().getDatabaseClient(db);
   }
 
@@ -360,6 +387,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumeric() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericValue").to(new BigDecimal("3.141592")).build());
     Struct row = readLastRow("NumericValue");
     assertThat(row.isNull(0)).isFalse();
@@ -368,6 +396,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericValue").to((Long) null).build());
     Struct row = readLastRow("NumericValue");
     assertThat(row.isNull(0)).isTrue();
@@ -598,6 +627,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericArrayValue").toNumericArray(null).build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -605,6 +635,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayEmpty() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
             .set("NumericArrayValue")
@@ -617,6 +648,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArray() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
             .set("NumericArrayValue")
@@ -632,6 +664,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayNoNulls() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
             .set("NumericArrayValue")
