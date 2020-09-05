@@ -44,6 +44,10 @@ import java.util.concurrent.TimeUnit;
  * only exception is the {@link Connection#cancel()} method that may be called by any other thread
  * to stop the execution of the current statement on the connection.
  *
+ * <p>All -Async methods on {@link Connection} are guaranteed to be executed in the order that they
+ * are issued on the {@link Connection}. Mixing synchronous and asynchronous method calls is also
+ * supported, and these are also guaranteed to be executed in the order that they are issued.
+ *
  * <p>Connections accept a number of additional SQL statements for setting or changing the state of
  * a {@link Connection}. These statements can only be executed using the {@link
  * Connection#execute(Statement)} method:
@@ -478,6 +482,12 @@ public interface Connection extends AutoCloseable {
    *
    * <p>This method is guaranteed to be non-blocking. The returned {@link ApiFuture} will be done
    * when the transaction has committed or the commit has failed.
+   *
+   * <p>Calling this method will always end the current transaction and start a new transaction when
+   * the next statement is executed, regardless whether this commit call succeeded or failed. If the
+   * next statement(s) rely on the results of the transaction that is being committed, it is
+   * recommended to check the status of this commit by inspecting the value of the returned {@link
+   * ApiFuture} before executing the next statement, to ensure that the commit actually succeeded.
    *
    * <p>If the connection is in autocommit mode, and there is a temporary transaction active on this
    * connection, calling this method will cause the connection to go back to autocommit mode after

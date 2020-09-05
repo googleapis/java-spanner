@@ -184,14 +184,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 }
               },
               SpannerGrpc.getBeginTransactionMethod());
-    } else {
-      //      if (txManager.getState() != null
-      //          && txManager.getState()
-      //              != com.google.cloud.spanner.TransactionManager.TransactionState.STARTED) {
-      //        throw SpannerExceptionFactory.newSpannerException(
-      //            ErrorCode.FAILED_PRECONDITION,
-      //            String.format("Invalid transaction state: %s", txManager.getState()));
-      //      }
     }
   }
 
