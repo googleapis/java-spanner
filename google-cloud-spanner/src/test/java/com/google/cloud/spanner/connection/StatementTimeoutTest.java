@@ -23,13 +23,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions.Builder;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
+import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
@@ -51,6 +56,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class StatementTimeoutTest extends AbstractMockServerTest {
@@ -76,6 +82,32 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    * directly.
    */
   private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 20;
+
+  ITConnection createConnection() {
+    StringBuilder url = new StringBuilder(getBaseUrl());
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(url.toString())
+            .setConfigurator(
+                new SpannerOptionsConfigurator() {
+                  @Override
+                  public void configure(Builder options) {
+                    options
+                        .getDatabaseAdminStubSettingsBuilder()
+                        .updateDatabaseDdlOperationSettings()
+                        .setPollingAlgorithm(
+                            OperationTimedPollAlgorithm.create(
+                                RetrySettings.newBuilder()
+                                    .setInitialRetryDelay(Duration.ofMillis(1L))
+                                    .setMaxRetryDelay(Duration.ofMillis(1L))
+                                    .setRetryDelayMultiplier(1.0)
+                                    .setTotalTimeout(Duration.ofMinutes(10L))
+                                    .build()));
+                  }
+                })
+            .build();
+    return createITConnection(options);
+  }
 
   @After
   public void clearExecutionTimes() {

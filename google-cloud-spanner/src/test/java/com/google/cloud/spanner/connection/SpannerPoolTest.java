@@ -33,6 +33,7 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
+import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -66,7 +67,7 @@ public class SpannerPoolTest {
     SpannerPool pool =
         new SpannerPool(closeSpannerAfterMillisecondsUnused) {
           @Override
-          Spanner createSpanner(SpannerPoolKey key) {
+          Spanner createSpanner(SpannerPoolKey key, SpannerOptionsConfigurator configurator) {
             return mock(Spanner.class);
           }
         };

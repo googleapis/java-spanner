@@ -17,8 +17,6 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.ApiFunction;
-import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
@@ -27,6 +25,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -43,8 +42,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.threeten.bp.Duration;
 
 /**
  * Pool for keeping track of {@link Spanner} instances needed for connections.
@@ -243,7 +242,7 @@ public class SpannerPool {
       if (spanners.get(key) != null) {
         spanner = spanners.get(key);
       } else {
-        spanner = createSpanner(key);
+        spanner = createSpanner(key, options.getConfigurator());
         spanners.put(key, spanner);
       }
       List<ConnectionImpl> registeredConnectionsForSpanner = connections.get(key);
@@ -282,7 +281,7 @@ public class SpannerPool {
 
   @SuppressWarnings("rawtypes")
   @VisibleForTesting
-  Spanner createSpanner(SpannerPoolKey key) {
+  Spanner createSpanner(SpannerPoolKey key, @Nullable SpannerOptionsConfigurator configurator) {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     builder
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
@@ -305,18 +304,9 @@ public class SpannerPool {
               return input;
             }
           });
-      // TODO: Externalize this configuration.
-      builder
-          .getDatabaseAdminStubSettingsBuilder()
-          .updateDatabaseDdlOperationSettings()
-          .setPollingAlgorithm(
-              OperationTimedPollAlgorithm.create(
-                  RetrySettings.newBuilder()
-                      .setInitialRetryDelay(Duration.ofMillis(1L))
-                      .setMaxRetryDelay(Duration.ofMillis(1L))
-                      .setRetryDelayMultiplier(1.0)
-                      .setTotalTimeout(Duration.ofMinutes(10L))
-                      .build()));
+    }
+    if (configurator != null) {
+      configurator.configure(builder);
     }
     return builder.build().getService();
   }

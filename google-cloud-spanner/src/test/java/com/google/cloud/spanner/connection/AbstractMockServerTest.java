@@ -241,7 +241,7 @@ public abstract class AbstractMockServerTest {
     throw new IllegalStateException("No ExecuteSqlRequest found in requests");
   }
 
-  private ITConnection createITConnection(ConnectionOptions options) {
+  ITConnection createITConnection(ConnectionOptions options) {
     return new ITConnectionImpl(options);
   }
 }
