@@ -17,7 +17,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>9.1.0</version>
+      <version>10.0.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -38,7 +38,7 @@ If you are using Maven without BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>1.59.0</version>
+  <version>1.60.0</version>
 </dependency>
 
 ```
@@ -157,10 +157,9 @@ with `grpc.io/client/`.
 * `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
   number of sessions allowed.
 
-* `cloud.google.com/java/spanner/num_sessions_in_pool`: This metric allows users to
-   see number of sessions in the pool. You can breakdown this metric by
-   num_in_use_sessions, num_sessions_being_prepared, num_read_sessions and
-   num_write_prepared_sessions.
+* `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
+   see instance-level and database-level data for the total number of sessions in
+   use (or checked out from the pool) at this very moment.
 
 * `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
   users to see the total number of acquired sessions.
