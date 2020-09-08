@@ -567,7 +567,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       this.state = State.SYNC;
     }
     boolean res = delegateResultSet.get().next();
-    currentRow = delegateResultSet.get().getCurrentRowAsStruct();
+    currentRow = res ? delegateResultSet.get().getCurrentRowAsStruct() : null;
     return res;
   }
 

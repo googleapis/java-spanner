@@ -226,6 +226,19 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void singleUseAsyncWithoutCallback() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    int rowCount = 0;
+    try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1)) {
+      while (rs.next()) {
+        rowCount++;
+      }
+    }
+    assertThat(rowCount).isEqualTo(1);
+  }
+
+  @Test
   public void singleUseBound() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
