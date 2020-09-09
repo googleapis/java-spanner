@@ -15,7 +15,9 @@
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
+    <skipUTs>false</skipUTs>
   </properties>
+
 
   <build>
     <plugins>
@@ -49,6 +51,7 @@
             <id>default-test</id>
             <configuration>
               <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+              <skipTests>${skipUTs}</skipTests>
             </configuration>
           </execution>
           <execution>
@@ -356,6 +359,27 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>spanner-directpath-it</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
+                <spanner.testenv.instance>projects/directpath-prod-manual-testing/instances/spanner-testing</spanner.testenv.instance>
+                <spanner.gce.config.project_id>directpath-prod-manual-testing</spanner.gce.config.project_id>
+                <spanner.attempt_directpath>true</spanner.attempt_directpath>
+                <spanner.directpath_test_scenario>ipv4</spanner.directpath_test_scenario>
+              </systemPropertyVariables>
+              <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
+            </configuration>
           </plugin>
         </plugins>
       </build>

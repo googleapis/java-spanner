@@ -230,6 +230,9 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final int DEFAULT_PERIOD_SECONDS = 10;
   private static final int GRPC_KEEPALIVE_SECONDS = 2 * 60;
 
+  // TODO(weiranf): Remove this temporary endpoint once DirectPath goes to public beta.
+  private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
+
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
@@ -307,31 +310,37 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .build());
     // First check if SpannerOptions provides a TransportChannerProvider. Create one
     // with information gathered from SpannerOptions if none is provided
+    InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder()
+            .setChannelConfigurator(options.getChannelConfigurator())
+            .setEndpoint(options.getEndpoint())
+            .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+            .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
+            .setPoolSize(options.getNumChannels())
+            .setExecutor(executorProvider.getExecutor())
+
+            // Set a keepalive time of 120 seconds to help long running
+            // commit GRPC calls succeed
+            .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+
+            // Then check if SpannerOptions provides an InterceptorProvider. Create a default
+            // SpannerInterceptorProvider if none is provided
+            .setInterceptorProvider(
+                SpannerInterceptorProvider.create(
+                        MoreObjects.firstNonNull(
+                            options.getInterceptorProvider(),
+                            SpannerInterceptorProvider.createDefault()))
+                    .withEncoding(compressorName))
+            .setHeaderProvider(mergedHeaderProvider);
+
+    // TODO(weiranf): Set to true by default once DirectPath goes to public beta.
+    if (shouldAttemptDirectPath()) {
+      defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).setAttemptDirectPath(true);
+    }
+
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(
-            options.getChannelProvider(),
-            InstantiatingGrpcChannelProvider.newBuilder()
-                .setChannelConfigurator(options.getChannelConfigurator())
-                .setEndpoint(options.getEndpoint())
-                .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
-                .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
-                .setPoolSize(options.getNumChannels())
-                .setExecutor(executorProvider.getExecutor())
-
-                // Set a keepalive time of 120 seconds to help long running
-                // commit GRPC calls succeed
-                .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
-
-                // Then check if SpannerOptions provides an InterceptorProvider. Create a default
-                // SpannerInterceptorProvider if none is provided
-                .setInterceptorProvider(
-                    SpannerInterceptorProvider.create(
-                            MoreObjects.firstNonNull(
-                                options.getInterceptorProvider(),
-                                SpannerInterceptorProvider.createDefault()))
-                        .withEncoding(compressorName))
-                .setHeaderProvider(mergedHeaderProvider)
-                .build());
+            options.getChannelProvider(), defaultChannelProviderBuilder.build());
 
     CredentialsProvider credentialsProvider =
         GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -420,6 +429,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (Exception e) {
       throw newSpannerException(e);
     }
+  }
+
+  // TODO(weiranf): Remove this once DirectPath goes to public beta.
+  private static boolean shouldAttemptDirectPath() {
+    return Boolean.getBoolean("spanner.attempt_directpath");
   }
 
   private static void checkEmulatorConnection(
