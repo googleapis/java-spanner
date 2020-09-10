@@ -32,7 +32,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Function;
 import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import io.grpc.Server;
@@ -317,8 +316,8 @@ public class ReadAsyncTest {
     mockSpanner.putStatementResult(
         StatementResult.query(statement2, generateKeyValueResultSet(ContiguousSet.closed(1, 3))));
 
-    ApiFuture<ImmutableList<String>> values1;
-    ApiFuture<ImmutableList<String>> values2;
+    ApiFuture<List<String>> values1;
+    ApiFuture<List<String>> values2;
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet rs = tx.executeQueryAsync(statement1)) {
         values1 =
@@ -346,9 +345,9 @@ public class ReadAsyncTest {
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             ApiFutures.allAsList(Arrays.asList(values1, values2)),
-            new ApiFunction<List<ImmutableList<String>>, Iterable<String>>() {
+            new ApiFunction<List<List<String>>, Iterable<String>>() {
               @Override
-              public Iterable<String> apply(List<ImmutableList<String>> input) {
+              public Iterable<String> apply(List<List<String>> input) {
                 return Iterables.mergeSorted(
                     input,
                     new Comparator<String>() {

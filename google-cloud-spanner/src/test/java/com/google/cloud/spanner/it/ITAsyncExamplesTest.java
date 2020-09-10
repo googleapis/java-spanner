@@ -343,8 +343,8 @@ public class ITAsyncExamplesTest {
   public void readOnlyTransaction() throws Exception {
     ImmutableList<String> keys1 = ImmutableList.of("k10", "k11", "k12");
     ImmutableList<String> keys2 = ImmutableList.of("k1", "k2", "k3");
-    ApiFuture<ImmutableList<String>> values1;
-    ApiFuture<ImmutableList<String>> values2;
+    ApiFuture<List<String>> values1;
+    ApiFuture<List<String>> values2;
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet rs =
           tx.executeQueryAsync(
@@ -382,9 +382,9 @@ public class ITAsyncExamplesTest {
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             ApiFutures.allAsList(Arrays.asList(values1, values2)),
-            new ApiFunction<List<ImmutableList<String>>, Iterable<String>>() {
+            new ApiFunction<List<List<String>>, Iterable<String>>() {
               @Override
-              public Iterable<String> apply(List<ImmutableList<String>> input) {
+              public Iterable<String> apply(List<List<String>> input) {
                 return Iterables.mergeSorted(
                     input,
                     new Comparator<String>() {
