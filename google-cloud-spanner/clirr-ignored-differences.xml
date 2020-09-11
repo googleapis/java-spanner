@@ -227,7 +227,21 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>* executeQueryAsync(*)</method>
   </difference>
-  
+
+  <!-- Use List interface in Async API (compared to 1.60.0)-->
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/AsyncResultSet</className>
+    <method>com.google.common.collect.ImmutableList toList(com.google.common.base.Function)</method>
+    <to>java.util.List</to>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/ForwardingAsyncResultSet</className>
+    <method>com.google.common.collect.ImmutableList toList(com.google.common.base.Function)</method>
+    <to>java.util.List</to>
+  </difference>
+
   <!-- Adding operation RPCs to InstanceAdminClient. -->
   <difference>
     <differenceType>7012</differenceType>

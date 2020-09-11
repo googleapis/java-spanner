@@ -31,7 +31,6 @@ import com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -275,7 +274,7 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void singleUseSelectAsync() throws Exception {
     invalidateSessionPool();
-    ApiFuture<ImmutableList<Long>> list;
+    ApiFuture<List<Long>> list;
     try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1AND2)) {
       list = rs.toListAsync(TO_LONG, executor);
       assertThat(list.get()).containsExactly(1L, 2L);

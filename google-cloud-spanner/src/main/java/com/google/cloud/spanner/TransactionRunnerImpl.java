@@ -544,7 +544,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         decreaseAsyncOperations();
         throw t;
       }
-      final ApiFuture<long[]> updateCounts =
+      ApiFuture<long[]> updateCounts =
           ApiFutures.transform(
               response,
               new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
@@ -569,19 +569,24 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
               },
               MoreExecutors.directExecutor());
+      updateCounts =
+          ApiFutures.catching(
+              updateCounts,
+              Throwable.class,
+              new ApiFunction<Throwable, long[]>() {
+                @Override
+                public long[] apply(Throwable input) {
+                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
+                  onError(e);
+                  throw e;
+                }
+              },
+              MoreExecutors.directExecutor());
       updateCounts.addListener(
           new Runnable() {
             @Override
             public void run() {
-              try {
-                updateCounts.get();
-              } catch (ExecutionException e) {
-                onError(SpannerExceptionFactory.newSpannerException(e.getCause()));
-              } catch (InterruptedException e) {
-                onError(SpannerExceptionFactory.propagateInterrupt(e));
-              } finally {
-                decreaseAsyncOperations();
-              }
+              decreaseAsyncOperations();
             }
           },
           MoreExecutors.directExecutor());
