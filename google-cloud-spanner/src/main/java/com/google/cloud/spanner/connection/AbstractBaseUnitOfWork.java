@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
@@ -24,6 +26,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
@@ -49,6 +52,21 @@ import javax.annotation.concurrent.GuardedBy;
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
+
+  /** Class for keeping track of the stacktrace of the caller of an async statement. */
+  static final class SpannerAsyncExecutionException extends RuntimeException {
+    final Statement statement;
+
+    SpannerAsyncExecutionException(Statement statement) {
+      this.statement = statement;
+    }
+
+    public String getMessage() {
+      // We only include the SQL of the statement and not the parameter values to prevent
+      // potentially sensitive data to escape into an error message.
+      return String.format("Execution failed for statement: %s", statement.getSql());
+    }
+  }
 
   /**
    * The {@link Future} that monitors the result of the statement currently being executed for this
@@ -203,7 +221,21 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 }
               });
     }
-    final ApiFuture<T> future = statementExecutor.submit(context.wrap(callable));
+    ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
+    final SpannerAsyncExecutionException caller =
+        new SpannerAsyncExecutionException(statement.getStatement());
+    final ApiFuture<T> future =
+        ApiFutures.catching(
+            f,
+            Throwable.class,
+            new ApiFunction<Throwable, T>() {
+              @Override
+              public T apply(Throwable input) {
+                input.addSuppressed(caller);
+                throw SpannerExceptionFactory.asSpannerException(input);
+              }
+            },
+            MoreExecutors.directExecutor());
     synchronized (this) {
       this.currentlyRunningStatementFuture = future;
     }
