@@ -29,6 +29,7 @@ import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfi
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Ticker;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +81,7 @@ public class SpannerPool {
   private static final long DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED = 60000L;
 
   static final SpannerPool INSTANCE =
-      new SpannerPool(DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED);
+      new SpannerPool(DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED, Ticker.systemTicker());
 
   @VisibleForTesting
   enum CheckAndCloseSpannersMode {
@@ -208,14 +209,17 @@ public class SpannerPool {
   @GuardedBy("this")
   private final Map<SpannerPoolKey, Long> lastConnectionClosedAt = new HashMap<>();
 
+  private final Ticker ticker;
+
   @VisibleForTesting
-  SpannerPool() {
-    this(0L);
+  SpannerPool(Ticker ticker) {
+    this(0L, ticker);
   }
 
   @VisibleForTesting
-  SpannerPool(long closeSpannerAfterMillisecondsUnused) {
+  SpannerPool(long closeSpannerAfterMillisecondsUnused, Ticker ticker) {
     this.closeSpannerAfterMillisecondsUnused = closeSpannerAfterMillisecondsUnused;
+    this.ticker = ticker;
   }
 
   /**
@@ -335,7 +339,8 @@ public class SpannerPool {
           if (registeredConnections.isEmpty()) {
             // Register the moment the last connection for this Spanner key was removed, so we know
             // which Spanner objects we could close.
-            lastConnectionClosedAt.put(key, System.currentTimeMillis());
+            lastConnectionClosedAt.put(
+                key, TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS));
           }
         }
       } else {
@@ -418,7 +423,8 @@ public class SpannerPool {
         // Check whether the last connection was closed more than
         // closeSpannerAfterMillisecondsUnused milliseconds ago.
         if (closedAt != null
-            && ((System.currentTimeMillis() - closedAt.longValue()))
+            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS)
+                    - closedAt.longValue()))
                 > closeSpannerAfterMillisecondsUnused) {
           Spanner spanner = spanners.get(entry.getKey());
           if (spanner != null) {
@@ -436,6 +442,13 @@ public class SpannerPool {
       for (SpannerPoolKey key : keysToBeRemoved) {
         lastConnectionClosedAt.remove(key);
       }
+    }
+  }
+
+  @VisibleForTesting
+  int getCurrentSpannerCount() {
+    synchronized (this) {
+      return spanners.size();
     }
   }
 }
