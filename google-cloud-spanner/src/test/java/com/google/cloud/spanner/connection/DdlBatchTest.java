@@ -51,6 +51,7 @@ import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -169,6 +170,17 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject();
     try {
       batch.executeUpdateAsync(mock(ParsedStatement.class));
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testExecuteBatchUpdate() {
+    DdlBatch batch = createSubject();
+    try {
+      batch.executeBatchUpdateAsync(Collections.singleton(mock(ParsedStatement.class)));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -383,6 +395,43 @@ public class DdlBatchTest {
 
   @Test
   public void testFailedUpdateCount() throws InterruptedException, ExecutionException {
+    DdlClient client = mock(DdlClient.class);
+    UpdateDatabaseDdlMetadata metadata =
+        UpdateDatabaseDdlMetadata.newBuilder()
+            .addCommitTimestamps(
+                Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000L - 1L))
+            .addAllStatements(Arrays.asList("CREATE TABLE FOO", "CREATE TABLE INVALID_TABLE"))
+            .build();
+    ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture = ApiFutures.immediateFuture(metadata);
+    @SuppressWarnings("unchecked")
+    OperationFuture<Void, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
+    when(operationFuture.get())
+        .thenThrow(
+            new ExecutionException(
+                "ddl statement failed", Status.INVALID_ARGUMENT.asRuntimeException()));
+    when(operationFuture.getMetadata()).thenReturn(metadataFuture);
+    when(client.executeDdl(argThat(isListOfStringsWithSize(2)))).thenReturn(operationFuture);
+    DdlBatch batch =
+        DdlBatch.newBuilder()
+            .withStatementExecutor(new StatementExecutor())
+            .setDdlClient(client)
+            .setDatabaseClient(mock(DatabaseClient.class))
+            .build();
+    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+    try {
+      get(batch.runBatchAsync());
+      fail("missing expected exception");
+    } catch (SpannerBatchUpdateException e) {
+      assertThat(e.getUpdateCounts().length, is(equalTo(2)));
+      assertThat(e.getUpdateCounts()[0], is(equalTo(1L)));
+      assertThat(e.getUpdateCounts()[1], is(equalTo(0L)));
+    }
+  }
+
+  @Test
+  public void testFailedAfterFirstStatement() throws InterruptedException, ExecutionException {
     DdlClient client = mock(DdlClient.class);
     UpdateDatabaseDdlMetadata metadata =
         UpdateDatabaseDdlMetadata.newBuilder()

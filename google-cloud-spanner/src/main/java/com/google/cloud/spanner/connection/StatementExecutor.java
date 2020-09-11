@@ -60,22 +60,6 @@ class StatementExecutor {
     /** The statement timeout. */
     private volatile Duration duration = null;
 
-    /** Creates a {@link StatementTimeout} that will never timeout. */
-    @VisibleForTesting
-    static StatementTimeout nullTimeout() {
-      return new StatementTimeout();
-    }
-
-    /** Creates a {@link StatementTimeout} with the given duration. */
-    @VisibleForTesting
-    static StatementTimeout of(long timeout, TimeUnit unit) {
-      Preconditions.checkArgument(timeout > 0L);
-      Preconditions.checkArgument(isValidTimeoutUnit(unit));
-      StatementTimeout res = new StatementTimeout();
-      res.duration = ReadOnlyStalenessUtil.createDuration(timeout, unit);
-      return res;
-    }
-
     /**
      * Does this {@link StatementTimeout} have an actual timeout (i.e. it will eventually timeout).
      */

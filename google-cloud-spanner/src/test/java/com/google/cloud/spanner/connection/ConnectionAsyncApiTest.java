@@ -386,6 +386,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           }
           assertThat(timeout).isFalse();
         } catch (SpannerException e) {
+          assertThat(e.getSuppressed()).hasLength(1);
+          assertThat(e.getSuppressed()[0].getMessage()).contains(SELECT_RANDOM_STATEMENT.getSql());
           assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
           assertThat(timeout).isTrue();
           assertThat(receivedTimeout.get()).isTrue();

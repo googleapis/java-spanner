@@ -46,8 +46,10 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
@@ -77,6 +79,20 @@ public class SingleUseTransactionTest {
     SUCCEED,
     FAIL,
     ABORT;
+  }
+
+  /** Creates a {@link StatementTimeout} that will never timeout. */
+  static StatementTimeout nullTimeout() {
+    return new StatementTimeout();
+  }
+
+  /** Creates a {@link StatementTimeout} with the given duration. */
+  static StatementTimeout timeout(long timeout, TimeUnit unit) {
+    Preconditions.checkArgument(timeout > 0L);
+    Preconditions.checkArgument(StatementTimeout.isValidTimeoutUnit(unit));
+    StatementTimeout res = new StatementTimeout();
+    res.setTimeoutValue(timeout, unit);
+    return res;
   }
 
   private static class SimpleTransactionManager implements TransactionManager {
@@ -417,9 +433,7 @@ public class SingleUseTransactionTest {
         .setReadOnly(readOnly)
         .setReadOnlyStaleness(staleness)
         .setStatementTimeout(
-            timeout == 0L
-                ? StatementExecutor.StatementTimeout.nullTimeout()
-                : StatementExecutor.StatementTimeout.of(timeout, TimeUnit.MILLISECONDS))
+            timeout == 0L ? nullTimeout() : timeout(timeout, TimeUnit.MILLISECONDS))
         .withStatementExecutor(executor)
         .build();
   }

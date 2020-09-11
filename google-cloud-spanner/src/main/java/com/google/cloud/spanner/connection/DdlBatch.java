@@ -38,11 +38,8 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -228,8 +225,6 @@ class DdlBatch extends AbstractBaseUnitOfWork {
               try {
                 // Wait until the operation has finished.
                 getWithStatementTimeout(operation, RUN_BATCH);
-                // Try to get metadata to trigger any errors that were returned.
-                operation.getMetadata().get();
                 long[] updateCounts = new long[statements.size()];
                 Arrays.fill(updateCounts, 1L);
                 state = UnitOfWorkState.RAN;
@@ -238,17 +233,6 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                 long[] updateCounts = extractUpdateCounts(operation);
                 throw SpannerExceptionFactory.newSpannerBatchUpdateException(
                     e.getErrorCode(), e.getMessage(), updateCounts);
-              } catch (ExecutionException e) {
-                SpannerException spannerException = extractSpannerCause(e);
-                long[] updateCounts = extractUpdateCounts(operation);
-                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    spannerException == null ? ErrorCode.UNKNOWN : spannerException.getErrorCode(),
-                    e.getMessage(),
-                    updateCounts);
-              } catch (InterruptedException e) {
-                long[] updateCounts = extractUpdateCounts(operation);
-                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    ErrorCode.CANCELLED, e.getMessage(), updateCounts);
               }
             } catch (Throwable t) {
               state = UnitOfWorkState.RUN_FAILED;
@@ -259,19 +243,6 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     this.state = UnitOfWorkState.RUNNING;
     return executeStatementAsync(
         RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
-  }
-
-  private SpannerException extractSpannerCause(ExecutionException e) {
-    Throwable cause = e.getCause();
-    Set<Throwable> causes = new HashSet<>();
-    while (cause != null && !causes.contains(cause)) {
-      if (cause instanceof SpannerException) {
-        return (SpannerException) cause;
-      }
-      causes.add(cause);
-      cause = cause.getCause();
-    }
-    return null;
   }
 
   long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {
