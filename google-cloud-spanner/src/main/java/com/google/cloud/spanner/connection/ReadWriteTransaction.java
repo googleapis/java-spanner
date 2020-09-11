@@ -210,6 +210,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     // transaction is aborted by the backend. That means that we should not automatically create a
     // new transaction for the following statement after a transaction has aborted, and instead we
     // should wait until the application has rolled back the current transaction.
+    //
+    // Othwerwise the following list of statements could show unexpected behavior:
+
+    // connection.executeUpdateAsync("UPDATE FOO SET BAR=1 ...");
+    // connection.executeUpdateAsync("UPDATE BAR SET FOO=2 ...");
+    // connection.commitAsync();
+    //
+    // If the first update statement fails with an aborted exception, the second update statement
+    // should not be executed in a new transaction, but should also abort.
     return getState().isActive() || state == UnitOfWorkState.ABORTED;
   }
 
@@ -753,7 +762,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           try {
             txManager.rollback();
           } catch (Throwable t) {
-            // ignore.
+            // ignore
           }
           this.state = UnitOfWorkState.ABORTED;
           this.abortedException = e;
@@ -775,7 +784,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           try {
             txManager.rollback();
           } catch (Throwable t) {
-            // ignore.
+            // ignore
           }
           // Set transaction state to aborted as the retry failed.
           this.state = UnitOfWorkState.ABORTED;
@@ -808,7 +817,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     try {
       txManager.rollback();
     } catch (Throwable t) {
-      // ignore.
+      // ignore
     }
     this.state = UnitOfWorkState.ABORTED;
     this.abortedException =
