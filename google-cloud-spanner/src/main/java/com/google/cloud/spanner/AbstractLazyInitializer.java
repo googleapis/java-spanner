@@ -17,8 +17,8 @@
 package com.google.cloud.spanner;
 
 /**
- * Generic {@link AbstractLazyInitializer} for any heavy-weight object that might throw an exception during
- * initialization. The underlying object is initialized at most once.
+ * Generic {@link AbstractLazyInitializer} for any heavy-weight object that might throw an exception
+ * during initialization. The underlying object is initialized at most once.
  */
 public abstract class AbstractLazyInitializer<T> {
   private final Object lock = new Object();
