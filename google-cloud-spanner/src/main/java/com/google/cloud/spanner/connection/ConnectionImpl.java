@@ -849,21 +849,19 @@ class ConnectionImpl implements Connection {
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
       ParsedStatement parsedStatement = parser.parse(update);
-      if (parsedStatement.isUpdate()) {
-        switch (parsedStatement.getType()) {
-          case UPDATE:
-            parsedStatements.add(parsedStatement);
-            break;
-          case CLIENT_SIDE:
-          case QUERY:
-          case DDL:
-          case UNKNOWN:
-          default:
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INVALID_ARGUMENT,
-                "The batch update list contains a statement that is not an update statement: "
-                    + parsedStatement.getSqlWithoutComments());
-        }
+      switch (parsedStatement.getType()) {
+        case UPDATE:
+          parsedStatements.add(parsedStatement);
+          break;
+        case CLIENT_SIDE:
+        case QUERY:
+        case DDL:
+        case UNKNOWN:
+        default:
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "The batch update list contains a statement that is not an update statement: "
+                  + parsedStatement.getSqlWithoutComments());
       }
     }
     return get(internalExecuteBatchUpdateAsync(parsedStatements));
@@ -877,21 +875,19 @@ class ConnectionImpl implements Connection {
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
       ParsedStatement parsedStatement = parser.parse(update);
-      if (parsedStatement.isUpdate()) {
-        switch (parsedStatement.getType()) {
-          case UPDATE:
-            parsedStatements.add(parsedStatement);
-            break;
-          case CLIENT_SIDE:
-          case QUERY:
-          case DDL:
-          case UNKNOWN:
-          default:
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INVALID_ARGUMENT,
-                "The batch update list contains a statement that is not an update statement: "
-                    + parsedStatement.getSqlWithoutComments());
-        }
+      switch (parsedStatement.getType()) {
+        case UPDATE:
+          parsedStatements.add(parsedStatement);
+          break;
+        case CLIENT_SIDE:
+        case QUERY:
+        case DDL:
+        case UNKNOWN:
+        default:
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "The batch update list contains a statement that is not an update statement: "
+                  + parsedStatement.getSqlWithoutComments());
       }
     }
     return internalExecuteBatchUpdateAsync(parsedStatements);

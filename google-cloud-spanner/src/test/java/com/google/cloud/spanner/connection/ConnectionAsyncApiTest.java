@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
@@ -320,12 +321,108 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   @Test
   public void testAutocommitRunBatchAsync() {
     try (Connection connection = createConnection()) {
-      connection.setAutocommit(true);
-      connection.startBatchDml();
-      connection.execute(INSERT_STATEMENT);
-      connection.execute(INSERT_STATEMENT);
+      connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
+      connection.executeAsync(Statement.of("START BATCH DML"));
+      connection.executeAsync(INSERT_STATEMENT);
+      connection.executeAsync(INSERT_STATEMENT);
       ApiFuture<long[]> res = connection.runBatchAsync();
       assertThat(get(res)).asList().containsExactly(1L, 1L);
+    }
+  }
+
+  @Test
+  public void testExecuteDdlAsync() {
+    try (Connection connection = createConnection()) {
+      connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
+      connection.executeAsync(Statement.of("START BATCH DDL"));
+      connection.executeAsync(Statement.of("CREATE TABLE FOO (ID INT64) PRIMARY KEY (ID)"));
+      connection.executeAsync(Statement.of("ABORT BATCH"));
+    }
+  }
+
+  @Test
+  public void testExecuteInvalidStatementAsync() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeAsync(Statement.of("UPSERT INTO FOO (ID, VAL) VALUES (1, 'foo')"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteClientSideQueryAsync() {
+    try (Connection connection = createConnection()) {
+      connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
+      final SettableApiFuture<Boolean> autocommit = SettableApiFuture.create();
+      try (AsyncResultSet rs =
+          connection.executeQueryAsync(Statement.of("SHOW VARIABLE AUTOCOMMIT"))) {
+        rs.setCallback(
+            executor,
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      autocommit.set(resultSet.getBoolean("AUTOCOMMIT"));
+                  }
+                }
+              }
+            });
+      }
+      assertThat(get(autocommit)).isTrue();
+    }
+  }
+
+  @Test
+  public void testExecuteInvalidQueryAsync() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeQueryAsync(INSERT_STATEMENT);
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteInvalidUpdateAsync() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeUpdateAsync(SELECT_RANDOM_STATEMENT);
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteInvalidBatchUpdateAsync() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeBatchUpdateAsync(
+            ImmutableList.of(INSERT_STATEMENT, SELECT_RANDOM_STATEMENT));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
+  public void testRunEmptyBatchAsync() {
+    try (Connection connection = createConnection()) {
+      connection.startBatchDml();
+      assertThat(get(connection.runBatchAsync())).isEqualTo(new long[0]);
     }
   }
 

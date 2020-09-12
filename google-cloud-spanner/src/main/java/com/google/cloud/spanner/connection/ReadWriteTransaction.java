@@ -638,11 +638,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         try {
           return callable.call();
         } catch (final AbortedException aborted) {
-          if (retryAbortsInternally) {
-            handleAborted(aborted);
-          } else {
-            throw aborted;
-          }
+          handleAborted(aborted);
         } catch (SpannerException e) {
           throw e;
         } catch (Exception e) {
