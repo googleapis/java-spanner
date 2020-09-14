@@ -40,6 +40,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
@@ -272,6 +273,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumeric() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.1");
     Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
     assertThat(row.isNull(0)).isFalse();
@@ -280,6 +282,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(Statement.newBuilder("SELECT @v").bind("v").to((BigDecimal) null), Type.numeric());
     assertThat(row.isNull(0)).isTrue();
@@ -287,6 +290,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumeric_doesNotPreservePrecision() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.10");
     Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
     assertThat(row.isNull(0)).isFalse();
@@ -522,6 +526,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArray() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626");
 
@@ -535,6 +540,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArrayEmpty() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toNumericArray(Arrays.<BigDecimal>asList()),
@@ -545,6 +551,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArrayNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toNumericArray(null),
@@ -554,6 +561,7 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArray_doesNotPreservePrecision() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626070");
 
