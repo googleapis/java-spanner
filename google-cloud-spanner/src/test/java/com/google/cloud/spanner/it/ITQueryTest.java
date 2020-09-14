@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.Type.StructField;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
@@ -39,10 +38,12 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -270,6 +271,31 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindNumeric() {
+    BigDecimal b = new BigDecimal("1.1");
+    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimal(0)).isEqualTo(b);
+  }
+
+  @Test
+  public void bindNumericNull() {
+    Struct row =
+        execute(Statement.newBuilder("SELECT @v").bind("v").to((BigDecimal) null), Type.numeric());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindNumeric_doesNotPreservePrecision() {
+    BigDecimal b = new BigDecimal("1.10");
+    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
+    assertThat(row.isNull(0)).isFalse();
+    // Cloud Spanner does not store precision, and will therefore return 1.10 as 1.1.
+    assertThat(row.getBigDecimal(0)).isNotEqualTo(b);
+    assertThat(row.getBigDecimal(0)).isEqualTo(b.stripTrailingZeros());
+  }
+
+  @Test
   public void bindBoolArray() {
     Struct row =
         execute(
@@ -492,6 +518,53 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toDateArray(null), Type.array(Type.date()));
     assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindNumericArray() {
+    BigDecimal b1 = new BigDecimal("3.14");
+    BigDecimal b2 = new BigDecimal("6.626");
+
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(asList(b1, b2, null)),
+            Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0)).containsExactly(b1, b2, null).inOrder();
+  }
+
+  @Test
+  public void bindNumericArrayEmpty() {
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(Arrays.<BigDecimal>asList()),
+            Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindNumericArrayNull() {
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(null),
+            Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindNumericArray_doesNotPreservePrecision() {
+    BigDecimal b1 = new BigDecimal("3.14");
+    BigDecimal b2 = new BigDecimal("6.626070");
+
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(asList(b1, b2, null)),
+            Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0))
+        .containsExactly(b1.stripTrailingZeros(), b2.stripTrailingZeros(), null)
+        .inOrder();
   }
 
   @Test

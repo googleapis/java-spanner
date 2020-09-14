@@ -25,6 +25,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
@@ -692,17 +693,26 @@ public class GrpcResultSetTest {
     consumer.onPartialResultSet(
         PartialResultSet.newBuilder()
             .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.numeric()))))
-            .addValues(Value.numeric(BigDecimal.valueOf(Double.MIN_VALUE)).toProto())
-            .addValues(Value.numeric(BigDecimal.valueOf(Double.MAX_VALUE)).toProto())
+            .addValues(
+                Value.numeric(
+                        new BigDecimal(
+                            "-" + Strings.repeat("9", 29) + "." + Strings.repeat("9", 9)))
+                    .toProto())
+            .addValues(
+                Value.numeric(
+                        new BigDecimal(Strings.repeat("9", 29) + "." + Strings.repeat("9", 9)))
+                    .toProto())
             .addValues(Value.numeric(BigDecimal.ZERO).toProto())
             .addValues(Value.numeric(new BigDecimal("1.23456")).toProto())
             .build());
     consumer.onCompleted();
 
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getBigDecimal(0).doubleValue()).isWithin(0.0).of(Double.MIN_VALUE);
+    assertThat(resultSet.getBigDecimal(0).toPlainString())
+        .isEqualTo("-99999999999999999999999999999.999999999");
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getBigDecimal(0).doubleValue()).isWithin(0.0).of(Double.MAX_VALUE);
+    assertThat(resultSet.getBigDecimal(0).toPlainString())
+        .isEqualTo("99999999999999999999999999999.999999999");
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getBigDecimal(0)).isEqualTo(BigDecimal.ZERO);
     assertThat(resultSet.next()).isTrue();

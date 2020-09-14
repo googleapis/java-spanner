@@ -123,11 +123,37 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns a {@code NUMERIC} value.
+   * Returns a {@code NUMERIC} value. The valid value range for the whole component of the {@link
+   * BigDecimal} is from -9,999,999,999,999,999,999,999,999 to +9,999,999,999,999,999,999,999,999
+   * (both inclusive), i.e. the max length of the whole component is 29 digits. The max length of
+   * the fractional part is 9 digits. Trailing zeros in the fractional part are not considered and
+   * will be lost, as Cloud Spanner does not preserve the precision of a numeric value.
+   *
+   * <p>If you set a numeric value of a record to for example 0.10, Cloud Spanner will return this
+   * value as 0.1 in subsequent queries. Use {@link BigDecimal#stripTrailingZeros()} to compare
+   * inserted values with retrieved values if your application might insert numeric values with
+   * trailing zeros.
    *
    * @param v the value, which may be null
    */
   public static Value numeric(@Nullable BigDecimal v) {
+    if (v != null) {
+      // Cloud Spanner does not preserve the precision, so 0.1 is considered equal to 0.10.
+      BigDecimal test = v.stripTrailingZeros();
+      if (test.scale() > 9) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.OUT_OF_RANGE,
+            String.format(
+                "Max scale for a numeric is 9. The requested numeric has scale %d", test.scale()));
+      }
+      if (test.precision() - test.scale() > 29) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.OUT_OF_RANGE,
+            String.format(
+                "Max precision for the whole component of a numeric is 29. The requested numeric has a whole component with precision %d",
+                test.precision() - test.scale()));
+      }
+    }
     return new NumericImpl(v == null, v);
   }
 

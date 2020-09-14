@@ -25,6 +25,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
@@ -263,6 +264,86 @@ public class ValueTest {
     assertThat(new BigDecimal("01e-1").toString()).isEqualTo("0.1");
     assertThat(new BigDecimal("1E-01").toString()).isEqualTo("0.1");
     assertThat(new BigDecimal("1e-01").toString()).isEqualTo("0.1");
+  }
+
+  @Test
+  public void numericPrecisionAndScale() {
+    for (long s : new long[] {1L, -1L}) {
+      BigDecimal sign = new BigDecimal(s);
+      assertThat(Value.numeric(new BigDecimal(Strings.repeat("9", 29)).multiply(sign)).toString())
+          .isEqualTo((s == -1L ? "-" : "") + Strings.repeat("9", 29));
+      try {
+        Value.numeric(new BigDecimal(Strings.repeat("9", 30)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+      try {
+        Value.numeric(new BigDecimal("1" + Strings.repeat("0", 29)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+
+      assertThat(
+              Value.numeric(new BigDecimal("0." + Strings.repeat("9", 9)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0." + Strings.repeat("9", 9));
+      assertThat(
+              Value.numeric(new BigDecimal("0.1" + Strings.repeat("0", 8)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0.1" + Strings.repeat("0", 8));
+      // Cloud Spanner does not store precision and considers 0.1 to be equal to 0.10.
+      // 0.100000000000000000000000000 is therefore also a valid value, as it will be capped to 0.1.
+      assertThat(
+              Value.numeric(new BigDecimal("0.1" + Strings.repeat("0", 20)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0.1" + Strings.repeat("0", 20));
+      try {
+        Value.numeric(new BigDecimal("0." + Strings.repeat("9", 10)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+
+      assertThat(
+              Value.numeric(
+                      new BigDecimal(Strings.repeat("9", 29) + "." + Strings.repeat("9", 9))
+                          .multiply(sign))
+                  .toString())
+          .isEqualTo(
+              (s == -1L ? "-" : "") + Strings.repeat("9", 29) + "." + Strings.repeat("9", 9));
+
+      try {
+        Value.numeric(
+            new BigDecimal(Strings.repeat("9", 30) + "." + Strings.repeat("9", 9)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+      try {
+        Value.numeric(
+            new BigDecimal("1" + Strings.repeat("0", 29) + "." + Strings.repeat("9", 9))
+                .multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+
+      try {
+        Value.numeric(
+            new BigDecimal(Strings.repeat("9", 29) + "." + Strings.repeat("9", 10)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+      try {
+        Value.numeric(new BigDecimal("1." + Strings.repeat("9", 10)).multiply(sign));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      }
+    }
   }
 
   @Test
