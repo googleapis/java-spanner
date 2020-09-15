@@ -96,21 +96,6 @@ public class SpannerPoolTest {
     SpannerPool.closeSpannerPool();
   }
 
-  final class Foo {
-    String key;
-
-    public int hashCode() {
-      return key.hashCode();
-    }
-
-    public boolean equals(Object o) {
-      if (!(o instanceof Foo)) {
-        return false;
-      }
-      return ((Foo) o).key.equals(this.key);
-    }
-  }
-
   @Test
   public void testGetSpanner() {
     SpannerPool pool = createSubjectAndMocks();
