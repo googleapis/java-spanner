@@ -9,7 +9,7 @@ This version includes a benchmarking utility class to wait for the session pool 
 To use this version of the client library, run the following commands to install a local package.
 
 ```
-mvn clean install -DskipITs -Dmaven.test.skip=true -Dcheckstyle.skip -pl com.google.cloud:google-cloud-spanner -am
+mvn clean install -DskipITs -Dmaven.test.skip=true -Dcheckstyle.skip -Dclirr.skip -pl com.google.cloud:google-cloud-spanner -am
 ```
 
 This will build version `1.61.0-SNAPSHOT-benchmark` which you can then specify as the version of google-cloud-spanner in your `pom.xml` file.
