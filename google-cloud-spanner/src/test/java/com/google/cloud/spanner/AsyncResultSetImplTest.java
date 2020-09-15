@@ -440,4 +440,26 @@ public class AsyncResultSetImplTest {
       assertThat(callbackCounter.get()).isEqualTo(1);
     }
   }
+
+  @Test
+  public void callbackReturnsDoneBeforeEnd_shouldStopIteration() throws Exception {
+    Executor executor = Executors.newSingleThreadExecutor();
+    ResultSet delegate = mock(ResultSet.class);
+    when(delegate.next()).thenReturn(true, true, true, false);
+    when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      rs.setCallback(
+          executor,
+          new ReadyCallback() {
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              // Not calling resultSet.tryNext() means that it will also never return DONE.
+              // Instead the callback indicates that it does not want any more rows.
+              return CallbackResponse.DONE;
+            }
+          });
+      rs.getResult().get(10L, TimeUnit.SECONDS);
+    }
+  }
 }
