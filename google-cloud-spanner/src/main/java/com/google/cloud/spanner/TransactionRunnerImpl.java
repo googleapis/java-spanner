@@ -26,6 +26,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
@@ -167,6 +168,28 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.finishedAsyncOperations.set(null);
     }
 
+    boolean hasNonIdemPotentMutations() {
+      for (Mutation m : mutations) {
+        // INSERT is not idem-potent as it will return an ALREADY_EXISTS error in case it is
+        // retried.
+        if (m.getOperation() == Op.INSERT) {
+          return true;
+        }
+        // All other operations are idem-potent as the result of the last attempt will be consistent
+        // with the actual operation:
+        // UPDATE: Will fail if the row does not exist and on constraint violations. If the row
+        // exists at the first attempt, is then deleted by a different transaction, and the update
+        // is retried, it will return an error at the second attempt. This error is consistent with
+        // the outcome of the transaction.
+        // INSERT_OR_UPDATE: Will fail on constraint violations. The last returned error or success
+        // will be consistent with the actual operation.
+        // REPLACE: Same as INSERT_OR_UPDATE.
+        // DELETE: Will fail on constraint violations. The last returned error or success will be
+        // consistent with the actual operation.
+      }
+      return false;
+    }
+
     private void increaseAsynOperations() {
       synchronized (lock) {
         if (runningAsyncOperations == 0) {
@@ -259,45 +282,54 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Timestamp> commitAsync() {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
+      CommitRequest.Builder builder = CommitRequest.newBuilder().setSession(session.getName());
       synchronized (lock) {
-        if (finishedAsyncOperations.isDone() && transactionId == null) {
+        if (transactionIdFuture == null && transactionId == null && hasNonIdemPotentMutations()) {
           finishOps = SettableApiFuture.create();
           createTxnAsync(finishOps);
         } else {
           finishOps = finishedAsyncOperations;
         }
+        if (!mutations.isEmpty()) {
+          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+          Mutation.toProto(mutations, mutationsProto);
+          builder.addAllMutations(mutationsProto);
+        }
+        // Ensure that no call to buffer mutations that would be lost can succeed.
+        mutations = null;
       }
-      finishOps.addListener(new CommitRunnable(res, finishOps), MoreExecutors.directExecutor());
+      finishOps.addListener(
+          new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
     }
 
     private final class CommitRunnable implements Runnable {
       private final SettableApiFuture<Timestamp> res;
       private final ApiFuture<Void> prev;
+      private final CommitRequest.Builder requestBuilder;
 
-      CommitRunnable(SettableApiFuture<Timestamp> res, ApiFuture<Void> prev) {
+      CommitRunnable(
+          SettableApiFuture<Timestamp> res,
+          ApiFuture<Void> prev,
+          CommitRequest.Builder requestBuilder) {
         this.res = res;
         this.prev = prev;
+        this.requestBuilder = requestBuilder;
       }
 
       @Override
       public void run() {
         try {
           prev.get();
-          CommitRequest.Builder builder =
-              CommitRequest.newBuilder()
-                  .setSession(session.getName())
-                  .setTransactionId(transactionId);
-          synchronized (lock) {
-            if (!mutations.isEmpty()) {
-              List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-              Mutation.toProto(mutations, mutationsProto);
-              builder.addAllMutations(mutationsProto);
-            }
-            // Ensure that no call to buffer mutations that would be lost can succeed.
-            mutations = null;
+          if (transactionId == null && transactionIdFuture == null) {
+            requestBuilder.setSingleUseTransaction(
+                TransactionOptions.newBuilder()
+                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+          } else {
+            requestBuilder.setTransactionId(
+                transactionId == null ? transactionIdFuture.get() : transactionId);
           }
-          final CommitRequest commitRequest = builder.build();
+          final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
           final Span opSpan =
               tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();

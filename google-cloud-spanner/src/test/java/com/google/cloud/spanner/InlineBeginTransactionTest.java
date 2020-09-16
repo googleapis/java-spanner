@@ -41,7 +41,9 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.StructType;
@@ -120,6 +122,7 @@ public class InlineBeginTransactionTest {
           .setMetadata(SELECT1_METADATA)
           .build();
   private static final Statement INVALID_SELECT = Statement.of("SELECT * FROM NON_EXISTING_TABLE");
+  private static final Statement READ_STATEMENT = Statement.of("SELECT ID FROM FOO WHERE 1=1");
 
   private Spanner spanner;
 
@@ -129,6 +132,7 @@ public class InlineBeginTransactionTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.query(READ_STATEMENT, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
@@ -199,6 +203,8 @@ public class InlineBeginTransactionTest {
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -223,7 +229,9 @@ public class InlineBeginTransactionTest {
                 });
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-    // We have started 2 transactions, because the first transaction aborted.
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    // We have started 2 transactions, because the first transaction aborted during the commit.
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(2);
     assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
@@ -248,6 +256,35 @@ public class InlineBeginTransactionTest {
                 });
     assertThat(updateCount).isEqualTo(1L);
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithRead() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    try (ResultSet rs =
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
+                      }
+                    }
+                    return 0L;
+                  }
+                });
+    assertThat(updateCount).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -268,6 +305,8 @@ public class InlineBeginTransactionTest {
                 });
     assertThat(updateCounts).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -296,10 +335,58 @@ public class InlineBeginTransactionTest {
     // BeginTransaction statement failed and did not return a transaction. That forces a retry of
     // the entire transaction with an explicit BeginTransaction RPC.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    // The update statement will be executed 3 times:
+    // 1. The invalid update statement will be executed during the first attempt and fail. The
+    // second update statement will not be executed, as the transaction runner sees that the initial
+    // statement failed and did not return a valid transaction id.
+    // 2. The invalid update statement is executed again during the retry.
+    // 3. The valid update statement is only executed after the first statement succeeded.
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(3);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     // The first update will start a transaction, but then fail the update statement. This will
     // start a transaction on the mock server, but that transaction will never be returned to the
     // client.
     assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithErrorOnFirstStatement_andThenErrorOnBeginTransaction() {
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.INTERNAL
+                .withDescription("Begin transaction failed due to an internal error")
+                .asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Void>() {
+                @Override
+                public Void run(TransactionContext transaction) throws Exception {
+                  try {
+                    transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                  }
+                  return null;
+                }
+              });
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
+      assertThat(e.getMessage()).contains("Begin transaction failed due to an internal error");
+    }
+    // The transaction will be retried because the first statement that also tried to include the
+    // BeginTransaction statement failed and did not return a transaction. That forces a retry of
+    // the entire transaction with an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+    // The explicit BeginTransaction RPC failed, so only one transaction was started.
+    assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
@@ -385,6 +472,8 @@ public class InlineBeginTransactionTest {
     // The first statement failed and could not return a transaction. The entire transaction is
     // therefore retried with an explicit BeginTransaction RPC.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 
@@ -417,11 +506,13 @@ public class InlineBeginTransactionTest {
     // Although the batch DML returned an error, that error was for the second statement. That means
     // that the transaction was started by the first statement.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
   @Test
-  public void testInlinedBeginTxWithErrorOnStreamingQuery() {
+  public void testInlinedBeginTxWithErrorOnStreamingSql() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     Void res =
@@ -445,6 +536,8 @@ public class InlineBeginTransactionTest {
     // BeginTransaction statement failed and did not return a transaction. That forces a retry of
     // the entire transaction with an explicit BeginTransaction RPC.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     // The first update will start a transaction, but then fail the update statement. This will
     // start a transaction on the mock server, but that transaction will never be returned to the
     // client.
@@ -484,6 +577,8 @@ public class InlineBeginTransactionTest {
     // The transaction will not be retried, as the first PartialResultSet returns the transaction
     // ID, and the second fails with an error code.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -529,7 +624,31 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testInlinedBeginTxWithOnlyMutations() {
+  public void testInlinedBeginTxWithNonIdemPotentMutations() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    client
+        .readWriteTransaction()
+        .run(
+            new TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                transaction.buffer(
+                    Arrays.asList(
+                        Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
+                        Mutation.delete("FOO", Key.of(1L))));
+                return null;
+              }
+            });
+    // There should be 1 call to BeginTransaction because there is no statement that we can use to
+    // inline the BeginTransaction call with.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithOnlyIdemPotentMutations() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     client
@@ -542,9 +661,10 @@ public class InlineBeginTransactionTest {
                 return null;
               }
             });
-    // There should be 1 call to BeginTransaction because there is no statement that we can use to
-    // inline the BeginTransaction call with.
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    // As all mutations are idem-potent, the transaction can use a single CommitRequest with a
+    // single-use transaction.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -597,7 +717,7 @@ public class InlineBeginTransactionTest {
 
   @SuppressWarnings("resource")
   @Test
-  public void testTransactionManagerInlinedBeginTxWithOnlyMutations() {
+  public void testTransactionManagerInlinedBeginTxWithOnlyIdemPotentMutations() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     try (TransactionManager txMgr = client.transactionManager()) {
@@ -612,9 +732,32 @@ public class InlineBeginTransactionTest {
         }
       }
     }
-    // There should be 1 call to BeginTransaction because there is no statement that we can use to
-    // inline the BeginTransaction call with.
+    // As the transaction only contains idem-potent mutations it can use a single-use transaction
+    // that is triggered by the commit request.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void testTransactionManagerInlinedBeginTxWithNonIdemPotentMutations() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (TransactionManager txMgr = client.transactionManager()) {
+      TransactionContext txn = txMgr.begin();
+      while (true) {
+        try {
+          txn.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+          txMgr.commit();
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetry();
+        }
+      }
+    }
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -867,7 +1010,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testInlinedBeginAsyncTxWithOnlyMutations()
+  public void testInlinedBeginAsyncTxWithOnlyIdemPotentMutations()
       throws InterruptedException, ExecutionException {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -883,9 +1026,30 @@ public class InlineBeginTransactionTest {
             },
             executor)
         .get();
-    // There should be 1 call to BeginTransaction because there is no statement that we can use to
-    // inline the BeginTransaction call with.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginAsyncTxWithNonIdemPotentMutations()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    client
+        .runAsync()
+        .runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
+                transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor)
+        .get();
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
@@ -969,7 +1133,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testAsyncTransactionManagerInlinedBeginTxWithOnlyMutations()
+  public void testAsyncTransactionManagerInlinedBeginTxWithOnlyIdemPotentMutations()
       throws InterruptedException, ExecutionException {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -995,9 +1159,40 @@ public class InlineBeginTransactionTest {
         }
       }
     }
-    // There should be 1 call to BeginTransaction because there is no statement that we can use to
-    // inline the BeginTransaction call with.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerInlinedBeginTxWithNonIdemPotentMutations()
+      throws InterruptedException, ExecutionException {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
+      TransactionContextFuture txn = txMgr.beginAsync();
+      while (true) {
+        try {
+          txn.then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  },
+                  executor)
+              .commitAsync()
+              .get();
+          break;
+        } catch (AbortedException e) {
+          txn = txMgr.resetForRetryAsync();
+        }
+      }
+    }
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 
