@@ -25,7 +25,6 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.common.base.Strings;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,8 +57,15 @@ public class RemoteSpannerHelper {
     return options;
   }
 
+  /**
+   * Checks whether the emulator is being used.
+   *
+   * @deprecated use {@link EmulatorSpannerHelper#isUsingEmulator()} instead.
+   * @return true if the emulator is being used. Returns false otherwise.
+   */
+  @Deprecated
   public boolean isEmulator() {
-    return !Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"));
+    return EmulatorSpannerHelper.isUsingEmulator();
   }
 
   public Spanner getClient() {

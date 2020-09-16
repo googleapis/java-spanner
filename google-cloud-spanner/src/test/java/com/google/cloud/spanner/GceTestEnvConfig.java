@@ -26,11 +26,15 @@ import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,6 +45,12 @@ public class GceTestEnvConfig implements TestEnvConfig {
   public static final String GCE_CREDENTIALS_FILE = "spanner.gce.config.credentials_file";
   public static final String GCE_STREAM_BROKEN_PROBABILITY =
       "spanner.gce.config.stream_broken_probability";
+  public static final String ATTEMPT_DIRECT_PATH = "spanner.attempt_directpath";
+  public static final String DIRECT_PATH_TEST_SCENARIO = "spanner.directpath_test_scenario";
+
+  // IP address prefixes allocated for DirectPath backends.
+  public static final String DP_IPV6_PREFIX = "2001:4860:8040";
+  public static final String DP_IPV4_PREFIX = "34.126";
 
   private final SpannerOptions options;
 
@@ -51,6 +61,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
     double errorProbability =
         Double.parseDouble(System.getProperty(GCE_STREAM_BROKEN_PROBABILITY, "0.0"));
     checkState(errorProbability <= 1.0);
+    boolean attemptDirectPath = Boolean.getBoolean(ATTEMPT_DIRECT_PATH);
+    String directPathTestScenario = System.getProperty(DIRECT_PATH_TEST_SCENARIO, "");
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
     if (!projectId.isEmpty()) {
@@ -66,12 +78,14 @@ public class GceTestEnvConfig implements TestEnvConfig {
         throw new RuntimeException(e);
       }
     }
-    options =
-        builder
-            .setInterceptorProvider(
-                SpannerInterceptorProvider.createDefault()
-                    .with(new GrpcErrorInjector(errorProbability)))
-            .build();
+    SpannerInterceptorProvider interceptorProvider =
+        SpannerInterceptorProvider.createDefault().with(new GrpcErrorInjector(errorProbability));
+    if (attemptDirectPath) {
+      interceptorProvider =
+          interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
+    }
+    builder.setInterceptorProvider(interceptorProvider);
+    options = builder.build();
   }
 
   @Override
@@ -87,6 +101,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
 
   /** Injects errors in streaming calls to simulate call restarts */
   private static class GrpcErrorInjector implements ClientInterceptor {
+
     private final double errorProbability;
     private final Random random = new Random();
 
@@ -138,6 +153,66 @@ public class GceTestEnvConfig implements TestEnvConfig {
 
     private boolean mayInjectError() {
       return random.nextDouble() < errorProbability;
+    }
+  }
+
+  /**
+   * Captures the request attributes "Grpc.TRANSPORT_ATTR_REMOTE_ADDR" when connection is
+   * established and verifies if the remote address is a DirectPath address. This is only used for
+   * DirectPath testing. {@link ClientCall#getAttributes()}
+   */
+  private static class DirectPathAddressCheckInterceptor implements ClientInterceptor {
+    private final String directPathTestScenario;
+
+    DirectPathAddressCheckInterceptor(String directPathTestScenario) {
+      this.directPathTestScenario = directPathTestScenario;
+    }
+
+    @Override
+    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+        MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+      final ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
+      return new SimpleForwardingClientCall<ReqT, RespT>(clientCall) {
+        @Override
+        public void start(Listener<RespT> responseListener, Metadata headers) {
+          super.start(
+              new SimpleForwardingClientCallListener<RespT>(responseListener) {
+                @Override
+                public void onHeaders(Metadata headers) {
+                  // Check peer IP after connection is established.
+                  SocketAddress remoteAddr =
+                      clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+                  if (!verifyRemoteAddress(remoteAddr)) {
+                    throw new RuntimeException(
+                        String.format(
+                            "Synthetically aborting the current request because it did not adhere"
+                                + " to the test environment's requirement for DirectPath."
+                                + " Expected test for DirectPath %s scenario,"
+                                + " but RPC was destined for %s",
+                            directPathTestScenario, remoteAddr.toString()));
+                  }
+                  super.onHeaders(headers);
+                }
+              },
+              headers);
+        }
+      };
+    }
+
+    private boolean verifyRemoteAddress(SocketAddress remoteAddr) {
+      if (remoteAddr instanceof InetSocketAddress) {
+        InetAddress inetAddress = ((InetSocketAddress) remoteAddr).getAddress();
+        String addr = inetAddress.getHostAddress();
+        if (directPathTestScenario.equals("ipv4")) {
+          // For ipv4-only VM, client should connect to ipv4 DirectPath addresses.
+          return addr.startsWith(DP_IPV4_PREFIX);
+        } else if (directPathTestScenario.equals("ipv6")) {
+          // For ipv6-enabled VM, client could connect to either ipv4 or ipv6 DirectPath addresses.
+          return addr.startsWith(DP_IPV6_PREFIX) || addr.startsWith(DP_IPV4_PREFIX);
+        }
+      }
+      // For all other scenarios(e.g. fallback), we should allow both DirectPath and CFE addresses.
+      return true;
     }
   }
 }

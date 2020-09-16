@@ -624,7 +624,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         decreaseAsyncOperations();
         throw t;
       }
-      final ApiFuture<long[]> updateCounts =
+      ApiFuture<long[]> updateCounts =
           ApiFutures.transform(
               response,
               new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
@@ -652,23 +652,26 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
               },
               MoreExecutors.directExecutor());
+      updateCounts =
+          ApiFutures.catching(
+              updateCounts,
+              Throwable.class,
+              new ApiFunction<Throwable, long[]>() {
+                @Override
+                public long[] apply(Throwable input) {
+                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
+                  onError(
+                      SpannerExceptionFactory.newSpannerException(e.getCause()),
+                      builder.hasTransaction() && builder.getTransaction().hasBegin());
+                  throw e;
+                }
+              },
+              MoreExecutors.directExecutor());
       updateCounts.addListener(
           new Runnable() {
             @Override
             public void run() {
-              try {
-                updateCounts.get();
-              } catch (ExecutionException e) {
-                onError(
-                    SpannerExceptionFactory.newSpannerException(e.getCause()),
-                    builder.hasTransaction() && builder.getTransaction().hasBegin());
-              } catch (InterruptedException e) {
-                onError(
-                    SpannerExceptionFactory.propagateInterrupt(e),
-                    builder.hasTransaction() && builder.getTransaction().hasBegin());
-              } finally {
-                decreaseAsyncOperations();
-              }
+              decreaseAsyncOperations();
             }
           },
           MoreExecutors.directExecutor());

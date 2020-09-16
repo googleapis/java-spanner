@@ -596,11 +596,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerRead() throws Exception {
     AsyncRunner runner = client().runAsync();
-    ApiFuture<ImmutableList<String>> val =
+    ApiFuture<List<String>> val =
         runner.runAsync(
-            new AsyncWork<ImmutableList<String>>() {
+            new AsyncWork<List<String>>() {
               @Override
-              public ApiFuture<ImmutableList<String>> doWorkAsync(TransactionContext txn) {
+              public ApiFuture<List<String>> doWorkAsync(TransactionContext txn) {
                 return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
                     .toListAsync(
                         new Function<StructReader, String>() {

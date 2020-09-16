@@ -27,8 +27,8 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.CursorState;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -117,7 +117,7 @@ public class AsyncResultSetImplTest {
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      ImmutableList<Object> list =
+      List<Object> list =
           rs.toList(
               new Function<StructReader, Object>() {
                 @Override
@@ -160,7 +160,7 @@ public class AsyncResultSetImplTest {
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      ApiFuture<ImmutableList<Object>> future =
+      ApiFuture<List<Object>> future =
           rs.toListAsync(
               new Function<StructReader, Object>() {
                 @Override

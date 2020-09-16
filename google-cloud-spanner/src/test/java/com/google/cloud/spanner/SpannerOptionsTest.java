@@ -21,17 +21,34 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStreamingCallSettings;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Strings;
+import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
+import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.GetSessionRequest;
+import com.google.spanner.v1.ListSessionsRequest;
+import com.google.spanner.v1.PartitionQueryRequest;
+import com.google.spanner.v1.PartitionReadRequest;
+import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -614,5 +631,238 @@ public class SpannerOptionsTest {
     } catch (IllegalArgumentException e) {
       // ignore, this is the expected exception.
     }
+  }
+
+  @Test
+  public void testSpannerCallContextTimeoutConfigurator_NullValues() {
+    SpannerCallContextTimeoutConfigurator configurator =
+        SpannerCallContextTimeoutConfigurator.create();
+    ApiCallContext inputCallContext = GrpcCallContext.createDefault();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BatchCreateSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getBatchCreateSessionsMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CreateSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getCreateSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ListSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getListSessionsMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BeginTransactionRequest.getDefaultInstance(),
+                SpannerGrpc.getBeginTransactionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CommitRequest.getDefaultInstance(),
+                SpannerGrpc.getCommitMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                RollbackRequest.getDefaultInstance(),
+                SpannerGrpc.getRollbackMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteStreamingSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteBatchDmlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteBatchDmlMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ReadRequest.getDefaultInstance(),
+                SpannerGrpc.getStreamingReadMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                PartitionQueryRequest.getDefaultInstance(),
+                SpannerGrpc.getPartitionQueryMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                PartitionReadRequest.getDefaultInstance(),
+                SpannerGrpc.getPartitionReadMethod()))
+        .isNull();
+  }
+
+  @Test
+  public void testSpannerCallContextTimeoutConfigurator_WithTimeouts() {
+    SpannerCallContextTimeoutConfigurator configurator =
+        SpannerCallContextTimeoutConfigurator.create();
+    configurator.withBatchUpdateTimeout(Duration.ofSeconds(1L));
+    configurator.withCommitTimeout(Duration.ofSeconds(2L));
+    configurator.withExecuteQueryTimeout(Duration.ofSeconds(3L));
+    configurator.withExecuteUpdateTimeout(Duration.ofSeconds(4L));
+    configurator.withPartitionQueryTimeout(Duration.ofSeconds(5L));
+    configurator.withPartitionReadTimeout(Duration.ofSeconds(6L));
+    configurator.withReadTimeout(Duration.ofSeconds(7L));
+    configurator.withRollbackTimeout(Duration.ofSeconds(8L));
+
+    ApiCallContext inputCallContext = GrpcCallContext.createDefault();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BatchCreateSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getBatchCreateSessionsMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                CreateSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getCreateSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                DeleteSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getDeleteSessionMethod()))
+        .isNull();
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ListSessionsRequest.getDefaultInstance(),
+                SpannerGrpc.getListSessionsMethod()))
+        .isNull();
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                BeginTransactionRequest.getDefaultInstance(),
+                SpannerGrpc.getBeginTransactionMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    CommitRequest.getDefaultInstance(),
+                    SpannerGrpc.getCommitMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(2L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    RollbackRequest.getDefaultInstance(),
+                    SpannerGrpc.getRollbackMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(8L));
+
+    assertThat(
+            configurator.configure(
+                inputCallContext,
+                ExecuteSqlRequest.getDefaultInstance(),
+                SpannerGrpc.getExecuteSqlMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ExecuteSqlRequest.getDefaultInstance(),
+                    SpannerGrpc.getExecuteStreamingSqlMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(3L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ExecuteBatchDmlRequest.getDefaultInstance(),
+                    SpannerGrpc.getExecuteBatchDmlMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(1L));
+    assertThat(
+            configurator.configure(
+                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
+        .isNull();
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    ReadRequest.getDefaultInstance(),
+                    SpannerGrpc.getStreamingReadMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(7L));
+
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    PartitionQueryRequest.getDefaultInstance(),
+                    SpannerGrpc.getPartitionQueryMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(5L));
+    assertThat(
+            configurator
+                .configure(
+                    inputCallContext,
+                    PartitionReadRequest.getDefaultInstance(),
+                    SpannerGrpc.getPartitionReadMethod())
+                .getTimeout())
+        .isEqualTo(Duration.ofSeconds(6L));
   }
 }

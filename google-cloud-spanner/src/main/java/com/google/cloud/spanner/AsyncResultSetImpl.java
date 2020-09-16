@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -483,12 +484,12 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   }
 
   private static class CreateListCallback<T> implements ReadyCallback {
-    private final SettableApiFuture<ImmutableList<T>> future;
+    private final SettableApiFuture<List<T>> future;
     private final Function<StructReader, T> transformer;
     private final ImmutableList.Builder<T> builder = ImmutableList.builder();
 
     private CreateListCallback(
-        SettableApiFuture<ImmutableList<T>> future, Function<StructReader, T> transformer) {
+        SettableApiFuture<List<T>> future, Function<StructReader, T> transformer) {
       this.future = future;
       this.transformer = transformer;
     }
@@ -516,20 +517,20 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   }
 
   @Override
-  public <T> ApiFuture<ImmutableList<T>> toListAsync(
+  public <T> ApiFuture<List<T>> toListAsync(
       Function<StructReader, T> transformer, Executor executor) {
     synchronized (monitor) {
       Preconditions.checkState(!closed, "This AsyncResultSet has been closed");
       Preconditions.checkState(
           this.state == State.INITIALIZED, "This AsyncResultSet has already been used.");
-      final SettableApiFuture<ImmutableList<T>> res = SettableApiFuture.<ImmutableList<T>>create();
+      final SettableApiFuture<List<T>> res = SettableApiFuture.<List<T>>create();
       CreateListCallback<T> callback = new CreateListCallback<T>(res, transformer);
       ApiFuture<Void> finished = setCallback(executor, callback);
       return ApiFutures.transformAsync(
           finished,
-          new ApiAsyncFunction<Void, ImmutableList<T>>() {
+          new ApiAsyncFunction<Void, List<T>>() {
             @Override
-            public ApiFuture<ImmutableList<T>> apply(Void input) throws Exception {
+            public ApiFuture<List<T>> apply(Void input) throws Exception {
               return res;
             }
           },
@@ -538,9 +539,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   }
 
   @Override
-  public <T> ImmutableList<T> toList(Function<StructReader, T> transformer)
-      throws SpannerException {
-    ApiFuture<ImmutableList<T>> future = toListAsync(transformer, MoreExecutors.directExecutor());
+  public <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException {
+    ApiFuture<List<T>> future = toListAsync(transformer, MoreExecutors.directExecutor());
     try {
       return future.get();
     } catch (ExecutionException e) {
@@ -559,7 +559,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       this.state = State.SYNC;
     }
     boolean res = delegateResultSet.next();
-    currentRow = delegateResultSet.getCurrentRowAsStruct();
+    currentRow = res ? delegateResultSet.getCurrentRowAsStruct() : null;
     return res;
   }
 
