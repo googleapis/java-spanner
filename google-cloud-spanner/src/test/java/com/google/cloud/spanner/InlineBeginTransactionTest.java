@@ -32,8 +32,10 @@ import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
@@ -117,6 +119,8 @@ public class InlineBeginTransactionTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  private static final Statement INVALID_SELECT = Statement.of("SELECT * FROM NON_EXISTING_TABLE");
+
   private Spanner spanner;
 
   @BeforeClass
@@ -128,7 +132,15 @@ public class InlineBeginTransactionTest {
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
-            Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+            Status.INVALID_ARGUMENT
+                .withDescription("invalid update statement")
+                .asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.exception(
+            INVALID_SELECT,
+            Status.INVALID_ARGUMENT
+                .withDescription("invalid select statement")
+                .asRuntimeException()));
 
     String uniqueName = InProcessServerBuilder.generateName();
     server =
@@ -344,6 +356,134 @@ public class InlineBeginTransactionTest {
     assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
     assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
     assertThat(countRequests(RollbackRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginTxBatchDmlWithErrorOnFirstStatement() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    Void res =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Void>() {
+                  @Override
+                  public Void run(TransactionContext transaction) throws Exception {
+                    try {
+                      transaction.batchUpdate(
+                          ImmutableList.of(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
+                      fail("missing expected exception");
+                    } catch (SpannerBatchUpdateException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                      assertThat(e.getUpdateCounts()).hasLength(0);
+                    }
+                    return null;
+                  }
+                });
+    assertThat(res).isNull();
+    // The first statement failed and could not return a transaction. The entire transaction is
+    // therefore retried with an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginTxBatchDmlWithErrorOnSecondStatement() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    try {
+                      transaction.batchUpdate(
+                          ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+                      fail("missing expected exception");
+                      // The following line is needed as the compiler does not know that this is
+                      // unreachable.
+                      return -1L;
+                    } catch (SpannerBatchUpdateException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                      assertThat(e.getUpdateCounts()).hasLength(1);
+                      return e.getUpdateCounts()[0];
+                    }
+                  }
+                });
+    assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    // Although the batch DML returned an error, that error was for the second statement. That means
+    // that the transaction was started by the first statement.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithErrorOnStreamingQuery() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    Void res =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Void>() {
+                  @Override
+                  public Void run(TransactionContext transaction) throws Exception {
+                    try (ResultSet rs = transaction.executeQuery(INVALID_SELECT)) {
+                      while (rs.next()) {}
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                    }
+                    return null;
+                  }
+                });
+    assertThat(res).isNull();
+    // The transaction will be retried because the first statement that also tried to include the
+    // BeginTransaction statement failed and did not return a transaction. That forces a retry of
+    // the entire transaction with an explicit BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    // The first update will start a transaction, but then fail the update statement. This will
+    // start a transaction on the mock server, but that transaction will never be returned to the
+    // client.
+    assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void testInlinedBeginTxWithErrorOnSecondPartialResultSet() {
+    final Statement statement = Statement.of("SELECT * FROM BROKEN_TABLE");
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(2);
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    // First two null exceptions and then a DATA_LOSS exception. The first null is for the RPC
+    // itself, the second null means that the first PartialResultSet will be returned, and the
+    // DATA_LOSS exception will be returned for the second PartialResultSet.
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofExceptions(
+            Arrays.asList(null, null, Status.DATA_LOSS.asRuntimeException())));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    Void res =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Void>() {
+                  @Override
+                  public Void run(TransactionContext transaction) throws Exception {
+                    try (ResultSet rs = transaction.executeQuery(statement)) {
+                      while (rs.next()) {}
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DATA_LOSS);
+                    }
+                    return null;
+                  }
+                });
+    assertThat(res).isNull();
+    // The transaction will not be retried, as the first PartialResultSet returns the transaction
+    // ID, and the second fails with an error code.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
 

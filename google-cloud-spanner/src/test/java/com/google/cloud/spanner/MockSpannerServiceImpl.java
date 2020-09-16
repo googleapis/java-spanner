@@ -215,6 +215,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         recordCount++;
         currentRow++;
       }
+      builder.setResumeToken(ByteString.copyFromUtf8(String.format("%09d", currentRow)));
       hasNext = currentRow < resultSet.getRowsCount();
       return builder.build();
     }
@@ -442,12 +443,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           SpannerExceptionFactoryTest.newStatusDatabaseNotFoundException(name));
     }
 
-    public static SimulatedExecutionTime ofExceptions(Collection<Exception> exceptions) {
+    public static SimulatedExecutionTime ofExceptions(Collection<? extends Exception> exceptions) {
       return new SimulatedExecutionTime(0, 0, exceptions, false);
     }
 
     public static SimulatedExecutionTime ofMinimumAndRandomTimeAndExceptions(
-        int minimumExecutionTime, int randomExecutionTime, Collection<Exception> exceptions) {
+        int minimumExecutionTime,
+        int randomExecutionTime,
+        Collection<? extends Exception> exceptions) {
       return new SimulatedExecutionTime(
           minimumExecutionTime, randomExecutionTime, exceptions, false);
     }
@@ -457,7 +460,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     private SimulatedExecutionTime(
-        int minimum, int random, Collection<Exception> exceptions, boolean stickyException) {
+        int minimum,
+        int random,
+        Collection<? extends Exception> exceptions,
+        boolean stickyException) {
       Preconditions.checkArgument(minimum >= 0, "Minimum execution time must be >= 0");
       Preconditions.checkArgument(random >= 0, "Random execution time must be >= 0");
       this.minimumExecutionTime = minimum;
@@ -479,6 +485,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 + minimumExecutionTime,
             TimeUnit.MILLISECONDS);
       }
+    }
+
+    void simulateStreamExecutionTime() {
+      checkException(this.exceptions, stickyException);
     }
 
     private static void checkException(Queue<Exception> exceptions, boolean keepException) {
@@ -1092,7 +1102,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           throw res.getException();
         case RESULT_SET:
           returnPartialResultSet(
-              res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+              res.getResultSet(),
+              transactionId,
+              request.getTransaction(),
+              responseObserver,
+              executeStreamingSqlExecutionTime);
           break;
         case UPDATE_COUNT:
           if (isPartitioned) {
@@ -1421,7 +1435,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .asRuntimeException();
       }
       returnPartialResultSet(
-          res.getResultSet(), transactionId, request.getTransaction(), responseObserver);
+          res.getResultSet(),
+          transactionId,
+          request.getTransaction(),
+          responseObserver,
+          streamingReadExecutionTime);
     } catch (StatusRuntimeException e) {
       responseObserver.onError(e);
     } catch (Throwable t) {
@@ -1433,7 +1451,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ResultSet resultSet,
       ByteString transactionId,
       TransactionSelector transactionSelector,
-      StreamObserver<PartialResultSet> responseObserver) {
+      StreamObserver<PartialResultSet> responseObserver,
+      SimulatedExecutionTime executionTime) {
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId == null) {
       Transaction transaction = getTemporaryTransactionOrNull(transactionSelector);
@@ -1449,6 +1468,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     PartialResultSetsIterator iterator = new PartialResultSetsIterator(resultSet);
     while (iterator.hasNext()) {
       responseObserver.onNext(iterator.next());
+      //      Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.SECONDS);
+      executionTime.simulateStreamExecutionTime();
     }
     responseObserver.onCompleted();
   }
