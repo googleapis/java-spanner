@@ -275,7 +275,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
               switch (response) {
                 case DONE:
                   state = State.DONE;
-                  closeDelegateResultSet();
+                  cursorReturnedDoneOrException = true;
                   return;
                 case PAUSE:
                   state = State.PAUSED;
