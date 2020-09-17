@@ -624,7 +624,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testInlinedBeginTxWithNonIdemPotentMutations() {
+  public void testInlinedBeginTxWithOnlyMutations() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     client
@@ -643,27 +643,6 @@ public class InlineBeginTransactionTest {
     // There should be 1 call to BeginTransaction because there is no statement that we can use to
     // inline the BeginTransaction call with.
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
-    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
-    assertThat(countTransactionsStarted()).isEqualTo(1);
-  }
-
-  @Test
-  public void testInlinedBeginTxWithOnlyIdemPotentMutations() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    client
-        .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                transaction.buffer(Mutation.delete("FOO", Key.of(1L)));
-                return null;
-              }
-            });
-    // As all mutations are idem-potent, the transaction can use a single CommitRequest with a
-    // single-use transaction.
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
     assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(1);
   }
@@ -717,31 +696,7 @@ public class InlineBeginTransactionTest {
 
   @SuppressWarnings("resource")
   @Test
-  public void testTransactionManagerInlinedBeginTxWithOnlyIdemPotentMutations() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    try (TransactionManager txMgr = client.transactionManager()) {
-      TransactionContext txn = txMgr.begin();
-      while (true) {
-        try {
-          txn.buffer(Mutation.delete("FOO", Key.of(1L)));
-          txMgr.commit();
-          break;
-        } catch (AbortedException e) {
-          txn = txMgr.resetForRetry();
-        }
-      }
-    }
-    // As the transaction only contains idem-potent mutations it can use a single-use transaction
-    // that is triggered by the commit request.
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
-    assertThat(countTransactionsStarted()).isEqualTo(1);
-  }
-
-  @SuppressWarnings("resource")
-  @Test
-  public void testTransactionManagerInlinedBeginTxWithNonIdemPotentMutations() {
+  public void testTransactionManagerInlinedBeginTxWithOnlyMutations() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     try (TransactionManager txMgr = client.transactionManager()) {
@@ -1010,29 +965,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testInlinedBeginAsyncTxWithOnlyIdemPotentMutations()
-      throws InterruptedException, ExecutionException {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    client
-        .runAsync()
-        .runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
-                transaction.buffer(Mutation.delete("FOO", Key.of(1L)));
-                return ApiFutures.immediateFuture(null);
-              }
-            },
-            executor)
-        .get();
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
-    assertThat(countTransactionsStarted()).isEqualTo(1);
-  }
-
-  @Test
-  public void testInlinedBeginAsyncTxWithNonIdemPotentMutations()
+  public void testInlinedBeginAsyncTxWithOnlyMutations()
       throws InterruptedException, ExecutionException {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -1133,39 +1066,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
-  public void testAsyncTransactionManagerInlinedBeginTxWithOnlyIdemPotentMutations()
-      throws InterruptedException, ExecutionException {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-    try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
-      TransactionContextFuture txn = txMgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.buffer(Mutation.delete("FOO", Key.of(1L)));
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
-                  executor)
-              .commitAsync()
-              .get();
-          break;
-        } catch (AbortedException e) {
-          txn = txMgr.resetForRetryAsync();
-        }
-      }
-    }
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
-    assertThat(countTransactionsStarted()).isEqualTo(1);
-  }
-
-  @Test
-  public void testAsyncTransactionManagerInlinedBeginTxWithNonIdemPotentMutations()
+  public void testAsyncTransactionManagerInlinedBeginTxWithOnlyMutations()
       throws InterruptedException, ExecutionException {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));

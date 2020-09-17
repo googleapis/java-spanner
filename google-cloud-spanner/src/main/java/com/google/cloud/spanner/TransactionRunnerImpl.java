@@ -26,7 +26,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
@@ -168,28 +167,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.finishedAsyncOperations.set(null);
     }
 
-    boolean hasNonIdemPotentMutations() {
-      for (Mutation m : mutations) {
-        // INSERT is not idem-potent as it will return an ALREADY_EXISTS error in case it is
-        // retried.
-        if (m.getOperation() == Op.INSERT) {
-          return true;
-        }
-        // All other operations are idem-potent as the result of the last attempt will be consistent
-        // with the actual operation:
-        // UPDATE: Will fail if the row does not exist and on constraint violations. If the row
-        // exists at the first attempt, is then deleted by a different transaction, and the update
-        // is retried, it will return an error at the second attempt. This error is consistent with
-        // the outcome of the transaction.
-        // INSERT_OR_UPDATE: Will fail on constraint violations. The last returned error or success
-        // will be consistent with the actual operation.
-        // REPLACE: Same as INSERT_OR_UPDATE.
-        // DELETE: Will fail on constraint violations. The last returned error or success will be
-        // consistent with the actual operation.
-      }
-      return false;
-    }
-
     private void increaseAsynOperations() {
       synchronized (lock) {
         if (runningAsyncOperations == 0) {
@@ -284,7 +261,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder = CommitRequest.newBuilder().setSession(session.getName());
       synchronized (lock) {
-        if (transactionIdFuture == null && transactionId == null && hasNonIdemPotentMutations()) {
+        if (transactionIdFuture == null && transactionId == null) {
           finishOps = SettableApiFuture.create();
           createTxnAsync(finishOps);
         } else {
