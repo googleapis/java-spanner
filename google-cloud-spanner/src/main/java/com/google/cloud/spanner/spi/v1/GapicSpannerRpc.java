@@ -1408,6 +1408,14 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  // Before removing this method, please verify with a code owner that it is not used
+  // in any internal testing infrastructure.
+  @VisibleForTesting
+  @Deprecated
+  GrpcCallContext newCallContext(@Nullable Map<Option, ?> options, String resource) {
+    return newCallContext(options, resource, null, null);
+  }
+
   @VisibleForTesting
   <ReqT, RespT> GrpcCallContext newCallContext(
       @Nullable Map<Option, ?> options,
