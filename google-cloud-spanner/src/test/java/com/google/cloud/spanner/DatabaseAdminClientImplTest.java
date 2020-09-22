@@ -69,6 +69,8 @@ public class DatabaseAdminClientImplTest {
   private static final String BK_ID = "my-bk";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
+  private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
+  private static final String VERSION_RETENTION_PERIOD = "7d";
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -80,7 +82,12 @@ public class DatabaseAdminClientImplTest {
   }
 
   private Database getDatabaseProto() {
-    return Database.newBuilder().setName(DB_NAME).setState(Database.State.READY).build();
+    return Database.newBuilder()
+        .setName(DB_NAME)
+        .setState(Database.State.READY)
+        .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+        .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .build();
   }
 
   private Database getAnotherDatabaseProto() {
@@ -116,6 +123,8 @@ public class DatabaseAdminClientImplTest {
     com.google.cloud.spanner.Database db = client.getDatabase(INSTANCE_ID, DB_ID);
     assertThat(db.getId().getName()).isEqualTo(DB_NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.READY);
+    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
+    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
   }
 
   @Test

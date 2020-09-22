@@ -30,6 +30,10 @@ public class DatabaseInfo {
 
     abstract Builder setRestoreInfo(RestoreInfo restoreInfo);
 
+    abstract Builder setVersionRetentionPeriod(String versionRetentionPeriod);
+
+    abstract Builder setEarliestVersionTime(Timestamp earliestVersionTime);
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
     /** Builds the database from this builder. */
@@ -41,6 +45,8 @@ public class DatabaseInfo {
     private State state = State.UNSPECIFIED;
     private Timestamp createTime;
     private RestoreInfo restoreInfo;
+    private String versionRetentionPeriod;
+    private Timestamp earliestVersionTime;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -52,6 +58,8 @@ public class DatabaseInfo {
       this.state = other.state;
       this.createTime = other.createTime;
       this.restoreInfo = other.restoreInfo;
+      this.versionRetentionPeriod = other.versionRetentionPeriod;
+      this.earliestVersionTime = other.earliestVersionTime;
       this.proto = other.proto;
     }
 
@@ -70,6 +78,18 @@ public class DatabaseInfo {
     @Override
     Builder setRestoreInfo(@Nullable RestoreInfo restoreInfo) {
       this.restoreInfo = restoreInfo;
+      return this;
+    }
+
+    @Override
+    Builder setVersionRetentionPeriod(String versionRetentionPeriod) {
+      this.versionRetentionPeriod = versionRetentionPeriod;
+      return this;
+    }
+
+    @Override
+    Builder setEarliestVersionTime(Timestamp earliestVersionTime) {
+      this.earliestVersionTime = earliestVersionTime;
       return this;
     }
 
@@ -96,6 +116,8 @@ public class DatabaseInfo {
   private final State state;
   private final Timestamp createTime;
   private final RestoreInfo restoreInfo;
+  private final String versionRetentionPeriod;
+  private final Timestamp earliestVersionTime;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -103,6 +125,8 @@ public class DatabaseInfo {
     this.state = state;
     this.createTime = null;
     this.restoreInfo = null;
+    this.versionRetentionPeriod = null;
+    this.earliestVersionTime = null;
     this.proto = null;
   }
 
@@ -111,6 +135,8 @@ public class DatabaseInfo {
     this.state = builder.state;
     this.createTime = builder.createTime;
     this.restoreInfo = builder.restoreInfo;
+    this.versionRetentionPeriod = builder.versionRetentionPeriod;
+    this.earliestVersionTime = builder.earliestVersionTime;
     this.proto = builder.proto;
   }
 
@@ -127,6 +153,16 @@ public class DatabaseInfo {
   /** Returns the creation time of the database. */
   public Timestamp getCreateTime() {
     return createTime;
+  }
+
+  /** Returns the version retention period of the database. */
+  public String getVersionRetentionPeriod() {
+    return versionRetentionPeriod;
+  }
+
+  /** Returns the earliest version time of the database. */
+  public Timestamp getEarliestVersionTime() {
+    return earliestVersionTime;
   }
 
   /**
