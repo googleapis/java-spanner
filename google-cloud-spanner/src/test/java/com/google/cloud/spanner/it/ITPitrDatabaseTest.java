@@ -17,15 +17,19 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.DatabaseNotFoundException;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import java.util.Collections;
@@ -42,12 +46,13 @@ import org.threeten.bp.Duration;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
-public class ITPitrUpdateDdlTest {
+public class ITPitrDatabaseTest {
 
   private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(1);
   private static final String VERSION_RETENTION_PERIOD = "7d";
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  private static RemoteSpannerHelper testHelper;
   private static DatabaseAdminClient dbAdminClient;
   private static DatabaseClient dbClient;
   private static String projectId;
@@ -56,13 +61,13 @@ public class ITPitrUpdateDdlTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    final RemoteSpannerHelper testHelper = env.getTestHelper();
+    testHelper = env.getTestHelper();
     projectId = testHelper.getOptions().getProjectId();
     instanceId = testHelper.getInstanceId().getInstance();
     databaseId = testHelper.getUniqueDatabaseId();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
 
-    createDatabase(dbAdminClient, instanceId, databaseId);
+    createDatabase(dbAdminClient, instanceId, databaseId, Collections.<String>emptyList());
     updateVersionRetentionPeriod(dbAdminClient, instanceId, databaseId, VERSION_RETENTION_PERIOD);
 
     dbClient =
@@ -75,7 +80,7 @@ public class ITPitrUpdateDdlTest {
   }
 
   @Test
-  public void returnsTheVersionRetentionPeriodSetThroughGetDatabase() {
+  public void inUpdatedDatabaseReturnsTheVersionRetentionPeriodSetThroughGetDatabase() {
     final Database database = dbAdminClient.getDatabase(instanceId, databaseId);
 
     assertThat(database.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
@@ -83,7 +88,7 @@ public class ITPitrUpdateDdlTest {
   }
 
   @Test
-  public void returnsTheVersionRetentionPeriodSetThroughListDatabases() {
+  public void inUpdatedDatabaseReturnsTheVersionRetentionPeriodSetThroughListDatabases() {
     final Page<Database> page = dbAdminClient.listDatabases(instanceId);
 
     for (Database database : page.iterateAll()) {
@@ -96,7 +101,7 @@ public class ITPitrUpdateDdlTest {
   }
 
   @Test
-  public void returnsTheVersionRetentionPeriodSetThroughGetDatabaseDdl() {
+  public void inUpdatedDatabaseReturnsTheVersionRetentionPeriodSetThroughGetDatabaseDdl() {
     final List<String> ddls = dbAdminClient.getDatabaseDdl(instanceId, databaseId);
 
     boolean hasVersionRetentionPeriodStatement = false;
@@ -111,7 +116,7 @@ public class ITPitrUpdateDdlTest {
   }
 
   @Test
-  public void returnsTheVersionRetentionPeriodSetThroughInformationSchema() {
+  public void inUpdatedDatabaseReturnsTheVersionRetentionPeriodSetThroughInformationSchema() {
     final ResultSet rs =
         dbClient
             .singleUse()
@@ -129,11 +134,93 @@ public class ITPitrUpdateDdlTest {
     assertThat(versionRetentionPeriod).isEqualTo(VERSION_RETENTION_PERIOD);
   }
 
-  private static void createDatabase(
-      final DatabaseAdminClient dbAdminClient, final String instanceId, final String databaseId)
+  @Test
+  public void inUpdateDatabaseReturnsAnErrorWhenAnInvalidRetentionPeriodIsGiven() {
+    try {
+      dbAdminClient
+          .updateDatabaseDdl(
+              instanceId,
+              databaseId,
+              Collections.singletonList(
+                  "ALTER DATABASE "
+                      + databaseId
+                      + " SET OPTIONS (version_retention_period = '0d')"),
+              "op_invalid_retention_period_" + databaseId)
+          .get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
+      fail("Expected invalid argument error when setting invalid version retention period");
+    } catch (Exception e) {
+      SpannerException spannerException = (SpannerException) e.getCause();
+      assertThat(spannerException.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+
+    final Database database = dbAdminClient.getDatabase(instanceId, databaseId);
+
+    assertThat(database.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
+    assertThat(database.getEarliestVersionTime()).isNotNull();
+  }
+
+  @Test
+  public void inNewDatabaseReturnsTheVersionRetentionPeriodSetThroughCreateDatabase()
       throws Exception {
-    dbAdminClient
-        .createDatabase(instanceId, databaseId, Collections.<String>emptyList())
+    final String instanceId = testHelper.getInstanceId().getInstance();
+    final String newDatabaseId = testHelper.getUniqueDatabaseId();
+    final String versionRetentionPeriodStatement =
+        "ALTER DATABASE "
+            + newDatabaseId
+            + " SET OPTIONS (version_retention_period = '"
+            + VERSION_RETENTION_PERIOD
+            + "')";
+
+    try {
+      final Database database =
+          createDatabase(
+              dbAdminClient,
+              instanceId,
+              newDatabaseId,
+              Collections.singletonList(versionRetentionPeriodStatement));
+
+      assertThat(database.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
+      assertThat(database.getEarliestVersionTime()).isNotNull();
+    } finally {
+      dbAdminClient.dropDatabase(instanceId, newDatabaseId);
+    }
+  }
+
+  @Test
+  public void inNewDatabaseReturnsAnErrorWhenAnInvalidVersionRetentionPeriodIsGiven() {
+    final String instanceId = testHelper.getInstanceId().getInstance();
+    final String newDatabaseId = testHelper.getUniqueDatabaseId();
+    final String versionRetentionPeriodStatement =
+        "ALTER DATABASE " + newDatabaseId + " SET OPTIONS (version_retention_period = '0d')";
+
+    try {
+      createDatabase(
+          dbAdminClient,
+          instanceId,
+          newDatabaseId,
+          Collections.singletonList(versionRetentionPeriodStatement));
+      fail("Expected invalid argument error when setting invalid version retention period");
+    } catch (Exception e) {
+      SpannerException spannerException = (SpannerException) e.getCause();
+      assertThat(spannerException.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+
+    try {
+      dbAdminClient.getDatabase(instanceId, newDatabaseId);
+      fail("Expected database not found error");
+    } catch (DatabaseNotFoundException e) {
+      // Success case
+    }
+  }
+
+  private static Database createDatabase(
+      final DatabaseAdminClient dbAdminClient,
+      final String instanceId,
+      final String databaseId,
+      final Iterable<String> extraStatements)
+      throws Exception {
+    return dbAdminClient
+        .createDatabase(instanceId, databaseId, extraStatements)
         .get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
   }
 
