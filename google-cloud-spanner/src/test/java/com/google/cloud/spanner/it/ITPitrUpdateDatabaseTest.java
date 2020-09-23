@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
@@ -58,6 +60,8 @@ public class ITPitrUpdateDatabaseTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    assumeFalse("PITR-lite features are not supported by the emulator", isUsingEmulator());
+
     final RemoteSpannerHelper testHelper = env.getTestHelper();
     final String projectId = testHelper.getOptions().getProjectId();
     instanceId = testHelper.getInstanceId().getInstance();
@@ -73,7 +77,9 @@ public class ITPitrUpdateDatabaseTest {
 
   @AfterClass
   public static void tearDown() {
-    dbAdminClient.dropDatabase(instanceId, databaseId);
+    if (!isUsingEmulator()) {
+      dbAdminClient.dropDatabase(instanceId, databaseId);
+    }
   }
 
   @Test

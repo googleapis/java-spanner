@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -52,6 +55,11 @@ public class ITPitrCreateDatabaseTest {
   private RemoteSpannerHelper testHelper;
   private DatabaseAdminClient dbAdminClient;
   private List<Database> databasesToDrop;
+
+  @BeforeClass
+  public static void doNotRunOnEmulator() {
+    assumeFalse("PITR-lite features are not supported by the emulator", isUsingEmulator());
+  }
 
   @Before
   public void setUp() {
