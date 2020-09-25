@@ -35,12 +35,15 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.CallOptions;
@@ -413,6 +416,25 @@ public class ITDatabaseAdminTest {
       for (Backup backup : backups) {
         client.deleteBackup(backup.getInstanceId().getInstance(), backup.getId().getBackup());
       }
+    }
+  }
+
+  @Test
+  public void filterMetadata() throws Exception {
+    com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient client =
+        com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create();
+    ListDatabaseOperationsPagedResponse response =
+        client.listDatabaseOperations(
+            ListDatabaseOperationsRequest.newBuilder()
+                .setParent(testHelper.getInstanceId().getName())
+                .setFilter(
+                    "(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata)"
+                        + " AND (metadata.database: foo)")
+                .build());
+    for (Operation op : response.iterateAll()) {
+      assertThat(op.getMetadata().unpack(CreateDatabaseMetadata.class)).isNotNull();
+      CreateDatabaseMetadata metadata = op.getMetadata().unpack(CreateDatabaseMetadata.class);
+      assertThat(metadata.getDatabase()).contains("foo");
     }
   }
 }
