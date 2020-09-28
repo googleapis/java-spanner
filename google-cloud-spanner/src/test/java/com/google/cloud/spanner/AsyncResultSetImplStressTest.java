@@ -285,6 +285,47 @@ public class AsyncResultSetImplStressTest {
   }
 
   @Test
+  public void returnDoneBeforeEnd() throws Exception {
+    ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
+    final Random random = new Random();
+    for (Executor executor :
+        new Executor[] {
+          MoreExecutors.directExecutor(), createExecService(), createExecService(32)
+        }) {
+      for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
+        for (int i = 0; i < TEST_RUNS; i++) {
+          try (AsyncResultSetImpl impl =
+              new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
+            ApiFuture<Void> res =
+                impl.setCallback(
+                    executor,
+                    new ReadyCallback() {
+                      @Override
+                      public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                        switch (resultSet.tryNext()) {
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return random.nextBoolean()
+                                ? CallbackResponse.DONE
+                                : CallbackResponse.CONTINUE;
+                          case OK:
+                            return random.nextInt(resultSetSize) <= 2
+                                ? CallbackResponse.DONE
+                                : CallbackResponse.CONTINUE;
+                          default:
+                            throw new IllegalStateException();
+                        }
+                      }
+                    });
+            assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
+          }
+        }
+      }
+    }
+  }
+
+  @Test
   public void pauseResume() throws Exception {
     ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     final Random random = new Random();

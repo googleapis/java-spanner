@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "b35304ede5c980c3c042b89247058cc5a4ab1488"
+        "sha": "e05ee0eaa16984393b60fc47f94412e560c36ff1"
       }
     },
     {
@@ -19,7 +19,7 @@
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "019c7168faa0e56619f792693a8acdb30d6de19b"
+        "sha": "916c10e8581804df2b48a0f0457d848f3faa582e"
       }
     }
   ],
@@ -60,6 +60,7 @@
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/release-please.yml",
     ".github/trusted-contribution.yml",
+    ".github/workflows/auto-release.yaml",
     ".github/workflows/ci.yaml",
     ".github/workflows/samples.yaml",
     ".kokoro/build.bat",

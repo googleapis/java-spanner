@@ -93,6 +93,7 @@ import org.threeten.bp.Duration;
 /** Tests that opening and closing multiple Spanner instances does not leak any threads. */
 @RunWith(JUnit4.class)
 public class GapicSpannerRpcTest {
+
   private static final Statement SELECT1AND2 =
       Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
   private static final ResultSetMetadata SELECT1AND2_METADATA =
@@ -380,6 +381,7 @@ public class GapicSpannerRpcTest {
   }
 
   private static final class TimeoutHolder {
+
     private Duration timeout;
   }
 
@@ -452,6 +454,14 @@ public class GapicSpannerRpcTest {
             }
           });
     }
+  }
+
+  @Test
+  public void testNewCallContextWithNullRequestAndNullMethod() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
+    assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
+    rpc.shutdown();
   }
 
   @SuppressWarnings("rawtypes")
