@@ -319,4 +319,10 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getNumericArray()</method>
   </difference>
+  
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
+    <method>* initialize()</method>
+  </difference>
 </differences>
