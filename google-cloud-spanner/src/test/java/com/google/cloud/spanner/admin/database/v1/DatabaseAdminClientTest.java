@@ -123,7 +123,12 @@ public class DatabaseAdminClientTest {
   @SuppressWarnings("all")
   public void createDatabaseTest() throws Exception {
     DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
-    Database expectedResponse = Database.newBuilder().setName(name.toString()).build();
+    String versionRetentionPeriod = "versionRetentionPeriod907249289";
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(name.toString())
+            .setVersionRetentionPeriod(versionRetentionPeriod)
+            .build();
     Operation resultOperation =
         Operation.newBuilder()
             .setName("createDatabaseTest")
@@ -282,7 +287,12 @@ public class DatabaseAdminClientTest {
   @SuppressWarnings("all")
   public void restoreDatabaseTest() throws Exception {
     DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
-    Database expectedResponse = Database.newBuilder().setName(name.toString()).build();
+    String versionRetentionPeriod = "versionRetentionPeriod907249289";
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(name.toString())
+            .setVersionRetentionPeriod(versionRetentionPeriod)
+            .build();
     Operation resultOperation =
         Operation.newBuilder()
             .setName("restoreDatabaseTest")
@@ -383,7 +393,12 @@ public class DatabaseAdminClientTest {
   @SuppressWarnings("all")
   public void getDatabaseTest() {
     DatabaseName name2 = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
-    Database expectedResponse = Database.newBuilder().setName(name2.toString()).build();
+    String versionRetentionPeriod = "versionRetentionPeriod907249289";
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(name2.toString())
+            .setVersionRetentionPeriod(versionRetentionPeriod)
+            .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
     DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");

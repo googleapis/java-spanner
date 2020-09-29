@@ -40,6 +40,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   private Database() {
     name_ = "";
     state_ = 0;
+    versionRetentionPeriod_ = "";
   }
 
   @java.lang.Override
@@ -112,6 +113,45 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
               if (subBuilder != null) {
                 subBuilder.mergeFrom(restoreInfo_);
                 restoreInfo_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 42:
+            {
+              com.google.spanner.admin.database.v1.EncryptionConfig.Builder subBuilder = null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 50:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              versionRetentionPeriod_ = s;
+              break;
+            }
+          case 58:
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (earliestVersionTime_ != null) {
+                subBuilder = earliestVersionTime_.toBuilder();
+              }
+              earliestVersionTime_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(earliestVersionTime_);
+                earliestVersionTime_ = subBuilder.buildPartial();
               }
 
               break;
@@ -548,6 +588,181 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return getRestoreInfo();
   }
 
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 5;
+  private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
+  }
+
+  public static final int VERSION_RETENTION_PERIOD_FIELD_NUMBER = 6;
+  private volatile java.lang.Object versionRetentionPeriod_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The period in which Cloud Spanner retains all versions of data
+   * for the database. This is same as the value of version_retention_period
+   * database option set using
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
+   * </pre>
+   *
+   * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The versionRetentionPeriod.
+   */
+  @java.lang.Override
+  public java.lang.String getVersionRetentionPeriod() {
+    java.lang.Object ref = versionRetentionPeriod_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      versionRetentionPeriod_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The period in which Cloud Spanner retains all versions of data
+   * for the database. This is same as the value of version_retention_period
+   * database option set using
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
+   * </pre>
+   *
+   * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The bytes for versionRetentionPeriod.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getVersionRetentionPeriodBytes() {
+    java.lang.Object ref = versionRetentionPeriod_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      versionRetentionPeriod_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int EARLIEST_VERSION_TIME_FIELD_NUMBER = 7;
+  private com.google.protobuf.Timestamp earliestVersionTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the earliestVersionTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasEarliestVersionTime() {
+    return earliestVersionTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The earliestVersionTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getEarliestVersionTime() {
+    return earliestVersionTime_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : earliestVersionTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getEarliestVersionTimeOrBuilder() {
+    return getEarliestVersionTime();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -575,6 +790,15 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (restoreInfo_ != null) {
       output.writeMessage(4, getRestoreInfo());
     }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(5, getEncryptionConfig());
+    }
+    if (!getVersionRetentionPeriodBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, versionRetentionPeriod_);
+    }
+    if (earliestVersionTime_ != null) {
+      output.writeMessage(7, getEarliestVersionTime());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -596,6 +820,15 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     }
     if (restoreInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getRestoreInfo());
+    }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getEncryptionConfig());
+    }
+    if (!getVersionRetentionPeriodBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, versionRetentionPeriod_);
+    }
+    if (earliestVersionTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(7, getEarliestVersionTime());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -623,6 +856,15 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasRestoreInfo()) {
       if (!getRestoreInfo().equals(other.getRestoreInfo())) return false;
     }
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
+    if (!getVersionRetentionPeriod().equals(other.getVersionRetentionPeriod())) return false;
+    if (hasEarliestVersionTime() != other.hasEarliestVersionTime()) return false;
+    if (hasEarliestVersionTime()) {
+      if (!getEarliestVersionTime().equals(other.getEarliestVersionTime())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -645,6 +887,16 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasRestoreInfo()) {
       hash = (37 * hash) + RESTORE_INFO_FIELD_NUMBER;
       hash = (53 * hash) + getRestoreInfo().hashCode();
+    }
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
+    }
+    hash = (37 * hash) + VERSION_RETENTION_PERIOD_FIELD_NUMBER;
+    hash = (53 * hash) + getVersionRetentionPeriod().hashCode();
+    if (hasEarliestVersionTime()) {
+      hash = (37 * hash) + EARLIEST_VERSION_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getEarliestVersionTime().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -807,6 +1059,20 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         restoreInfo_ = null;
         restoreInfoBuilder_ = null;
       }
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+      versionRetentionPeriod_ = "";
+
+      if (earliestVersionTimeBuilder_ == null) {
+        earliestVersionTime_ = null;
+      } else {
+        earliestVersionTime_ = null;
+        earliestVersionTimeBuilder_ = null;
+      }
       return this;
     }
 
@@ -845,6 +1111,17 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         result.restoreInfo_ = restoreInfo_;
       } else {
         result.restoreInfo_ = restoreInfoBuilder_.build();
+      }
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      }
+      result.versionRetentionPeriod_ = versionRetentionPeriod_;
+      if (earliestVersionTimeBuilder_ == null) {
+        result.earliestVersionTime_ = earliestVersionTime_;
+      } else {
+        result.earliestVersionTime_ = earliestVersionTimeBuilder_.build();
       }
       onBuilt();
       return result;
@@ -907,6 +1184,16 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasRestoreInfo()) {
         mergeRestoreInfo(other.getRestoreInfo());
+      }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
+      }
+      if (!other.getVersionRetentionPeriod().isEmpty()) {
+        versionRetentionPeriod_ = other.versionRetentionPeriod_;
+        onChanged();
+      }
+      if (other.hasEarliestVersionTime()) {
+        mergeEarliestVersionTime(other.getEarliestVersionTime());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1578,6 +1865,575 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         restoreInfo_ = null;
       }
       return restoreInfoBuilder_;
+    }
+
+    private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Custom encryption configuration (Cloud KMS keys).
+     * Applicable only for databases using the Customer Managed Encryption Keys
+     * feature.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionConfig,
+                com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
+    }
+
+    private java.lang.Object versionRetentionPeriod_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The period in which Cloud Spanner retains all versions of data
+     * for the database. This is same as the value of version_retention_period
+     * database option set using
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
+     * </pre>
+     *
+     * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The versionRetentionPeriod.
+     */
+    public java.lang.String getVersionRetentionPeriod() {
+      java.lang.Object ref = versionRetentionPeriod_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        versionRetentionPeriod_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The period in which Cloud Spanner retains all versions of data
+     * for the database. This is same as the value of version_retention_period
+     * database option set using
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
+     * </pre>
+     *
+     * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The bytes for versionRetentionPeriod.
+     */
+    public com.google.protobuf.ByteString getVersionRetentionPeriodBytes() {
+      java.lang.Object ref = versionRetentionPeriod_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        versionRetentionPeriod_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The period in which Cloud Spanner retains all versions of data
+     * for the database. This is same as the value of version_retention_period
+     * database option set using
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
+     * </pre>
+     *
+     * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The versionRetentionPeriod to set.
+     * @return This builder for chaining.
+     */
+    public Builder setVersionRetentionPeriod(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      versionRetentionPeriod_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The period in which Cloud Spanner retains all versions of data
+     * for the database. This is same as the value of version_retention_period
+     * database option set using
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
+     * </pre>
+     *
+     * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearVersionRetentionPeriod() {
+
+      versionRetentionPeriod_ = getDefaultInstance().getVersionRetentionPeriod();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The period in which Cloud Spanner retains all versions of data
+     * for the database. This is same as the value of version_retention_period
+     * database option set using
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
+     * </pre>
+     *
+     * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The bytes for versionRetentionPeriod to set.
+     * @return This builder for chaining.
+     */
+    public Builder setVersionRetentionPeriodBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      versionRetentionPeriod_ = value;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.Timestamp earliestVersionTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        earliestVersionTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the earliestVersionTime field is set.
+     */
+    public boolean hasEarliestVersionTime() {
+      return earliestVersionTimeBuilder_ != null || earliestVersionTime_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The earliestVersionTime.
+     */
+    public com.google.protobuf.Timestamp getEarliestVersionTime() {
+      if (earliestVersionTimeBuilder_ == null) {
+        return earliestVersionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : earliestVersionTime_;
+      } else {
+        return earliestVersionTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEarliestVersionTime(com.google.protobuf.Timestamp value) {
+      if (earliestVersionTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        earliestVersionTime_ = value;
+        onChanged();
+      } else {
+        earliestVersionTimeBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEarliestVersionTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (earliestVersionTimeBuilder_ == null) {
+        earliestVersionTime_ = builderForValue.build();
+        onChanged();
+      } else {
+        earliestVersionTimeBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeEarliestVersionTime(com.google.protobuf.Timestamp value) {
+      if (earliestVersionTimeBuilder_ == null) {
+        if (earliestVersionTime_ != null) {
+          earliestVersionTime_ =
+              com.google.protobuf.Timestamp.newBuilder(earliestVersionTime_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          earliestVersionTime_ = value;
+        }
+        onChanged();
+      } else {
+        earliestVersionTimeBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEarliestVersionTime() {
+      if (earliestVersionTimeBuilder_ == null) {
+        earliestVersionTime_ = null;
+        onChanged();
+      } else {
+        earliestVersionTime_ = null;
+        earliestVersionTimeBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getEarliestVersionTimeBuilder() {
+
+      onChanged();
+      return getEarliestVersionTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getEarliestVersionTimeOrBuilder() {
+      if (earliestVersionTimeBuilder_ != null) {
+        return earliestVersionTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return earliestVersionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : earliestVersionTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Earliest timestamp at which older versions of the data can be
+     * read.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getEarliestVersionTimeFieldBuilder() {
+      if (earliestVersionTimeBuilder_ == null) {
+        earliestVersionTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getEarliestVersionTime(), getParentForChildren(), isClean());
+        earliestVersionTime_ = null;
+      }
+      return earliestVersionTimeBuilder_;
     }
 
     @java.lang.Override

@@ -166,4 +166,128 @@ public interface DatabaseOrBuilder
    * </code>
    */
   com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Custom encryption configuration (Cloud KMS keys).
+   * Applicable only for databases using the Customer Managed Encryption Keys
+   * feature.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The period in which Cloud Spanner retains all versions of data
+   * for the database. This is same as the value of version_retention_period
+   * database option set using
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
+   * </pre>
+   *
+   * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The versionRetentionPeriod.
+   */
+  java.lang.String getVersionRetentionPeriod();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The period in which Cloud Spanner retains all versions of data
+   * for the database. This is same as the value of version_retention_period
+   * database option set using
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
+   * </pre>
+   *
+   * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The bytes for versionRetentionPeriod.
+   */
+  com.google.protobuf.ByteString getVersionRetentionPeriodBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the earliestVersionTime field is set.
+   */
+  boolean hasEarliestVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The earliestVersionTime.
+   */
+  com.google.protobuf.Timestamp getEarliestVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Earliest timestamp at which older versions of the data can be
+   * read.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp earliest_version_time = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getEarliestVersionTimeOrBuilder();
 }
