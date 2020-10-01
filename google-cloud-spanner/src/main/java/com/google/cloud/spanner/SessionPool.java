@@ -1255,7 +1255,10 @@ final class SessionPool {
         leakedException = null;
         checkedOutSessions.remove(this);
       }
-      get().close();
+      PooledSession delegate = getOrNull();
+      if (delegate != null) {
+        delegate.close();
+      }
     }
 
     @Override
@@ -1264,7 +1267,19 @@ final class SessionPool {
         leakedException = null;
         checkedOutSessions.remove(this);
       }
-      return get().asyncClose();
+      PooledSession delegate = getOrNull();
+      if (delegate != null) {
+        return delegate.asyncClose();
+      }
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+
+    private PooledSession getOrNull() {
+      try {
+        return get();
+      } catch (Throwable t) {
+        return null;
+      }
     }
 
     @Override
