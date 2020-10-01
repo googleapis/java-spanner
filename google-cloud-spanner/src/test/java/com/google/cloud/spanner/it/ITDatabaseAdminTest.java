@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -263,6 +264,7 @@ public class ITDatabaseAdminTest {
     }
   }
 
+  @Ignore("Skipping until list backup operations bug is fixed: b/169431286")
   @Test
   public void testRetryNonIdempotentRpcsReturningLongRunningOperations() throws Exception {
     assumeFalse(
