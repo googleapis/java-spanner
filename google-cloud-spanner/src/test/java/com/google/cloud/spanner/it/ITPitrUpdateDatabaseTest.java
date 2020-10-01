@@ -120,21 +120,22 @@ public class ITPitrUpdateDatabaseTest {
 
   @Test
   public void returnsTheVersionRetentionPeriodSetThroughInformationSchema() {
-    final ResultSet rs =
+    try (final ResultSet rs =
         dbClient
             .singleUse()
             .executeQuery(
                 Statement.of(
                     "SELECT OPTION_VALUE AS version_retention_period "
                         + "FROM INFORMATION_SCHEMA.DATABASE_OPTIONS "
-                        + "WHERE SCHEMA_NAME = '' AND OPTION_NAME = 'version_retention_period'"));
+                        + "WHERE SCHEMA_NAME = '' AND OPTION_NAME = 'version_retention_period'"))) {
 
-    String versionRetentionPeriod = null;
-    while (rs.next()) {
-      versionRetentionPeriod = rs.getString("version_retention_period");
+      String versionRetentionPeriod = null;
+      while (rs.next()) {
+        versionRetentionPeriod = rs.getString("version_retention_period");
+      }
+
+      assertThat(versionRetentionPeriod).isEqualTo(VERSION_RETENTION_PERIOD);
     }
-
-    assertThat(versionRetentionPeriod).isEqualTo(VERSION_RETENTION_PERIOD);
   }
 
   @Test
