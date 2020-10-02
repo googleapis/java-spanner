@@ -156,8 +156,8 @@ public class DdlBatchTest {
     when(singleUse.executeQuery(statement)).thenReturn(resultSet);
     when(dbClient.singleUse()).thenReturn(singleUse);
     DdlBatch batch = createSubject(createDefaultMockDdlClient(), dbClient);
-    ResultSet result = batch.executeQuery(
-        parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE);
+    ResultSet result =
+        batch.executeQuery(parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE);
     assertThat(result.hashCode(), is(equalTo(resultSet.hashCode())));
   }
 
