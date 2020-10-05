@@ -26,7 +26,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -34,6 +33,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
+import com.google.cloud.spanner.connection.SpannerPool.SpannerPoolKey;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Handler;
@@ -51,12 +51,15 @@ public class SpannerPoolTest {
   private ConnectionImpl connection1 = mock(ConnectionImpl.class);
   private ConnectionImpl connection2 = mock(ConnectionImpl.class);
   private ConnectionImpl connection3 = mock(ConnectionImpl.class);
-  private GoogleCredentials credentials1 = mock(GoogleCredentials.class);
-  private GoogleCredentials credentials2 = mock(GoogleCredentials.class);
+  private String credentials1 = "credentials1";
+  private String credentials2 = "credentials2";
   private ConnectionOptions options1 = mock(ConnectionOptions.class);
   private ConnectionOptions options2 = mock(ConnectionOptions.class);
   private ConnectionOptions options3 = mock(ConnectionOptions.class);
   private ConnectionOptions options4 = mock(ConnectionOptions.class);
+
+  private ConnectionOptions options5 = mock(ConnectionOptions.class);
+  private ConnectionOptions options6 = mock(ConnectionOptions.class);
 
   private SpannerPool createSubjectAndMocks() {
     return createSubjectAndMocks(0L);
@@ -66,20 +69,24 @@ public class SpannerPoolTest {
     SpannerPool pool =
         new SpannerPool(closeSpannerAfterMillisecondsUnused) {
           @Override
-          Spanner createSpanner(SpannerPoolKey key) {
+          Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
             return mock(Spanner.class);
           }
         };
 
-    when(options1.getCredentials()).thenReturn(credentials1);
+    when(options1.getCredentialsUrl()).thenReturn(credentials1);
     when(options1.getProjectId()).thenReturn("test-project-1");
-    when(options2.getCredentials()).thenReturn(credentials2);
+    when(options2.getCredentialsUrl()).thenReturn(credentials2);
     when(options2.getProjectId()).thenReturn("test-project-1");
 
-    when(options3.getCredentials()).thenReturn(credentials1);
+    when(options3.getCredentialsUrl()).thenReturn(credentials1);
     when(options3.getProjectId()).thenReturn("test-project-2");
-    when(options4.getCredentials()).thenReturn(credentials2);
+    when(options4.getCredentialsUrl()).thenReturn(credentials2);
     when(options4.getProjectId()).thenReturn("test-project-2");
+
+    // ConnectionOptions with no specific credentials.
+    when(options5.getProjectId()).thenReturn("test-project-3");
+    when(options6.getProjectId()).thenReturn("test-project-3");
 
     return pool;
   }
@@ -107,6 +114,10 @@ public class SpannerPoolTest {
     assertThat(spanner1, is(equalTo(spanner2)));
     spanner1 = pool.getSpanner(options4, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
+    assertThat(spanner1, is(equalTo(spanner2)));
+    // Options 5 and 6 both use default credentials.
+    spanner1 = pool.getSpanner(options5, connection1);
+    spanner2 = pool.getSpanner(options6, connection2);
     assertThat(spanner1, is(equalTo(spanner2)));
 
     // assert not equal

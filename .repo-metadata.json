@@ -12,5 +12,6 @@
   "distribution_name": "com.google.cloud:google-cloud-spanner",
   "api_id": "spanner.googleapis.com",
   "transport": "grpc",
-  "requires_billing": true
+  "requires_billing": true,
+  "codeowner_team": "@googleapis/api-spanner-java"
 }

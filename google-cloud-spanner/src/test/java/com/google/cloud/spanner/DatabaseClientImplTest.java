@@ -1599,4 +1599,31 @@ public class DatabaseClientImplTest {
               }
             });
   }
+
+  @Test
+  public void testBatchCreateSessionsFailure_shouldNotPropagateToCloseMethod() {
+    try {
+      // Simulate session creation failures on the backend.
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+      DatabaseClient client =
+          spannerWithEmptySessionPool.getDatabaseClient(
+              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      // This will not cause any failure as getting a session from the pool is guaranteed to be
+      // non-blocking, and any exceptions will be delayed until actual query execution.
+      ResultSet rs = client.singleUse().executeQuery(SELECT1);
+      try {
+        while (rs.next()) {
+          fail("Missing expected exception");
+        }
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      } finally {
+        // This should not cause any failures.
+        rs.close();
+      }
+    } finally {
+      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+    }
+  }
 }
