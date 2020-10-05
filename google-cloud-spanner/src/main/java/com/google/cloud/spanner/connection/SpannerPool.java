@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.ApiFunction;
-import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -25,13 +24,15 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.base.Ticker;
+import com.google.common.collect.Iterables;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
@@ -111,10 +111,38 @@ public class SpannerPool {
     }
   }
 
+  static class CredentialsKey {
+    static final Object DEFAULT_CREDENTIALS_KEY = new Object();
+    final Object key;
+
+    static CredentialsKey create(ConnectionOptions options) {
+      return new CredentialsKey(
+          Iterables.find(
+              Arrays.asList(
+                  options.getOAuthToken(),
+                  options.getFixedCredentials(),
+                  options.getCredentialsUrl(),
+                  DEFAULT_CREDENTIALS_KEY),
+              Predicates.notNull()));
+    }
+
+    private CredentialsKey(Object key) {
+      this.key = Preconditions.checkNotNull(key);
+    }
+
+    public int hashCode() {
+      return key.hashCode();
+    }
+
+    public boolean equals(Object o) {
+      return (o instanceof CredentialsKey && Objects.equals(((CredentialsKey) o).key, this.key));
+    }
+  }
+
   static class SpannerPoolKey {
     private final String host;
     private final String projectId;
-    private final Credentials credentials;
+    private final CredentialsKey credentialsKey;
     private final SessionPoolOptions sessionPoolOptions;
     private final Integer numChannels;
     private final boolean usePlainText;
@@ -127,7 +155,7 @@ public class SpannerPool {
     private SpannerPoolKey(ConnectionOptions options) {
       this.host = options.getHost();
       this.projectId = options.getProjectId();
-      this.credentials = options.getCredentials();
+      this.credentialsKey = CredentialsKey.create(options);
       this.sessionPoolOptions = options.getSessionPoolOptions();
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
@@ -142,7 +170,7 @@ public class SpannerPool {
       SpannerPoolKey other = (SpannerPoolKey) o;
       return Objects.equals(this.host, other.host)
           && Objects.equals(this.projectId, other.projectId)
-          && Objects.equals(this.credentials, other.credentials)
+          && Objects.equals(this.credentialsKey, other.credentialsKey)
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
           && Objects.equals(this.usePlainText, other.usePlainText)
@@ -154,7 +182,7 @@ public class SpannerPool {
       return Objects.hash(
           this.host,
           this.projectId,
-          this.credentials,
+          this.credentialsKey,
           this.sessionPoolOptions,
           this.numChannels,
           this.usePlainText,
@@ -246,7 +274,7 @@ public class SpannerPool {
       if (spanners.get(key) != null) {
         spanner = spanners.get(key);
       } else {
-        spanner = createSpanner(key, options.getConfigurator());
+        spanner = createSpanner(key, options);
         spanners.put(key, spanner);
       }
       List<ConnectionImpl> registeredConnectionsForSpanner = connections.get(key);
@@ -285,13 +313,13 @@ public class SpannerPool {
 
   @SuppressWarnings("rawtypes")
   @VisibleForTesting
-  Spanner createSpanner(SpannerPoolKey key, @Nullable SpannerOptionsConfigurator configurator) {
+  Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     builder
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
-        .setCredentials(key.credentials);
+        .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
@@ -309,8 +337,8 @@ public class SpannerPool {
             }
           });
     }
-    if (configurator != null) {
-      configurator.configure(builder);
+    if (options.getConfigurator() != null) {
+      options.getConfigurator().configure(builder);
     }
     return builder.build().getService();
   }

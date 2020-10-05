@@ -400,6 +400,7 @@ public class ConnectionOptions {
   private final String uri;
   private final String credentialsUrl;
   private final String oauthToken;
+  private final Credentials fixedCredentials;
 
   private final boolean usePlainText;
   private final String host;
@@ -430,6 +431,7 @@ public class ConnectionOptions {
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.oauthToken =
         builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
+    this.fixedCredentials = builder.credentials;
     // Check that not both credentials and an OAuth token have been specified.
     Preconditions.checkArgument(
         (builder.credentials == null && this.credentialsUrl == null) || this.oauthToken == null,
@@ -458,11 +460,10 @@ public class ConnectionOptions {
       this.credentials = NoCredentials.getInstance();
     } else if (this.oauthToken != null) {
       this.credentials = new GoogleCredentials(new AccessToken(oauthToken, null));
+    } else if (this.fixedCredentials != null) {
+      this.credentials = fixedCredentials;
     } else {
-      this.credentials =
-          builder.credentials == null
-              ? getCredentialsService().createCredentials(this.credentialsUrl)
-              : builder.credentials;
+      this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
     }
     String numChannelsValue = parseNumChannels(builder.uri);
     if (numChannelsValue != null) {
@@ -613,6 +614,14 @@ public class ConnectionOptions {
   /** The credentials URL of this {@link ConnectionOptions} */
   public String getCredentialsUrl() {
     return credentialsUrl;
+  }
+
+  String getOAuthToken() {
+    return this.oauthToken;
+  }
+
+  Credentials getFixedCredentials() {
+    return this.fixedCredentials;
   }
 
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */

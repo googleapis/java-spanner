@@ -61,7 +61,15 @@ public class ForwardingResultSet extends ForwardingStructReader implements Resul
 
   @Override
   public void close() {
-    delegate.get().close();
+    ResultSet rs;
+    try {
+      rs = delegate.get();
+    } catch (Exception e) {
+      // Ignore any exceptions when getting the underlying result set, as that means that there is
+      // nothing that needs to be closed.
+      return;
+    }
+    rs.close();
   }
 
   @Override
