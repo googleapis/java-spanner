@@ -406,10 +406,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // withInlineBegin and an earlier statement has already started a transaction.
       if (transactionId == null) {
         try {
-          // Wait if another request is already beginning, committing or rolling back the
-          // transaction.
           ApiFuture<ByteString> tx = null;
           synchronized (lock) {
+            // The first statement of a transaction that gets here will be the one that includes
+            // BeginTransaction with the statement. The others will be waiting on the
+            // transactionIdFuture until an actual transactionId is available.
             if (transactionIdFuture == null) {
               transactionIdFuture = SettableApiFuture.create();
             } else {
@@ -423,6 +424,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
                 .build();
           } else {
+            // Wait for the transaction to come available. The tx.get() call will fail with an
+            // Aborted error if the call that included the BeginTransaction option fails. The
+            // Aborted error will cause the entire transaction to be retried, and the retry will use
+            // a separate BeginTransaction RPC.
             TransactionSelector.newBuilder().setId(tx.get()).build();
           }
         } catch (ExecutionException e) {
@@ -452,18 +457,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void onError(SpannerException e, boolean withBeginTransaction) {
-      // Release the transactionLock if that is being held by this thread. That would mean that the
-      // statement that was trying to start a transaction caused an error. The next statement should
-      // in that case also include a BeginTransaction option.
+      // If the statement that caused an error was the statement that included a BeginTransaction
+      // option, we simulate an aborted transaction to force a retry of the entire transaction. This
+      // will cause the retry to execute an explicit BeginTransaction RPC and then the actual
+      // statements of the transaction. This is needed as the first statement of the transaction
+      // must be included with the transaction to ensure that any locks that are taken by the
+      // statement are included in the transaction, even if the statement again causes an error
+      // during the retry.
       if (withBeginTransaction) {
         // Simulate an aborted transaction to force a retry with a new transaction.
         this.transactionIdFuture.setException(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.ABORTED, "Aborted due to failed initial statement", e));
-        //        synchronized (lock) {
-        //          retryDelayInMillis = 0;
-        //          aborted = true;
-        //        }
       }
 
       if (e.getErrorCode() == ErrorCode.ABORTED) {
