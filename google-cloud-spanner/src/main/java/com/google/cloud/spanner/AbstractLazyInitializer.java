@@ -27,7 +27,7 @@ public abstract class AbstractLazyInitializer<T> {
   private volatile Exception error;
 
   /** Returns an initialized instance of T. */
-  T get() throws Exception {
+  public T get() throws Exception {
     // First check without a lock to improve performance.
     if (!initialized) {
       synchronized (lock) {
