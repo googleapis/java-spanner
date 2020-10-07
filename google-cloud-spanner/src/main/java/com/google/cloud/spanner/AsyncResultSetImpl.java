@@ -90,7 +90,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
-  /** The underlying synchronous {@link ResultSet} that is producing the rows. */
+  /** Supplies the underlying synchronous {@link ResultSet} that will be producing the rows. */
   private final Supplier<ResultSet> delegateResultSet;
 
   /**
