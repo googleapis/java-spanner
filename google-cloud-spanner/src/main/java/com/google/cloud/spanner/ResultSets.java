@@ -16,14 +16,17 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.spanner.v1.ResultSetStats;
@@ -65,8 +68,41 @@ public final class ResultSets {
    * ExecutorProvider}.
    */
   public static AsyncResultSet toAsyncResultSet(
-      ResultSet delegate, ExecutorProvider executorProvider) {
-    return new AsyncResultSetImpl(executorProvider, delegate, 100);
+      ResultSet delegate, ExecutorProvider executorProvider, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(executorProvider, delegate, bufferRows);
+  }
+
+  /**
+   * Converts the {@link ResultSet} that will be returned by the given {@link ApiFuture} to an
+   * {@link AsyncResultSet} using the given {@link ExecutorProvider}.
+   */
+  public static AsyncResultSet toAsyncResultSet(
+      ApiFuture<ResultSet> delegate, ExecutorProvider executorProvider, QueryOption... options) {
+    Options readOptions = Options.fromQueryOptions(options);
+    final int bufferRows =
+        readOptions.hasBufferRows()
+            ? readOptions.bufferRows()
+            : AsyncResultSetImpl.DEFAULT_BUFFER_SIZE;
+    return new AsyncResultSetImpl(
+        executorProvider, new FutureResultSetSupplier(delegate), bufferRows);
+  }
+
+  private static class FutureResultSetSupplier implements Supplier<ResultSet> {
+    final ApiFuture<ResultSet> delegate;
+
+    FutureResultSetSupplier(ApiFuture<ResultSet> delegate) {
+      this.delegate = Preconditions.checkNotNull(delegate);
+    }
+
+    @Override
+    public ResultSet get() {
+      return SpannerApiFutures.get(delegate);
+    }
   }
 
   private static class PrePopulatedResultSet implements ResultSet {

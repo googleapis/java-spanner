@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -84,6 +86,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
+  void checkAborted() {
+    // No-op for read-only transactions as they cannot abort.
+  }
+
+  @Override
   void checkValidTransaction() {
     if (transaction == null) {
       transaction = dbClient.readOnlyTransaction(readOnlyStaleness);
@@ -130,49 +137,45 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public void executeDdl(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "DDL statements are not allowed for read-only transactions");
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
   }
 
   @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }
 
   @Override
-  public void write(Mutation mutation) {
+  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
-  }
-
-  @Override
-  public void commit() {
+  public ApiFuture<Void> commitAsync() {
     if (this.transaction != null) {
       this.transaction.close();
     }
     this.state = UnitOfWorkState.COMMITTED;
+    return ApiFutures.immediateFuture(null);
   }
 
   @Override
-  public void rollback() {
+  public ApiFuture<Void> rollbackAsync() {
     if (this.transaction != null) {
       this.transaction.close();
     }
     this.state = UnitOfWorkState.ROLLED_BACK;
+    return ApiFutures.immediateFuture(null);
   }
 }

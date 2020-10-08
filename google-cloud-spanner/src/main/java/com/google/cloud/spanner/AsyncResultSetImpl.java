@@ -25,6 +25,8 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -88,8 +90,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
-  /** The underlying synchronous {@link ResultSet} that is producing the rows. */
-  private final ResultSet delegateResultSet;
+  /** Supplies the underlying synchronous {@link ResultSet} that will be producing the rows. */
+  private final Supplier<ResultSet> delegateResultSet;
 
   /**
    * Any exception that occurs while executing the query and iterating over the result set will be
@@ -144,6 +146,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   private volatile CountDownLatch consumingLatch = new CountDownLatch(0);
 
   AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate, int bufferSize) {
+    this(executorProvider, Suppliers.ofInstance(Preconditions.checkNotNull(delegate)), bufferSize);
+  }
+
+  AsyncResultSetImpl(
+      ExecutorProvider executorProvider, Supplier<ResultSet> delegate, int bufferSize) {
     super(delegate);
     this.executorProvider = Preconditions.checkNotNull(executorProvider);
     this.delegateResultSet = Preconditions.checkNotNull(delegate);
@@ -165,7 +172,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         return;
       }
       if (state == State.INITIALIZED || state == State.SYNC) {
-        delegateResultSet.close();
+        delegateResultSet.get().close();
       }
       this.closed = true;
     }
@@ -228,7 +235,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   private void closeDelegateResultSet() {
     try {
-      delegateResultSet.close();
+      delegateResultSet.get().close();
     } catch (Throwable t) {
       log.log(Level.FINE, "Ignoring error from closing delegate result set", t);
     }
@@ -261,7 +268,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
                 // we'll keep the cancelled state.
                 return;
               }
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               cursorReturnedDoneOrException = true;
             }
             return;
@@ -325,10 +332,10 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       boolean stop = false;
       boolean hasNext = false;
       try {
-        hasNext = delegateResultSet.next();
+        hasNext = delegateResultSet.get().next();
       } catch (Throwable e) {
         synchronized (monitor) {
-          executionException = SpannerExceptionFactory.newSpannerException(e);
+          executionException = SpannerExceptionFactory.asSpannerException(e);
         }
       }
       try {
@@ -357,13 +364,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
               }
             }
             if (!stop) {
-              buffer.put(delegateResultSet.getCurrentRowAsStruct());
+              buffer.put(delegateResultSet.get().getCurrentRowAsStruct());
               startCallbackIfNecessary();
-              hasNext = delegateResultSet.next();
+              hasNext = delegateResultSet.get().next();
             }
           } catch (Throwable e) {
             synchronized (monitor) {
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               stop = true;
             }
           }
@@ -544,9 +551,9 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     try {
       return future.get();
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (Throwable e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.asSpannerException(e);
     }
   }
 
@@ -558,14 +565,14 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
           "Cannot call next() on a result set with a callback.");
       this.state = State.SYNC;
     }
-    boolean res = delegateResultSet.next();
-    currentRow = res ? delegateResultSet.getCurrentRowAsStruct() : null;
+    boolean res = delegateResultSet.get().next();
+    currentRow = res ? delegateResultSet.get().getCurrentRowAsStruct() : null;
     return res;
   }
 
   @Override
   public ResultSetStats getStats() {
-    return delegateResultSet.getStats();
+    return delegateResultSet.get().getStats();
   }
 
   @Override

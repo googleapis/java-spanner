@@ -53,14 +53,13 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
-import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.cloud.spanner.TransactionRunner;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
+import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -74,6 +73,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Matchers;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -319,11 +319,16 @@ public class ConnectionImplTest {
                     new TransactionRunner() {
                       private Timestamp commitTimestamp;
 
-                      @SuppressWarnings("unchecked")
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
                         this.commitTimestamp = Timestamp.now();
-                        return (T) Long.valueOf(1L);
+                        TransactionContext tx = mock(TransactionContext.class);
+                        when(tx.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                        try {
+                          return callable.run(tx);
+                        } catch (Exception e) {
+                          throw SpannerExceptionFactory.newSpannerException(e);
+                        }
                       }
 
                       @Override
@@ -1199,6 +1204,9 @@ public class ConnectionImplTest {
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    when(unitOfWork.executeQueryAsync(
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
           @Override
@@ -1210,7 +1218,7 @@ public class ConnectionImplTest {
       impl.setOptimizerVersion("1");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
-          .executeQuery(
+          .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
                       .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
@@ -1221,7 +1229,7 @@ public class ConnectionImplTest {
       impl.setOptimizerVersion("2");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
-          .executeQuery(
+          .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
                       .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2").build())
@@ -1234,7 +1242,7 @@ public class ConnectionImplTest {
       impl.setOptimizerVersion("3");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
-          .executeQuery(
+          .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
                       .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("3").build())
@@ -1251,7 +1259,7 @@ public class ConnectionImplTest {
               .build(),
           prefetchOption);
       verify(unitOfWork)
-          .executeQuery(
+          .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
                       .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
