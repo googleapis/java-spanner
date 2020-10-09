@@ -398,26 +398,34 @@ public class SpannerPool {
           keysStillInUse.add(entry.getKey());
         }
       }
-      if (keysStillInUse.isEmpty() || mode == CheckAndCloseSpannersMode.WARN) {
-        if (!keysStillInUse.isEmpty()) {
+      try {
+        if (keysStillInUse.isEmpty() || mode == CheckAndCloseSpannersMode.WARN) {
+          if (!keysStillInUse.isEmpty()) {
+            logLeakedConnections(keysStillInUse);
+            logger.log(
+                Level.WARNING,
+                "There is/are "
+                    + keysStillInUse.size()
+                    + " connection(s) still open."
+                    + " Close all connections before stopping the application");
+          }
+          // Force close all Spanner instances by passing in a value that will always be less than
+          // the
+          // difference between the current time and the close time of a connection.
+          closeUnusedSpanners(Long.MIN_VALUE);
+        } else {
           logLeakedConnections(keysStillInUse);
-          logger.log(
-              Level.WARNING,
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
               "There is/are "
                   + keysStillInUse.size()
-                  + " connection(s) still open."
-                  + " Close all connections before stopping the application");
+                  + " connection(s) still open. Close all connections before calling closeSpanner()");
         }
-        // Force close all Spanner instances by passing in a value that will always be less than the
-        // difference between the current time and the close time of a connection.
-        closeUnusedSpanners(Long.MIN_VALUE);
-      } else {
-        logLeakedConnections(keysStillInUse);
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.FAILED_PRECONDITION,
-            "There is/are "
-                + keysStillInUse.size()
-                + " connection(s) still open. Close all connections before calling closeSpanner()");
+      } finally {
+        if (closerService != null) {
+          closerService.shutdown();
+        }
+        initialized = false;
       }
     }
   }
