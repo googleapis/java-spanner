@@ -54,6 +54,9 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public void close() {
+    if (txnState == TransactionState.STARTED) {
+      rollbackAsync();
+    }
     txn.close();
   }
 

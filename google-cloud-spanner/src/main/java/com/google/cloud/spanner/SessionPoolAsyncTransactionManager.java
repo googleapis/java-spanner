@@ -59,10 +59,17 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
 
   @Override
   public void close() {
-    delegate.addListener(
-        new Runnable() {
+    ApiFutures.addCallback(
+        delegate,
+        new ApiFutureCallback<AsyncTransactionManagerImpl>() {
           @Override
-          public void run() {
+          public void onFailure(Throwable t) {
+            session.close();
+          }
+
+          @Override
+          public void onSuccess(AsyncTransactionManagerImpl result) {
+            result.close();
             session.close();
           }
         },

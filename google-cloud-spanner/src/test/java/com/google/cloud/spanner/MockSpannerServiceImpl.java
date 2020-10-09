@@ -23,8 +23,10 @@ import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
@@ -1923,6 +1925,23 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
         throw new TimeoutException(
             "Timeout while waiting for requests to contain " + type.getName());
+      }
+    }
+  }
+
+  public void waitForRequestsToContain(
+      Predicate<? super AbstractMessage> predicate, long timeoutMillis)
+      throws InterruptedException, TimeoutException {
+    Stopwatch watch = Stopwatch.createStarted();
+    while (true) {
+      Iterable<AbstractMessage> msg = Iterables.filter(getRequests(), predicate);
+      if (msg.iterator().hasNext()) {
+        break;
+      }
+      Thread.sleep(10L);
+      if (watch.elapsed(TimeUnit.MILLISECONDS) > timeoutMillis) {
+        throw new TimeoutException(
+            "Timeout while waiting for requests to contain the wanted request");
       }
     }
   }
