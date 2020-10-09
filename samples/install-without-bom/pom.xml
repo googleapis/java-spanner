@@ -23,7 +23,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.27.1</opencensus.version>
     <trace.version>1.1.0</trace.version>
-    <cloudmonitoring.version>1.100.1</cloudmonitoring.version>
+    <cloudmonitoring.version>2.0.4</cloudmonitoring.version>
   </properties>
 
 
