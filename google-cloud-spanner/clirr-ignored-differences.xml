@@ -371,4 +371,10 @@
     <className>com/google/cloud/spanner/ResultSets</className>
     <method>com.google.cloud.spanner.AsyncResultSet toAsyncResultSet(com.google.cloud.spanner.ResultSet, com.google.api.gax.core.ExecutorProvider)</method>
   </difference>
+
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.api.core.ApiFuture closeAsync()</method>
+  </difference>
 </differences>
