@@ -186,13 +186,15 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   }
 
   @Test
-  public void asyncTransactionManager_shouldRollbackOnClose() throws Exception {
+  public void asyncTransactionManager_shouldRollbackOnCloseAsync() throws Exception {
     AsyncTransactionManager manager = client().transactionManagerAsync();
     TransactionContext txn = manager.beginAsync().get();
     txn.executeUpdateAsync(UPDATE_STATEMENT).get();
     final TransactionSelector selector = ((TransactionContextImpl) txn).getTransactionSelector();
 
-    manager.close();
+    SpannerApiFutures.get(manager.closeAsync());
+    // The mock server should already have the Rollback request, as we are waiting for the returned
+    // ApiFuture to be done.
     mockSpanner.waitForRequestsToContain(
         new Predicate<AbstractMessage>() {
           @Override
@@ -204,7 +206,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             return false;
           }
         },
-        5000L);
+        0L);
   }
 
   @Test

@@ -22,7 +22,6 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
@@ -59,6 +58,12 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
 
   @Override
   public void close() {
+    SpannerApiFutures.get(closeAsync());
+  }
+
+  @Override
+  public ApiFuture<Void> closeAsync() {
+    final SettableApiFuture<Void> res = SettableApiFuture.create();
     ApiFutures.addCallback(
         delegate,
         new ApiFutureCallback<AsyncTransactionManagerImpl>() {
@@ -69,11 +74,25 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
 
           @Override
           public void onSuccess(AsyncTransactionManagerImpl result) {
-            result.close();
-            session.close();
+            ApiFutures.addCallback(
+                result.closeAsync(),
+                new ApiFutureCallback<Void>() {
+                  @Override
+                  public void onFailure(Throwable t) {
+                    res.setException(t);
+                  }
+
+                  @Override
+                  public void onSuccess(Void result) {
+                    session.close();
+                    res.set(result);
+                  }
+                },
+                MoreExecutors.directExecutor());
           }
         },
         MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override
