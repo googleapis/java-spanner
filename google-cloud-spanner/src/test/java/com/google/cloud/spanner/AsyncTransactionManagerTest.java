@@ -36,7 +36,9 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -47,6 +49,8 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import java.util.Arrays;
 import java.util.Collection;
@@ -179,6 +183,30 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       };
     }
+  }
+
+  @Test
+  public void asyncTransactionManager_shouldRollbackOnCloseAsync() throws Exception {
+    AsyncTransactionManager manager = client().transactionManagerAsync();
+    TransactionContext txn = manager.beginAsync().get();
+    txn.executeUpdateAsync(UPDATE_STATEMENT).get();
+    final TransactionSelector selector = ((TransactionContextImpl) txn).getTransactionSelector();
+
+    SpannerApiFutures.get(manager.closeAsync());
+    // The mock server should already have the Rollback request, as we are waiting for the returned
+    // ApiFuture to be done.
+    mockSpanner.waitForRequestsToContain(
+        new Predicate<AbstractMessage>() {
+          @Override
+          public boolean apply(AbstractMessage input) {
+            if (input instanceof RollbackRequest) {
+              RollbackRequest request = (RollbackRequest) input;
+              return request.getTransactionId().equals(selector.getId());
+            }
+            return false;
+          }
+        },
+        0L);
   }
 
   @Test
