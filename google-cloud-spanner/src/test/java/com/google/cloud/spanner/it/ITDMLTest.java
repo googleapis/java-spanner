@@ -30,7 +30,6 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -39,7 +38,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.Arrays;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -54,6 +52,7 @@ import org.junit.runners.JUnit4;
 public final class ITDMLTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
+  private static DatabaseClient client;
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
@@ -68,9 +67,6 @@ public final class ITDMLTest {
 
   private static boolean throwAbortOnce = false;
 
-  private Spanner spanner;
-  private DatabaseClient client;
-
   @BeforeClass
   public static void setUpDatabase() {
     db =
@@ -80,19 +76,13 @@ public final class ITDMLTest {
                     + "  K    STRING(MAX) NOT NULL,"
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
+    client = env.getTestHelper().getDatabaseClient(db);
   }
 
   @Before
-  public void setupClient() {
-    spanner = env.getTestHelper().getClient();
-    client = spanner.getDatabaseClient(db.getId());
+  public void increaseTestIdAndDeleteTestData() {
     client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
     id++;
-  }
-
-  @After
-  public void teardownClient() {
-    spanner.close();
   }
 
   private static String uniqueKey() {

@@ -38,7 +38,6 @@ import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -56,8 +55,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -69,11 +66,9 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITTransactionTest {
-
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  private Spanner spanner;
-  private DatabaseClient client;
+  private static DatabaseClient client;
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
@@ -86,18 +81,7 @@ public class ITTransactionTest {
                     + "  K    STRING(MAX) NOT NULL,"
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
-  }
-
-  @Before
-  public void setupClient() {
-    spanner = env.getTestHelper().getClient();
-    client = spanner.getDatabaseClient(db.getId());
-  }
-
-  @After
-  public void closeClient() {
-    client.writeAtLeastOnce(ImmutableList.of(Mutation.delete("T", KeySet.all())));
-    spanner.close();
+    client = env.getTestHelper().getDatabaseClient(db);
   }
 
   private static String uniqueKey() {

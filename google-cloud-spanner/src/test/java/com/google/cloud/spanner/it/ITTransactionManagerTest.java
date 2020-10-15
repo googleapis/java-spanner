@@ -30,7 +30,6 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
@@ -38,7 +37,6 @@ import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -53,8 +51,7 @@ public class ITTransactionManagerTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  private Spanner spanner;
-  private DatabaseClient client;
+  private static DatabaseClient client;
 
   @BeforeClass
   public static void setUpDatabase() {
@@ -66,18 +63,12 @@ public class ITTransactionManagerTest {
                     + "  K                   STRING(MAX) NOT NULL,"
                     + "  BoolValue           BOOL,"
                     + ") PRIMARY KEY (K)");
+    client = env.getTestHelper().getDatabaseClient(db);
   }
 
   @Before
-  public void setupClient() {
-    spanner = env.getTestHelper().getClient();
-    client = spanner.getDatabaseClient(db.getId());
+  public void deleteTestData() {
     client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
-  }
-
-  @After
-  public void closeClient() {
-    spanner.close();
   }
 
   @SuppressWarnings("resource")
