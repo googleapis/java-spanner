@@ -80,15 +80,10 @@ public class SessionPoolLeakTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
-    // Make sure the session pool is empty by default, does not contain any write-prepared sessions,
+    // Make sure the session pool is empty by default, does not contain any sessions,
     // contains at most 2 sessions, and creates sessions in steps of 1.
     builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(0)
-            .setMaxSessions(2)
-            .setIncStep(1)
-            .setWriteSessionsFraction(0.0f)
-            .build());
+        SessionPoolOptions.newBuilder().setMinSessions(0).setMaxSessions(2).setIncStep(1).build());
     spanner = builder.build().getService();
     client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     pool = ((DatabaseClientImpl) client).pool;
@@ -162,15 +157,15 @@ public class SessionPoolLeakTest {
 
   @Test
   public void testTransactionManagerExceptionOnBegin() {
-    transactionManagerTest(
-        new Runnable() {
-          @Override
-          public void run() {
-            mockSpanner.setBeginTransactionExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
-        1);
+    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+    mockSpanner.setBeginTransactionExecutionTime(
+        SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
+    try (TransactionManager txManager = client.transactionManager()) {
+      // This should not cause an error, as the actual BeginTransaction will be included with the
+      // first statement of the transaction.
+      txManager.begin();
+    }
+    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(1)));
   }
 
   private void transactionManagerTest(Runnable setup, int expectedNumberOfSessionsAfterExecution) {

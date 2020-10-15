@@ -194,7 +194,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           manager.commit();
           break;
@@ -219,7 +219,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           long updateCount = txn.executeUpdate(UPDATE_STATEMENT);
           assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
@@ -246,7 +246,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           long[] updateCounts = txn.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
           assertThat(updateCounts, is(equalTo(new long[] {UPDATE_COUNT, UPDATE_COUNT})));
@@ -301,7 +301,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           try (ResultSet rs = txn.executeQuery(SELECT1AND2)) {
             int rows = 0;
@@ -333,7 +333,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           try (ResultSet rs = txn.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
             int rows = 0;
@@ -365,7 +365,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           try (ResultSet rs =
               txn.readUsingIndex("FOO", "INDEX", KeySet.all(), Arrays.asList("BAR"))) {
@@ -398,7 +398,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           Struct row = txn.readRow("FOO", Key.of(), Arrays.asList("BAR"));
           assertThat(row.getLong(0), is(equalTo(1L)));
@@ -425,7 +425,7 @@ public class TransactionManagerAbortedTest {
         attempts++;
         try {
           if (attempts == 1) {
-            mockSpanner.abortAllTransactions();
+            mockSpanner.abortNextTransaction();
           }
           Struct row = txn.readRowUsingIndex("FOO", "INDEX", Key.of(), Arrays.asList("BAR"));
           assertThat(row.getLong(0), is(equalTo(1L)));

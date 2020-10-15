@@ -19,13 +19,11 @@ package com.google.cloud.spanner;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -234,73 +232,5 @@ public class BatchCreateSessionsTest {
     }
     // Verify that all sessions have been deleted.
     assertThat(client.pool.totalSessions(), is(equalTo(0)));
-  }
-
-  @Test
-  public void testPrepareSessionFailPropagatesToUser() {
-    // Do not create any sessions by default.
-    // This also means that when a read/write session is requested, the session pool
-    // will start preparing a read session at that time. Any errors that might occur
-    // during the BeginTransaction call will be propagated to the user.
-    int minSessions = 0;
-    int maxSessions = 1000;
-    DatabaseClientImpl client = null;
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            Status.ABORTED.withDescription("BeginTransaction failed").asRuntimeException()));
-    try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
-      client =
-          (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      TransactionRunner runner = client.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              return null;
-            }
-          });
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.ABORTED)));
-      assertThat(e.getMessage().endsWith("BeginTransaction failed"), is(true));
-    }
-  }
-
-  @Test
-  public void testPrepareSessionFailDoesNotPropagateToUser() throws InterruptedException {
-    // Create 5 sessions and 20% write prepared sessions.
-    // That should prepare exactly 1 session for r/w.
-    int minSessions = 5;
-    int maxSessions = 1000;
-    DatabaseClientImpl client = null;
-    // The first prepare should fail.
-    // The prepare will then be retried and should succeed.
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofException(
-            Status.ABORTED.withDescription("BeginTransaction failed").asRuntimeException()));
-    try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
-      client =
-          (DatabaseClientImpl)
-              spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      // Wait until the session pool has initialized and a session has been prepared.
-      Stopwatch watch = Stopwatch.createStarted();
-      while ((client.pool.totalSessions() < minSessions
-              || client.pool.getNumberOfAvailableWritePreparedSessions() != 1)
-          && watch.elapsed(TimeUnit.SECONDS) < 10) {
-        Thread.sleep(10L);
-      }
-
-      // There should be 1 prepared session and a r/w transaction should succeed.
-      assertThat(client.pool.getNumberOfAvailableWritePreparedSessions(), is(equalTo(1)));
-      TransactionRunner runner = client.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              return null;
-            }
-          });
-    }
   }
 }

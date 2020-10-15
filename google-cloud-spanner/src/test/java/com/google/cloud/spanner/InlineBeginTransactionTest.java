@@ -174,9 +174,6 @@ public class InlineBeginTransactionTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setInlineBeginForReadWriteTransaction(true)
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder().setWriteSessionsFraction(0.0f).build())
             .build()
             .getService();
   }
@@ -1061,7 +1058,8 @@ public class InlineBeginTransactionTest {
         }
       }
     }
-    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    // The retry will use a BeginTransaction RPC.
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(2);
   }
 

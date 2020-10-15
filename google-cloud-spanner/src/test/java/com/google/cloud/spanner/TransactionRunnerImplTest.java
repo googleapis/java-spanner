@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,7 +123,7 @@ public class TransactionRunnerImplTest {
                 return builder.build();
               }
             });
-    transactionRunner = new TransactionRunnerImpl(session, rpc, 1, false);
+    transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
@@ -216,7 +217,7 @@ public class TransactionRunnerImplTest {
           }
         });
     assertThat(numCalls.get()).isEqualTo(1);
-    verify(txn).ensureTxn();
+    verify(txn, never()).ensureTxn();
     verify(txn).commit();
   }
 
@@ -224,7 +225,7 @@ public class TransactionRunnerImplTest {
   public void runAbort() {
     when(txn.isAborted()).thenReturn(true);
     runTransaction(abortedWithRetryInfo());
-    verify(txn, times(2)).ensureTxn();
+    verify(txn).ensureTxn();
   }
 
   @Test
@@ -242,7 +243,8 @@ public class TransactionRunnerImplTest {
           }
         });
     assertThat(numCalls.get()).isEqualTo(2);
-    verify(txn, times(2)).ensureTxn();
+    // ensureTxn() is only called during retry.
+    verify(txn).ensureTxn();
   }
 
   @Test
@@ -266,7 +268,7 @@ public class TransactionRunnerImplTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
     }
     assertThat(numCalls.get()).isEqualTo(1);
-    verify(txn, times(1)).ensureTxn();
+    verify(txn, never()).ensureTxn();
     verify(txn, times(1)).commit();
   }
 
@@ -320,9 +322,7 @@ public class TransactionRunnerImplTest {
           }
         };
     session.setCurrentSpan(mock(Span.class));
-    // Create a transaction runner that will inline the BeginTransaction call with the first
-    // statement.
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10, true);
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
     runner.setSpan(mock(Span.class));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
@@ -354,7 +354,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10, false);
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

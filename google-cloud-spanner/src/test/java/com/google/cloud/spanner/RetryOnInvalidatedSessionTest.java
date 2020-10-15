@@ -217,17 +217,6 @@ public class RetryOnInvalidatedSessionTest {
     spanner.close();
   }
 
-  private static void initReadWriteSessionPool() throws InterruptedException {
-    // Wait for at least one read/write session to be ready.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (((DatabaseClientImpl) client).pool.getNumberOfAvailableWritePreparedSessions() == 0) {
-      if (watch.elapsed(TimeUnit.SECONDS) > 5L) {
-        fail("No read/write sessions prepared");
-      }
-      Thread.sleep(5L);
-    }
-  }
-
   private static void invalidateSessionPool() throws InterruptedException {
     invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
   }
@@ -576,16 +565,10 @@ public class RetryOnInvalidatedSessionTest {
     }
   }
 
-  /**
-   * Test with one read-only session in the pool that is invalidated. The session pool will try to
-   * prepare this session for read/write, which will fail with a {@link SessionNotFoundException}.
-   * That again will trigger the creation of a new session. This will always succeed.
-   */
   @Test
   public void readWriteTransactionReadOnlySessionInPool() throws InterruptedException {
     // Create a session pool with only read sessions.
-    SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder().setWriteSessionsFraction(0.0f);
+    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
     }
@@ -600,27 +583,31 @@ public class RetryOnInvalidatedSessionTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
-    TransactionRunner runner = client.readWriteTransaction();
-    int count =
-        runner.run(
-            new TransactionCallable<Integer>() {
-              @Override
-              public Integer run(TransactionContext transaction) {
-                int count = 0;
-                try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-                  while (rs.next()) {
-                    count++;
+    try {
+      TransactionRunner runner = client.readWriteTransaction();
+      int count =
+          runner.run(
+              new TransactionCallable<Integer>() {
+                @Override
+                public Integer run(TransactionContext transaction) {
+                  int count = 0;
+                  try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                    while (rs.next()) {
+                      count++;
+                    }
                   }
+                  return count;
                 }
-                return count;
-              }
-            });
-    assertThat(count).isEqualTo(2);
+              });
+      assertThat(count).isEqualTo(2);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
   }
 
   @Test
   public void readWriteTransactionSelect() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -647,7 +634,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionRead() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -674,7 +660,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadUsingIndex() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -703,7 +688,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRow() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -724,7 +708,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadRowUsingIndex() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -746,7 +729,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionUpdate() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -767,7 +749,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionBatchUpdate() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -789,7 +770,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionBuffer() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
@@ -1022,14 +1002,16 @@ public class RetryOnInvalidatedSessionTest {
           transaction = manager.resetForRetry();
         }
       }
+      assertThat(count).isEqualTo(2);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
     }
-    assertThat(count).isEqualTo(2);
   }
 
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerSelect() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       int count = 0;
@@ -1058,7 +1040,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerRead() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       int count = 0;
@@ -1087,7 +1068,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadUsingIndex() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       int count = 0;
@@ -1117,7 +1097,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadRow() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       Struct row;
@@ -1142,7 +1121,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadRowUsingIndex() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       Struct row;
@@ -1167,7 +1145,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerUpdate() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       long count;
@@ -1192,7 +1169,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerBatchUpdate() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       long[] count;
@@ -1218,7 +1194,6 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerBuffer() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
@@ -1417,7 +1392,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void partitionedDml() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       assertThat(client.executePartitionedUpdate(UPDATE_STATEMENT)).isEqualTo(UPDATE_COUNT);
@@ -1429,7 +1403,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void write() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       Timestamp timestamp = client.write(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
@@ -1442,7 +1415,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void writeAtLeastOnce() throws InterruptedException {
-    initReadWriteSessionPool();
     invalidateSessionPool();
     try {
       Timestamp timestamp =

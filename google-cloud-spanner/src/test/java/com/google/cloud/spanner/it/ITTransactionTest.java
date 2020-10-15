@@ -52,7 +52,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
@@ -64,22 +63,12 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.JUnit4;
 
 /** Integration tests for read-write transactions. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class ITTransactionTest {
-
-  @Parameter(0)
-  public boolean inlineBegin;
-
-  @Parameters(name = "inlineBegin = {0}")
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{false}, {true}});
-  }
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
@@ -101,13 +90,7 @@ public class ITTransactionTest {
 
   @Before
   public void setupClient() {
-    spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
-            .setInlineBeginForReadWriteTransaction(inlineBegin)
-            .build()
-            .getService();
+    spanner = env.getTestHelper().getClient();
     client = spanner.getDatabaseClient(db.getId());
   }
 

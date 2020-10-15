@@ -29,40 +29,26 @@ import io.opencensus.trace.Tracing;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
-  private static final String READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN =
-      "CloudSpanner.ReadWriteTransactionWithInlineBegin";
   private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
   private static final String PARTITION_DML_TRANSACTION = "CloudSpanner.PartitionDMLTransaction";
   private static final Tracer tracer = Tracing.getTracer();
 
-  private enum SessionMode {
-    READ,
-    READ_WRITE
-  }
-
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
-  private final boolean inlineBeginReadWriteTransactions;
 
   @VisibleForTesting
-  DatabaseClientImpl(SessionPool pool, boolean inlineBeginReadWriteTransactions) {
-    this("", pool, inlineBeginReadWriteTransactions);
+  DatabaseClientImpl(SessionPool pool) {
+    this("", pool);
   }
 
-  DatabaseClientImpl(String clientId, SessionPool pool, boolean inlineBeginReadWriteTransactions) {
+  DatabaseClientImpl(String clientId, SessionPool pool) {
     this.clientId = clientId;
     this.pool = pool;
-    this.inlineBeginReadWriteTransactions = inlineBeginReadWriteTransactions;
   }
 
   @VisibleForTesting
   PooledSessionFuture getReadSession() {
-    return pool.getReadSession();
-  }
-
-  @VisibleForTesting
-  PooledSessionFuture getReadWriteSession() {
-    return pool.getReadWriteSession();
+    return pool.get();
   }
 
   @Override
@@ -70,7 +56,6 @@ class DatabaseClientImpl implements DatabaseClient {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
-          SessionMode.READ_WRITE,
           new Function<Session, Timestamp>() {
             @Override
             public Timestamp apply(Session session) {
@@ -90,7 +75,6 @@ class DatabaseClientImpl implements DatabaseClient {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
-          SessionMode.READ_WRITE,
           new Function<Session, Timestamp>() {
             @Override
             public Timestamp apply(Session session) {
@@ -173,55 +157,21 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionRunner readWriteTransaction() {
-    return inlineBeginReadWriteTransactions
-        ? inlinedReadWriteTransaction()
-        : preparedReadWriteTransaction();
-  }
-
-  private TransactionRunner preparedReadWriteTransaction() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadWriteSession().readWriteTransaction();
+      return getReadSession().readWriteTransaction();
     } catch (RuntimeException e) {
-      TraceUtil.setWithFailure(span, e);
+      TraceUtil.endSpanWithFailure(span, e);
       throw e;
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
   }
 
-  private TransactionRunner inlinedReadWriteTransaction() {
-    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
-      // An inlined read/write transaction does not need a write-prepared session.
-      return getReadSession().readWriteTransaction();
-    } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
-      throw e;
-    }
-  }
-
   @Override
   public TransactionManager transactionManager() {
-    return inlineBeginReadWriteTransactions
-        ? inlinedTransactionManager()
-        : preparedTransactionManager();
-  }
-
-  private TransactionManager preparedTransactionManager() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadWriteSession().transactionManager();
-    } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
-      throw e;
-    }
-  }
-
-  private TransactionManager inlinedTransactionManager() {
-    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
-      // An inlined read/write transaction does not need a write-prepared session.
       return getReadSession().transactionManager();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
@@ -231,21 +181,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncRunner runAsync() {
-    return inlineBeginReadWriteTransactions ? inlinedRunAsync() : preparedRunAsync();
-  }
-
-  private AsyncRunner preparedRunAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
-      return getReadWriteSession().runAsync();
-    } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
-      throw e;
-    }
-  }
-
-  private AsyncRunner inlinedRunAsync() {
-    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return getReadSession().runAsync();
     } catch (RuntimeException e) {
@@ -256,23 +192,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncTransactionManager transactionManagerAsync() {
-    return inlineBeginReadWriteTransactions
-        ? inlinedTransactionManagerAsync()
-        : preparedTransactionManagerAsync();
-  }
-
-  private AsyncTransactionManager preparedTransactionManagerAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
-      return getReadWriteSession().transactionManagerAsync();
-    } catch (RuntimeException e) {
-      TraceUtil.endSpanWithFailure(span, e);
-      throw e;
-    }
-  }
-
-  private AsyncTransactionManager inlinedTransactionManagerAsync() {
-    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION_WITH_INLINE_BEGIN).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return getReadSession().transactionManagerAsync();
     } catch (RuntimeException e) {
@@ -285,10 +205,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public long executePartitionedUpdate(final Statement stmt) {
     Span span = tracer.spanBuilder(PARTITION_DML_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      // A partitioned update transaction does not need a prepared write session, as the transaction
-      // object will start a new transaction with specific options anyway.
       return runWithSessionRetry(
-          SessionMode.READ,
           new Function<Session, Long>() {
             @Override
             public Long apply(Session session) {
@@ -301,17 +218,13 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
-  private <T> T runWithSessionRetry(SessionMode mode, Function<Session, T> callable) {
-    PooledSessionFuture session =
-        mode == SessionMode.READ_WRITE ? getReadWriteSession() : getReadSession();
+  private <T> T runWithSessionRetry(Function<Session, T> callable) {
+    PooledSessionFuture session = getReadSession();
     while (true) {
       try {
         return callable.apply(session);
       } catch (SessionNotFoundException e) {
-        session =
-            mode == SessionMode.READ_WRITE
-                ? pool.replaceReadWriteSession(e, session)
-                : pool.replaceReadSession(e, session);
+        session = pool.replaceSession(e, session);
       }
     }
   }

@@ -47,8 +47,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
 
     @Override
     DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-      return new DatabaseClientWithClosedSessionImpl(
-          clientId, pool, getOptions().isInlineBeginForReadWriteTransaction());
+      return new DatabaseClientWithClosedSessionImpl(clientId, pool);
     }
   }
 
@@ -60,9 +59,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     private boolean invalidateNextSession = false;
     private boolean allowReplacing = true;
 
-    DatabaseClientWithClosedSessionImpl(
-        String clientId, SessionPool pool, boolean inlineBeginReadWriteTransactions) {
-      super(clientId, pool, inlineBeginReadWriteTransactions);
+    DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool) {
+      super(clientId, pool);
     }
 
     /** Invalidate the next session that is checked out from the pool. */
@@ -78,20 +76,6 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     @Override
     PooledSessionFuture getReadSession() {
       PooledSessionFuture session = super.getReadSession();
-      if (invalidateNextSession) {
-        session.get().delegate.close();
-        session.get().setAllowReplacing(false);
-        awaitDeleted(session.get().delegate);
-        session.get().setAllowReplacing(allowReplacing);
-        invalidateNextSession = false;
-      }
-      session.get().setAllowReplacing(allowReplacing);
-      return session;
-    }
-
-    @Override
-    PooledSessionFuture getReadWriteSession() {
-      PooledSessionFuture session = super.getReadWriteSession();
       if (invalidateNextSession) {
         session.get().delegate.close();
         session.get().setAllowReplacing(false);

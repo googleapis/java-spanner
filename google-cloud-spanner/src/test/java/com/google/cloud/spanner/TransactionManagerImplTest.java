@@ -82,7 +82,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session, mock(Span.class), false);
+    manager = new TransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test
@@ -301,7 +301,6 @@ public class TransactionManagerImplTest {
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder().setMinSessions(0).setIncStep(1).build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
-    when(options.isInlineBeginForReadWriteTransaction()).thenReturn(true);
     when(options.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
     when(options.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());

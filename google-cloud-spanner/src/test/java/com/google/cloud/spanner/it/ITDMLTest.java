@@ -39,7 +39,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.Arrays;
-import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -47,13 +46,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.JUnit4;
 
 /** Integration tests for DML. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public final class ITDMLTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
@@ -71,12 +68,6 @@ public final class ITDMLTest {
 
   private static boolean throwAbortOnce = false;
 
-  @Parameters(name = "InlineBeginTx = {0}")
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{false}, {true}});
-  }
-
-  @Parameter public boolean inlineBeginTx;
   private Spanner spanner;
   private DatabaseClient client;
 
@@ -93,13 +84,7 @@ public final class ITDMLTest {
 
   @Before
   public void setupClient() {
-    spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
-            .setInlineBeginForReadWriteTransaction(inlineBeginTx)
-            .build()
-            .getService();
+    spanner = env.getTestHelper().getClient();
     client = spanner.getDatabaseClient(db.getId());
     client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
     id++;

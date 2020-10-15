@@ -233,8 +233,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(
-        clientId, pool, getOptions().isInlineBeginForReadWriteTransaction());
+    return new DatabaseClientImpl(clientId, pool);
   }
 
   @Override

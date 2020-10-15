@@ -64,19 +64,13 @@ public class ITTransactionManagerAsyncTest {
   @Parameter(0)
   public Executor executor;
 
-  @Parameter(1)
-  public boolean inlineBegin;
-
-  @Parameters(name = "executor = {0}, inlineBegin = {1}")
+  @Parameters(name = "executor = {0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(
         new Object[][] {
-          {MoreExecutors.directExecutor(), false},
-          {MoreExecutors.directExecutor(), true},
-          {Executors.newSingleThreadExecutor(), false},
-          {Executors.newSingleThreadExecutor(), true},
-          {Executors.newFixedThreadPool(4), false},
-          {Executors.newFixedThreadPool(4), true}
+          {MoreExecutors.directExecutor()},
+          {Executors.newSingleThreadExecutor()},
+          {Executors.newFixedThreadPool(4)},
         });
   }
 
@@ -99,13 +93,7 @@ public class ITTransactionManagerAsyncTest {
 
   @Before
   public void clearTable() {
-    spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
-            .setInlineBeginForReadWriteTransaction(inlineBegin)
-            .build()
-            .getService();
+    spanner = env.getTestHelper().getClient();
     client = spanner.getDatabaseClient(db.getId());
     client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
   }

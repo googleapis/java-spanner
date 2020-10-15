@@ -36,9 +36,14 @@ class MetricRegistryConstants {
   private static final LabelValue UNSET_LABEL = LabelValue.create(null);
 
   static final LabelValue NUM_IN_USE_SESSIONS = LabelValue.create("num_in_use_sessions");
+
+  @Deprecated
   static final LabelValue NUM_SESSIONS_BEING_PREPARED =
       LabelValue.create("num_sessions_being_prepared");
+
   static final LabelValue NUM_READ_SESSIONS = LabelValue.create("num_read_sessions");
+
+  @Deprecated
   static final LabelValue NUM_WRITE_SESSIONS = LabelValue.create("num_write_prepared_sessions");
 
   static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS =

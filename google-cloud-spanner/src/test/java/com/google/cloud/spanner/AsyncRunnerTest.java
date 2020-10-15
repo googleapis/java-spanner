@@ -140,7 +140,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
                 @Override
                 public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
                   if (attempt.incrementAndGet() == 1) {
-                    mockSpanner.abortTransaction(txn);
+                    mockSpanner.abortNextStatement();
                   } else {
                     // Set the result of the update statement back to 1 row.
                     mockSpanner.putStatementResult(
@@ -199,7 +199,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               @Override
               public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
                 if (attempt.incrementAndGet() == 1) {
-                  mockSpanner.abortTransaction(txn);
+                  mockSpanner.abortNextStatement();
                 }
                 // This update statement will be aborted, but the error will not propagated to the
                 // transaction runner and cause the transaction to retry. Instead, the commit call
@@ -217,9 +217,9 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
             ExecuteSqlRequest.class,
-            CommitRequest.class,
+            // The retry will use an explicit BeginTransaction RPC because the first statement of
+            // the transaction did not return a transaction id during the initial attempt.
             BeginTransactionRequest.class,
             ExecuteSqlRequest.class,
             CommitRequest.class);
@@ -272,10 +272,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     res.get();
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
-            BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteSqlRequest.class,
-            CommitRequest.class);
+            BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
   }
 
   @Test
@@ -418,9 +415,14 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               @Override
               public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
                 if (attempt.incrementAndGet() == 1) {
-                  mockSpanner.abortTransaction(txn);
+                  mockSpanner.abortNextTransaction();
                 }
-                // This update statement will be aborted, but the error will not propagated to the
+                // This statement will succeed and return a transaction id. The transaction will be
+                // marked as aborted on the mock server.
+                txn.executeUpdate(UPDATE_STATEMENT);
+
+                // This batch update statement will be aborted, but the error will not propagated to
+                // the
                 // transaction runner and cause the transaction to retry. Instead, the commit call
                 // will do that.
                 txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
@@ -436,10 +438,10 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
+            ExecuteSqlRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class,
-            BeginTransactionRequest.class,
+            ExecuteSqlRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
   }
@@ -491,10 +493,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     res.get();
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
-            BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
   }
 
   @Test

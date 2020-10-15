@@ -31,7 +31,7 @@ public class SessionPoolOptions {
   private final int maxSessions;
   private final int incStep;
   private final int maxIdleSessions;
-  private final float writeSessionsFraction;
+  @Deprecated private final float writeSessionsFraction;
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
   private final int keepAliveIntervalMinutes;
@@ -74,6 +74,12 @@ public class SessionPoolOptions {
     return maxIdleSessions;
   }
 
+  /**
+   * @deprecated This value is no longer used. The session pool does not prepare any sessions for
+   *     read/write transactions. Instead, a transaction will be started by including a
+   *     BeginTransaction option with the first statement of a transaction.
+   */
+  @Deprecated
   public float getWriteSessionsFraction() {
     return writeSessionsFraction;
   }
@@ -139,7 +145,7 @@ public class SessionPoolOptions {
     private int maxSessions = DEFAULT_MAX_SESSIONS;
     private int incStep = DEFAULT_INC_STEP;
     private int maxIdleSessions;
-    private float writeSessionsFraction = 0.2f;
+    @Deprecated private float writeSessionsFraction = 0.2f;
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
@@ -260,12 +266,10 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Fraction of sessions to be kept prepared for write transactions. This is an optimisation to
-     * avoid the cost of sending a BeginTransaction() rpc. If all such sessions are in use and a
-     * write request comes, we will make the BeginTransaction() rpc inline. It must be between 0 and
-     * 1(inclusive).
-     *
-     * <p>Default value is 0.2.
+     * @deprecated This configuration value is no longer in use. The session pool does not prepare
+     *     any sessions for read/write transactions. Instead, a transaction will automatically be
+     *     started by the first statement that is executed by a transaction by including a
+     *     BeginTransaction option with that statement.
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
@@ -288,9 +292,6 @@ public class SessionPoolOptions {
       }
       Preconditions.checkArgument(
           keepAliveIntervalMinutes < 60, "Keep alive interval should be less than" + "60 minutes");
-      Preconditions.checkArgument(
-          writeSessionsFraction >= 0 && writeSessionsFraction <= 1,
-          "Fraction of write sessions must be between 0 and 1 (inclusive)");
     }
   }
 }
