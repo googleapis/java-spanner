@@ -60,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1110,6 +1111,58 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn = manager.resetForRetryAsync();
         }
       }
+    }
+  }
+
+  @Test
+  public void asyncTransactionManager_shouldPropagateStatementFailure()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    final Statement garbledStatement =
+        Statement.newBuilder("INSERT INTO BOOKS (UUID, TITLE) VALUES ('123', 'Test book')jljlk")
+            .build();
+    mockSpanner.putStatementResult(
+        StatementResult.exception(
+            garbledStatement,
+            Status.INVALID_ARGUMENT.withDescription("Garbled SQL").asRuntimeException()));
+
+    DatabaseClient dbClient = client();
+    try (AsyncTransactionManager transactionManager = dbClient.transactionManagerAsync()) {
+      TransactionContextFuture txnContextFuture = transactionManager.beginAsync();
+      AsyncTransactionStep<Void, Long> updateFuture =
+          txnContextFuture.then(
+              new AsyncTransactionFunction<Void, Long>() {
+                @Override
+                public ApiFuture<Long> apply(TransactionContext txn, Void input) throws Exception {
+                  return txn.executeUpdateAsync(garbledStatement);
+                }
+              },
+              executor);
+      final SettableApiFuture<Void> res = SettableApiFuture.create();
+      ApiFutures.addCallback(
+          updateFuture,
+          new ApiFutureCallback<Long>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+              // Check that we got the expected failure.
+              try {
+                assertThat(throwable).isInstanceOf(SpannerException.class);
+                SpannerException e = (SpannerException) throwable;
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                assertThat(e.getMessage()).contains("Garbled SQL");
+                res.set(null);
+              } catch (Throwable t) {
+                res.setException(t);
+              }
+            }
+
+            @Override
+            public void onSuccess(Long aLong) {
+              res.setException(new AssertionError("Statement should not succeed."));
+            }
+          },
+          executor);
+
+      assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
     }
   }
 }

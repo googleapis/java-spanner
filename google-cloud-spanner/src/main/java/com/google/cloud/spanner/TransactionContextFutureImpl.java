@@ -121,6 +121,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
                       @Override
                       public void onFailure(Throwable t) {
                         mgr.onError(t);
+                        statementResult.setException(t);
                         txnResult.setException(t);
                       }
 
@@ -132,6 +133,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
                     MoreExecutors.directExecutor());
               } catch (Throwable t) {
                 mgr.onError(t);
+                statementResult.setException(t);
                 txnResult.setException(t);
               }
             }
