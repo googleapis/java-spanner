@@ -1117,14 +1117,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManager_shouldPropagateStatementFailure()
       throws ExecutionException, InterruptedException, TimeoutException {
-    final Statement garbledStatement =
-        Statement.newBuilder("INSERT INTO BOOKS (UUID, TITLE) VALUES ('123', 'Test book')jljlk")
-            .build();
-    mockSpanner.putStatementResult(
-        StatementResult.exception(
-            garbledStatement,
-            Status.INVALID_ARGUMENT.withDescription("Garbled SQL").asRuntimeException()));
-
     DatabaseClient dbClient = client();
     try (AsyncTransactionManager transactionManager = dbClient.transactionManagerAsync()) {
       TransactionContextFuture txnContextFuture = transactionManager.beginAsync();
@@ -1133,7 +1125,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               new AsyncTransactionFunction<Void, Long>() {
                 @Override
                 public ApiFuture<Long> apply(TransactionContext txn, Void input) throws Exception {
-                  return txn.executeUpdateAsync(garbledStatement);
+                  return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
                 }
               },
               executor);
@@ -1148,7 +1140,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                 assertThat(throwable).isInstanceOf(SpannerException.class);
                 SpannerException e = (SpannerException) throwable;
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                assertThat(e.getMessage()).contains("Garbled SQL");
+                assertThat(e.getMessage()).contains("invalid statement");
                 res.set(null);
               } catch (Throwable t) {
                 res.setException(t);
