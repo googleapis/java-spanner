@@ -52,11 +52,13 @@ import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -92,6 +94,17 @@ public class ITAsyncAPITest {
                 "CREATE INDEX TestTableByValue ON TestTable(StringValue)",
                 "CREATE INDEX TestTableByValueDesc ON TestTable(StringValue DESC)");
     client = env.getTestHelper().getDatabaseClient(db);
+    executor = Executors.newSingleThreadExecutor();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    executor.shutdown();
+  }
+
+  @Before
+  public void setupData() {
+    client.write(Collections.singleton(Mutation.delete(TABLE_NAME, KeySet.all())));
 
     // Includes k0..k14.  Note that strings k{10,14} sort between k1 and k2.
     List<Mutation> mutations = new ArrayList<>();
@@ -105,12 +118,6 @@ public class ITAsyncAPITest {
               .build());
     }
     client.write(mutations);
-    executor = Executors.newSingleThreadExecutor();
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    executor.shutdown();
   }
 
   @Test
