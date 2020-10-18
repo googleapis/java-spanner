@@ -247,7 +247,8 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
         new ApiFutureCallback<AsyncTransactionManagerImpl>() {
           @Override
           public void onFailure(Throwable t) {
-            // Ignore.
+            // Ignore this error as there is no underlying AsyncTransactionManager to instruct that
+            // it should return CommitStats.
           }
 
           @Override
