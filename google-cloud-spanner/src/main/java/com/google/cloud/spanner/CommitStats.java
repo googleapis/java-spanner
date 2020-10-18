@@ -23,7 +23,16 @@ import org.threeten.bp.temporal.ChronoUnit;
 /**
  * Commit statistics are returned by a read/write transaction if specifically requested.
  *
- * <p>Usage: {@link TransactionRunner#withCommitStats()}
+ * <p>Use one of the following options to run a transaction that returns {@link CommitStats}:
+ *
+ * <ul>
+ *   <li>{@link TransactionRunner#withCommitStats()}
+ *   <li>{@link TransactionManager#withCommitStats()}
+ *   <li>{@link AsyncRunner#withCommitStats()}
+ *   <li>{@link AsyncTransactionManager#withCommitStats()}
+ *   <li>{@link DatabaseClient#writeWithCommitStats(Iterable)}
+ *   <li>{@link DatabaseClient#writeAtLeastOnceWithCommitStats(Iterable)}
+ * </ul>
  */
 public class CommitStats {
   private final long mutationCount;
@@ -42,10 +51,25 @@ public class CommitStats {
             .plusNanos(proto.getOverloadDelay().getNanos()));
   }
 
+  /**
+   * The number of mutations that were executed by the transaction. Insert and update operations
+   * count with the multiplicity of the number of columns they affect. For example, inserting a new
+   * record may count as five mutations, if values are inserted into five columns. Delete and delete
+   * range operations count as one mutation regardless of the number of columns affected. Deleting a
+   * row from a parent table that has the ON DELETE CASCADE annotation is also counted as one
+   * mutation regardless of the number of interleaved child rows present. The exception to this is
+   * if there are secondary indexes defined on rows being deleted, then the changes to the secondary
+   * indexes will be counted individually. For example, if a table has 2 secondary indexes, deleting
+   * a range of rows in the table will count as 1 mutation for the table, plus 2 mutations for each
+   * row that is deleted because the rows in the secondary index might be scattered over the
+   * key-space, making it impossible for Cloud Spanner to call a single delete range operation on
+   * the secondary indexes. Secondary indexes include the foreign keys backing indexes.
+   */
   public long getMutationCount() {
     return mutationCount;
   }
 
+  /** The duration that the commit was delayed due to overloaded servers. */
   public Duration getOverloadDelay() {
     return overloadDelay;
   }
