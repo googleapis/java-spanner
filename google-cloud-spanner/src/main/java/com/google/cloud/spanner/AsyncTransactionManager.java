@@ -192,6 +192,20 @@ public interface AsyncTransactionManager extends AutoCloseable {
   TransactionState getState();
 
   /**
+   * Indicates that the {@link AsyncTransactionManager} should request the backend to return {@link
+   * CommitStats}. The {@link CommitStats} can be retrieved by calling {@link #getCommitStats()}
+   * after the transaction has successfully committed.
+   */
+  AsyncTransactionManager withCommitStats();
+
+  /**
+   * Returns the {@link CommitStats} of this transaction. This method may only be called after the
+   * transaction has successfully committed, and only if {@link #withCommitStats()} was called
+   * before committing the transaction.
+   */
+  ApiFuture<CommitStats> getCommitStats();
+
+  /**
    * Closes the manager. If there is an active transaction, it will be rolled back. Underlying
    * session will be released back to the session pool.
    */

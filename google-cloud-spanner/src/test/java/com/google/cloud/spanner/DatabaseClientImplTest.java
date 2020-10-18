@@ -29,6 +29,7 @@ import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.DatabaseClient.WriteResponse;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -158,12 +159,38 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void writeWithCommitStats() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    WriteResponse response =
+        client.writeWithCommitStats(
+            Arrays.asList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
+  }
+
+  @Test
   public void writeAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnce(
         Arrays.asList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+  }
+
+  @Test
+  public void writeAtLeastOnceWithCommitStats() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    WriteResponse response =
+        client.writeAtLeastOnceWithCommitStats(
+            Arrays.asList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
   }
 
   @Test
@@ -435,6 +462,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void readWriteTransaction_returnsCommitStats() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction().withCommitStats();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
+            return null;
+          }
+        });
+    assertThat(runner.getCommitStats()).isNotNull();
+    assertThat(runner.getCommitStats().getMutationCount()).isEqualTo(1);
+  }
+
+  @Test
   public void readWriteTransactionIsNonBlocking() {
     mockSpanner.freeze();
     DatabaseClient client =
@@ -470,6 +514,28 @@ public class DatabaseClientImplTest {
             },
             executor);
     assertThat(fut.get()).isEqualTo(UPDATE_COUNT);
+    executor.shutdown();
+  }
+
+  @Test
+  public void runAsync_returnsCommitStats() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AsyncRunner runner = client.runAsync().withCommitStats();
+    ApiFuture<Void> fut =
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.buffer(Mutation.delete("FOO", Key.of("foo")));
+                return ApiFutures.<Void>immediateFuture(null);
+              }
+            },
+            executor);
+    assertThat(fut.get()).isNull();
+    assertThat(runner.getCommitStats().get()).isNotNull();
+    assertThat(runner.getCommitStats().get().getMutationCount()).isEqualTo(1);
     executor.shutdown();
   }
 
@@ -531,6 +597,27 @@ public class DatabaseClientImplTest {
         try {
           tx.executeUpdate(UPDATE_STATEMENT);
           txManager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          tx = txManager.resetForRetry();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void transactionManager_returnsCommitStats() throws Exception {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager txManager = client.transactionManager().withCommitStats()) {
+      while (true) {
+        TransactionContext tx = txManager.begin();
+        try {
+          tx.buffer(Mutation.delete("FOO", Key.of("foo")));
+          txManager.commit();
+          assertThat(txManager.getCommitStats()).isNotNull();
+          assertThat(txManager.getCommitStats().getMutationCount()).isEqualTo(1);
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);

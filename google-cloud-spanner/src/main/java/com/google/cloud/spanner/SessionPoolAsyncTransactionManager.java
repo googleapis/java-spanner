@@ -239,4 +239,36 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
       return txnState;
     }
   }
+
+  @Override
+  public AsyncTransactionManager withCommitStats() {
+    ApiFutures.addCallback(
+        delegate,
+        new ApiFutureCallback<AsyncTransactionManagerImpl>() {
+          @Override
+          public void onFailure(Throwable t) {
+            // Ignore.
+          }
+
+          @Override
+          public void onSuccess(AsyncTransactionManagerImpl result) {
+            result.withCommitStats();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return this;
+  }
+
+  @Override
+  public ApiFuture<CommitStats> getCommitStats() {
+    return ApiFutures.transformAsync(
+        delegate,
+        new ApiAsyncFunction<AsyncTransactionManagerImpl, CommitStats>() {
+          @Override
+          public ApiFuture<CommitStats> apply(AsyncTransactionManagerImpl input) throws Exception {
+            return input.getCommitStats();
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
 }

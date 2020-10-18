@@ -29,6 +29,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -156,6 +157,16 @@ public class SingleUseTransactionTest {
       if (state != TransactionState.COMMITTED) {
         state = TransactionState.ROLLED_BACK;
       }
+    }
+
+    @Override
+    public TransactionManager withCommitStats() {
+      return this;
+    }
+
+    @Override
+    public CommitStats getCommitStats() {
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -420,6 +431,16 @@ public class SingleUseTransactionTest {
                       @Override
                       public TransactionRunner allowNestedTransaction() {
                         return this;
+                      }
+
+                      @Override
+                      public TransactionRunner withCommitStats() {
+                        return this;
+                      }
+
+                      @Override
+                      public CommitStats getCommitStats() {
+                        throw new UnsupportedOperationException();
                       }
                     };
                 return runner;

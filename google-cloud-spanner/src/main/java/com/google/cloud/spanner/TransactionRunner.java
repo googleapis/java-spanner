@@ -91,4 +91,18 @@ public interface TransactionRunner {
    * @return this object
    */
   TransactionRunner allowNestedTransaction();
+
+  /**
+   * Indicates that the {@link TransactionRunner} should request the backend to return {@link
+   * CommitStats}. The {@link CommitStats} can be retrieved by calling {@link #getCommitStats()}
+   * after the transaction has successfully committed.
+   */
+  TransactionRunner withCommitStats();
+
+  /**
+   * Returns the {@link CommitStats} of this transaction. This method may only be called after the
+   * transaction has successfully committed, and only if {@link #withCommitStats()} was called
+   * before executing the transaction.
+   */
+  CommitStats getCommitStats();
 }

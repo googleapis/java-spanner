@@ -81,6 +81,26 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
+  public WriteResponse writeWithCommitStats(final Iterable<Mutation> mutations)
+      throws SpannerException {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return runWithSessionRetry(
+          SessionMode.READ_WRITE,
+          new Function<Session, WriteResponse>() {
+            @Override
+            public WriteResponse apply(Session session) {
+              return session.writeWithCommitStats(mutations);
+            }
+          });
+    } catch (RuntimeException e) {
+      TraceUtil.setWithFailure(span, e);
+      throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
+    }
+  }
+
   @Override
   public Timestamp writeAtLeastOnce(final Iterable<Mutation> mutations) throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
@@ -91,6 +111,27 @@ class DatabaseClientImpl implements DatabaseClient {
             @Override
             public Timestamp apply(Session session) {
               return session.writeAtLeastOnce(mutations);
+            }
+          });
+    } catch (RuntimeException e) {
+      TraceUtil.setWithFailure(span, e);
+      throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
+    }
+  }
+
+  @Override
+  public WriteResponse writeAtLeastOnceWithCommitStats(final Iterable<Mutation> mutations)
+      throws SpannerException {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return runWithSessionRetry(
+          SessionMode.READ_WRITE,
+          new Function<Session, WriteResponse>() {
+            @Override
+            public WriteResponse apply(Session session) {
+              return session.writeAtLeastOnceWithCommitStats(mutations);
             }
           });
     } catch (RuntimeException e) {

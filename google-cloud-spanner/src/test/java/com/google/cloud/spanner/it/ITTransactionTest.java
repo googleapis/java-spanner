@@ -506,4 +506,22 @@ public class ITTransactionTest {
               }
             });
   }
+
+  @Test
+  public void transactionRunnerReturnsCommitStats() {
+    final String key = uniqueKey();
+    TransactionRunner runner = client.readWriteTransaction().withCommitStats();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(
+                Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build());
+            return null;
+          }
+        });
+    assertThat(runner.getCommitStats()).isNotNull();
+    // MutationCount = 2 (2 columns).
+    assertThat(runner.getCommitStats().getMutationCount()).isEqualTo(2L);
+  }
 }

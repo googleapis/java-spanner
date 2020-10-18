@@ -211,6 +211,29 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   }
 
   @Test
+  public void asyncTransactionManager_returnsCommitStats() throws Exception {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync().withCommitStats()) {
+      TransactionContextFuture txn = manager.beginAsync();
+      while (true) {
+        try {
+          CommitTimestampFuture commitTimestamp =
+              txn.then(
+                      AsyncTransactionManagerHelper.<Void>buffer(
+                          Mutation.delete("FOO", Key.of("foo"))),
+                      executor)
+                  .commitAsync();
+          assertThat(commitTimestamp.get()).isNotNull();
+          assertThat(manager.getCommitStats().get()).isNotNull();
+          assertThat(manager.getCommitStats().get().getMutationCount()).isEqualTo(1);
+          break;
+        } catch (AbortedException e) {
+          txn = manager.resetForRetryAsync();
+        }
+      }
+    }
+  }
+
+  @Test
   public void asyncTransactionManagerUpdate() throws Exception {
     final SettableApiFuture<Long> updateCount = SettableApiFuture.create();
 

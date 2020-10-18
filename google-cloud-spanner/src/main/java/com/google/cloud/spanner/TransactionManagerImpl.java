@@ -30,6 +30,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   private final SessionImpl session;
   private Span span;
+  private boolean returnCommitStats;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
@@ -41,6 +42,12 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   Span getSpan() {
     return span;
+  }
+
+  @Override
+  public TransactionManager withCommitStats() {
+    this.returnCommitStats = true;
+    return this;
   }
 
   @Override
@@ -71,7 +78,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           ErrorCode.ABORTED, "Transaction already aborted");
     }
     try {
-      txn.commit();
+      txn.commit(returnCommitStats);
       txnState = TransactionState.COMMITTED;
     } catch (AbortedException e1) {
       txnState = TransactionState.ABORTED;
@@ -114,6 +121,17 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
         txnState == TransactionState.COMMITTED,
         "getCommitTimestamp can only be invoked if the transaction committed successfully");
     return txn.commitTimestamp();
+  }
+
+  @Override
+  public CommitStats getCommitStats() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitStats can only be invoked if the transaction committed successfully");
+    Preconditions.checkState(
+        returnCommitStats,
+        "getCommitStats can only be invoked if withCommitStats() was invoked before committing the transaction");
+    return txn.commitStats();
   }
 
   @Override

@@ -84,6 +84,30 @@ public interface DatabaseClient {
   Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException;
 
   /**
+   * Response for write methods that return both a commit {@link Timestamp} and {@link CommitStats}.
+   */
+  interface WriteResponse {
+    /** The commit timestamp of the transaction. */
+    Timestamp getCommitTimestamp();
+
+    /** The commit statistics of the transaction. */
+    CommitStats getCommitStats();
+  }
+
+  /**
+   * Same as {@link #write(Iterable)}, but requests the backend to return both a commit timestamp
+   * and {@link CommitStats}.
+   */
+  WriteResponse writeWithCommitStats(Iterable<Mutation> mutations) throws SpannerException;
+
+  /**
+   * Same as {@link #writeAtLeastOnce(Iterable)}, but requests the backend to return both a commit
+   * timestamp and {@link CommitStats}.
+   */
+  WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+      throws SpannerException;
+
+  /**
    * Returns a context in which a single read can be performed using {@link TimestampBound#strong()}
    * concurrency. This method will return a {@link ReadContext} that will not return the read
    * timestamp that was used by Cloud Spanner. If you want to be able to access the read timestamp,

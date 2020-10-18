@@ -377,4 +377,27 @@
     <className>com/google/cloud/spanner/AsyncTransactionManager</className>
     <method>com.google.api.core.ApiFuture closeAsync()</method>
   </difference>
+  
+  <!-- CommitStats added -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.TransactionManager withCommitStats()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.CommitStats getCommitStats()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionRunner</className>
+    <method>com.google.cloud.spanner.TransactionRunner withCommitStats()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionRunner</className>
+    <method>com.google.cloud.spanner.CommitStats getCommitStats()</method>
+  </difference>
+  
 </differences>

@@ -203,4 +203,30 @@ public class ITTransactionManagerTest {
       assertThat(row.getBoolean(1)).isTrue();
     }
   }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void transactionManagerReturnsCommitStats() throws InterruptedException {
+    try (TransactionManager manager = client.transactionManager().withCommitStats()) {
+      TransactionContext txn = manager.begin();
+      while (true) {
+        txn.buffer(
+            Mutation.newInsertBuilder("T")
+                .set("K")
+                .to("KeyCommitStats")
+                .set("BoolValue")
+                .to(true)
+                .build());
+        try {
+          manager.commit();
+          assertThat(manager.getCommitStats()).isNotNull();
+          assertThat(manager.getCommitStats().getMutationCount()).isEqualTo(2L);
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetry();
+        }
+      }
+    }
+  }
 }

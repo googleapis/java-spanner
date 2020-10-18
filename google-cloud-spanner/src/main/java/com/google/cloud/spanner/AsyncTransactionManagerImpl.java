@@ -38,10 +38,12 @@ final class AsyncTransactionManagerImpl
 
   private final SessionImpl session;
   private Span span;
+  private boolean returnCommitStats;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+  private SettableApiFuture<CommitStats> commitStats;
 
   AsyncTransactionManagerImpl(SessionImpl session, Span span) {
     this.session = session;
@@ -51,6 +53,23 @@ final class AsyncTransactionManagerImpl
   @Override
   public void setSpan(Span span) {
     this.span = span;
+  }
+
+  @Override
+  public AsyncTransactionManager withCommitStats() {
+    this.returnCommitStats = true;
+    return this;
+  }
+
+  @Override
+  public ApiFuture<CommitStats> getCommitStats() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitStats can only be invoked if the transaction committed successfully");
+    Preconditions.checkState(
+        returnCommitStats,
+        "getCommitStats can only be invoked if withCommitStats() was invoked before committing the transaction");
+    return commitStats;
   }
 
   @Override
@@ -119,7 +138,10 @@ final class AsyncTransactionManagerImpl
           SpannerExceptionFactory.newSpannerException(
               ErrorCode.ABORTED, "Transaction already aborted"));
     }
-    ApiFuture<Timestamp> res = txn.commitAsync();
+    ApiFuture<Timestamp> res = txn.commitAsync(returnCommitStats);
+    if (returnCommitStats) {
+      commitStats = SettableApiFuture.create();
+    }
     txnState = TransactionState.COMMITTED;
     ApiFutures.addCallback(
         res,
@@ -131,12 +153,14 @@ final class AsyncTransactionManagerImpl
             } else {
               txnState = TransactionState.COMMIT_FAILED;
               commitTimestamp.setException(t);
+              commitStats.setException(t);
             }
           }
 
           @Override
           public void onSuccess(Timestamp result) {
             commitTimestamp.set(result);
+            commitStats.set(txn.commitStats());
           }
         },
         MoreExecutors.directExecutor());

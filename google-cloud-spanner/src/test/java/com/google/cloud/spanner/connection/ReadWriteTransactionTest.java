@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -128,6 +129,16 @@ public class ReadWriteTransactionTest {
       if (state != TransactionState.COMMITTED) {
         state = TransactionState.ROLLED_BACK;
       }
+    }
+
+    @Override
+    public TransactionManager withCommitStats() {
+      return this;
+    }
+
+    @Override
+    public CommitStats getCommitStats() {
+      throw new UnsupportedOperationException();
     }
   }
 

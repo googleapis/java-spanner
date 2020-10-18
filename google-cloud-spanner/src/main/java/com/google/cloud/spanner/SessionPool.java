@@ -720,6 +720,7 @@ final class SessionPool {
     private TransactionManager delegate;
     private final SessionPool sessionPool;
     private PooledSessionFuture session;
+    private boolean returnCommitStats;
     private boolean closed;
     private boolean restartedAfterSessionNotFound;
 
@@ -731,13 +732,24 @@ final class SessionPool {
     @Override
     public TransactionContext begin() {
       this.delegate = session.get().transactionManager();
+      if (returnCommitStats) {
+        this.delegate.withCommitStats();
+      }
       while (true) {
         try {
           return internalBegin();
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.get().delegate.transactionManager();
+          refreshDelegateTransactionManager();
         }
+      }
+    }
+
+    @SuppressWarnings("resource")
+    private void refreshDelegateTransactionManager() {
+      delegate = session.get().delegate.transactionManager();
+      if (returnCommitStats) {
+        delegate.withCommitStats();
       }
     }
 
@@ -749,7 +761,7 @@ final class SessionPool {
 
     private SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
       session = sessionPool.replaceReadWriteSession(notFound, session);
-      delegate = session.get().delegate.transactionManager();
+      refreshDelegateTransactionManager();
       restartedAfterSessionNotFound = true;
       return SpannerExceptionFactory.newSpannerException(
           ErrorCode.ABORTED, notFound.getMessage(), notFound);
@@ -790,7 +802,7 @@ final class SessionPool {
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.get().delegate.transactionManager();
+          refreshDelegateTransactionManager();
           restartedAfterSessionNotFound = true;
         }
       }
@@ -799,6 +811,17 @@ final class SessionPool {
     @Override
     public Timestamp getCommitTimestamp() {
       return delegate.getCommitTimestamp();
+    }
+
+    @Override
+    public TransactionManager withCommitStats() {
+      this.returnCommitStats = true;
+      return this;
+    }
+
+    @Override
+    public CommitStats getCommitStats() {
+      return delegate.getCommitStats();
     }
 
     @Override
@@ -880,12 +903,25 @@ final class SessionPool {
       getRunner().allowNestedTransaction();
       return this;
     }
+
+    @Override
+    public TransactionRunner withCommitStats() {
+      getRunner().withCommitStats();
+      return this;
+    }
+
+    @Override
+    public CommitStats getCommitStats() {
+      return getRunner().getCommitStats();
+    }
   }
 
   private static class SessionPoolAsyncRunner implements AsyncRunner {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
     private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private final SettableApiFuture<CommitStats> commitStats = SettableApiFuture.create();
+    private boolean returnCommitStats;
 
     private SessionPoolAsyncRunner(SessionPool sessionPool, PooledSessionFuture session) {
       this.sessionPool = sessionPool;
@@ -905,6 +941,9 @@ final class SessionPool {
               while (true) {
                 try {
                   runner = session.get().runAsync();
+                  if (returnCommitStats) {
+                    runner.withCommitStats();
+                  }
                   r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
                   break;
                 } catch (ExecutionException e) {
@@ -924,7 +963,7 @@ final class SessionPool {
               }
               session.get().markUsed();
               session.close();
-              setCommitTimestamp(runner);
+              setCommitTimestampAndStats(runner);
               if (se != null) {
                 res.setException(se);
               } else {
@@ -935,17 +974,38 @@ final class SessionPool {
       return res;
     }
 
-    private void setCommitTimestamp(AsyncRunner delegate) {
+    private void setCommitTimestampAndStats(AsyncRunner delegate) {
       try {
         commitTimestamp.set(delegate.getCommitTimestamp().get());
       } catch (Throwable t) {
         commitTimestamp.setException(t);
+      }
+      if (returnCommitStats) {
+        try {
+          commitStats.set(delegate.getCommitStats().get());
+        } catch (Throwable t) {
+          commitStats.setException(t);
+        }
       }
     }
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
       return commitTimestamp;
+    }
+
+    @Override
+    public AsyncRunner withCommitStats() {
+      this.returnCommitStats = true;
+      return this;
+    }
+
+    @Override
+    public ApiFuture<CommitStats> getCommitStats() {
+      Preconditions.checkState(
+          returnCommitStats,
+          "getCommitStats may only be invoked if withCommitStats has been invoked before executing the transaction");
+      return commitStats;
     }
   }
 
@@ -1104,9 +1164,29 @@ final class SessionPool {
     }
 
     @Override
+    public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations)
+        throws SpannerException {
+      try {
+        return get().writeWithCommitStats(mutations);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         return get().writeAtLeastOnce(mutations);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+        throws SpannerException {
+      try {
+        return get().writeAtLeastOnceWithCommitStats(mutations);
       } finally {
         close();
       }
@@ -1348,10 +1428,32 @@ final class SessionPool {
     }
 
     @Override
+    public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.writeWithCommitStats(mutations);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         markUsed();
         return delegate.writeAtLeastOnce(mutations);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.writeAtLeastOnceWithCommitStats(mutations);
       } catch (SpannerException e) {
         throw lastException = e;
       }

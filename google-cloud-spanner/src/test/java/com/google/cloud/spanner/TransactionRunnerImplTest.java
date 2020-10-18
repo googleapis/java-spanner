@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -189,7 +190,21 @@ public class TransactionRunnerImplTest {
         });
     assertThat(numCalls.get()).isEqualTo(1);
     verify(txn).ensureTxn();
-    verify(txn).commit();
+    verify(txn).commit(false);
+  }
+
+  @Test
+  public void testReturnCommitStats() {
+    transactionRunner
+        .withCommitStats()
+        .run(
+            new TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                return null;
+              }
+            });
+    verify(txn).commit(true);
   }
 
   @Test
@@ -203,7 +218,7 @@ public class TransactionRunnerImplTest {
   public void commitAbort() {
     final SpannerException error =
         SpannerExceptionFactory.newSpannerException(abortedWithRetryInfo());
-    doThrow(error).doNothing().when(txn).commit();
+    doThrow(error).doNothing().when(txn).commit(any(Boolean.class));
     final AtomicInteger numCalls = new AtomicInteger(0);
     transactionRunner.run(
         new TransactionCallable<Void>() {
@@ -222,7 +237,7 @@ public class TransactionRunnerImplTest {
     final SpannerException error =
         SpannerExceptionFactory.newSpannerException(
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, ""));
-    doThrow(error).when(txn).commit();
+    doThrow(error).when(txn).commit(any(Boolean.class));
     final AtomicInteger numCalls = new AtomicInteger(0);
     try {
       transactionRunner.run(
@@ -239,7 +254,7 @@ public class TransactionRunnerImplTest {
     }
     assertThat(numCalls.get()).isEqualTo(1);
     verify(txn, times(1)).ensureTxn();
-    verify(txn, times(1)).commit();
+    verify(txn, times(1)).commit(false);
   }
 
   @Test

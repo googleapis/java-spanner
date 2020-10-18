@@ -84,6 +84,31 @@ class SessionImpl implements Session {
     void setSpan(Span span);
   }
 
+  private static class WriteResponseImpl implements WriteResponse {
+    private final Timestamp commitTimestamp;
+    private final CommitStats commitStats;
+
+    private WriteResponseImpl(TransactionRunner runner) {
+      this.commitTimestamp = runner.getCommitTimestamp();
+      this.commitStats = runner.getCommitStats();
+    }
+
+    private WriteResponseImpl(CommitResponse response) {
+      this.commitTimestamp = Timestamp.fromProto(response.getCommitTimestamp());
+      this.commitStats = CommitStats.fromProto(response.getCommitStats());
+    }
+
+    @Override
+    public Timestamp getCommitTimestamp() {
+      return this.commitTimestamp;
+    }
+
+    @Override
+    public CommitStats getCommitStats() {
+      return this.commitStats;
+    }
+  }
+
   private final SpannerImpl spanner;
   private final String name;
   private final DatabaseId databaseId;
@@ -123,7 +148,19 @@ class SessionImpl implements Session {
 
   @Override
   public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    return write(mutations, false).getCommitTimestamp();
+  }
+
+  @Override
+  public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations) throws SpannerException {
+    return new WriteResponseImpl(write(mutations, true));
+  }
+
+  private TransactionRunner write(Iterable<Mutation> mutations, boolean withCommitStats) {
     TransactionRunner runner = readWriteTransaction();
+    if (withCommitStats) {
+      runner = runner.withCommitStats();
+    }
     final Collection<Mutation> finalMutations =
         mutations instanceof java.util.Collection<?>
             ? (Collection<Mutation>) mutations
@@ -136,17 +173,28 @@ class SessionImpl implements Session {
             return null;
           }
         });
-    return runner.getCommitTimestamp();
+    return runner;
   }
 
   @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+    return Timestamp.fromProto(writeAtLeastOnce(mutations, false).getCommitTimestamp());
+  }
+
+  @Override
+  public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+      throws SpannerException {
+    return new WriteResponseImpl(writeAtLeastOnce(mutations, true));
+  }
+
+  private CommitResponse writeAtLeastOnce(Iterable<Mutation> mutations, boolean withCommitStats) {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
+            .setReturnCommitStats(withCommitStats)
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -154,9 +202,7 @@ class SessionImpl implements Session {
             .build();
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      CommitResponse response = spanner.getRpc().commit(request, options);
-      Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      return t;
+      return spanner.getRpc().commit(request, options);
     } catch (IllegalArgumentException e) {
       TraceUtil.setWithFailure(span, e);
       throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit timestamp", e);

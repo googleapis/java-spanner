@@ -152,6 +152,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private volatile ByteString transactionId;
     private Timestamp commitTimestamp;
+    private CommitStats commitStats;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
@@ -234,9 +235,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return res;
     }
 
-    void commit() {
+    void commit(boolean returnCommitStats) {
       try {
-        commitTimestamp = commitAsync().get();
+        commitTimestamp = commitAsync(returnCommitStats).get();
       } catch (InterruptedException e) {
         if (commitFuture != null) {
           commitFuture.cancel(true);
@@ -249,7 +250,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ApiFuture<CommitResponse> commitFuture;
 
-    ApiFuture<Timestamp> commitAsync() {
+    ApiFuture<Timestamp> commitAsync(final boolean returnCommitStats) {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
       final SettableApiFuture<Void> latch;
       synchronized (lock) {
@@ -263,6 +264,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 latch.get();
                 CommitRequest.Builder builder =
                     CommitRequest.newBuilder()
+                        .setReturnCommitStats(returnCommitStats)
                         .setSession(session.getName())
                         .setTransactionId(transactionId);
                 synchronized (lock) {
@@ -291,6 +293,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                                 throw newSpannerException(
                                     ErrorCode.INTERNAL,
                                     "Missing commitTimestamp:\n" + session.getName());
+                              }
+                              if (returnCommitStats && !commitResponse.hasCommitStats()) {
+                                throw newSpannerException(
+                                    ErrorCode.INTERNAL,
+                                    "Missing commitStats:\n" + session.getName());
+                              }
+                              if (commitResponse.hasCommitStats()) {
+                                commitStats =
+                                    CommitStats.fromProto(commitResponse.getCommitStats());
                               }
                               Timestamp ts =
                                   Timestamp.fromProto(commitResponse.getCommitTimestamp());
@@ -334,6 +345,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     Timestamp commitTimestamp() {
       checkState(commitTimestamp != null, "run() has not yet returned normally");
       return commitTimestamp;
+    }
+
+    CommitStats commitStats() {
+      checkState(
+          commitStats != null,
+          "run() has not yet returned normally or no commit statistics were requested");
+      return commitStats;
     }
 
     boolean isAborted() {
@@ -617,6 +635,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   }
 
   private boolean blockNestedTxn = true;
+  private boolean returnCommitStats = false;
   private final SessionImpl session;
   private Span span;
   private TransactionContextImpl txn;
@@ -625,6 +644,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   @Override
   public TransactionRunner allowNestedTransaction() {
     blockNestedTxn = false;
+    return this;
+  }
+
+  @Override
+  public TransactionRunner withCommitStats() {
+    returnCommitStats = true;
     return this;
   }
 
@@ -716,7 +741,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
 
             try {
-              txn.commit();
+              txn.commit(returnCommitStats);
               span.addAnnotation(
                   "Transaction Attempt Succeeded",
                   ImmutableMap.of(
@@ -747,6 +772,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   public Timestamp getCommitTimestamp() {
     checkState(txn != null, "run() has not yet returned normally");
     return txn.commitTimestamp();
+  }
+
+  @Override
+  public CommitStats getCommitStats() {
+    checkState(txn != null, "run() has not yet returned normally");
+    return txn.commitStats();
   }
 
   @Override

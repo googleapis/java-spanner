@@ -20,12 +20,15 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.base.Preconditions;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 class AsyncRunnerImpl implements AsyncRunner {
   private final TransactionRunnerImpl delegate;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+  private final SettableApiFuture<CommitStats> commitStats = SettableApiFuture.create();
+  private boolean returnCommitStats;
 
   AsyncRunnerImpl(TransactionRunnerImpl delegate) {
     this.delegate = delegate;
@@ -43,7 +46,7 @@ class AsyncRunnerImpl implements AsyncRunner {
             } catch (Throwable t) {
               res.setException(t);
             } finally {
-              setCommitTimestamp();
+              setCommitTimestampAndStats();
             }
           }
         });
@@ -66,16 +69,38 @@ class AsyncRunnerImpl implements AsyncRunner {
         });
   }
 
-  private void setCommitTimestamp() {
+  private void setCommitTimestampAndStats() {
     try {
       commitTimestamp.set(delegate.getCommitTimestamp());
     } catch (Throwable t) {
       commitTimestamp.setException(t);
+    }
+    if (returnCommitStats) {
+      try {
+        commitStats.set(delegate.getCommitStats());
+      } catch (Throwable t) {
+        commitStats.setException(t);
+      }
     }
   }
 
   @Override
   public ApiFuture<Timestamp> getCommitTimestamp() {
     return commitTimestamp;
+  }
+
+  @Override
+  public AsyncRunner withCommitStats() {
+    delegate.withCommitStats();
+    returnCommitStats = true;
+    return this;
+  }
+
+  @Override
+  public ApiFuture<CommitStats> getCommitStats() {
+    Preconditions.checkState(
+        returnCommitStats,
+        "getCommitStats may only be invoked if withCommitStats has been invoked before executing the transaction");
+    return commitStats;
   }
 }

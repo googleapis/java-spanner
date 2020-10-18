@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -144,6 +145,16 @@ public class TransactionManagerImplTest {
   }
 
   @Test
+  public void commitReturnsCommitStats() {
+    when(session.newTransaction()).thenReturn(txn);
+    Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
+    when(txn.commitTimestamp()).thenReturn(commitTimestamp);
+    manager.withCommitStats().begin();
+    manager.commit();
+    verify(txn).commit(true);
+  }
+
+  @Test
   public void resetAfterSuccessfulCommitFails() {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
@@ -160,7 +171,9 @@ public class TransactionManagerImplTest {
   public void resetAfterAbortSucceeds() {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
-    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
+    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, ""))
+        .when(txn)
+        .commit(any(Boolean.class));
     try {
       manager.commit();
       fail("Expected AbortedException");
@@ -177,7 +190,9 @@ public class TransactionManagerImplTest {
   public void resetAfterErrorFails() {
     when(session.newTransaction()).thenReturn(txn);
     manager.begin();
-    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "")).when(txn).commit();
+    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, ""))
+        .when(txn)
+        .commit(any(Boolean.class));
     try {
       manager.commit();
       fail("Expected AbortedException");

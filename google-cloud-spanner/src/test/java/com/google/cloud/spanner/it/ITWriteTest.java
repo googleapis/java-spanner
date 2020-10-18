@@ -27,6 +27,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseClient.WriteResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -155,6 +156,40 @@ public class ITWriteTest {
     Struct row = readLastRow("StringValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("v1");
+  }
+
+  @Test
+  public void writeReturnsCommitStats() {
+    WriteResponse response =
+        client.writeWithCommitStats(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()));
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
+    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
+  }
+
+  @Test
+  public void writeAtLeastOnceReturnsCommitStats() {
+    WriteResponse response =
+        client.writeAtLeastOnceWithCommitStats(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()));
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
+    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
   }
 
   @Test
