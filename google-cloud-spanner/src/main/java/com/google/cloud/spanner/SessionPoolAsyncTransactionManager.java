@@ -22,6 +22,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
@@ -39,7 +40,8 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
   private final SettableApiFuture<AsyncTransactionManagerImpl> delegate =
       SettableApiFuture.create();
 
-  SessionPoolAsyncTransactionManager(PooledSessionFuture session) {
+  SessionPoolAsyncTransactionManager(
+      PooledSessionFuture session, final TransactionOption... options) {
     this.session = session;
     this.session.addListener(
         new Runnable() {
@@ -47,7 +49,10 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
           public void run() {
             try {
               delegate.set(
-                  SessionPoolAsyncTransactionManager.this.session.get().transactionManagerAsync());
+                  SessionPoolAsyncTransactionManager.this
+                      .session
+                      .get()
+                      .transactionManagerAsync(options));
             } catch (Throwable t) {
               delegate.setException(t);
             }
@@ -238,26 +243,6 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
     synchronized (lock) {
       return txnState;
     }
-  }
-
-  @Override
-  public AsyncTransactionManager withCommitStats() {
-    ApiFutures.addCallback(
-        delegate,
-        new ApiFutureCallback<AsyncTransactionManagerImpl>() {
-          @Override
-          public void onFailure(Throwable t) {
-            // Ignore this error as there is no underlying AsyncTransactionManager to instruct that
-            // it should return CommitStats.
-          }
-
-          @Override
-          public void onSuccess(AsyncTransactionManagerImpl result) {
-            result.withCommitStats();
-          }
-        },
-        MoreExecutors.directExecutor());
-    return this;
   }
 
   @Override

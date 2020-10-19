@@ -101,7 +101,7 @@ public class ITReadOnlyTxnTest {
     String value = "v" + i;
     Mutation m = Mutation.newInsertOrUpdateBuilder(TABLE_NAME).set("StringValue").to(value).build();
     long minCommitNanoTime = System.nanoTime();
-    Timestamp timestamp = client.writeAtLeastOnce(Arrays.asList(m));
+    Timestamp timestamp = client.writeAtLeastOnce(Arrays.asList(m)).getCommitTimestamp();
     if (historyBuilder != null) {
       historyBuilder.add(new History(timestamp, value, minCommitNanoTime));
     }

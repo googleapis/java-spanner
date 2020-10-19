@@ -89,7 +89,7 @@ public class ITCommitTimestampTest {
   }
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Arrays.asList(m)).getCommitTimestamp();
   }
 
   private Struct readRow(DatabaseClient client, String table, Key key, String... columns) {
@@ -255,11 +255,13 @@ public class ITCommitTimestampTest {
 
   private void writeAndVerify(DatabaseClient client, Timestamp ts) {
     Timestamp commitTimestamp =
-        client.write(
-            Arrays.asList(
-                Mutation.newInsertOrUpdateBuilder("T1").set("ts").to(ts).build(),
-                Mutation.newInsertOrUpdateBuilder("T2").set("ts").to(ts).build(),
-                Mutation.newInsertOrUpdateBuilder("T3").set("ts").to(ts).build()));
+        client
+            .write(
+                Arrays.asList(
+                    Mutation.newInsertOrUpdateBuilder("T1").set("ts").to(ts).build(),
+                    Mutation.newInsertOrUpdateBuilder("T2").set("ts").to(ts).build(),
+                    Mutation.newInsertOrUpdateBuilder("T3").set("ts").to(ts).build()))
+            .getCommitTimestamp();
     if (ts == Value.COMMIT_TIMESTAMP) {
       ts = commitTimestamp;
     }

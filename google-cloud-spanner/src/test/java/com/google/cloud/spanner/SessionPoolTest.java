@@ -40,6 +40,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseClient.WriteResponse;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
 import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
@@ -1360,7 +1361,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
         when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
         TransactionRunnerImpl closedTransactionRunner =
-            new TransactionRunnerImpl(closedSession, rpc, 10);
+            new TransactionRunnerImpl(closedSession, Options.fromTransactionOptions());
         closedTransactionRunner.setSpan(mock(Span.class));
         when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -1374,7 +1375,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         when(openSession.beginTransactionAsync())
             .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
         TransactionRunnerImpl openTransactionRunner =
-            new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+            new TransactionRunnerImpl(openSession, Options.fromTransactionOptions());
         openTransactionRunner.setSpan(mock(Span.class));
         when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
@@ -1578,7 +1579,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(closedSession.write(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.write(mutations)).thenReturn(Timestamp.now());
+    WriteResponse response = mock(WriteResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.write(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override
@@ -1630,7 +1633,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(closedSession.writeAtLeastOnce(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.writeAtLeastOnce(mutations)).thenReturn(Timestamp.now());
+    WriteResponse response = mock(WriteResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.writeAtLeastOnce(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override

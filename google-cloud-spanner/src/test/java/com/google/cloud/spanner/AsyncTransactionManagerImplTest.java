@@ -35,22 +35,24 @@ public class AsyncTransactionManagerImplTest {
 
   @Mock private SessionImpl session;
   @Mock TransactionRunnerImpl.TransactionContextImpl txn;
-  private AsyncTransactionManagerImpl manager;
 
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new AsyncTransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test
   public void commitReturnsCommitStats() {
-    when(session.newTransaction()).thenReturn(txn);
-    when(txn.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));
-    Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
-    when(txn.commitAsync(true)).thenReturn(ApiFutures.immediateFuture(commitTimestamp));
-    manager.withCommitStats().beginAsync();
-    manager.commitAsync();
-    verify(txn).commitAsync(true);
+    try (AsyncTransactionManagerImpl manager =
+        new AsyncTransactionManagerImpl(
+            session, mock(Span.class), Options.fromTransactionOptions(Options.commitStats()))) {
+      when(session.newTransaction()).thenReturn(txn);
+      when(txn.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));
+      Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
+      when(txn.commitAsync(true)).thenReturn(ApiFutures.immediateFuture(commitTimestamp));
+      manager.beginAsync();
+      manager.commitAsync();
+      verify(txn).commitAsync(true);
+    }
   }
 }

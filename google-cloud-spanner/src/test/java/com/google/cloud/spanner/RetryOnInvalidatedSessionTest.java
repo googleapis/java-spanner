@@ -23,7 +23,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseClient.WriteResponse;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.v1.SpannerClient;
@@ -1432,8 +1432,9 @@ public class RetryOnInvalidatedSessionTest {
     initReadWriteSessionPool();
     invalidateSessionPool();
     try {
-      Timestamp timestamp = client.write(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
-      assertThat(timestamp).isNotNull();
+      WriteResponse response = client.write(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
+      assertThat(response).isNotNull();
+      assertThat(response.getCommitTimestamp()).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();
@@ -1445,9 +1446,10 @@ public class RetryOnInvalidatedSessionTest {
     initReadWriteSessionPool();
     invalidateSessionPool();
     try {
-      Timestamp timestamp =
+      WriteResponse response =
           client.writeAtLeastOnce(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
-      assertThat(timestamp).isNotNull();
+      assertThat(response).isNotNull();
+      assertThat(response.getCommitTimestamp()).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();

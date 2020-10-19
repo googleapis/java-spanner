@@ -37,16 +37,19 @@ final class AsyncTransactionManagerImpl
   private static final Tracer tracer = Tracing.getTracer();
 
   private final SessionImpl session;
+  private final Options options;
   private Span span;
-  private boolean returnCommitStats;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
   private SettableApiFuture<CommitStats> commitStats;
 
-  AsyncTransactionManagerImpl(SessionImpl session, Span span) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, Options options) {
+    Preconditions.checkNotNull(session);
+    Preconditions.checkNotNull(options);
     this.session = session;
+    this.options = options;
     this.span = span;
   }
 
@@ -56,19 +59,13 @@ final class AsyncTransactionManagerImpl
   }
 
   @Override
-  public AsyncTransactionManager withCommitStats() {
-    this.returnCommitStats = true;
-    return this;
-  }
-
-  @Override
   public ApiFuture<CommitStats> getCommitStats() {
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,
         "getCommitStats can only be invoked if the transaction committed successfully");
     Preconditions.checkState(
-        returnCommitStats,
-        "getCommitStats can only be invoked if withCommitStats() was invoked before committing the transaction");
+        options.withCommitStats(),
+        "getCommitStats can only be invoked if Options.commitStats() was specified for the transaction");
     return commitStats;
   }
 
@@ -138,8 +135,8 @@ final class AsyncTransactionManagerImpl
           SpannerExceptionFactory.newSpannerException(
               ErrorCode.ABORTED, "Transaction already aborted"));
     }
-    ApiFuture<Timestamp> res = txn.commitAsync(returnCommitStats);
-    if (returnCommitStats) {
+    ApiFuture<Timestamp> res = txn.commitAsync(options.withCommitStats());
+    if (options.withCommitStats()) {
       commitStats = SettableApiFuture.create();
     }
     txnState = TransactionState.COMMITTED;

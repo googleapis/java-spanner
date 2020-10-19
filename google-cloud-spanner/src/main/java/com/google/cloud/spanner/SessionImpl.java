@@ -25,9 +25,11 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -88,14 +90,22 @@ class SessionImpl implements Session {
     private final Timestamp commitTimestamp;
     private final CommitStats commitStats;
 
-    private WriteResponseImpl(TransactionRunner runner) {
+    private WriteResponseImpl(TransactionRunner runner, Options options) {
       this.commitTimestamp = runner.getCommitTimestamp();
-      this.commitStats = runner.getCommitStats();
+      if (options.withCommitStats()) {
+        this.commitStats = runner.getCommitStats();
+      } else {
+        this.commitStats = null;
+      }
     }
 
     private WriteResponseImpl(CommitResponse response) {
       this.commitTimestamp = Timestamp.fromProto(response.getCommitTimestamp());
-      this.commitStats = CommitStats.fromProto(response.getCommitStats());
+      if (response.hasCommitStats()) {
+        this.commitStats = CommitStats.fromProto(response.getCommitStats());
+      } else {
+        this.commitStats = null;
+      }
     }
 
     @Override
@@ -105,6 +115,9 @@ class SessionImpl implements Session {
 
     @Override
     public CommitStats getCommitStats() {
+      Preconditions.checkState(
+          this.commitStats != null,
+          "No CommitStats were requested for the transaction. Use Options.commitStats() to request CommitStats for a read/write transaction.");
       return this.commitStats;
     }
   }
@@ -147,20 +160,9 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
-    return write(mutations, false).getCommitTimestamp();
-  }
-
-  @Override
-  public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations) throws SpannerException {
-    return new WriteResponseImpl(write(mutations, true));
-  }
-
-  private TransactionRunner write(Iterable<Mutation> mutations, boolean withCommitStats) {
-    TransactionRunner runner = readWriteTransaction();
-    if (withCommitStats) {
-      runner = runner.withCommitStats();
-    }
+  public WriteResponse write(Iterable<Mutation> mutations, TransactionOption... options)
+      throws SpannerException {
+    TransactionRunner runner = readWriteTransaction(options);
     final Collection<Mutation> finalMutations =
         mutations instanceof java.util.Collection<?>
             ? (Collection<Mutation>) mutations
@@ -173,28 +175,20 @@ class SessionImpl implements Session {
             return null;
           }
         });
-    return runner;
+    return new WriteResponseImpl(runner, Options.fromTransactionOptions(options));
   }
 
   @Override
-  public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
-    return Timestamp.fromProto(writeAtLeastOnce(mutations, false).getCommitTimestamp());
-  }
-
-  @Override
-  public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+  public WriteResponse writeAtLeastOnce(Iterable<Mutation> mutations, TransactionOption... options)
       throws SpannerException {
-    return new WriteResponseImpl(writeAtLeastOnce(mutations, true));
-  }
-
-  private CommitResponse writeAtLeastOnce(Iterable<Mutation> mutations, boolean withCommitStats) {
     setActive(null);
+    Options opts = Options.fromTransactionOptions(options);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(withCommitStats)
+            .setReturnCommitStats(opts.withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -202,7 +196,7 @@ class SessionImpl implements Session {
             .build();
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return spanner.getRpc().commit(request, options);
+      return new WriteResponseImpl(spanner.getRpc().commit(request, this.options));
     } catch (IllegalArgumentException e) {
       TraceUtil.setWithFailure(span, e);
       throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit timestamp", e);
@@ -272,26 +266,25 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public TransactionRunner readWriteTransaction() {
-    return setActive(
-        new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks()));
+  public TransactionRunner readWriteTransaction(TransactionOption... options) {
+    return setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options)));
   }
 
   @Override
-  public AsyncRunner runAsync() {
-    return new AsyncRunnerImpl(
-        setActive(
-            new TransactionRunnerImpl(this, spanner.getRpc(), spanner.getDefaultPrefetchChunks())));
+  public AsyncRunner runAsync(TransactionOption... options) {
+    Options opts = Options.fromTransactionOptions(options);
+    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, opts)), opts);
   }
 
   @Override
-  public TransactionManager transactionManager() {
-    return new TransactionManagerImpl(this, currentSpan);
+  public TransactionManager transactionManager(TransactionOption... options) {
+    return new TransactionManagerImpl(this, currentSpan, Options.fromTransactionOptions(options));
   }
 
   @Override
-  public AsyncTransactionManagerImpl transactionManagerAsync() {
-    return new AsyncTransactionManagerImpl(this, currentSpan);
+  public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
+    return new AsyncTransactionManagerImpl(
+        this, currentSpan, Options.fromTransactionOptions(options));
   }
 
   @Override

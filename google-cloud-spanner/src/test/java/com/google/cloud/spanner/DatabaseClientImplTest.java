@@ -163,9 +163,10 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     WriteResponse response =
-        client.writeWithCommitStats(
+        client.write(
             Arrays.asList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+            Options.commitStats());
     assertThat(response).isNotNull();
     assertThat(response.getCommitTimestamp()).isNotNull();
     assertThat(response.getCommitStats()).isNotNull();
@@ -185,9 +186,10 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     WriteResponse response =
-        client.writeAtLeastOnceWithCommitStats(
+        client.writeAtLeastOnce(
             Arrays.asList(
-                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+            Options.commitStats());
     assertThat(response).isNotNull();
     assertThat(response.getCommitTimestamp()).isNotNull();
     assertThat(response.getCommitStats()).isNotNull();
@@ -465,7 +467,7 @@ public class DatabaseClientImplTest {
   public void readWriteTransaction_returnsCommitStats() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionRunner runner = client.readWriteTransaction().withCommitStats();
+    TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
     runner.run(
         new TransactionCallable<Void>() {
           @Override
@@ -522,7 +524,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    AsyncRunner runner = client.runAsync().withCommitStats();
+    AsyncRunner runner = client.runAsync(Options.commitStats());
     ApiFuture<Void> fut =
         runner.runAsync(
             new AsyncWork<Void>() {
@@ -610,7 +612,7 @@ public class DatabaseClientImplTest {
   public void transactionManager_returnsCommitStats() throws Exception {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (TransactionManager txManager = client.transactionManager().withCommitStats()) {
+    try (TransactionManager txManager = client.transactionManager(Options.commitStats())) {
       while (true) {
         TransactionContext tx = txManager.begin();
         try {

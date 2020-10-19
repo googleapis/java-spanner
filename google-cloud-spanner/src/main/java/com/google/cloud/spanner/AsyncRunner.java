@@ -58,16 +58,9 @@ public interface AsyncRunner {
   ApiFuture<Timestamp> getCommitTimestamp();
 
   /**
-   * Indicates that the {@link AsyncRunner} should request the backend to return {@link
-   * CommitStats}. The {@link CommitStats} can be retrieved by calling {@link #getCommitStats()}
-   * after the transaction has successfully committed.
-   */
-  AsyncRunner withCommitStats();
-
-  /**
    * Returns the {@link CommitStats} of this transaction. This method may only be called after the
-   * transaction has successfully committed, and only if {@link #withCommitStats()} was called
-   * before executing the transaction.
+   * transaction has successfully committed, and only if {@link Options#commitStats()} was specified
+   * for the transaction.
    */
   ApiFuture<CommitStats> getCommitStats();
 }

@@ -28,6 +28,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -207,7 +208,7 @@ public class ITTransactionManagerTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReturnsCommitStats() throws InterruptedException {
-    try (TransactionManager manager = client.transactionManager().withCommitStats()) {
+    try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
       TransactionContext txn = manager.begin();
       while (true) {
         txn.buffer(

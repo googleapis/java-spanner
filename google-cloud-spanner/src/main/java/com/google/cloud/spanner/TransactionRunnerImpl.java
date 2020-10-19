@@ -30,8 +30,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
-import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
@@ -635,8 +635,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   }
 
   private boolean blockNestedTxn = true;
-  private boolean returnCommitStats = false;
   private final SessionImpl session;
+  private final Options options;
   private Span span;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
@@ -647,14 +647,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  @Override
-  public TransactionRunner withCommitStats() {
-    returnCommitStats = true;
-    return this;
-  }
-
-  TransactionRunnerImpl(SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks) {
-    this.session = session;
+  TransactionRunnerImpl(SessionImpl session, Options options) {
+    this.session = Preconditions.checkNotNull(session);
+    this.options = Preconditions.checkNotNull(options);
     this.txn = session.newTransaction();
   }
 
@@ -741,7 +736,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
 
             try {
-              txn.commit(returnCommitStats);
+              txn.commit(options.withCommitStats());
               span.addAnnotation(
                   "Transaction Attempt Succeeded",
                   ImmutableMap.of(

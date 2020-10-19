@@ -306,14 +306,16 @@ public class ITBackupTest {
     }
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
-        client.writeAtLeastOnce(
-            Arrays.asList(
-                Mutation.newInsertOrUpdateBuilder("BAR")
-                    .set("ID")
-                    .to(2L)
-                    .set("NAME")
-                    .to("TEST2")
-                    .build()));
+        client
+            .writeAtLeastOnce(
+                Arrays.asList(
+                    Mutation.newInsertOrUpdateBuilder("BAR")
+                        .set("ID")
+                        .to(2L)
+                        .set("NAME")
+                        .to("TEST2")
+                        .build()))
+            .getCommitTimestamp();
 
     // Test listing operations.
     // List all backups.

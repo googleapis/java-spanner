@@ -90,13 +90,9 @@ public interface TransactionManager extends AutoCloseable {
   /** Returns the state of the transaction. */
   TransactionState getState();
 
-  /** Instructs the {@link TransactionManager} to request {@link CommitStats} from the backend. */
-  TransactionManager withCommitStats();
-
   /**
-   * Returns the {@link CommitStats} if {@link #withCommitStats()} was called before the transaction
-   * was committed and the transaction committed successfully. Otherwise it will throw {@code
-   * IllegalStateException}.
+   * Returns the {@link CommitStats} if {@link Options#commitStats()} was specified for the
+   * transaction. Otherwise it will throw {@code IllegalStateException}.
    */
   CommitStats getCommitStats();
 

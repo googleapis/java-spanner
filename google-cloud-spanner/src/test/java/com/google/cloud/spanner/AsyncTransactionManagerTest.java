@@ -212,7 +212,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManager_returnsCommitStats() throws Exception {
-    try (AsyncTransactionManager manager = client().transactionManagerAsync().withCommitStats()) {
+    try (AsyncTransactionManager manager =
+        client().transactionManagerAsync(Options.commitStats())) {
       TransactionContextFuture txn = manager.beginAsync();
       while (true) {
         try {

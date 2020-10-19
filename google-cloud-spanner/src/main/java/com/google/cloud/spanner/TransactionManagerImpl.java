@@ -29,25 +29,20 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private static final Tracer tracer = Tracing.getTracer();
 
   private final SessionImpl session;
+  private final Options options;
   private Span span;
-  private boolean returnCommitStats;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span) {
+  TransactionManagerImpl(SessionImpl session, Span span, Options options) {
     this.session = session;
     this.span = span;
+    this.options = options;
   }
 
   Span getSpan() {
     return span;
-  }
-
-  @Override
-  public TransactionManager withCommitStats() {
-    this.returnCommitStats = true;
-    return this;
   }
 
   @Override
@@ -78,7 +73,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           ErrorCode.ABORTED, "Transaction already aborted");
     }
     try {
-      txn.commit(returnCommitStats);
+      txn.commit(options.withCommitStats());
       txnState = TransactionState.COMMITTED;
     } catch (AbortedException e1) {
       txnState = TransactionState.ABORTED;
@@ -129,8 +124,8 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
         txnState == TransactionState.COMMITTED,
         "getCommitStats can only be invoked if the transaction committed successfully");
     Preconditions.checkState(
-        returnCommitStats,
-        "getCommitStats can only be invoked if withCommitStats() was invoked before committing the transaction");
+        options.withCommitStats(),
+        "getCommitStats can only be invoked if Options.commitStats() was specified for the transaction");
     return txn.commitStats();
   }
 

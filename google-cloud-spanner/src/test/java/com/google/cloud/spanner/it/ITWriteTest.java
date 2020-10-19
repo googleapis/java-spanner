@@ -33,6 +33,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -130,7 +131,7 @@ public class ITWriteTest {
   private String lastKey;
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Arrays.asList(m)).getCommitTimestamp();
   }
 
   private Mutation.WriteBuilder baseInsert() {
@@ -161,14 +162,15 @@ public class ITWriteTest {
   @Test
   public void writeReturnsCommitStats() {
     WriteResponse response =
-        client.writeWithCommitStats(
+        client.write(
             Arrays.asList(
                 Mutation.newInsertOrUpdateBuilder("T")
                     .set("K")
                     .to(lastKey = uniqueString())
                     .set("StringValue")
                     .to("v1")
-                    .build()));
+                    .build()),
+            Options.commitStats());
     assertThat(response).isNotNull();
     assertThat(response.getCommitTimestamp()).isNotNull();
     assertThat(response.getCommitStats()).isNotNull();
@@ -178,14 +180,15 @@ public class ITWriteTest {
   @Test
   public void writeAtLeastOnceReturnsCommitStats() {
     WriteResponse response =
-        client.writeAtLeastOnceWithCommitStats(
+        client.writeAtLeastOnce(
             Arrays.asList(
                 Mutation.newInsertOrUpdateBuilder("T")
                     .set("K")
                     .to(lastKey = uniqueString())
                     .set("StringValue")
                     .to("v1")
-                    .build()));
+                    .build()),
+            Options.commitStats());
     assertThat(response).isNotNull();
     assertThat(response.getCommitTimestamp()).isNotNull();
     assertThat(response.getCommitStats()).isNotNull();

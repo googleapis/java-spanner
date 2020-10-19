@@ -132,11 +132,6 @@ public class ReadWriteTransactionTest {
     }
 
     @Override
-    public TransactionManager withCommitStats() {
-      return this;
-    }
-
-    @Override
     public CommitStats getCommitStats() {
       throw new UnsupportedOperationException();
     }

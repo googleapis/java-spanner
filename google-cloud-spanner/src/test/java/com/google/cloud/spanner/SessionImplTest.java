@@ -213,8 +213,10 @@ public class SessionImplTest {
     Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
 
     Timestamp timestamp =
-        session.writeAtLeastOnce(
-            Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()));
+        session
+            .writeAtLeastOnce(
+                Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()))
+            .getCommitTimestamp();
     assertThat(timestamp.getSeconds())
         .isEqualTo(utcTimeSeconds(2015, Calendar.OCTOBER, 1, 10, 54, 20));
     assertThat(timestamp.getNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(21));

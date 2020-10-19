@@ -26,12 +26,13 @@ import java.util.concurrent.Executor;
 
 class AsyncRunnerImpl implements AsyncRunner {
   private final TransactionRunnerImpl delegate;
+  private final Options options;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
   private final SettableApiFuture<CommitStats> commitStats = SettableApiFuture.create();
-  private boolean returnCommitStats;
 
-  AsyncRunnerImpl(TransactionRunnerImpl delegate) {
-    this.delegate = delegate;
+  AsyncRunnerImpl(TransactionRunnerImpl delegate, Options options) {
+    this.delegate = Preconditions.checkNotNull(delegate);
+    this.options = Preconditions.checkNotNull(options);
   }
 
   @Override
@@ -75,7 +76,7 @@ class AsyncRunnerImpl implements AsyncRunner {
     } catch (Throwable t) {
       commitTimestamp.setException(t);
     }
-    if (returnCommitStats) {
+    if (options.withCommitStats()) {
       try {
         commitStats.set(delegate.getCommitStats());
       } catch (Throwable t) {
@@ -90,17 +91,10 @@ class AsyncRunnerImpl implements AsyncRunner {
   }
 
   @Override
-  public AsyncRunner withCommitStats() {
-    delegate.withCommitStats();
-    returnCommitStats = true;
-    return this;
-  }
-
-  @Override
   public ApiFuture<CommitStats> getCommitStats() {
     Preconditions.checkState(
-        returnCommitStats,
-        "getCommitStats may only be invoked if withCommitStats has been invoked before executing the transaction");
+        options.withCommitStats(),
+        "getCommitStats may only be invoked if Options.commitStats() was specified for the transaction");
     return commitStats;
   }
 }

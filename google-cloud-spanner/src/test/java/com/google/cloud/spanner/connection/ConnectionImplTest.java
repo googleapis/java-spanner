@@ -132,11 +132,6 @@ public class ConnectionImplTest {
     }
 
     @Override
-    public TransactionManager withCommitStats() {
-      return this;
-    }
-
-    @Override
     public CommitStats getCommitStats() {
       throw new UnsupportedOperationException();
     }
@@ -349,11 +344,6 @@ public class ConnectionImplTest {
 
                       @Override
                       public TransactionRunner allowNestedTransaction() {
-                        return this;
-                      }
-
-                      @Override
-                      public TransactionRunner withCommitStats() {
                         return this;
                       }
 

@@ -78,7 +78,8 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session, mock(Span.class));
+    manager =
+        new TransactionManagerImpl(session, mock(Span.class), Options.fromTransactionOptions());
   }
 
   @Test
@@ -146,12 +147,16 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitReturnsCommitStats() {
-    when(session.newTransaction()).thenReturn(txn);
-    Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
-    when(txn.commitTimestamp()).thenReturn(commitTimestamp);
-    manager.withCommitStats().begin();
-    manager.commit();
-    verify(txn).commit(true);
+    try (TransactionManager manager =
+        new TransactionManagerImpl(
+            session, mock(Span.class), Options.fromTransactionOptions(Options.commitStats()))) {
+      when(session.newTransaction()).thenReturn(txn);
+      Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
+      when(txn.commitTimestamp()).thenReturn(commitTimestamp);
+      manager.begin();
+      manager.commit();
+      verify(txn).commit(true);
+    }
   }
 
   @Test

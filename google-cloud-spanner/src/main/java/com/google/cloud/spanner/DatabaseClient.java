@@ -17,12 +17,28 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
  * instance of this is tied to a specific database.
  */
 public interface DatabaseClient {
+
+  /**
+   * Response for write methods that return both a commit {@link Timestamp} and {@link CommitStats}.
+   */
+  interface WriteResponse {
+    /** The commit timestamp of the transaction. */
+    Timestamp getCommitTimestamp();
+
+    /**
+     * The commit statistics of the transaction (if requested).
+     *
+     * @throws IllegalStateException if no {@link CommitStats} were requested for the transaction.
+     */
+    CommitStats getCommitStats();
+  }
 
   /**
    * Writes the given mutations atomically to the database.
@@ -33,7 +49,7 @@ public interface DatabaseClient {
    * is not possible to know whether the mutations were applied without performing a subsequent
    * database operation, but the mutations will have been applied at most once.
    *
-   * <p>Example of blind write.
+   * <p>Example of blind write that returns {@link CommitStats}.
    *
    * <pre>{@code
    * long singerId = my_singer_id;
@@ -45,12 +61,14 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.write(Collections.singletonList(mutation));
+   * dbClient.write(Collections.singletonList(mutation), Options.commitStats());
    * }</pre>
    *
-   * @return the timestamp at which the write was committed
+   * @return the timestamp at which the write was committed and the {@link CommitStats} if those
+   *     were requested.
    */
-  Timestamp write(Iterable<Mutation> mutations) throws SpannerException;
+  WriteResponse write(Iterable<Mutation> mutations, TransactionOption... options)
+      throws SpannerException;
 
   /**
    * Writes the given mutations atomically to the database without replay protection.
@@ -64,7 +82,7 @@ public interface DatabaseClient {
    * requires two RPCs (one of which may be performed in advance), and so this method may be
    * appropriate for latency sensitive and/or high throughput blind writing.
    *
-   * <p>Example of unprotected blind write.
+   * <p>Example of unprotected blind write that returns {@link CommitStats}.
    *
    * <pre>{@code
    * long singerId = my_singer_id;
@@ -76,35 +94,13 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.writeAtLeastOnce(Collections.singletonList(mutation));
+   * dbClient.writeAtLeastOnce(Collections.singletonList(mutation), Options.commitStats());
    * }</pre>
    *
-   * @return the timestamp at which the write was committed
+   * @return the timestamp at which the write was committed and the {@link CommitStats} if those
+   *     were requested.
    */
-  Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException;
-
-  /**
-   * Response for write methods that return both a commit {@link Timestamp} and {@link CommitStats}.
-   */
-  interface WriteResponse {
-    /** The commit timestamp of the transaction. */
-    Timestamp getCommitTimestamp();
-
-    /** The commit statistics of the transaction. */
-    CommitStats getCommitStats();
-  }
-
-  /**
-   * Same as {@link #write(Iterable)}, but requests the backend to return both a commit timestamp
-   * and {@link CommitStats}.
-   */
-  WriteResponse writeWithCommitStats(Iterable<Mutation> mutations) throws SpannerException;
-
-  /**
-   * Same as {@link #writeAtLeastOnce(Iterable)}, but requests the backend to return both a commit
-   * timestamp and {@link CommitStats}.
-   */
-  WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
+  WriteResponse writeAtLeastOnce(Iterable<Mutation> mutations, TransactionOption... options)
       throws SpannerException;
 
   /**
@@ -270,7 +266,7 @@ public interface DatabaseClient {
    *     });
    * </code></pre>
    */
-  TransactionRunner readWriteTransaction();
+  TransactionRunner readWriteTransaction(TransactionOption... options);
 
   /**
    * Returns a transaction manager which allows manual management of transaction lifecycle. This API
@@ -300,7 +296,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  TransactionManager transactionManager();
+  TransactionManager transactionManager(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction runner for executing a single logical transaction with
@@ -333,7 +329,7 @@ public interface DatabaseClient {
    *         executor);
    * </code></pre>
    */
-  AsyncRunner runAsync();
+  AsyncRunner runAsync(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction manager which allows manual management of transaction
@@ -421,7 +417,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  AsyncTransactionManager transactionManagerAsync();
+  AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
 
   /**
    * Returns the lower bound of rows modified by this DML statement.

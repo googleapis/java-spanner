@@ -41,6 +41,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -318,7 +319,7 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncRunnerReturnsCommitStats() {
-    AsyncRunner runner = client.runAsync().withCommitStats();
+    AsyncRunner runner = client.runAsync(Options.commitStats());
     runner.runAsync(
         new AsyncWork<Void>() {
           @Override
@@ -341,7 +342,7 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
-    try (AsyncTransactionManager mgr = client.transactionManagerAsync().withCommitStats()) {
+    try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
       TransactionContextFuture ctx = mgr.beginAsync();
       while (true) {
         try {

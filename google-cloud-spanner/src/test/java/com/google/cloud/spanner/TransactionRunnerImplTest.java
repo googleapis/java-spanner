@@ -97,7 +97,7 @@ public class TransactionRunnerImplTest {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
     when(session.newTransaction()).thenReturn(txn);
-    transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
+    transactionRunner = new TransactionRunnerImpl(session, Options.fromTransactionOptions());
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
@@ -195,15 +195,16 @@ public class TransactionRunnerImplTest {
 
   @Test
   public void testReturnCommitStats() {
-    transactionRunner
-        .withCommitStats()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                return null;
-              }
-            });
+    TransactionRunnerImpl transactionRunner =
+        new TransactionRunnerImpl(session, Options.fromTransactionOptions(Options.commitStats()));
+    transactionRunner.setSpan(mock(Span.class));
+    transactionRunner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            return null;
+          }
+        });
     verify(txn).commit(true);
   }
 
@@ -303,7 +304,8 @@ public class TransactionRunnerImplTest {
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner =
+        new TransactionRunnerImpl(session, Options.fromTransactionOptions());
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

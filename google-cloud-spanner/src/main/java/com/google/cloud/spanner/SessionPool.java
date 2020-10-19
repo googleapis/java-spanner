@@ -47,6 +47,7 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
@@ -720,21 +721,20 @@ final class SessionPool {
     private TransactionManager delegate;
     private final SessionPool sessionPool;
     private PooledSessionFuture session;
-    private boolean returnCommitStats;
+    private final TransactionOption[] options;
     private boolean closed;
     private boolean restartedAfterSessionNotFound;
 
-    AutoClosingTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
-      this.sessionPool = sessionPool;
-      this.session = session;
+    AutoClosingTransactionManager(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
+      this.sessionPool = Preconditions.checkNotNull(sessionPool);
+      this.session = Preconditions.checkNotNull(session);
+      this.options = Preconditions.checkNotNull(options);
     }
 
     @Override
     public TransactionContext begin() {
-      this.delegate = session.get().transactionManager();
-      if (returnCommitStats) {
-        this.delegate.withCommitStats();
-      }
+      this.delegate = session.get().transactionManager(options);
       while (true) {
         try {
           return internalBegin();
@@ -747,10 +747,7 @@ final class SessionPool {
 
     @SuppressWarnings("resource")
     private void refreshDelegateTransactionManager() {
-      delegate = session.get().delegate.transactionManager();
-      if (returnCommitStats) {
-        delegate.withCommitStats();
-      }
+      delegate = session.get().delegate.transactionManager(options);
     }
 
     private TransactionContext internalBegin() {
@@ -814,12 +811,6 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionManager withCommitStats() {
-      this.returnCommitStats = true;
-      return this;
-    }
-
-    @Override
     public CommitStats getCommitStats() {
       return delegate.getCommitStats();
     }
@@ -855,17 +846,20 @@ final class SessionPool {
    */
   private static final class SessionPoolTransactionRunner implements TransactionRunner {
     private final SessionPool sessionPool;
+    private final TransactionOption[] options;
     private PooledSessionFuture session;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(SessionPool sessionPool, PooledSessionFuture session) {
-      this.sessionPool = sessionPool;
-      this.session = session;
+    private SessionPoolTransactionRunner(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
+      this.sessionPool = Preconditions.checkNotNull(sessionPool);
+      this.session = Preconditions.checkNotNull(session);
+      this.options = Preconditions.checkNotNull(options);
     }
 
     private TransactionRunner getRunner() {
       if (this.runner == null) {
-        this.runner = session.get().readWriteTransaction();
+        this.runner = session.get().readWriteTransaction(options);
       }
       return runner;
     }
@@ -881,7 +875,7 @@ final class SessionPool {
             break;
           } catch (SessionNotFoundException e) {
             session = sessionPool.replaceReadWriteSession(e, session);
-            runner = session.get().delegate.readWriteTransaction();
+            runner = session.get().delegate.readWriteTransaction(options);
           }
         }
         session.get().markUsed();
@@ -905,12 +899,6 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionRunner withCommitStats() {
-      getRunner().withCommitStats();
-      return this;
-    }
-
-    @Override
     public CommitStats getCommitStats() {
       return getRunner().getCommitStats();
     }
@@ -918,14 +906,21 @@ final class SessionPool {
 
   private static class SessionPoolAsyncRunner implements AsyncRunner {
     private final SessionPool sessionPool;
+    private final TransactionOption[] options;
     private volatile PooledSessionFuture session;
     private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
-    private final SettableApiFuture<CommitStats> commitStats = SettableApiFuture.create();
-    private boolean returnCommitStats;
+    private final SettableApiFuture<CommitStats> commitStats;
 
-    private SessionPoolAsyncRunner(SessionPool sessionPool, PooledSessionFuture session) {
-      this.sessionPool = sessionPool;
-      this.session = session;
+    private SessionPoolAsyncRunner(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
+      this.sessionPool = Preconditions.checkNotNull(sessionPool);
+      this.session = Preconditions.checkNotNull(session);
+      this.options = options;
+      if (Options.fromTransactionOptions(options).withCommitStats()) {
+        commitStats = SettableApiFuture.create();
+      } else {
+        commitStats = null;
+      }
     }
 
     @Override
@@ -940,10 +935,7 @@ final class SessionPool {
               AsyncRunner runner = null;
               while (true) {
                 try {
-                  runner = session.get().runAsync();
-                  if (returnCommitStats) {
-                    runner.withCommitStats();
-                  }
+                  runner = session.get().runAsync(options);
                   r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
                   break;
                 } catch (ExecutionException e) {
@@ -980,7 +972,7 @@ final class SessionPool {
       } catch (Throwable t) {
         commitTimestamp.setException(t);
       }
-      if (returnCommitStats) {
+      if (commitStats != null) {
         try {
           commitStats.set(delegate.getCommitStats().get());
         } catch (Throwable t) {
@@ -995,15 +987,9 @@ final class SessionPool {
     }
 
     @Override
-    public AsyncRunner withCommitStats() {
-      this.returnCommitStats = true;
-      return this;
-    }
-
-    @Override
     public ApiFuture<CommitStats> getCommitStats() {
       Preconditions.checkState(
-          returnCommitStats,
+          commitStats != null,
           "getCommitStats may only be invoked if withCommitStats has been invoked before executing the transaction");
       return commitStats;
     }
@@ -1155,38 +1141,20 @@ final class SessionPool {
     }
 
     @Override
-    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
-      try {
-        return get().write(mutations);
-      } finally {
-        close();
-      }
-    }
-
-    @Override
-    public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations)
+    public WriteResponse write(Iterable<Mutation> mutations, TransactionOption... options)
         throws SpannerException {
       try {
-        return get().writeWithCommitStats(mutations);
+        return get().write(mutations, options);
       } finally {
         close();
       }
     }
 
     @Override
-    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+    public WriteResponse writeAtLeastOnce(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
-        return get().writeAtLeastOnce(mutations);
-      } finally {
-        close();
-      }
-    }
-
-    @Override
-    public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
-        throws SpannerException {
-      try {
-        return get().writeAtLeastOnceWithCommitStats(mutations);
+        return get().writeAtLeastOnce(mutations, options);
       } finally {
         close();
       }
@@ -1291,23 +1259,23 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionRunner readWriteTransaction() {
-      return new SessionPoolTransactionRunner(SessionPool.this, this);
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return new SessionPoolTransactionRunner(SessionPool.this, this, options);
     }
 
     @Override
-    public TransactionManager transactionManager() {
-      return new AutoClosingTransactionManager(SessionPool.this, this);
+    public TransactionManager transactionManager(TransactionOption... options) {
+      return new AutoClosingTransactionManager(SessionPool.this, this, options);
     }
 
     @Override
-    public AsyncRunner runAsync() {
-      return new SessionPoolAsyncRunner(SessionPool.this, this);
+    public AsyncRunner runAsync(TransactionOption... options) {
+      return new SessionPoolAsyncRunner(SessionPool.this, this, options);
     }
 
     @Override
-    public AsyncTransactionManager transactionManagerAsync() {
-      return new SessionPoolAsyncTransactionManager(this);
+    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      return new SessionPoolAsyncTransactionManager(this, options);
     }
 
     @Override
@@ -1418,42 +1386,22 @@ final class SessionPool {
     }
 
     @Override
-    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
-      try {
-        markUsed();
-        return delegate.write(mutations);
-      } catch (SpannerException e) {
-        throw lastException = e;
-      }
-    }
-
-    @Override
-    public WriteResponse writeWithCommitStats(Iterable<Mutation> mutations)
+    public WriteResponse write(Iterable<Mutation> mutations, TransactionOption... options)
         throws SpannerException {
       try {
         markUsed();
-        return delegate.writeWithCommitStats(mutations);
+        return delegate.write(mutations, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
     }
 
     @Override
-    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+    public WriteResponse writeAtLeastOnce(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         markUsed();
-        return delegate.writeAtLeastOnce(mutations);
-      } catch (SpannerException e) {
-        throw lastException = e;
-      }
-    }
-
-    @Override
-    public WriteResponse writeAtLeastOnceWithCommitStats(Iterable<Mutation> mutations)
-        throws SpannerException {
-      try {
-        markUsed();
-        return delegate.writeAtLeastOnceWithCommitStats(mutations);
+        return delegate.writeAtLeastOnce(mutations, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1500,18 +1448,18 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionRunner readWriteTransaction() {
-      return delegate.readWriteTransaction();
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return delegate.readWriteTransaction(options);
     }
 
     @Override
-    public AsyncRunner runAsync() {
-      return delegate.runAsync();
+    public AsyncRunner runAsync(TransactionOption... options) {
+      return delegate.runAsync(options);
     }
 
     @Override
-    public AsyncTransactionManagerImpl transactionManagerAsync() {
-      return delegate.transactionManagerAsync();
+    public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
+      return delegate.transactionManagerAsync(options);
     }
 
     @Override
@@ -1582,8 +1530,8 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionManager transactionManager() {
-      return delegate.transactionManager();
+    public TransactionManager transactionManager(TransactionOption... options) {
+      return delegate.transactionManager(options);
     }
   }
 
