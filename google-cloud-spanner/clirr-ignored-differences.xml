@@ -382,17 +382,7 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/TransactionManager</className>
-    <method>com.google.cloud.spanner.TransactionManager withCommitStats()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/TransactionManager</className>
     <method>com.google.cloud.spanner.CommitStats getCommitStats()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/TransactionRunner</className>
-    <method>com.google.cloud.spanner.TransactionRunner withCommitStats()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
@@ -402,17 +392,7 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/AsyncTransactionManager</className>
-    <method>com.google.cloud.spanner.AsyncTransactionManager withCommitStats()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
     <method>com.google.api.core.ApiFuture getCommitStats()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/AsyncRunner</className>
-    <method>com.google.cloud.spanner.AsyncRunner withCommitStats()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
@@ -420,14 +400,46 @@
     <method>com.google.api.core.ApiFuture getCommitStats()</method>
   </difference>
   <difference>
-    <differenceType>7012</differenceType>
+    <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.DatabaseClient$WriteResponse writeWithCommitStats(java.lang.Iterable)</method>
+    <method>com.google.cloud.Timestamp write(java.lang.Iterable)</method>
   </difference>
   <difference>
-    <differenceType>7012</differenceType>
+    <differenceType>7006</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.DatabaseClient$WriteResponse writeAtLeastOnceWithCommitStats(java.lang.Iterable)</method>
+    <method>com.google.cloud.Timestamp write(java.lang.Iterable)</method>
+    <to>com.google.cloud.spanner.DatabaseClient$WriteResponse</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.Timestamp writeAtLeastOnce(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.Timestamp writeAtLeastOnce(java.lang.Iterable)</method>
+    <to>com.google.cloud.spanner.DatabaseClient$WriteResponse</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.TransactionRunner readWriteTransaction()</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.TransactionManager transactionManager()</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.AsyncRunner runAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync()</method>
   </difference>
   
 </differences>
