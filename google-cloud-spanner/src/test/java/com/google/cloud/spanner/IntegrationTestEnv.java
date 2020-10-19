@@ -24,7 +24,6 @@ import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.rules.ExternalResource;
@@ -126,7 +125,7 @@ public class IntegrationTestEnv extends ExternalResource {
         instanceAdminClient.createInstance(instance);
     Instance createdInstance;
     try {
-      createdInstance = op.get(30000L, TimeUnit.MILLISECONDS);
+      createdInstance = op.get();
     } catch (Exception e) {
       boolean cancelled = false;
       try {
