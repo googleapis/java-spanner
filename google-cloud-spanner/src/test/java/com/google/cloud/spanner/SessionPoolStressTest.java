@@ -270,7 +270,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                   Uninterruptibles.awaitUninterruptibly(releaseThreads);
                   for (int j = 0; j < numOperationsPerThread; j++) {
                     try {
-                      PooledSessionFuture session = pool.get();
+                      PooledSessionFuture session = pool.getSession();
                       session.get();
                       Uninterruptibles.sleepUninterruptibly(
                           random.nextInt(5), TimeUnit.MILLISECONDS);

@@ -47,8 +47,8 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @VisibleForTesting
-  PooledSessionFuture getReadSession() {
-    return pool.get();
+  PooledSessionFuture getSession() {
+    return pool.getSession();
   }
 
   @Override
@@ -93,7 +93,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadContext singleUse() {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().singleUse();
+      return getSession().singleUse();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -104,7 +104,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadContext singleUse(TimestampBound bound) {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().singleUse(bound);
+      return getSession().singleUse(bound);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -115,7 +115,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().singleUseReadOnlyTransaction();
+      return getSession().singleUseReadOnlyTransaction();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -126,7 +126,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().singleUseReadOnlyTransaction(bound);
+      return getSession().singleUseReadOnlyTransaction(bound);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -137,7 +137,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction readOnlyTransaction() {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().readOnlyTransaction();
+      return getSession().readOnlyTransaction();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -148,7 +148,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
     Span span = tracer.spanBuilder(READ_ONLY_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().readOnlyTransaction(bound);
+      return getSession().readOnlyTransaction(bound);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -159,7 +159,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionRunner readWriteTransaction() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().readWriteTransaction();
+      return getSession().readWriteTransaction();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -172,7 +172,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionManager transactionManager() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().transactionManager();
+      return getSession().transactionManager();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -183,7 +183,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncRunner runAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().runAsync();
+      return getSession().runAsync();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -194,7 +194,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public AsyncTransactionManager transactionManagerAsync() {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getReadSession().transactionManagerAsync();
+      return getSession().transactionManagerAsync();
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -219,7 +219,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   private <T> T runWithSessionRetry(Function<Session, T> callable) {
-    PooledSessionFuture session = getReadSession();
+    PooledSessionFuture session = getSession();
     while (true) {
       try {
         return callable.apply(session);

@@ -31,7 +31,12 @@ public class SessionPoolOptions {
   private final int maxSessions;
   private final int incStep;
   private final int maxIdleSessions;
+  /**
+   * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+   * This setting therefore does not have any meaning anymore, and may be removed in the future.
+   */
   @Deprecated private final float writeSessionsFraction;
+
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
   private final int keepAliveIntervalMinutes;
@@ -77,7 +82,8 @@ public class SessionPoolOptions {
   /**
    * @deprecated This value is no longer used. The session pool does not prepare any sessions for
    *     read/write transactions. Instead, a transaction will be started by including a
-   *     BeginTransaction option with the first statement of a transaction.
+   *     BeginTransaction option with the first statement of a transaction. This method may be
+   *     removed in a future release.
    */
   @Deprecated
   public float getWriteSessionsFraction() {
@@ -145,7 +151,12 @@ public class SessionPoolOptions {
     private int maxSessions = DEFAULT_MAX_SESSIONS;
     private int incStep = DEFAULT_INC_STEP;
     private int maxIdleSessions;
+    /**
+     * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+     * This setting therefore does not have any meaning anymore, and may be removed in the future.
+     */
     @Deprecated private float writeSessionsFraction = 0.2f;
+
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
@@ -270,6 +281,7 @@ public class SessionPoolOptions {
      *     any sessions for read/write transactions. Instead, a transaction will automatically be
      *     started by the first statement that is executed by a transaction by including a
      *     BeginTransaction option with that statement.
+     *     <p>This method may be removed in a future release.
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;

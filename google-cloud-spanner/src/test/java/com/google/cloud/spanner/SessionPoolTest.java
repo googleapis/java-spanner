@@ -179,7 +179,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(pool.isValid()).isTrue();
     closePoolWithStacktrace();
     try {
-      pool.get();
+      pool.getSession();
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       assertThat(e.getCause()).isInstanceOf(ClosedException.class);
@@ -197,7 +197,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void sessionCreation() {
     setupMockSessionCreation();
     pool = createPool();
-    try (Session session = pool.get()) {
+    try (Session session = pool.getSession()) {
       assertThat(session).isNotNull();
     }
   }
@@ -206,14 +206,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolLifo() {
     setupMockSessionCreation();
     pool = createPool();
-    Session session1 = pool.get().get();
-    Session session2 = pool.get().get();
+    Session session1 = pool.getSession().get();
+    Session session2 = pool.getSession().get();
     assertThat(session1).isNotEqualTo(session2);
 
     session2.close();
     session1.close();
-    Session session3 = pool.get().get();
-    Session session4 = pool.get().get();
+    Session session3 = pool.getSession().get();
+    Session session4 = pool.getSession().get();
     assertThat(session3).isEqualTo(session1);
     assertThat(session4).isEqualTo(session2);
     session3.close();
@@ -252,9 +252,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    Session session1 = pool.get();
+    Session session1 = pool.getSession();
     // Leaked sessions
-    PooledSessionFuture leakedSession = pool.get();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Clear the leaked exception to suppress logging of expected exceptions.
     leakedSession.clearLeakedException();
     session1.close();
@@ -330,7 +330,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.get();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
@@ -388,7 +388,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.get();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
@@ -460,13 +460,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.get();
+    PooledSessionFuture leakedSession = pool.getSession();
     leakedSession.get();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     pool.closeAsync(new SpannerImpl.ClosedException());
     try {
-      pool.get();
+      pool.getSession();
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
@@ -513,7 +513,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
     try {
-      pool.get().get();
+      pool.getSession().get();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
@@ -547,15 +547,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    Session session1 = pool.get();
+    Session session1 = pool.getSession();
     try {
-      pool.get();
+      pool.getSession();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
     }
     session1.close();
-    session1 = pool.get();
+    session1 = pool.getSession();
     assertThat(session1).isNotNull();
     session1.close();
   }
@@ -599,12 +599,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
     // Make sure pool has been initialized
-    pool.get().close();
+    pool.getSession().close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
-    PooledSessionFuture readSession1 = pool.get();
-    PooledSessionFuture readSession2 = pool.get();
-    PooledSessionFuture readSession3 = pool.get();
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
     // Wait until the sessions have actually been gotten in order to make sure they are in use in
     // parallel.
     readSession1.get();
@@ -619,9 +619,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     // Counters have now been reset
     // Use all 3 sessions sequentially
-    pool.get().close();
-    pool.get().close();
-    pool.get().close();
+    pool.getSession().close();
+    pool.getSession().close();
+    pool.getSession().close();
     // Advance the time by running the maintainer. This should cause
     // one session to be kept alive and two sessions to be removed.
     long cycles =
@@ -663,8 +663,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    PooledSessionFuture session1 = pool.get();
-    PooledSessionFuture session2 = pool.get();
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
     session1.get();
     session2.get();
     session1.close();
@@ -675,7 +675,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(session, times(2)).singleUse(any(TimestampBound.class));
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
-    session1 = pool.get();
+    session1 = pool.getSession();
     session1.writeAtLeastOnce(new ArrayList<Mutation>());
     session1.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
@@ -697,7 +697,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     setupMockSessionCreation();
     pool = createPool();
     // Take the only session that can be in the pool.
-    PooledSessionFuture checkedOutSession = pool.get();
+    PooledSessionFuture checkedOutSession = pool.getSession();
     checkedOutSession.get();
     ExecutorService executor = Executors.newFixedThreadPool(1);
     final CountDownLatch latch = new CountDownLatch(1);
@@ -708,7 +708,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void call() {
                 latch.countDown();
-                PooledSessionFuture session = pool.get();
+                PooledSessionFuture session = pool.getSession();
                 session.close();
                 return null;
               }
@@ -729,7 +729,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     executor.shutdown();
 
     // Verify that the session was returned to the pool and that we can get it again.
-    Session session = pool.get();
+    Session session = pool.getSession();
     assertThat(session).isNotNull();
     session.close();
     assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
@@ -790,7 +790,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    ReadContext context = pool.get().singleUse();
+    ReadContext context = pool.getSession().singleUse();
     ResultSet resultSet = context.executeQuery(statement);
     assertThat(resultSet.next()).isTrue();
   }
@@ -846,7 +846,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    ReadOnlyTransaction transaction = pool.get().readOnlyTransaction();
+    ReadOnlyTransaction transaction = pool.getSession().readOnlyTransaction();
     ResultSet resultSet = transaction.executeQuery(statement);
     assertThat(resultSet.next()).isTrue();
   }
@@ -976,7 +976,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
           SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
-      try (PooledSessionFuture readWriteSession = pool.get()) {
+      try (PooledSessionFuture readWriteSession = pool.getSession()) {
         TransactionRunner runner = readWriteSession.readWriteTransaction();
         try {
           runner.run(
@@ -1211,8 +1211,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     setupMockSessionCreation();
     pool = createPool(clock, metricRegistry, labelValues);
-    PooledSessionFuture session1 = pool.get();
-    PooledSessionFuture session2 = pool.get();
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
     session1.get();
     session2.get();
 
@@ -1290,7 +1290,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void call() {
                 latch.countDown();
-                Session session = pool.get();
+                Session session = pool.getSession();
                 session.close();
                 return null;
               }
@@ -1348,7 +1348,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Runnable() {
               @Override
               public void run() {
-                try (PooledSessionFuture future = pool.get()) {
+                try (PooledSessionFuture future = pool.getSession()) {
                   PooledSession session = future.get();
                   failed.compareAndSet(false, session == null);
                   Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);

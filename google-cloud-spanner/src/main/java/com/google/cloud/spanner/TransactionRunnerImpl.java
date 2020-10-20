@@ -764,11 +764,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           public T call() {
             boolean useInlinedBegin = true;
             if (attempt.get() > 0) {
-              if (useInlinedBegin) {
-                // Do not inline the BeginTransaction during a retry if the initial attempt did not
-                // actually start a transaction.
-                useInlinedBegin = txn.transactionId != null;
-              }
+              // Do not inline the BeginTransaction during a retry if the initial attempt did not
+              // actually start a transaction.
+              useInlinedBegin = txn.transactionId != null;
               txn = session.newTransaction();
             }
             checkState(

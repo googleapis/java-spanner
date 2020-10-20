@@ -37,12 +37,20 @@ class MetricRegistryConstants {
 
   static final LabelValue NUM_IN_USE_SESSIONS = LabelValue.create("num_in_use_sessions");
 
+  /**
+   * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+   * This metric will therefore always be zero and may be removed in the future.
+   */
   @Deprecated
   static final LabelValue NUM_SESSIONS_BEING_PREPARED =
       LabelValue.create("num_sessions_being_prepared");
 
   static final LabelValue NUM_READ_SESSIONS = LabelValue.create("num_read_sessions");
 
+  /**
+   * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+   * This metric will therefore always be zero and may be removed in the future.
+   */
   @Deprecated
   static final LabelValue NUM_WRITE_SESSIONS = LabelValue.create("num_write_prepared_sessions");
 

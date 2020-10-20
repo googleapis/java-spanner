@@ -1845,8 +1845,8 @@ final class SessionPool {
   }
 
   /**
-   * Returns a session to be used for requests to spanner. It will block if a session is not
-   * currently available. In case the pool is exhausted and {@link
+   * Returns a session to be used for requests to spanner. This method is always non-blocking and
+   * returns a {@link PooledSessionFuture}. In case the pool is exhausted and {@link
    * SessionPoolOptions#isFailIfPoolExhausted()} has been set, it will throw an exception. Returned
    * session must be closed by calling {@link Session#close()}.
    *
@@ -1859,7 +1859,7 @@ final class SessionPool {
    *       session being returned to the pool or a new session being created.
    * </ol>
    */
-  PooledSessionFuture get() throws SpannerException {
+  PooledSessionFuture getSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
@@ -1885,7 +1885,7 @@ final class SessionPool {
         waiter = new WaiterFuture();
         waiters.add(waiter);
       } else {
-        span.addAnnotation("Acquired rsession");
+        span.addAnnotation("Acquired session");
       }
       return checkoutSession(span, sess, waiter);
     }
@@ -1919,7 +1919,7 @@ final class SessionPool {
       }
       session.leakedException = null;
       invalidateSession(session.get());
-      return get();
+      return getSession();
     } else {
       throw e;
     }
@@ -2013,9 +2013,9 @@ final class SessionPool {
   }
 
   /**
-   * Close all the sessions. Once this method is invoked {@link #get()} will start throwing {@code
-   * IllegalStateException}. The returned future blocks till all the sessions created in this pool
-   * have been closed.
+   * Close all the sessions. Once this method is invoked {@link #getSession()} will start throwing
+   * {@code IllegalStateException}. The returned future blocks till all the sessions created in this
+   * pool have been closed.
    */
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
