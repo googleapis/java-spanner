@@ -1920,7 +1920,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public List<ByteString> getTransactionsStarted() {
     return new ArrayList<>(transactionsStarted);
   }
-  
+
   public void waitForRequestsToContain(Class<? extends AbstractMessage> type, long timeoutMillis)
       throws InterruptedException, TimeoutException {
     Stopwatch watch = Stopwatch.createStarted();

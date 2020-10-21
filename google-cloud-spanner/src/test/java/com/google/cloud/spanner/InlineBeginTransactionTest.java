@@ -546,10 +546,10 @@ public class InlineBeginTransactionTest {
     final Statement statement = Statement.of("SELECT * FROM BROKEN_TABLE");
     RandomResultSetGenerator generator = new RandomResultSetGenerator(2);
     mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
-    // The first PartialResultSet will be returned successfully, and then a DATA_LOSS exception will be returned.
+    // The first PartialResultSet will be returned successfully, and then a DATA_LOSS exception will
+    // be returned.
     mockSpanner.setExecuteStreamingSqlExecutionTime(
-        SimulatedExecutionTime.ofStreamException(
-            Status.DATA_LOSS.asRuntimeException(), 1));
+        SimulatedExecutionTime.ofStreamException(Status.DATA_LOSS.asRuntimeException(), 1));
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
     Void res =

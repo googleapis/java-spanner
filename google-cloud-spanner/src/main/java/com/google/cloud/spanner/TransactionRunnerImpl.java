@@ -159,7 +159,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
     volatile ByteString transactionId;
-    
+
     private Timestamp commitTimestamp;
 
     private TransactionContextImpl(Builder builder) {
