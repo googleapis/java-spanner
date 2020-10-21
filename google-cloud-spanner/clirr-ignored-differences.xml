@@ -382,12 +382,12 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.WriteResponse writeWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$WriteOption[])</method>
+    <method>com.google.cloud.spanner.CommitResponse writeWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$TransactionOption[])</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.WriteResponse writeAtLeastOnceWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$WriteOption[])</method>
+    <method>com.google.cloud.spanner.CommitResponse writeAtLeastOnceWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$TransactionOption[])</method>
   </difference>
 
 </differences>

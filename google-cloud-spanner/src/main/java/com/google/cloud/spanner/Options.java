@@ -34,7 +34,7 @@ public final class Options implements Serializable {
   public interface QueryOption {}
 
   /** Marker interface to mark options applicable to write operations */
-  public interface WriteOption {}
+  public interface TransactionOption {}
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}

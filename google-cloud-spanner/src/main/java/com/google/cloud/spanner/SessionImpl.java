@@ -25,7 +25,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
-import com.google.cloud.spanner.Options.WriteOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -36,7 +36,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.common.Scope;
@@ -141,10 +140,10 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
       throws SpannerException {
     final Timestamp commitTimestamp = write(mutations);
-    return new WriteResponse(commitTimestamp);
+    return new CommitResponse(commitTimestamp);
   }
 
   @Override
@@ -162,7 +161,7 @@ class SessionImpl implements Session {
             .build();
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      CommitResponse response = spanner.getRpc().commit(request, options);
+      com.google.spanner.v1.CommitResponse response = spanner.getRpc().commit(request, options);
       Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
       return t;
     } catch (IllegalArgumentException e) {
@@ -177,10 +176,10 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public WriteResponse writeAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+  public CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
-    return new WriteResponse(commitTimestamp);
+    return new CommitResponse(commitTimestamp);
   }
 
   @Override

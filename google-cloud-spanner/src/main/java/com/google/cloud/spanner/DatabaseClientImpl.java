@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.WriteOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -83,10 +83,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
       throws SpannerException {
     final Timestamp commitTimestamp = write(mutations);
-    return new WriteResponse(commitTimestamp);
+    return new CommitResponse(commitTimestamp);
   }
 
   @Override
@@ -110,10 +110,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public WriteResponse writeAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+  public CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
-    return new WriteResponse(commitTimestamp);
+    return new CommitResponse(commitTimestamp);
   }
 
   @Override

@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.WriteOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -77,9 +77,9 @@ public interface DatabaseClient {
    * dbClient.writeWithOptions(Collections.singletonList(mutation));
    * }</pre>
    *
-   * @return a write response with the timestamp at which the write was committed
+   * @return a response with the timestamp at which the write was committed
    */
-  WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+  CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
       throws SpannerException;
 
   /**
@@ -140,10 +140,10 @@ public interface DatabaseClient {
    * dbClient.writeAtLeastOnce(Collections.singletonList(mutation));
    * }</pre>
    *
-   * @return a write response with the timestamp at which the write was committed
+   * @return a response with the timestamp at which the write was committed
    */
-  WriteResponse writeAtLeastOnceWithOptions(Iterable<Mutation> mutations, WriteOption... options)
-      throws SpannerException;
+  CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
   /**
    * Returns a context in which a single read can be performed using {@link TimestampBound#strong()}

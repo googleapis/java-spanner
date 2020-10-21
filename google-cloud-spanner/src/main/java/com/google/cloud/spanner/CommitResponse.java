@@ -19,12 +19,12 @@ package com.google.cloud.spanner;
 import com.google.cloud.Timestamp;
 import java.util.Objects;
 
-/** Represents a response from a write / writeAtLeast once operation. */
-public class WriteResponse {
+/** Represents a response from a commit operation. */
+public class CommitResponse {
 
   private final Timestamp commitTimestamp;
 
-  public WriteResponse(Timestamp commitTimestamp) {
+  public CommitResponse(Timestamp commitTimestamp) {
     this.commitTimestamp = commitTimestamp;
   }
 
@@ -41,7 +41,7 @@ public class WriteResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    WriteResponse that = (WriteResponse) o;
+    CommitResponse that = (CommitResponse) o;
     return Objects.equals(commitTimestamp, that.commitTimestamp);
   }
 
