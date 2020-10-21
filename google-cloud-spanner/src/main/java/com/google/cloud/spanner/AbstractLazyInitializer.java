@@ -51,5 +51,5 @@ public abstract class AbstractLazyInitializer<T> {
    * Initializes the actual object that should be returned. Is called once the first time an
    * instance of T is required.
    */
-  public abstract T initialize() throws Exception;
+  protected abstract T initialize() throws Exception;
 }

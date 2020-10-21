@@ -23,7 +23,7 @@ public class LazySpannerInitializer extends AbstractLazyInitializer<Spanner> {
    * custom configuration.
    */
   @Override
-  public Spanner initialize() throws Exception {
+  protected Spanner initialize() throws Exception {
     return SpannerOptions.newBuilder().build().getService();
   }
 }
