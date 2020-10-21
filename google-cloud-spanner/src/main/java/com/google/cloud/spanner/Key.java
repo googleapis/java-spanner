@@ -61,10 +61,13 @@ public final class Key implements Serializable {
    *
    * <ul>
    *   <li>{@code Boolean} for the {@code BOOL} Cloud Spanner type
-   *   <li>{@code Integer}, {@code Long} for {@code INT64}
-   *   <li>{@code Float}, {@code Double} for {@code FLOAT64}
-   *   <li>{@code String} for {@code STRING}
-   *   <li>{@link ByteArray} for {@code BYTES}
+   *   <li>{@code Integer}, {@code Long} for the {@code INT64} Cloud Spanner type
+   *   <li>{@code Float}, {@code Double} for the {@code FLOAT64} Cloud Spanner type
+   *   <li>{@code BigDecimal} for the {@code NUMERIC} Cloud Spanner type
+   *   <li>{@code String} for the {@code STRING} Cloud Spanner type
+   *   <li>{@link ByteArray} for the {@code BYTES} Cloud Spanner type
+   *   <li>{@link Timestamp} for the {@code TIMESTAMP} Cloud Spanner type
+   *   <li>{@link Date} for the {@code DATE} Cloud Spanner type
    * </ul>
    *
    * @throws IllegalArgumentException if any member of {@code values} is not a supported type
