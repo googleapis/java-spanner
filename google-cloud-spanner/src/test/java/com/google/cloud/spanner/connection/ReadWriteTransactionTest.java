@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -172,7 +173,7 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     try {
-      transaction.executeDdl(statement);
+      transaction.executeDdlAsync(statement);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -183,7 +184,7 @@ public class ReadWriteTransactionTest {
   public void testRunBatch() {
     ReadWriteTransaction subject = createSubject();
     try {
-      subject.runBatch();
+      subject.runBatchAsync();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -210,7 +211,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.NONE);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE));
     assertThat(rs, is(notNullValue()));
     assertThat(rs.getStats(), is(nullValue()));
   }
@@ -224,7 +225,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.PLAN);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PLAN));
     assertThat(rs, is(notNullValue()));
     while (rs.next()) {
       // do nothing
@@ -241,7 +242,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.PROFILE);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PROFILE));
     assertThat(rs, is(notNullValue()));
     while (rs.next()) {
       // do nothing
@@ -258,7 +259,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
   }
 
   @Test
@@ -270,7 +271,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
     try {
       transaction.getCommitTimestamp();
       fail("Expected exception");
@@ -288,8 +289,8 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
-    transaction.commit();
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
+    get(transaction.commitAsync());
 
     assertThat(transaction.getCommitTimestamp(), is(notNullValue()));
   }
@@ -303,7 +304,8 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE), is(notNullValue()));
+    assertThat(
+        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
     try {
       transaction.getReadTimestamp();
       fail("Expected exception");
@@ -325,13 +327,14 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE), is(notNullValue()));
+    assertThat(
+        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
 
-    transaction.commit();
+    get(transaction.commitAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -343,7 +346,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    transaction.rollback();
+    get(transaction.rollbackAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.ROLLED_BACK)));
@@ -356,7 +359,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      transaction.commit();
+      get(transaction.commitAsync());
     } catch (SpannerException e) {
       // ignore
     }
@@ -372,7 +375,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      transaction.commit();
+      get(transaction.commitAsync());
     } catch (AbortedException e) {
       // ignore
     }
@@ -388,7 +391,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    transaction.commit();
+    get(transaction.commitAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -452,11 +455,11 @@ public class ReadWriteTransactionTest {
               .setDatabaseClient(client)
               .withStatementExecutor(new StatementExecutor())
               .build();
-      subject.executeUpdate(update1);
-      subject.executeUpdate(update2);
+      subject.executeUpdateAsync(update1);
+      subject.executeUpdateAsync(update2);
       boolean expectedException = false;
       try {
-        subject.commit();
+        get(subject.commitAsync());
       } catch (SpannerException e) {
         if (results == RetryResults.DIFFERENT && e.getErrorCode() == ErrorCode.ABORTED) {
           // expected

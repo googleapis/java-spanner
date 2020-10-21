@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -26,6 +28,27 @@ import java.util.Arrays;
 
 /** Implementation of {@link StatementResult} */
 class StatementResultImpl implements StatementResult {
+
+  /**
+   * Returns the {@link AsyncStatementResult} as a {@link StatementResult} with the guarantee that
+   * the underlying result is available.
+   */
+  static StatementResult of(AsyncStatementResult delegate) {
+    switch (delegate.getResultType()) {
+      case NO_RESULT:
+        get(delegate.getNoResultAsync());
+        break;
+      case RESULT_SET:
+        delegate.getResultSet();
+        break;
+      case UPDATE_COUNT:
+        delegate.getUpdateCount();
+        break;
+      default:
+        throw new IllegalStateException("Unknown result type: " + delegate.getResultType());
+    }
+    return delegate;
+  }
 
   /** {@link StatementResult} containing a {@link ResultSet} returned by Cloud Spanner. */
   static StatementResult of(ResultSet resultSet) {

@@ -25,6 +25,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
@@ -56,7 +57,17 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public void close() {
+    closeAsync();
+  }
+
+  @Override
+  public ApiFuture<Void> closeAsync() {
+    ApiFuture<Void> res = null;
+    if (txnState == TransactionState.STARTED) {
+      res = rollbackAsync();
+    }
     txn.close();
+    return MoreObjects.firstNonNull(res, ApiFutures.<Void>immediateFuture(null));
   }
 
   @Override

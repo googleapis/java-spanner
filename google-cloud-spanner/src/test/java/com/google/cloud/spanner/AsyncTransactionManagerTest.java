@@ -36,7 +36,9 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -47,6 +49,8 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -179,6 +184,30 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       };
     }
+  }
+
+  @Test
+  public void asyncTransactionManager_shouldRollbackOnCloseAsync() throws Exception {
+    AsyncTransactionManager manager = client().transactionManagerAsync();
+    TransactionContext txn = manager.beginAsync().get();
+    txn.executeUpdateAsync(UPDATE_STATEMENT).get();
+    final TransactionSelector selector = ((TransactionContextImpl) txn).getTransactionSelector();
+
+    SpannerApiFutures.get(manager.closeAsync());
+    // The mock server should already have the Rollback request, as we are waiting for the returned
+    // ApiFuture to be done.
+    mockSpanner.waitForRequestsToContain(
+        new Predicate<AbstractMessage>() {
+          @Override
+          public boolean apply(AbstractMessage input) {
+            if (input instanceof RollbackRequest) {
+              RollbackRequest request = (RollbackRequest) input;
+              return request.getTransactionId().equals(selector.getId());
+            }
+            return false;
+          }
+        },
+        0L);
   }
 
   @Test
@@ -1081,6 +1110,50 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn = manager.resetForRetryAsync();
         }
       }
+    }
+  }
+
+  @Test
+  public void asyncTransactionManager_shouldPropagateStatementFailure()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    DatabaseClient dbClient = client();
+    try (AsyncTransactionManager transactionManager = dbClient.transactionManagerAsync()) {
+      TransactionContextFuture txnContextFuture = transactionManager.beginAsync();
+      AsyncTransactionStep<Void, Long> updateFuture =
+          txnContextFuture.then(
+              new AsyncTransactionFunction<Void, Long>() {
+                @Override
+                public ApiFuture<Long> apply(TransactionContext txn, Void input) throws Exception {
+                  return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                }
+              },
+              executor);
+      final SettableApiFuture<Void> res = SettableApiFuture.create();
+      ApiFutures.addCallback(
+          updateFuture,
+          new ApiFutureCallback<Long>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+              // Check that we got the expected failure.
+              try {
+                assertThat(throwable).isInstanceOf(SpannerException.class);
+                SpannerException e = (SpannerException) throwable;
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                assertThat(e.getMessage()).contains("invalid statement");
+                res.set(null);
+              } catch (Throwable t) {
+                res.setException(t);
+              }
+            }
+
+            @Override
+            public void onSuccess(Long aLong) {
+              res.setException(new AssertionError("Statement should not succeed."));
+            }
+          },
+          executor);
+
+      assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
     }
   }
 }

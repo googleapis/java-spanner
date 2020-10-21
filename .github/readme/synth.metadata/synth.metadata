@@ -1,0 +1,18 @@
+{
+  "sources": [
+    {
+      "git": {
+        "name": ".",
+        "remote": "https://github.com/googleapis/java-spanner.git",
+        "sha": "8d15a5801ab5693d917a6f46d908a5d9681ca02f"
+      }
+    },
+    {
+      "git": {
+        "name": "synthtool",
+        "remote": "https://github.com/googleapis/synthtool.git",
+        "sha": "6abb59097be84599a1d6091fe534a49e5c5cf948"
+      }
+    }
+  ]
+}

@@ -237,6 +237,15 @@ public class ConnectionOptions {
     SpannerPool.INSTANCE.checkAndCloseSpanners();
   }
 
+  /**
+   * {@link SpannerOptionsConfigurator} can be used to add additional configuration for a {@link
+   * Spanner} instance. Intended for tests.
+   */
+  @VisibleForTesting
+  interface SpannerOptionsConfigurator {
+    void configure(SpannerOptions.Builder options);
+  }
+
   /** Builder for {@link ConnectionOptions} instances. */
   public static class Builder {
     private String uri;
@@ -246,6 +255,7 @@ public class ConnectionOptions {
     private SessionPoolOptions sessionPoolOptions;
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
+    private SpannerOptionsConfigurator configurator;
 
     private Builder() {}
 
@@ -359,6 +369,12 @@ public class ConnectionOptions {
     }
 
     @VisibleForTesting
+    Builder setConfigurator(SpannerOptionsConfigurator configurator) {
+      this.configurator = Preconditions.checkNotNull(configurator);
+      return this;
+    }
+
+    @VisibleForTesting
     Builder setCredentials(Credentials credentials) {
       this.credentials = credentials;
       return this;
@@ -401,6 +417,7 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
+  private final SpannerOptionsConfigurator configurator;
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
@@ -473,6 +490,11 @@ public class ConnectionOptions {
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
+    this.configurator = builder.configurator;
+  }
+
+  SpannerOptionsConfigurator getConfigurator() {
+    return configurator;
   }
 
   @VisibleForTesting

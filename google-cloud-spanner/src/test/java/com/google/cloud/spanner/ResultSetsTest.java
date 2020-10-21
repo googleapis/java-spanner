@@ -20,15 +20,24 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -349,5 +358,133 @@ public class ResultSetsTest {
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
     }
+  }
+
+  @Test
+  public void testToAsyncResultSet() {
+    ResultSet delegate =
+        ResultSets.forRows(
+            Type.struct(Type.StructField.of("f1", Type.string())),
+            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+
+    final AtomicInteger count = new AtomicInteger();
+    AsyncResultSet rs = ResultSets.toAsyncResultSet(delegate);
+    ApiFuture<Void> fut =
+        rs.setCallback(
+            MoreExecutors.directExecutor(),
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      count.incrementAndGet();
+                      assertThat(resultSet.getString("f1")).isEqualTo("x");
+                  }
+                }
+              }
+            });
+    SpannerApiFutures.get(fut);
+    assertThat(count.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void testToAsyncResultSetWithExecProvider() {
+    ResultSet delegate =
+        ResultSets.forRows(
+            Type.struct(Type.StructField.of("f1", Type.string())),
+            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+
+    ExecutorProvider provider =
+        new ExecutorProvider() {
+          final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+          @Override
+          public boolean shouldAutoClose() {
+            return true;
+          }
+
+          @Override
+          public ScheduledExecutorService getExecutor() {
+            return executor;
+          }
+        };
+    final AtomicInteger count = new AtomicInteger();
+    AsyncResultSet rs = ResultSets.toAsyncResultSet(delegate, provider);
+    ApiFuture<Void> fut =
+        rs.setCallback(
+            MoreExecutors.directExecutor(),
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      count.incrementAndGet();
+                      assertThat(resultSet.getString("f1")).isEqualTo("x");
+                  }
+                }
+              }
+            });
+    SpannerApiFutures.get(fut);
+    assertThat(count.get()).isEqualTo(1);
+    assertThat(provider.getExecutor().isShutdown()).isTrue();
+  }
+
+  @Test
+  public void testToAsyncResultSetWithFuture() {
+    ApiFuture<ResultSet> delegateFuture =
+        ApiFutures.immediateFuture(
+            ResultSets.forRows(
+                Type.struct(Type.StructField.of("f1", Type.string())),
+                Arrays.asList(Struct.newBuilder().set("f1").to("x").build())));
+
+    ExecutorProvider provider =
+        new ExecutorProvider() {
+          final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+          @Override
+          public boolean shouldAutoClose() {
+            return false;
+          }
+
+          @Override
+          public ScheduledExecutorService getExecutor() {
+            return executor;
+          }
+        };
+    final AtomicInteger count = new AtomicInteger();
+    AsyncResultSet rs = ResultSets.toAsyncResultSet(delegateFuture, provider);
+    ApiFuture<Void> fut =
+        rs.setCallback(
+            MoreExecutors.directExecutor(),
+            new ReadyCallback() {
+              @Override
+              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      count.incrementAndGet();
+                      assertThat(resultSet.getString("f1")).isEqualTo("x");
+                  }
+                }
+              }
+            });
+    SpannerApiFutures.get(fut);
+    assertThat(count.get()).isEqualTo(1);
+    assertThat(provider.getExecutor().isShutdown()).isFalse();
+    provider.getExecutor().shutdown();
   }
 }

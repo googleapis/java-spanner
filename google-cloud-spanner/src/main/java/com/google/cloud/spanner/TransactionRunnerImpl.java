@@ -159,6 +159,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
     volatile ByteString transactionId;
+    
     private Timestamp commitTimestamp;
 
     private TransactionContextImpl(Builder builder) {
@@ -250,11 +251,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         commitTimestamp = commitAsync().get();
       } catch (InterruptedException e) {
+        if (commitFuture != null) {
+          commitFuture.cancel(true);
+        }
         throw SpannerExceptionFactory.propagateInterrupt(e);
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       }
     }
+
+    volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<Timestamp> commitAsync() {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();

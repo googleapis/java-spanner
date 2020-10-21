@@ -84,6 +84,18 @@ public final class SpannerExceptionFactory {
   }
 
   /**
+   * Converts the given {@link Throwable} to a {@link SpannerException}. If <code>t</code> is
+   * already a (subclass of a) {@link SpannerException}, <code>t</code> is returned unaltered.
+   * Otherwise, a new {@link SpannerException} is created with <code>t</code> as its cause.
+   */
+  public static SpannerException asSpannerException(Throwable t) {
+    if (t instanceof SpannerException) {
+      return (SpannerException) t;
+    }
+    return newSpannerException(t);
+  }
+
+  /**
    * Creates a new exception based on {@code cause}.
    *
    * <p>Intended for internal library use; user code should use {@link
@@ -124,6 +136,20 @@ public final class SpannerExceptionFactory {
         "The transaction was aborted and could not be retried due to a database error during the retry",
         cause,
         databaseError);
+  }
+
+  /**
+   * Constructs a new {@link AbortedDueToConcurrentModificationException} that can be re-thrown for
+   * a transaction that had already been aborted, but that the client application tried to use for
+   * additional statements.
+   */
+  public static AbortedDueToConcurrentModificationException
+      newAbortedDueToConcurrentModificationException(
+          AbortedDueToConcurrentModificationException cause) {
+    return new AbortedDueToConcurrentModificationException(
+        DoNotConstructDirectly.ALLOWED,
+        "This transaction has already been aborted and could not be retried due to a concurrent modification. Rollback this transaction to start a new one.",
+        cause);
   }
 
   /**
