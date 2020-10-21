@@ -377,4 +377,17 @@
     <className>com/google/cloud/spanner/AsyncTransactionManager</className>
     <method>com.google.api.core.ApiFuture closeAsync()</method>
   </difference>
+
+  <!-- Write with options API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.WriteResponse writeWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$WriteOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.WriteResponse writeAtLeastOnceWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$WriteOption[])</method>
+  </difference>
+
 </differences>

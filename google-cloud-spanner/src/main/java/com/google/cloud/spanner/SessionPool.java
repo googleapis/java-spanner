@@ -47,6 +47,7 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.WriteOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
@@ -1104,12 +1105,26 @@ final class SessionPool {
     }
 
     @Override
+    public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+        throws SpannerException {
+      final Timestamp commitTimestamp = write(mutations);
+      return new WriteResponse(commitTimestamp);
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         return get().writeAtLeastOnce(mutations);
       } finally {
         close();
       }
+    }
+
+    @Override
+    public WriteResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+      return new WriteResponse(commitTimestamp);
     }
 
     @Override
@@ -1348,6 +1363,13 @@ final class SessionPool {
     }
 
     @Override
+    public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+        throws SpannerException {
+      final Timestamp commitTimestamp = write(mutations);
+      return new WriteResponse(commitTimestamp);
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         markUsed();
@@ -1355,6 +1377,13 @@ final class SessionPool {
       } catch (SpannerException e) {
         throw lastException = e;
       }
+    }
+
+    @Override
+    public WriteResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+      return new WriteResponse(commitTimestamp);
     }
 
     @Override

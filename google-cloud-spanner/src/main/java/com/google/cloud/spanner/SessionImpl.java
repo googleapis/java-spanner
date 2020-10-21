@@ -25,6 +25,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
+import com.google.cloud.spanner.Options.WriteOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -140,6 +141,13 @@ class SessionImpl implements Session {
   }
 
   @Override
+  public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+      throws SpannerException {
+    final Timestamp commitTimestamp = write(mutations);
+    return new WriteResponse(commitTimestamp);
+  }
+
+  @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
@@ -166,6 +174,13 @@ class SessionImpl implements Session {
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
+  }
+
+  @Override
+  public WriteResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+    final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+    return new WriteResponse(commitTimestamp);
   }
 
   @Override

@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.WriteOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -82,6 +83,13 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public WriteResponse writeWithOptions(Iterable<Mutation> mutations, WriteOption... options)
+      throws SpannerException {
+    final Timestamp commitTimestamp = write(mutations);
+    return new WriteResponse(commitTimestamp);
+  }
+
+  @Override
   public Timestamp writeAtLeastOnce(final Iterable<Mutation> mutations) throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
@@ -99,6 +107,13 @@ class DatabaseClientImpl implements DatabaseClient {
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
+  }
+
+  @Override
+  public WriteResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, WriteOption... options) throws SpannerException {
+    final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+    return new WriteResponse(commitTimestamp);
   }
 
   @Override
