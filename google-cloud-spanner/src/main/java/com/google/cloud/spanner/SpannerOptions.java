@@ -97,7 +97,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final int prefetchChunks;
   private final int numChannels;
   private final ImmutableMap<String, String> sessionLabels;
-  private final boolean inlineBeginForReadWriteTransaction;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
@@ -547,7 +546,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
     sessionLabels = builder.sessionLabels;
-    inlineBeginForReadWriteTransaction = builder.inlineBeginForReadWriteTransaction;
     try {
       spannerStubSettings = builder.spannerStubSettingsBuilder.build();
       instanceAdminStubSettings = builder.instanceAdminStubSettingsBuilder.build();
@@ -626,7 +624,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
     private ImmutableMap<String, String> sessionLabels;
-    private boolean inlineBeginForReadWriteTransaction;
     private SpannerStubSettings.Builder spannerStubSettingsBuilder =
         SpannerStubSettings.newBuilder();
     private InstanceAdminStubSettings.Builder instanceAdminStubSettingsBuilder =
@@ -676,7 +673,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
       this.sessionLabels = options.sessionLabels;
-      this.inlineBeginForReadWriteTransaction = options.inlineBeginForReadWriteTransaction;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
@@ -766,34 +762,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         Preconditions.checkNotNull(value, "Null values are not allowed in the labels map.");
       }
       this.sessionLabels = ImmutableMap.copyOf(sessionLabels);
-      return this;
-    }
-
-    /**
-     * Sets whether {@link DatabaseClient}s should inline the BeginTransaction option with the first
-     * query or update statement that is executed by a read/write transaction instead of using a
-     * write-prepared session from the session pool. Enabling this option can improve execution
-     * times for read/write transactions in the following scenarios:
-     *
-     * <p>
-     *
-     * <ul>
-     *   <li>Applications with a very high rate of read/write transactions where the session pool is
-     *       not able to prepare new read/write transactions at the same rate as the application is
-     *       requesting read/write transactions.
-     *   <li>Applications with a very low rate of read/write transactions where sessions with a
-     *       prepared read/write transaction are kept in the session pool for a long time without
-     *       being used.
-     * </ul>
-     *
-     * If you enable this option, you should also re-evaluate the value for {@link
-     * SessionPoolOptions.Builder#setWriteSessionsFraction(float)}. When this option is enabled,
-     * write-prepared sessions are only used for calls to {@link DatabaseClient#write(Iterable)}. If
-     * your application does not use this method, you should set the write fraction for the session
-     * pool to zero.
-     */
-    public Builder setInlineBeginForReadWriteTransaction(boolean inlineBegin) {
-      this.inlineBeginForReadWriteTransaction = inlineBegin;
       return this;
     }
 
@@ -1091,10 +1059,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public Map<String, String> getSessionLabels() {
     return sessionLabels;
-  }
-
-  public boolean isInlineBeginForReadWriteTransaction() {
-    return inlineBeginForReadWriteTransaction;
   }
 
   public SpannerStubSettings getSpannerStubSettings() {

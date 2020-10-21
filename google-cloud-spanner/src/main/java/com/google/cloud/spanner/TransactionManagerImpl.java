@@ -30,15 +30,13 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   private final SessionImpl session;
   private Span span;
-  private final boolean inlineBegin;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span, boolean inlineBegin) {
+  TransactionManagerImpl(SessionImpl session, Span span) {
     this.session = session;
     this.span = span;
-    this.inlineBegin = inlineBegin;
   }
 
   Span getSpan() {
@@ -56,9 +54,6 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     try (Scope s = tracer.withSpan(span)) {
       txn = session.newTransaction();
       session.setActive(this);
-      if (!inlineBegin) {
-        txn.ensureTxn();
-      }
       txnState = TransactionState.STARTED;
       return txn;
     }
@@ -105,7 +100,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
     try (Scope s = tracer.withSpan(span)) {
-      boolean useInlinedBegin = inlineBegin && txn.transactionId != null;
+      boolean useInlinedBegin = txn.transactionId != null;
       txn = session.newTransaction();
       if (!useInlinedBegin) {
         txn.ensureTxn();

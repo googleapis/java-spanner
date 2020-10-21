@@ -38,7 +38,6 @@ import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -52,39 +51,24 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.JUnit4;
 
 /** Integration tests for read-write transactions. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class ITTransactionTest {
-
-  @Parameter(0)
-  public boolean inlineBegin;
-
-  @Parameters(name = "inlineBegin = {0}")
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{false}, {true}});
-  }
-
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  private Spanner spanner;
-  private DatabaseClient client;
+  private static DatabaseClient client;
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
@@ -97,24 +81,7 @@ public class ITTransactionTest {
                     + "  K    STRING(MAX) NOT NULL,"
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
-  }
-
-  @Before
-  public void setupClient() {
-    spanner =
-        env.getTestHelper()
-            .getOptions()
-            .toBuilder()
-            .setInlineBeginForReadWriteTransaction(inlineBegin)
-            .build()
-            .getService();
-    client = spanner.getDatabaseClient(db.getId());
-  }
-
-  @After
-  public void closeClient() {
-    client.writeAtLeastOnce(ImmutableList.of(Mutation.delete("T", KeySet.all())));
-    spanner.close();
+    client = env.getTestHelper().getDatabaseClient(db);
   }
 
   private static String uniqueKey() {

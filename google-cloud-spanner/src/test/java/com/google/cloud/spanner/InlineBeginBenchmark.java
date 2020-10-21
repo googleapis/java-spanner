@@ -77,10 +77,10 @@ public class InlineBeginBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"false", "true"})
+    @Param({"true"})
     boolean inlineBegin;
 
-    @Param({"0.0", "0.2"})
+    @Param({"0.2"})
     float writeFraction;
 
     @Setup(Level.Invocation)
@@ -122,7 +122,6 @@ public class InlineBeginBenchmark {
           .setCredentials(NoCredentials.getInstance())
           .setSessionPoolOption(
               SessionPoolOptions.newBuilder().setWriteSessionsFraction(writeFraction).build())
-          .setInlineBeginForReadWriteTransaction(inlineBegin)
           .build();
     }
 
@@ -130,7 +129,6 @@ public class InlineBeginBenchmark {
       return SpannerOptions.newBuilder()
           .setSessionPoolOption(
               SessionPoolOptions.newBuilder().setWriteSessionsFraction(writeFraction).build())
-          .setInlineBeginForReadWriteTransaction(inlineBegin)
           .build();
     }
 

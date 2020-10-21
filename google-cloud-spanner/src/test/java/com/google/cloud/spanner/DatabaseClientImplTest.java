@@ -810,65 +810,6 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testDatabaseOrInstanceDoesNotExistOnPrepareSession() throws Exception {
-    StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
-        };
-    for (StatusRuntimeException exception : exceptions) {
-      try (Spanner spanner =
-          SpannerOptions.newBuilder()
-              .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
-              .setCredentials(NoCredentials.getInstance())
-              .build()
-              .getService()) {
-        mockSpanner.setBeginTransactionExecutionTime(
-            SimulatedExecutionTime.ofStickyException(exception));
-        DatabaseClientImpl dbClient =
-            (DatabaseClientImpl)
-                spanner.getDatabaseClient(
-                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-        // Wait until all sessions have been created.
-        Stopwatch watch = Stopwatch.createStarted();
-        while (watch.elapsed(TimeUnit.SECONDS) < 5
-            && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-          Thread.sleep(1L);
-        }
-        // Ensure that no sessions could be prepared and that the session pool gives up trying to
-        // prepare sessions.
-        watch = watch.reset().start();
-        while (watch.elapsed(TimeUnit.SECONDS) < 5
-            && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
-          Thread.sleep(1L);
-        }
-        assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
-        assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions()).isEqualTo(0);
-        int currentNumRequest = mockSpanner.getRequests().size();
-        try {
-          dbClient
-              .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) {
-                      return null;
-                    }
-                  });
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-        }
-        assertThat(mockSpanner.getRequests()).hasSize(currentNumRequest);
-        mockSpanner.reset();
-        mockSpanner.removeAllExecutionTimes();
-      }
-    }
-  }
-
-  @Test
   public void testDatabaseOrInstanceDoesNotExistOnInitialization() throws Exception {
     StatusRuntimeException[] exceptions =
         new StatusRuntimeException[] {
@@ -1001,89 +942,6 @@ public class DatabaseClientImplTest {
     }
   }
 
-  @Test
-  public void testPermissionDeniedOnPrepareSession() throws Exception {
-    testExceptionOnPrepareSession(
-        Status.PERMISSION_DENIED
-            .withDescription(
-                "Caller is missing IAM permission spanner.databases.beginOrRollbackReadWriteTransaction on resource")
-            .asRuntimeException());
-  }
-
-  @Test
-  public void testFailedPreconditionOnPrepareSession() throws Exception {
-    testExceptionOnPrepareSession(
-        Status.FAILED_PRECONDITION
-            .withDescription("FAILED_PRECONDITION: Database is in read-only mode")
-            .asRuntimeException());
-  }
-
-  private void testExceptionOnPrepareSession(StatusRuntimeException exception)
-      throws InterruptedException {
-    mockSpanner.setBeginTransactionExecutionTime(
-        SimulatedExecutionTime.ofStickyException(exception));
-    DatabaseClientImpl dbClient =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    // Wait until all sessions have been created.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
-      Thread.sleep(1L);
-    }
-    // Ensure that no sessions could be prepared and that the session pool gives up trying to
-    // prepare sessions.
-    watch = watch.reset().start();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfSessionsBeingPrepared() > 0) {
-      Thread.sleep(1L);
-    }
-    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
-    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions()).isEqualTo(0);
-    try {
-      dbClient
-          .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) {
-                  return null;
-                }
-              });
-      fail(String.format("missing expected %s exception", exception.getStatus().getCode().name()));
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.fromGrpcStatus(exception.getStatus()));
-    }
-    // Remove the semi-permanent error condition. Getting a read/write transaction should now
-    // succeed, and the automatic preparing of sessions should be restarted.
-    mockSpanner.setBeginTransactionExecutionTime(SimulatedExecutionTime.none());
-    dbClient
-        .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) {
-                return null;
-              }
-            });
-    for (int i = 0; i < spanner.getOptions().getSessionPoolOptions().getMinSessions(); i++) {
-      dbClient.pool.getReadSession().close();
-    }
-    int expectedPreparedSessions =
-        (int)
-            Math.ceil(
-                dbClient.pool.getNumberOfSessionsInPool()
-                    * spanner.getOptions().getSessionPoolOptions().getWriteSessionsFraction());
-    watch = watch.reset().start();
-    while (watch.elapsed(TimeUnit.SECONDS) < 5
-        && dbClient.pool.getNumberOfAvailableWritePreparedSessions() < expectedPreparedSessions) {
-      Thread.sleep(1L);
-    }
-    assertThat(dbClient.pool.getNumberOfSessionsBeingPrepared()).isEqualTo(0);
-    assertThat(dbClient.pool.getNumberOfAvailableWritePreparedSessions())
-        .isEqualTo(expectedPreparedSessions);
-  }
-
   /**
    * Test showing that when a database is deleted while it is in use by a database client and then
    * re-created with the same name, will continue to return {@link DatabaseNotFoundException}s until
@@ -1113,8 +971,7 @@ public class DatabaseClientImplTest {
         // Wait until all sessions have been created and prepared.
         Stopwatch watch = Stopwatch.createStarted();
         while (watch.elapsed(TimeUnit.SECONDS) < 5
-            && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0
-                || dbClient.pool.getNumberOfSessionsBeingPrepared() > 0)) {
+            && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0)) {
           Thread.sleep(1L);
         }
         // Simulate that the database or instance has been deleted.

@@ -718,7 +718,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
   private Span span;
-  private final boolean inlineBegin;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -728,10 +727,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  TransactionRunnerImpl(
-      SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks, boolean inlineBegin) {
+  TransactionRunnerImpl(SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks) {
     this.session = session;
-    this.inlineBegin = inlineBegin;
     this.txn = session.newTransaction();
   }
 
@@ -765,13 +762,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         new Callable<T>() {
           @Override
           public T call() {
-            boolean useInlinedBegin = inlineBegin;
+            boolean useInlinedBegin = true;
             if (attempt.get() > 0) {
-              if (useInlinedBegin) {
-                // Do not inline the BeginTransaction during a retry if the initial attempt did not
-                // actually start a transaction.
-                useInlinedBegin = txn.transactionId != null;
-              }
+              // Do not inline the BeginTransaction during a retry if the initial attempt did not
+              // actually start a transaction.
+              useInlinedBegin = txn.transactionId != null;
               txn = session.newTransaction();
             }
             checkState(

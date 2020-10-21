@@ -150,8 +150,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Checkout two sessions and do a maintenance loop. Still no sessions should be getting any
     // pings.
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    Session session1 = pool.getSession();
+    Session session2 = pool.getSession();
     runMaintainanceLoop(clock, pool, 1);
     assertThat(pingedSessions).isEmpty();
 
@@ -173,9 +173,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Now check out three sessions so the pool will create an additional session. The pool will
     // only keep 2 sessions alive, as that is the setting for MinSessions.
-    Session session3 = pool.getReadSession();
-    Session session4 = pool.getReadSession();
-    Session session5 = pool.getReadSession();
+    Session session3 = pool.getSession();
+    Session session4 = pool.getSession();
+    Session session5 = pool.getSession();
     // Note that session2 was now the first session in the pool as it was the last to receive a
     // ping.
     assertThat(session3.getName()).isEqualTo(session2.getName());
@@ -192,7 +192,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // should cause only one session to get a ping.
     clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
     // We are now checking out session2 because
-    Session session6 = pool.getReadSession();
+    Session session6 = pool.getSession();
     // The session that was first in the pool now is equal to the initial first session as each full
     // round of pings will swap the order of the first MinSessions sessions in the pool.
     assertThat(session6.getName()).isEqualTo(session1.getName());
@@ -208,9 +208,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Now check out 3 sessions again and make sure the 'extra' session is checked in last. That
     // will make it eligible for pings.
-    Session session7 = pool.getReadSession();
-    Session session8 = pool.getReadSession();
-    Session session9 = pool.getReadSession();
+    Session session7 = pool.getSession();
+    Session session8 = pool.getSession();
+    Session session9 = pool.getSession();
 
     assertThat(session7.getName()).isEqualTo(session1.getName());
     assertThat(session8.getName()).isEqualTo(session2.getName());
@@ -244,8 +244,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     assertThat(idledSessions).isEmpty();
 
     // Checkout two sessions and do a maintenance loop. Still no sessions should be removed.
-    Session session1 = pool.getReadSession();
-    Session session2 = pool.getReadSession();
+    Session session1 = pool.getSession();
+    Session session2 = pool.getSession();
     runMaintainanceLoop(clock, pool, 1);
     assertThat(idledSessions).isEmpty();
 
@@ -262,9 +262,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Now check out three sessions so the pool will create an additional session. The pool will
     // only keep 2 sessions alive, as that is the setting for MinSessions.
-    Session session3 = pool.getReadSession().get();
-    Session session4 = pool.getReadSession().get();
-    Session session5 = pool.getReadSession().get();
+    Session session3 = pool.getSession().get();
+    Session session4 = pool.getSession().get();
+    Session session5 = pool.getSession().get();
     // Note that session2 was now the first session in the pool as it was the last to receive a
     // ping.
     assertThat(session3.getName()).isEqualTo(session2.getName());
@@ -279,9 +279,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     assertThat(pool.totalSessions()).isEqualTo(2);
 
     // Check out three sessions again and keep one session checked out.
-    Session session6 = pool.getReadSession().get();
-    Session session7 = pool.getReadSession().get();
-    Session session8 = pool.getReadSession().get();
+    Session session6 = pool.getSession().get();
+    Session session7 = pool.getSession().get();
+    Session session8 = pool.getSession().get();
     session8.close();
     session7.close();
     // Now advance the clock to idle sessions. This should remove session8 from the pool.
@@ -293,9 +293,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
     // Check out three sessions and keep them all checked out. No sessions should be removed from
     // the pool.
-    Session session9 = pool.getReadSession().get();
-    Session session10 = pool.getReadSession().get();
-    Session session11 = pool.getReadSession().get();
+    Session session9 = pool.getSession().get();
+    Session session10 = pool.getSession().get();
+    Session session11 = pool.getSession().get();
     runMaintainanceLoop(clock, pool, loopsToIdleSessions);
     assertThat(idledSessions).containsExactly(session5, session8);
     assertThat(pool.totalSessions()).isEqualTo(3);

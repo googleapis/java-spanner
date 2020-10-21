@@ -125,13 +125,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
   public void setUp() throws IOException {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
-    // Create a Spanner instance with no read/write prepared sessions in the pool.
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setInlineBeginForReadWriteTransaction(true)
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder().setWriteSessionsFraction(0.0f).build())
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
             .build()
