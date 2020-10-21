@@ -377,4 +377,21 @@
     <className>com/google/cloud/spanner/AsyncTransactionManager</className>
     <method>com.google.api.core.ApiFuture closeAsync()</method>
   </difference>
+
+  <!-- Note: The following change for the LazySpannerInitializer.initialize() method must be specified twice, both with return type java.lang.Object and with com.google.cloud.spanner.Spanner. -->
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/LazySpannerInitializer</className>
+    <method>com.google.cloud.spanner.Spanner initialize()</method>
+  </difference>
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/LazySpannerInitializer</className>
+    <method>java.lang.Object initialize()</method>
+  </difference>
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
+    <method>java.lang.Object initialize()</method>
+  </difference>
 </differences>
