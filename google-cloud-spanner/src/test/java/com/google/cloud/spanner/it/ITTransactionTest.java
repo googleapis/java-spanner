@@ -45,6 +45,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.SettableFuture;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -82,6 +84,11 @@ public class ITTransactionTest {
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @Before
+  public void removeTestData() {
+    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
   }
 
   private static String uniqueKey() {
@@ -515,7 +522,7 @@ public class ITTransactionTest {
   public void testTxWithCaughtError() {
     assumeFalse(
         "Emulator does not recover from an error within a transaction",
-        env.getTestHelper().isEmulator());
+        EmulatorSpannerHelper.isUsingEmulator());
 
     long updateCount =
         client
@@ -545,7 +552,7 @@ public class ITTransactionTest {
   public void testTxWithConstraintError() {
     assumeFalse(
         "Emulator does not recover from an error within a transaction",
-        env.getTestHelper().isEmulator());
+        EmulatorSpannerHelper.isUsingEmulator());
 
     // First insert a single row.
     client.writeAtLeastOnce(
