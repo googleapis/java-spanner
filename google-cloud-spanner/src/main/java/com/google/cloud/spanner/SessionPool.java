@@ -47,10 +47,10 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
-import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -1104,12 +1104,26 @@ final class SessionPool {
     }
 
     @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = write(mutations);
+      return new CommitResponse(commitTimestamp);
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         return get().writeAtLeastOnce(mutations);
       } finally {
         close();
       }
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+      return new CommitResponse(commitTimestamp);
     }
 
     @Override
@@ -1348,6 +1362,13 @@ final class SessionPool {
     }
 
     @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = write(mutations);
+      return new CommitResponse(commitTimestamp);
+    }
+
+    @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       try {
         markUsed();
@@ -1355,6 +1376,13 @@ final class SessionPool {
       } catch (SpannerException e) {
         throw lastException = e;
       }
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
+      return new CommitResponse(commitTimestamp);
     }
 
     @Override

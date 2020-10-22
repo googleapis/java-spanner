@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -53,6 +54,35 @@ public interface DatabaseClient {
   Timestamp write(Iterable<Mutation> mutations) throws SpannerException;
 
   /**
+   * Writes the given mutations atomically to the database with the given options.
+   *
+   * <p>This method uses retries and replay protection internally, which means that the mutations
+   * are applied exactly once on success, or not at all if an error is returned, regardless of any
+   * failures in the underlying network. Note that if the call is cancelled or reaches deadline, it
+   * is not possible to know whether the mutations were applied without performing a subsequent
+   * database operation, but the mutations will have been applied at most once.
+   *
+   * <p>Example of blind write.
+   *
+   * <pre>{@code
+   * long singerId = my_singer_id;
+   * Mutation mutation = Mutation.newInsertBuilder("Singer")
+   *         .set("SingerId")
+   *         .to(singerId)
+   *         .set("FirstName")
+   *         .to("Billy")
+   *         .set("LastName")
+   *         .to("Joel")
+   *         .build();
+   * dbClient.writeWithOptions(Collections.singletonList(mutation));
+   * }</pre>
+   *
+   * @return a response with the timestamp at which the write was committed
+   */
+  CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
+      throws SpannerException;
+
+  /**
    * Writes the given mutations atomically to the database without replay protection.
    *
    * <p>Since this method does not feature replay protection, it may attempt to apply {@code
@@ -82,6 +112,38 @@ public interface DatabaseClient {
    * @return the timestamp at which the write was committed
    */
   Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException;
+
+  /**
+   * Writes the given mutations atomically to the database without replay protection.
+   *
+   * <p>Since this method does not feature replay protection, it may attempt to apply {@code
+   * mutations} more than once; if the mutations are not idempotent, this may lead to a failure
+   * being reported when the mutation was applied once. For example, an insert may fail with {@link
+   * ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method was called. For
+   * this reason, most users of the library will prefer to use {@link #write(Iterable)} instead.
+   * However, {@code writeAtLeastOnce()} requires only a single RPC, whereas {@code write()}
+   * requires two RPCs (one of which may be performed in advance), and so this method may be
+   * appropriate for latency sensitive and/or high throughput blind writing.
+   *
+   * <p>Example of unprotected blind write.
+   *
+   * <pre>{@code
+   * long singerId = my_singer_id;
+   * Mutation mutation = Mutation.newInsertBuilder("Singers")
+   *         .set("SingerId")
+   *         .to(singerId)
+   *         .set("FirstName")
+   *         .to("Billy")
+   *         .set("LastName")
+   *         .to("Joel")
+   *         .build();
+   * dbClient.writeAtLeastOnce(Collections.singletonList(mutation));
+   * }</pre>
+   *
+   * @return a response with the timestamp at which the write was committed
+   */
+  CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
   /**
    * Returns a context in which a single read can be performed using {@link TimestampBound#strong()}
