@@ -36,6 +36,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
@@ -47,6 +48,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -59,7 +61,8 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class ITTransactionManagerAsyncTest {
 
-  @Parameter public Executor executor;
+  @Parameter(0)
+  public Executor executor;
 
   @Parameters(name = "executor = {0}")
   public static Collection<Object[]> data() {
@@ -67,13 +70,14 @@ public class ITTransactionManagerAsyncTest {
         new Object[][] {
           {MoreExecutors.directExecutor()},
           {Executors.newSingleThreadExecutor()},
-          {Executors.newFixedThreadPool(4)}
+          {Executors.newFixedThreadPool(4)},
         });
   }
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  private static DatabaseClient client;
+  private Spanner spanner;
+  private DatabaseClient client;
 
   @BeforeClass
   public static void setUpDatabase() {
@@ -85,12 +89,18 @@ public class ITTransactionManagerAsyncTest {
                     + "  K                   STRING(MAX) NOT NULL,"
                     + "  BoolValue           BOOL,"
                     + ") PRIMARY KEY (K)");
-    client = env.getTestHelper().getDatabaseClient(db);
   }
 
   @Before
   public void clearTable() {
+    spanner = env.getTestHelper().getClient();
+    client = spanner.getDatabaseClient(db.getId());
     client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
+  }
+
+  @After
+  public void closeSpanner() {
+    spanner.close();
   }
 
   @Test

@@ -27,6 +27,7 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
@@ -34,7 +35,9 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -61,6 +64,11 @@ public class ITTransactionManagerTest {
                     + "  BoolValue           BOOL,"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @Before
+  public void deleteTestData() {
+    client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
   }
 
   @SuppressWarnings("resource")
@@ -201,6 +209,7 @@ public class ITTransactionManagerTest {
       Struct row = client.singleUse().readRow("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
       assertThat(row.getString(0)).isEqualTo("Key3");
       assertThat(row.getBoolean(1)).isTrue();
+      manager2.close();
     }
   }
 }

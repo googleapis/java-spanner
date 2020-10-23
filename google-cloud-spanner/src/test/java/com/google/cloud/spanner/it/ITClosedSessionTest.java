@@ -245,21 +245,21 @@ public class ITClosedSessionTest {
     for (int run = 0; run < 2; run++) {
       try (TransactionManager manager = client.transactionManager()) {
         TransactionContext txn = manager.begin();
-        while (true) {
-          for (int i = 0; i < 2; i++) {
-            try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
-              assertThat(rs.next()).isTrue();
-              assertThat(rs.getLong(0)).isEqualTo(1L);
-              assertThat(rs.next()).isFalse();
+        try {
+          while (true) {
+            for (int i = 0; i < 2; i++) {
+              try (ResultSet rs = txn.executeQuery(Statement.of("SELECT 1"))) {
+                assertThat(rs.next()).isTrue();
+                assertThat(rs.getLong(0)).isEqualTo(1L);
+                assertThat(rs.next()).isFalse();
+              }
             }
-          }
-          try {
             manager.commit();
             break;
-          } catch (AbortedException e) {
-            Thread.sleep(e.getRetryDelayInMillis() / 1000);
-            txn = manager.resetForRetry();
           }
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetry();
         }
       }
     }

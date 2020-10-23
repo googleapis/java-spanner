@@ -74,22 +74,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     }
 
     @Override
-    PooledSessionFuture getReadSession() {
-      PooledSessionFuture session = super.getReadSession();
-      if (invalidateNextSession) {
-        session.get().delegate.close();
-        session.get().setAllowReplacing(false);
-        awaitDeleted(session.get().delegate);
-        session.get().setAllowReplacing(allowReplacing);
-        invalidateNextSession = false;
-      }
-      session.get().setAllowReplacing(allowReplacing);
-      return session;
-    }
-
-    @Override
-    PooledSessionFuture getReadWriteSession() {
-      PooledSessionFuture session = super.getReadWriteSession();
+    PooledSessionFuture getSession() {
+      PooledSessionFuture session = super.getSession();
       if (invalidateNextSession) {
         session.get().delegate.close();
         session.get().setAllowReplacing(false);

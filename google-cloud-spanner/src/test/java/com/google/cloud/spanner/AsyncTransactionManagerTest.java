@@ -330,7 +330,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void asyncTransactionManagerFireAndForgetInvalidUpdate() throws Exception {
     final SettableApiFuture<Long> updateCount = SettableApiFuture.create();
 
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
+    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
       while (true) {
         try {
@@ -341,6 +341,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                         public ApiFuture<Long> apply(TransactionContext txn, Void input)
                             throws Exception {
                           // This fire-and-forget update statement should not fail the transaction.
+                          // The exception will however cause the transaction to be retried, as the
+                          // statement will not return a transaction id.
                           txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
                           ApiFutures.addCallback(
                               txn.executeUpdateAsync(UPDATE_STATEMENT),
@@ -361,14 +363,26 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       },
                       executor)
                   .commitAsync();
-          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(ts.get()).isNotNull();
+          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           break;
         } catch (AbortedException e) {
           txn = mgr.resetForRetryAsync();
         }
       }
     }
+    assertThat(mockSpanner.getRequestTypes())
+        .containsExactly(
+            BatchCreateSessionsRequest.class,
+            // The first update that fails. This will cause a transaction retry.
+            ExecuteSqlRequest.class,
+            // The retry will use an explicit BeginTransaction call.
+            BeginTransactionRequest.class,
+            // The first update will again fail, but now there is a transaction id, so the
+            // transaction can continue.
+            ExecuteSqlRequest.class,
+            ExecuteSqlRequest.class,
+            CommitRequest.class);
   }
 
   @Test
@@ -468,7 +482,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                             throws Exception {
                           if (attempt.incrementAndGet() == 1) {
                             // Abort the first attempt.
-                            mockSpanner.abortTransaction(txn);
+                            mockSpanner.abortNextStatement();
                           } else {
                             // Set the result of the update statement back to 1 row.
                             mockSpanner.putStatementResult(
@@ -508,7 +522,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                         public ApiFuture<Void> apply(TransactionContext txn, Void input)
                             throws Exception {
                           if (attempt.incrementAndGet() == 1) {
-                            mockSpanner.abortTransaction(txn);
+                            mockSpanner.abortNextStatement();
                           }
                           // This update statement will be aborted, but the error will not
                           // propagated to the transaction runner and cause the transaction to
@@ -530,8 +544,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           assertThat(mockSpanner.getRequestTypes())
               .containsAtLeast(
                   BatchCreateSessionsRequest.class,
-                  BeginTransactionRequest.class,
                   ExecuteSqlRequest.class,
+                  // The retry will use a BeginTransaction RPC.
                   BeginTransactionRequest.class,
                   ExecuteSqlRequest.class,
                   CommitRequest.class);
@@ -595,10 +609,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               .get();
           assertThat(mockSpanner.getRequestTypes())
               .containsExactly(
-                  BatchCreateSessionsRequest.class,
-                  BeginTransactionRequest.class,
-                  ExecuteSqlRequest.class,
-                  CommitRequest.class);
+                  BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
           break;
         } catch (AbortedException e) {
           txn = mgr.resetForRetryAsync();
@@ -714,7 +725,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class);
@@ -756,7 +766,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -776,7 +785,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                     public ApiFuture<long[]> apply(TransactionContext txn, Void input)
                         throws Exception {
                       if (attempt.incrementAndGet() == 1) {
-                        mockSpanner.abortTransaction(txn);
+                        mockSpanner.abortNextStatement();
                       }
                       return txn.batchUpdateAsync(
                           ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
@@ -797,7 +806,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
@@ -859,7 +867,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
             ExecuteBatchDmlRequest.class,
             CommitRequest.class,
             BeginTransactionRequest.class,
@@ -880,7 +887,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                     public ApiFuture<Void> apply(TransactionContext txn, Void input)
                         throws Exception {
                       if (attempt.incrementAndGet() == 1) {
-                        mockSpanner.abortTransaction(txn);
+                        mockSpanner.abortNextStatement();
                       }
                       // This update statement will be aborted, but the error will not propagated to
                       // the transaction manager and cause the transaction to retry. Instead, the
@@ -904,12 +911,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     Iterable<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
     int size = Iterables.size(requests);
-    assertThat(size).isIn(Range.closed(6, 7));
-    if (size == 6) {
+    assertThat(size).isIn(Range.closed(5, 6));
+    if (size == 5) {
       assertThat(requests)
           .containsExactly(
               BatchCreateSessionsRequest.class,
-              BeginTransactionRequest.class,
               ExecuteBatchDmlRequest.class,
               BeginTransactionRequest.class,
               ExecuteBatchDmlRequest.class,
@@ -918,7 +924,6 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       assertThat(requests)
           .containsExactly(
               BatchCreateSessionsRequest.class,
-              BeginTransactionRequest.class,
               ExecuteBatchDmlRequest.class,
               CommitRequest.class,
               BeginTransactionRequest.class,
@@ -958,10 +963,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
-            BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
   }
 
   @Test
@@ -990,10 +992,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
-            BatchCreateSessionsRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
   }
 
   @Test

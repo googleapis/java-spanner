@@ -21,7 +21,6 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -45,6 +44,8 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.AttributeValue;
@@ -150,7 +151,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private long retryDelayInMillis = -1L;
 
-    private volatile ByteString transactionId;
+    /**
+     * transactionIdFuture will return the transaction id returned by the first statement in the
+     * transaction if the BeginTransaction option is included with the first statement of the
+     * transaction.
+     */
+    private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
+
+    volatile ByteString transactionId;
+
     private Timestamp commitTimestamp;
 
     private TransactionContextImpl(Builder builder) {
@@ -190,36 +199,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Void> ensureTxnAsync() {
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
-        span.addAnnotation("Creating Transaction");
-        final ApiFuture<ByteString> fut = session.beginTransactionAsync();
-        fut.addListener(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  transactionId = fut.get();
-                  span.addAnnotation(
-                      "Transaction Creation Done",
-                      ImmutableMap.of(
-                          "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-                  txnLogger.log(
-                      Level.FINER,
-                      "Started transaction {0}",
-                      txnLogger.isLoggable(Level.FINER)
-                          ? transactionId.asReadOnlyByteBuffer()
-                          : null);
-                  res.set(null);
-                } catch (ExecutionException e) {
-                  span.addAnnotation(
-                      "Transaction Creation Failed",
-                      TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
-                  res.setException(e.getCause() == null ? e : e.getCause());
-                } catch (InterruptedException e) {
-                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-                }
-              }
-            },
-            MoreExecutors.directExecutor());
+        createTxnAsync(res);
       } else {
         span.addAnnotation(
             "Transaction Initialized",
@@ -232,6 +212,39 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         res.set(null);
       }
       return res;
+    }
+
+    private void createTxnAsync(final SettableApiFuture<Void> res) {
+      span.addAnnotation("Creating Transaction");
+      final ApiFuture<ByteString> fut = session.beginTransactionAsync();
+      fut.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                transactionId = fut.get();
+                span.addAnnotation(
+                    "Transaction Creation Done",
+                    ImmutableMap.of(
+                        "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+                txnLogger.log(
+                    Level.FINER,
+                    "Started transaction {0}",
+                    txnLogger.isLoggable(Level.FINER)
+                        ? transactionId.asReadOnlyByteBuffer()
+                        : null);
+                res.set(null);
+              } catch (ExecutionException e) {
+                span.addAnnotation(
+                    "Transaction Creation Failed",
+                    TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+                res.setException(e.getCause() == null ? e : e.getCause());
+              } catch (InterruptedException e) {
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
     }
 
     void commit() {
@@ -251,84 +264,101 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     ApiFuture<Timestamp> commitAsync() {
       final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
-      final SettableApiFuture<Void> latch;
+      final SettableApiFuture<Void> finishOps;
+      CommitRequest.Builder builder = CommitRequest.newBuilder().setSession(session.getName());
       synchronized (lock) {
-        latch = finishedAsyncOperations;
+        if (transactionIdFuture == null && transactionId == null) {
+          finishOps = SettableApiFuture.create();
+          createTxnAsync(finishOps);
+        } else {
+          finishOps = finishedAsyncOperations;
+        }
+        if (!mutations.isEmpty()) {
+          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+          Mutation.toProto(mutations, mutationsProto);
+          builder.addAllMutations(mutationsProto);
+        }
+        // Ensure that no call to buffer mutations that would be lost can succeed.
+        mutations = null;
       }
-      latch.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                latch.get();
-                CommitRequest.Builder builder =
-                    CommitRequest.newBuilder()
-                        .setSession(session.getName())
-                        .setTransactionId(transactionId);
-                synchronized (lock) {
-                  if (!mutations.isEmpty()) {
-                    List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-                    Mutation.toProto(mutations, mutationsProto);
-                    builder.addAllMutations(mutationsProto);
-                  }
-                  // Ensure that no call to buffer mutations that would be lost can succeed.
-                  mutations = null;
-                }
-                final CommitRequest commitRequest = builder.build();
-                span.addAnnotation("Starting Commit");
-                final Span opSpan =
-                    tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-                commitFuture = rpc.commitAsync(commitRequest, session.getOptions());
-                commitFuture.addListener(
-                    tracer.withSpan(
-                        opSpan,
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            try {
-                              CommitResponse commitResponse = commitFuture.get();
-                              if (!commitResponse.hasCommitTimestamp()) {
-                                throw newSpannerException(
-                                    ErrorCode.INTERNAL,
-                                    "Missing commitTimestamp:\n" + session.getName());
-                              }
-                              Timestamp ts =
-                                  Timestamp.fromProto(commitResponse.getCommitTimestamp());
-                              span.addAnnotation("Commit Done");
-                              opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                              res.set(ts);
-                            } catch (Throwable e) {
-                              if (e instanceof ExecutionException) {
-                                e =
-                                    SpannerExceptionFactory.newSpannerException(
-                                        e.getCause() == null ? e : e.getCause());
-                              } else if (e instanceof InterruptedException) {
-                                e =
-                                    SpannerExceptionFactory.propagateInterrupt(
-                                        (InterruptedException) e);
-                              } else {
-                                e = SpannerExceptionFactory.newSpannerException(e);
-                              }
-                              span.addAnnotation(
-                                  "Commit Failed", TraceUtil.getExceptionAnnotations(e));
-                              TraceUtil.endSpanWithFailure(opSpan, e);
-                              onError((SpannerException) e);
-                              res.setException(e);
-                            }
-                          }
-                        }),
-                    MoreExecutors.directExecutor());
-              } catch (InterruptedException e) {
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              } catch (ExecutionException e) {
-                res.setException(
-                    SpannerExceptionFactory.newSpannerException(
-                        e.getCause() == null ? e : e.getCause()));
-              }
-            }
-          },
-          MoreExecutors.directExecutor());
+      finishOps.addListener(
+          new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
+    }
+
+    private final class CommitRunnable implements Runnable {
+      private final SettableApiFuture<Timestamp> res;
+      private final ApiFuture<Void> prev;
+      private final CommitRequest.Builder requestBuilder;
+
+      CommitRunnable(
+          SettableApiFuture<Timestamp> res,
+          ApiFuture<Void> prev,
+          CommitRequest.Builder requestBuilder) {
+        this.res = res;
+        this.prev = prev;
+        this.requestBuilder = requestBuilder;
+      }
+
+      @Override
+      public void run() {
+        try {
+          prev.get();
+          if (transactionId == null && transactionIdFuture == null) {
+            requestBuilder.setSingleUseTransaction(
+                TransactionOptions.newBuilder()
+                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+          } else {
+            requestBuilder.setTransactionId(
+                transactionId == null ? transactionIdFuture.get() : transactionId);
+          }
+          final CommitRequest commitRequest = requestBuilder.build();
+          span.addAnnotation("Starting Commit");
+          final Span opSpan =
+              tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
+          final ApiFuture<CommitResponse> commitFuture =
+              rpc.commitAsync(commitRequest, session.getOptions());
+          commitFuture.addListener(
+              tracer.withSpan(
+                  opSpan,
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      try {
+                        CommitResponse commitResponse = commitFuture.get();
+                        if (!commitResponse.hasCommitTimestamp()) {
+                          throw newSpannerException(
+                              ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
+                        }
+                        Timestamp ts = Timestamp.fromProto(commitResponse.getCommitTimestamp());
+                        span.addAnnotation("Commit Done");
+                        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                        res.set(ts);
+                      } catch (Throwable e) {
+                        if (e instanceof ExecutionException) {
+                          e =
+                              SpannerExceptionFactory.newSpannerException(
+                                  e.getCause() == null ? e : e.getCause());
+                        } else if (e instanceof InterruptedException) {
+                          e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
+                        } else {
+                          e = SpannerExceptionFactory.newSpannerException(e);
+                        }
+                        span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                        TraceUtil.endSpanWithFailure(opSpan, e);
+                        onError((SpannerException) e, false);
+                        res.setException(e);
+                      }
+                    }
+                  }),
+              MoreExecutors.directExecutor());
+        } catch (InterruptedException e) {
+          res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+        } catch (ExecutionException e) {
+          res.setException(
+              SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
+        }
+      }
     }
 
     Timestamp commitTimestamp() {
@@ -343,54 +373,110 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     void rollback() {
-      // We're exiting early due to a user exception, but the transaction is still active.
-      // Send a rollback for the transaction to release any locks held.
-      // TODO(user): Make this an async fire-and-forget request.
       try {
-        // Note that we're not retrying this request since we don't particularly care about the
-        // response.  Normally, the next thing that will happen is that we will make a fresh
-        // transaction attempt, which should implicitly abort this one.
+        rollbackAsync().get();
+      } catch (ExecutionException e) {
+        txnLogger.log(Level.FINE, "Exception during rollback", e);
+        span.addAnnotation("Rollback Failed", TraceUtil.getExceptionAnnotations(e));
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+
+    ApiFuture<Empty> rollbackAsync() {
+      // It could be that there is no transaction if the transaction has been marked
+      // withInlineBegin, and there has not been any query/update statement that has been executed.
+      // In that case, we do not need to do anything, as there is no transaction.
+      //
+      // We do not take the transactionLock before trying to rollback to prevent a rollback call
+      // from blocking if an async query or update statement that is trying to begin the transaction
+      // is still in flight. That transaction will then automatically be terminated by the server.
+      if (transactionId != null) {
         span.addAnnotation("Starting Rollback");
-        rpc.rollback(
+        return rpc.rollbackAsync(
             RollbackRequest.newBuilder()
                 .setSession(session.getName())
                 .setTransactionId(transactionId)
                 .build(),
             session.getOptions());
-        span.addAnnotation("Rollback Done");
-      } catch (SpannerException e) {
-        txnLogger.log(Level.FINE, "Exception during rollback", e);
-        span.addAnnotation("Rollback Failed", TraceUtil.getExceptionAnnotations(e));
+      } else {
+        return ApiFutures.immediateFuture(Empty.getDefaultInstance());
       }
-    }
-
-    ApiFuture<Void> rollbackAsync() {
-      span.addAnnotation("Starting Rollback");
-      return ApiFutures.transformAsync(
-          rpc.rollbackAsync(
-              RollbackRequest.newBuilder()
-                  .setSession(session.getName())
-                  .setTransactionId(transactionId)
-                  .build(),
-              session.getOptions()),
-          new ApiAsyncFunction<Empty, Void>() {
-            @Override
-            public ApiFuture<Void> apply(Empty input) throws Exception {
-              span.addAnnotation("Rollback Done");
-              return ApiFutures.immediateFuture(null);
-            }
-          },
-          MoreExecutors.directExecutor());
     }
 
     @Nullable
     @Override
     TransactionSelector getTransactionSelector() {
+      // Check if there is already a transactionId available. That is the case if this transaction
+      // has already been prepared by the session pool, or if this transaction has been marked
+      // withInlineBegin and an earlier statement has already started a transaction.
+      if (transactionId == null) {
+        try {
+          ApiFuture<ByteString> tx = null;
+          synchronized (lock) {
+            // The first statement of a transaction that gets here will be the one that includes
+            // BeginTransaction with the statement. The others will be waiting on the
+            // transactionIdFuture until an actual transactionId is available.
+            if (transactionIdFuture == null) {
+              transactionIdFuture = SettableApiFuture.create();
+            } else {
+              tx = transactionIdFuture;
+            }
+          }
+          if (tx == null) {
+            return TransactionSelector.newBuilder()
+                .setBegin(
+                    TransactionOptions.newBuilder()
+                        .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+                .build();
+          } else {
+            // Wait for the transaction to come available. The tx.get() call will fail with an
+            // Aborted error if the call that included the BeginTransaction option fails. The
+            // Aborted error will cause the entire transaction to be retried, and the retry will use
+            // a separate BeginTransaction RPC.
+            TransactionSelector.newBuilder().setId(tx.get()).build();
+          }
+        } catch (ExecutionException e) {
+          if (e.getCause() instanceof AbortedException) {
+            synchronized (lock) {
+              aborted = true;
+            }
+          }
+          throw SpannerExceptionFactory.newSpannerException(e.getCause());
+        } catch (InterruptedException e) {
+          throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
+        }
+      }
+      // There is already a transactionId available. Include that id as the transaction to use.
       return TransactionSelector.newBuilder().setId(transactionId).build();
     }
 
     @Override
-    public void onError(SpannerException e) {
+    public void onTransactionMetadata(Transaction transaction) {
+      // A transaction has been returned by a statement that was executed. Set the id of the
+      // transaction on this instance and release the lock to allow other statements to proceed.
+      if (this.transactionId == null && transaction != null && transaction.getId() != null) {
+        this.transactionId = transaction.getId();
+        this.transactionIdFuture.set(transaction.getId());
+      }
+    }
+
+    @Override
+    public void onError(SpannerException e, boolean withBeginTransaction) {
+      // If the statement that caused an error was the statement that included a BeginTransaction
+      // option, we simulate an aborted transaction to force a retry of the entire transaction. This
+      // will cause the retry to execute an explicit BeginTransaction RPC and then the actual
+      // statements of the transaction. This is needed as the first statement of the transaction
+      // must be included with the transaction to ensure that any locks that are taken by the
+      // statement are included in the transaction, even if the statement again causes an error
+      // during the retry.
+      if (withBeginTransaction) {
+        // Simulate an aborted transaction to force a retry with a new transaction.
+        this.transactionIdFuture.setException(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED, "Aborted due to failed initial statement", e));
+      }
+
       if (e.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
         if (e instanceof AbortedException) {
@@ -433,6 +519,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
+        if (resultSet.getMetadata().hasTransaction()) {
+          onTransactionMetadata(resultSet.getMetadata().getTransaction());
+        }
         if (!resultSet.hasStats()) {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
@@ -440,7 +529,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
       } catch (SpannerException e) {
-        onError(e);
+        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
         throw e;
       }
     }
@@ -450,7 +539,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
-      ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
+      final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
@@ -484,7 +573,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public Long apply(Throwable input) {
                   SpannerException e = SpannerExceptionFactory.newSpannerException(input);
-                  onError(e);
+                  onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
                   throw e;
                 }
               },
@@ -493,6 +582,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           new Runnable() {
             @Override
             public void run() {
+              try {
+                if (resultSet.get().getMetadata().hasTransaction()) {
+                  onTransactionMetadata(resultSet.get().getMetadata().getTransaction());
+                }
+              } catch (ExecutionException | InterruptedException e) {
+                // Ignore this error here as it is handled by the future that is returned by the
+                // executeUpdateAsync method.
+              }
               decreaseAsyncOperations();
             }
           },
@@ -510,6 +607,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         long[] results = new long[response.getResultSetsCount()];
         for (int i = 0; i < response.getResultSetsCount(); ++i) {
           results[i] = response.getResultSets(i).getStats().getRowCountExact();
+          if (response.getResultSets(i).getMetadata().hasTransaction()) {
+            onTransactionMetadata(response.getResultSets(i).getMetadata().getTransaction());
+          }
         }
 
         // If one of the DML statements was aborted, we should throw an aborted exception.
@@ -525,7 +625,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         return results;
       } catch (SpannerException e) {
-        onError(e);
+        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
         throw e;
       }
     }
@@ -553,6 +653,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   long[] results = new long[input.getResultSetsCount()];
                   for (int i = 0; i < input.getResultSetsCount(); ++i) {
                     results[i] = input.getResultSets(i).getStats().getRowCountExact();
+                    if (input.getResultSets(i).getMetadata().hasTransaction()) {
+                      onTransactionMetadata(input.getResultSets(i).getMetadata().getTransaction());
+                    }
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
@@ -577,7 +680,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public long[] apply(Throwable input) {
                   SpannerException e = SpannerExceptionFactory.newSpannerException(input);
-                  onError(e);
+                  onError(
+                      SpannerExceptionFactory.newSpannerException(e.getCause()),
+                      builder.hasTransaction() && builder.getTransaction().hasBegin());
                   throw e;
                 }
               },
@@ -663,19 +768,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         new Callable<T>() {
           @Override
           public T call() {
+            boolean useInlinedBegin = true;
             if (attempt.get() > 0) {
+              // Do not inline the BeginTransaction during a retry if the initial attempt did not
+              // actually start a transaction.
+              useInlinedBegin = txn.transactionId != null;
               txn = session.newTransaction();
             }
             checkState(
                 isValid,
                 "TransactionRunner has been invalidated by a new operation on the session");
             attempt.incrementAndGet();
-            // TODO(user): When using streaming reads, consider using the first read to begin
-            // the txn.
             span.addAnnotation(
                 "Starting Transaction Attempt",
                 ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
-            txn.ensureTxn();
+            // Only ensure that there is a transaction if we should not inline the beginTransaction
+            // with the first statement.
+            if (!useInlinedBegin) {
+              txn.ensureTxn();
+            }
 
             T result;
             boolean shouldRollback = true;

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.Empty;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -76,14 +78,19 @@ final class AsyncTransactionManagerImpl
     return begin;
   }
 
-  private ApiFuture<TransactionContext> internalBeginAsync(boolean setActive) {
+  private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
     txn = session.newTransaction();
-    if (setActive) {
+    if (firstAttempt) {
       session.setActive(this);
     }
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
-    final ApiFuture<Void> fut = txn.ensureTxnAsync();
+    final ApiFuture<Void> fut;
+    if (firstAttempt) {
+      fut = ApiFutures.immediateFuture(null);
+    } else {
+      fut = txn.ensureTxnAsync();
+    }
     ApiFutures.addCallback(
         fut,
         new ApiFutureCallback<Void>() {
@@ -149,7 +156,15 @@ final class AsyncTransactionManagerImpl
         txnState == TransactionState.STARTED,
         "rollback can only be called if the transaction is in progress");
     try {
-      return txn.rollbackAsync();
+      return ApiFutures.transformAsync(
+          txn.rollbackAsync(),
+          new ApiAsyncFunction<Empty, Void>() {
+            @Override
+            public ApiFuture<Void> apply(Empty input) throws Exception {
+              return ApiFutures.immediateFuture(null);
+            }
+          },
+          MoreExecutors.directExecutor());
     } finally {
       txnState = TransactionState.ROLLED_BACK;
     }

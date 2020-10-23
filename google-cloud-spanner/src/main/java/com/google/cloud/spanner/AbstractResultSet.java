@@ -81,7 +81,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void onTransactionMetadata(Transaction transaction) throws SpannerException;
 
     /** Called when the read finishes with an error. */
-    void onError(SpannerException e);
+    void onError(SpannerException e, boolean withBeginTransaction);
 
     /** Called when the read finishes normally. */
     void onDone();
@@ -91,14 +91,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static class GrpcResultSet extends AbstractResultSet<List<Object>> {
     private final GrpcValueIterator iterator;
     private final Listener listener;
+    private final boolean beginTransaction;
     private GrpcStruct currRow;
     private SpannerException error;
     private ResultSetStats statistics;
     private boolean closed;
 
-    GrpcResultSet(CloseableIterator<PartialResultSet> iterator, Listener listener) {
+    GrpcResultSet(
+        CloseableIterator<PartialResultSet> iterator, Listener listener, boolean beginTransaction) {
       this.iterator = new GrpcValueIterator(iterator);
       this.listener = listener;
+      this.beginTransaction = beginTransaction;
     }
 
     @Override
@@ -127,7 +130,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         }
         return hasNext;
       } catch (SpannerException e) {
-        throw yieldError(e);
+        throw yieldError(e, beginTransaction && currRow == null);
       }
     }
 
@@ -149,9 +152,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return currRow.getType();
     }
 
-    private SpannerException yieldError(SpannerException e) {
+    private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
       close();
-      listener.onError(e);
+      listener.onError(e, beginTransaction);
       throw e;
     }
   }

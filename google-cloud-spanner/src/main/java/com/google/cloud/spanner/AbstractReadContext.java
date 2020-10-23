@@ -633,7 +633,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, request.hasTransaction() && request.getTransaction().hasBegin());
   }
 
   /**
@@ -672,14 +673,20 @@ abstract class AbstractReadContext
     }
   }
 
+  /**
+   * Returns the {@link TransactionSelector} that should be used for a statement that is executed on
+   * this read context. This could be a reference to an existing transaction ID, or it could be a
+   * BeginTransaction option that should be included with the statement.
+   */
   @Nullable
   abstract TransactionSelector getTransactionSelector();
 
+  /** This method is called when a statement returned a new transaction as part of its results. */
   @Override
   public void onTransactionMetadata(Transaction transaction) {}
 
   @Override
-  public void onError(SpannerException e) {}
+  public void onError(SpannerException e, boolean withBeginTransaction) {}
 
   @Override
   public void onDone() {}
@@ -740,7 +747,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    GrpcResultSet resultSet = new GrpcResultSet(stream, this);
+    GrpcResultSet resultSet =
+        new GrpcResultSet(stream, this, selector != null && selector.hasBegin());
     return resultSet;
   }
 
