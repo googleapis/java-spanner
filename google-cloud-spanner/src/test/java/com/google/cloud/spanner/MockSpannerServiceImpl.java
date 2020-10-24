@@ -186,6 +186,8 @@ import org.threeten.bp.Instant;
  * }</pre>
  */
 public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcService {
+  private static final Random RANDOM = new Random();
+
   private static class PartialResultSetsIterator implements Iterator<PartialResultSet> {
     private static final int MAX_ROWS_IN_CHUNK = 1;
 
@@ -407,7 +409,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   /** Class for simulating execution time of server calls. */
   public static class SimulatedExecutionTime {
-    private static final Random RANDOM = new Random();
     private final int minimumExecutionTime;
     private final int randomExecutionTime;
     private final Queue<Exception> exceptions;
@@ -501,7 +502,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
       if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
         Uninterruptibles.sleepUninterruptibly(
-            (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
+            (randomExecutionTime == 0
+                    ? 0
+                    : MockSpannerServiceImpl.RANDOM.nextInt(randomExecutionTime))
                 + minimumExecutionTime,
             TimeUnit.MILLISECONDS);
       }
@@ -1766,8 +1769,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
       simulateAbort(session, request.getTransactionId());
       commitTransaction(transaction.getId());
-      responseObserver.onNext(
-          CommitResponse.newBuilder().setCommitTimestamp(getCurrentGoogleTimestamp()).build());
+      CommitResponse.Builder responseBuilder =
+          CommitResponse.newBuilder().setCommitTimestamp(getCurrentGoogleTimestamp());
+      if (request.getReturnCommitStats()) {
+        responseBuilder.setCommitStats(
+            com.google.spanner.v1.CommitResponse.CommitStats.newBuilder()
+                // This is not really always equal, but at least it returns a value.
+                .setMutationCount(request.getMutationsCount())
+                .setOverloadDelay(
+                    Duration.newBuilder().setSeconds(0L).setNanos(RANDOM.nextInt(1_000_000_000)))
+                .build());
+      }
+      responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);

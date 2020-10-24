@@ -29,15 +29,14 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
-import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -72,11 +71,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
       private ByteString transactionId;
+      private Options options = Options.fromTransactionOptions();
 
       private Builder() {}
 
       Builder setTransactionId(ByteString transactionId) {
         this.transactionId = transactionId;
+        return self();
+      }
+
+      Builder setOptions(Options options) {
+        this.options = options;
         return self();
       }
 
@@ -160,11 +165,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ByteString transactionId;
 
-    private Timestamp commitTimestamp;
+    private final Options options;
+    private CommitResponse commitResponse;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
+      this.options = Preconditions.checkNotNull(builder.options);
       this.finishedAsyncOperations.set(null);
     }
 
@@ -249,7 +256,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     void commit() {
       try {
-        commitTimestamp = commitAsync().get();
+        commitResponse = commitAsync().get();
       } catch (InterruptedException e) {
         if (commitFuture != null) {
           commitFuture.cancel(true);
@@ -262,10 +269,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     volatile ApiFuture<CommitResponse> commitFuture;
 
-    ApiFuture<Timestamp> commitAsync() {
-      final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
+    ApiFuture<CommitResponse> commitAsync() {
+      final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
-      CommitRequest.Builder builder = CommitRequest.newBuilder().setSession(session.getName());
+      CommitRequest.Builder builder =
+          CommitRequest.newBuilder()
+              .setSession(session.getName())
+              .setReturnCommitStats(options.withCommitStats());
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null) {
           finishOps = SettableApiFuture.create();
@@ -287,12 +297,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private final class CommitRunnable implements Runnable {
-      private final SettableApiFuture<Timestamp> res;
+      private final SettableApiFuture<CommitResponse> res;
       private final ApiFuture<Void> prev;
       private final CommitRequest.Builder requestBuilder;
 
       CommitRunnable(
-          SettableApiFuture<Timestamp> res,
+          SettableApiFuture<CommitResponse> res,
           ApiFuture<Void> prev,
           CommitRequest.Builder requestBuilder) {
         this.res = res;
@@ -316,7 +326,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           span.addAnnotation("Starting Commit");
           final Span opSpan =
               tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
-          final ApiFuture<CommitResponse> commitFuture =
+          final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture =
               rpc.commitAsync(commitRequest, session.getOptions());
           commitFuture.addListener(
               tracer.withSpan(
@@ -325,15 +335,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     @Override
                     public void run() {
                       try {
-                        CommitResponse commitResponse = commitFuture.get();
-                        if (!commitResponse.hasCommitTimestamp()) {
+                        com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+                        if (!proto.hasCommitTimestamp()) {
                           throw newSpannerException(
                               ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
                         }
-                        Timestamp ts = Timestamp.fromProto(commitResponse.getCommitTimestamp());
                         span.addAnnotation("Commit Done");
                         opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                        res.set(ts);
+                        res.set(new CommitResponse(proto));
                       } catch (Throwable e) {
                         if (e instanceof ExecutionException) {
                           e =
@@ -361,9 +370,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    Timestamp commitTimestamp() {
-      checkState(commitTimestamp != null, "run() has not yet returned normally");
-      return commitTimestamp;
+    CommitResponse getCommitResponse() {
+      checkState(commitResponse != null, "run() has not yet returned normally");
+      return commitResponse;
     }
 
     boolean isAborted() {
@@ -724,6 +733,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
   private Span span;
+  private final Options options;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -733,9 +743,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  TransactionRunnerImpl(SessionImpl session, SpannerRpc rpc, int defaultPrefetchChunks) {
+  TransactionRunnerImpl(SessionImpl session, Options options) {
     this.session = session;
-    this.txn = session.newTransaction();
+    this.options = options;
+    this.txn = session.newTransaction(options);
   }
 
   @Override
@@ -773,7 +784,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               // Do not inline the BeginTransaction during a retry if the initial attempt did not
               // actually start a transaction.
               useInlinedBegin = txn.transactionId != null;
-              txn = session.newTransaction();
+              txn = session.newTransaction(options);
             }
             checkState(
                 isValid,
@@ -857,7 +868,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   @Override
   public Timestamp getCommitTimestamp() {
     checkState(txn != null, "run() has not yet returned normally");
-    return txn.commitTimestamp();
+    return txn.getCommitResponse().getCommitTimestamp();
+  }
+
+  public CommitResponse getCommitResponse() {
+    checkState(txn != null, "run() has not yet returned normally");
+    return txn.getCommitResponse();
   }
 
   @Override

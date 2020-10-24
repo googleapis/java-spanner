@@ -101,7 +101,7 @@ public class TransactionRunnerImplTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
         .thenAnswer(
             new Answer<ResultSet>() {
@@ -123,7 +123,7 @@ public class TransactionRunnerImplTest {
                 return builder.build();
               }
             });
-    transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
+    transactionRunner = new TransactionRunnerImpl(session, Options.fromTransactionOptions());
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
@@ -322,7 +322,8 @@ public class TransactionRunnerImplTest {
           }
         };
     session.setCurrentSpan(mock(Span.class));
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner =
+        new TransactionRunnerImpl(session, Options.fromTransactionOptions());
     runner.setSpan(mock(Span.class));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
@@ -349,12 +350,13 @@ public class TransactionRunnerImplTest {
             .setTransactionId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
             .setRpc(rpc)
             .build();
-    when(session.newTransaction()).thenReturn(transaction);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
     when(session.beginTransactionAsync())
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner =
+        new TransactionRunnerImpl(session, Options.fromTransactionOptions());
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiAsyncFunction;
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -40,14 +41,16 @@ final class AsyncTransactionManagerImpl
 
   private final SessionImpl session;
   private Span span;
+  private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
-  private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+  private final SettableApiFuture<CommitResponse> commitResponse = SettableApiFuture.create();
 
-  AsyncTransactionManagerImpl(SessionImpl session, Span span) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, Options options) {
     this.session = session;
     this.span = span;
+    this.options = options;
   }
 
   @Override
@@ -80,7 +83,7 @@ final class AsyncTransactionManagerImpl
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
-    txn = session.newTransaction();
+    txn = session.newTransaction(options);
     if (firstAttempt) {
       session.setActive(this);
     }
@@ -126,28 +129,36 @@ final class AsyncTransactionManagerImpl
           SpannerExceptionFactory.newSpannerException(
               ErrorCode.ABORTED, "Transaction already aborted"));
     }
-    ApiFuture<Timestamp> res = txn.commitAsync();
+    ApiFuture<CommitResponse> res = txn.commitAsync();
     txnState = TransactionState.COMMITTED;
     ApiFutures.addCallback(
         res,
-        new ApiFutureCallback<Timestamp>() {
+        new ApiFutureCallback<CommitResponse>() {
           @Override
           public void onFailure(Throwable t) {
             if (t instanceof AbortedException) {
               txnState = TransactionState.ABORTED;
             } else {
               txnState = TransactionState.COMMIT_FAILED;
-              commitTimestamp.setException(t);
+              commitResponse.setException(t);
             }
           }
 
           @Override
-          public void onSuccess(Timestamp result) {
-            commitTimestamp.set(result);
+          public void onSuccess(CommitResponse result) {
+            commitResponse.set(result);
           }
         },
         MoreExecutors.directExecutor());
-    return res;
+    return ApiFutures.transform(
+        res,
+        new ApiFunction<CommitResponse, Timestamp>() {
+          @Override
+          public Timestamp apply(CommitResponse input) {
+            return input.getCommitTimestamp();
+          }
+        },
+        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -182,6 +193,11 @@ final class AsyncTransactionManagerImpl
   @Override
   public TransactionState getState() {
     return txnState;
+  }
+
+  @Override
+  public ApiFuture<CommitResponse> getCommitResponse() {
+    return commitResponse;
   }
 
   @Override

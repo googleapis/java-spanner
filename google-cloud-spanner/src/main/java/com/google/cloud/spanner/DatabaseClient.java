@@ -308,7 +308,7 @@ public interface DatabaseClient {
    *     });
    * </code></pre>
    */
-  TransactionRunner readWriteTransaction();
+  TransactionRunner readWriteTransaction(TransactionOption... options);
 
   /**
    * Returns a transaction manager which allows manual management of transaction lifecycle. This API
@@ -338,7 +338,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  TransactionManager transactionManager();
+  TransactionManager transactionManager(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction runner for executing a single logical transaction with
@@ -371,7 +371,7 @@ public interface DatabaseClient {
    *         executor);
    * </code></pre>
    */
-  AsyncRunner runAsync();
+  AsyncRunner runAsync(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction manager which allows manual management of transaction
@@ -459,7 +459,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  AsyncTransactionManager transactionManagerAsync();
+  AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
 
   /**
    * Returns the lower bound of rows modified by this DML statement.

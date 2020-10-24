@@ -30,13 +30,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   private final SessionImpl session;
   private Span span;
+  private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span) {
+  TransactionManagerImpl(SessionImpl session, Span span, Options options) {
     this.session = session;
     this.span = span;
+    this.options = options;
   }
 
   Span getSpan() {
@@ -52,7 +54,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     try (Scope s = tracer.withSpan(span)) {
-      txn = session.newTransaction();
+      txn = session.newTransaction(options);
       session.setActive(this);
       txnState = TransactionState.STARTED;
       return txn;
@@ -101,7 +103,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     }
     try (Scope s = tracer.withSpan(span)) {
       boolean useInlinedBegin = txn.transactionId != null;
-      txn = session.newTransaction();
+      txn = session.newTransaction(options);
       if (!useInlinedBegin) {
         txn.ensureTxn();
       }
@@ -115,7 +117,14 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,
         "getCommitTimestamp can only be invoked if the transaction committed successfully");
-    return txn.commitTimestamp();
+    return txn.getCommitResponse().getCommitTimestamp();
+  }
+
+  public CommitResponse getCommitResponse() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitTimestamp can only be invoked if the transaction committed successfully");
+    return txn.getCommitResponse();
   }
 
   @Override

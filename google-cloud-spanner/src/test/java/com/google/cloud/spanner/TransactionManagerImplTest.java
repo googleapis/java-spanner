@@ -37,7 +37,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -82,12 +81,13 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session, mock(Span.class));
+    manager =
+        new TransactionManagerImpl(session, mock(Span.class), Options.fromTransactionOptions());
   }
 
   @Test
   public void beginCalledTwiceFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.begin()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
     try {
@@ -130,7 +130,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void transactionRolledBackOnClose() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(txn.isAborted()).thenReturn(false);
     manager.begin();
     manager.close();
@@ -139,9 +139,11 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitSucceeds() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
-    when(txn.commitTimestamp()).thenReturn(commitTimestamp);
+    CommitResponse response = mock(CommitResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(commitTimestamp);
+    when(txn.getCommitResponse()).thenReturn(response);
     manager.begin();
     manager.commit();
     assertThat(manager.getState()).isEqualTo(TransactionState.COMMITTED);
@@ -150,7 +152,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterSuccessfulCommitFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
     try {
@@ -163,7 +165,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterAbortSucceeds() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     try {
@@ -173,14 +175,14 @@ public class TransactionManagerImplTest {
       assertThat(manager.getState()).isEqualTo(TransactionState.ABORTED);
     }
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
   }
 
   @Test
   public void resetAfterErrorFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "")).when(txn).commit();
     try {
@@ -199,7 +201,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void rollbackAfterCommitFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
     try {
@@ -212,7 +214,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitAfterRollbackFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.rollback();
     try {
@@ -266,12 +268,12 @@ public class TransactionManagerImplTest {
             });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<CommitResponse>>() {
+            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
+                  InvocationOnMock invocation) throws Throwable {
                 return ApiFutures.immediateFuture(
-                    CommitResponse.newBuilder()
+                    com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
@@ -360,12 +362,12 @@ public class TransactionManagerImplTest {
             });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<CommitResponse>>() {
+            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
+                  InvocationOnMock invocation) throws Throwable {
                 return ApiFutures.immediateFuture(
-                    CommitResponse.newBuilder()
+                    com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))

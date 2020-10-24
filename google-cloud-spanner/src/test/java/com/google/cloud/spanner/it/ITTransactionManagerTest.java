@@ -29,6 +29,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -210,6 +211,32 @@ public class ITTransactionManagerTest {
       assertThat(row.getString(0)).isEqualTo("Key3");
       assertThat(row.getBoolean(1)).isTrue();
       manager2.close();
+    }
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void transactionManagerReturnsCommitStats() throws InterruptedException {
+    try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
+      TransactionContext txn = manager.begin();
+      while (true) {
+        txn.buffer(
+            Mutation.newInsertBuilder("T")
+                .set("K")
+                .to("KeyCommitStats")
+                .set("BoolValue")
+                .to(true)
+                .build());
+        try {
+          manager.commit();
+          assertThat(manager.getCommitResponse().getCommitStats()).isNotNull();
+          assertThat(manager.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          txn = manager.resetForRetry();
+        }
+      }
     }
   }
 }

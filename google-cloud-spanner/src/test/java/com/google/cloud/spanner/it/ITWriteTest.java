@@ -25,6 +25,7 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -32,6 +33,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -155,6 +157,42 @@ public class ITWriteTest {
     Struct row = readLastRow("StringValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("v1");
+  }
+
+  @Test
+  public void writeReturnsCommitStats() {
+    CommitResponse response =
+        client.writeWithOptions(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
+    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
+  }
+
+  @Test
+  public void writeAtLeastOnceReturnsCommitStats() {
+    CommitResponse response =
+        client.writeAtLeastOnceWithOptions(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertThat(response).isNotNull();
+    assertThat(response.getCommitTimestamp()).isNotNull();
+    assertThat(response.getCommitStats()).isNotNull();
+    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
   }
 
   @Test

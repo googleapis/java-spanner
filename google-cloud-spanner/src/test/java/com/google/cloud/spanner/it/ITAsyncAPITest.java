@@ -16,15 +16,21 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.AsyncTransactionManager;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -35,6 +41,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -51,6 +58,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -86,7 +94,17 @@ public class ITAsyncAPITest {
                 "CREATE INDEX TestTableByValue ON TestTable(StringValue)",
                 "CREATE INDEX TestTableByValueDesc ON TestTable(StringValue DESC)");
     client = env.getTestHelper().getDatabaseClient(db);
+    executor = Executors.newSingleThreadExecutor();
+  }
 
+  @AfterClass
+  public static void cleanup() {
+    executor.shutdown();
+  }
+
+  @Before
+  public void setupData() {
+    client.write(Arrays.asList(Mutation.delete(TABLE_NAME, KeySet.all())));
     // Includes k0..k14.  Note that strings k{10,14} sort between k1 and k2.
     List<Mutation> mutations = new ArrayList<>();
     for (int i = 0; i < 15; ++i) {
@@ -99,12 +117,6 @@ public class ITAsyncAPITest {
               .build());
     }
     client.write(mutations);
-    executor = Executors.newSingleThreadExecutor();
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    executor.shutdown();
   }
 
   @Test
@@ -300,6 +312,65 @@ public class ITAsyncAPITest {
     } finally {
       client.writeAtLeastOnce(Arrays.asList(Mutation.delete("TestTable", Key.of("k999"))));
       assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
+    }
+  }
+
+  @Test
+  public void asyncRunnerReturnsCommitStats() {
+    AsyncRunner runner = client.runAsync(Options.commitStats());
+    runner.runAsync(
+        new AsyncWork<Void>() {
+          @Override
+          public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+            txn.buffer(
+                Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                    .set("Key")
+                    .to("k_commit_stats")
+                    .set("StringValue")
+                    .to("Should return commit stats")
+                    .build());
+            return ApiFutures.immediateFuture(null);
+          }
+        },
+        executor);
+    assertThat(get(runner.getCommitResponse()).getCommitStats()).isNotNull();
+    // MutationCount = 2 columns + 2 secondary indexes.
+    assertThat(get(runner.getCommitResponse()).getCommitStats().getMutationCount()).isEqualTo(4L);
+  }
+
+  @Test
+  public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
+    try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
+      TransactionContextFuture ctx = mgr.beginAsync();
+      while (true) {
+        try {
+          get(
+              ctx.then(
+                      new AsyncTransactionFunction<Void, Void>() {
+                        @Override
+                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                            throws Exception {
+                          txn.buffer(
+                              Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                                  .set("Key")
+                                  .to("k_commit_stats")
+                                  .set("StringValue")
+                                  .to("Should return commit stats")
+                                  .build());
+                          return ApiFutures.immediateFuture(null);
+                        }
+                      },
+                      executor)
+                  .commitAsync());
+          assertThat(get(mgr.getCommitResponse()).getCommitStats()).isNotNull();
+          assertThat(get(mgr.getCommitResponse()).getCommitStats().getMutationCount())
+              .isEqualTo(4L);
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          ctx = mgr.resetForRetryAsync();
+        }
+      }
     }
   }
 }

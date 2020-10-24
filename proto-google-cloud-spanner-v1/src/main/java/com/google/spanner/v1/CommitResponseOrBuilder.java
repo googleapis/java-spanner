@@ -57,4 +57,45 @@ public interface CommitResponseOrBuilder
    * <code>.google.protobuf.Timestamp commit_timestamp = 1;</code>
    */
   com.google.protobuf.TimestampOrBuilder getCommitTimestampOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   *
+   * @return Whether the commitStats field is set.
+   */
+  boolean hasCommitStats();
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   *
+   * @return The commitStats.
+   */
+  com.google.spanner.v1.CommitResponse.CommitStats getCommitStats();
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   */
+  com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder getCommitStatsOrBuilder();
 }

@@ -406,4 +406,27 @@
     <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
     <method>java.lang.Object initialize()</method>
   </difference>
+  
+  <!-- Support for CommitStats added -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncRunner</className>
+    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionRunner</className>
+    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+  </difference>
+  
 </differences>

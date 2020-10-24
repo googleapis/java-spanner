@@ -20,6 +20,7 @@ import "google/api/annotations.proto";
 import "google/api/client.proto";
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -884,12 +885,30 @@ message CommitRequest {
   // mutations are applied atomically, in the order they appear in
   // this list.
   repeated Mutation mutations = 4;
+
+  // If `true`, then statistics related to the transaction will be included in
+  // the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+  // `false`.
+  bool return_commit_stats = 5;
 }
 
 // The response for [Commit][google.spanner.v1.Spanner.Commit].
 message CommitResponse {
+  // Additional statistics about a commit.
+  message CommitStats {
+    // The total number of the mutations for the transaction.
+    int64 mutation_count = 1;
+    // Length of time the commit was delayed due to overloaded servers.
+    google.protobuf.Duration overload_delay = 2;
+  }
+
   // The Cloud Spanner timestamp at which the transaction committed.
   google.protobuf.Timestamp commit_timestamp = 1;
+
+  // The statistics about this Commit. Not returned by default.
+  // For more information, see
+  // [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+  CommitStats commit_stats = 2;
 }
 
 // The request for [Rollback][google.spanner.v1.Spanner.Rollback].

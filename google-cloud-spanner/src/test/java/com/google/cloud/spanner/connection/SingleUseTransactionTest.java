@@ -29,6 +29,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -97,7 +98,7 @@ public class SingleUseTransactionTest {
 
   private static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
     private CommitBehavior commitBehavior;
 
@@ -116,7 +117,9 @@ public class SingleUseTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitTimestamp = Timestamp.now();
+          Timestamp commitTimestamp = Timestamp.now();
+          commitResponse = mock(CommitResponse.class);
+          when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -143,7 +146,12 @@ public class SingleUseTransactionTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -387,7 +395,7 @@ public class SingleUseTransactionTest {
               public TransactionRunner answer(InvocationOnMock invocation) {
                 TransactionRunner runner =
                     new TransactionRunner() {
-                      private Timestamp commitTimestamp;
+                      private CommitResponse commitResponse;
 
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
@@ -398,7 +406,9 @@ public class SingleUseTransactionTest {
                           } catch (Exception e) {
                             throw SpannerExceptionFactory.newSpannerException(e);
                           }
-                          this.commitTimestamp = Timestamp.now();
+                          Timestamp commitTimestamp = Timestamp.now();
+                          commitResponse = mock(CommitResponse.class);
+                          when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
                           return res;
                         } else if (commitBehavior == CommitBehavior.FAIL) {
                           throw SpannerExceptionFactory.newSpannerException(
@@ -411,10 +421,17 @@ public class SingleUseTransactionTest {
 
                       @Override
                       public Timestamp getCommitTimestamp() {
-                        if (commitTimestamp == null) {
+                        if (commitResponse == null) {
                           throw new IllegalStateException("no commit timestamp");
                         }
-                        return commitTimestamp;
+                        return commitResponse.getCommitTimestamp();
+                      }
+
+                      public CommitResponse getCommitResponse() {
+                        if (commitResponse == null) {
+                          throw new IllegalStateException("no commit response");
+                        }
+                        return commitResponse;
                       }
 
                       @Override

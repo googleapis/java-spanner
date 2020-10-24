@@ -33,6 +33,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
@@ -629,5 +630,23 @@ public class ITTransactionTest {
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     }
+  }
+
+  @Test
+  public void transactionRunnerReturnsCommitStats() {
+    final String key = uniqueKey();
+    TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(
+                Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build());
+            return null;
+          }
+        });
+    assertThat(runner.getCommitResponse().getCommitStats()).isNotNull();
+    // MutationCount = 2 (2 columns).
+    assertThat(runner.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
   }
 }
