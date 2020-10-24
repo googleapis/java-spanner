@@ -428,5 +428,29 @@
     <className>com/google/cloud/spanner/TransactionRunner</className>
     <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
   </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.TransactionRunner readWriteTransaction()</method>
+    <to>com.google.cloud.spanner.TransactionRunner readWriteTransaction(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.TransactionManager transactionManager()</method>
+    <to>com.google.cloud.spanner.TransactionManager transactionManager(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.AsyncRunner runAsync()</method>
+    <to>com.google.cloud.spanner.AsyncRunner runAsync(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync()</method>
+    <to>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
   
 </differences>
