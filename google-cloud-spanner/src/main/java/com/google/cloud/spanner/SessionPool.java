@@ -725,14 +725,9 @@ final class SessionPool {
     @Override
     public TransactionContext begin() {
       this.delegate = session.get().transactionManager();
-      while (true) {
-        try {
-          return internalBegin();
-        } catch (SessionNotFoundException e) {
-          session = sessionPool.replaceSession(e, session);
-          delegate = session.get().delegate.transactionManager();
-        }
-      }
+      // This cannot throw a SessionNotFoundException, as it does not call the BeginTransaction RPC.
+      // Instead, the BeginTransaction will be included with the first statement of the transaction.
+      return internalBegin();
     }
 
     private TransactionContext internalBegin() {
@@ -743,7 +738,8 @@ final class SessionPool {
 
     private SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
       session = sessionPool.replaceSession(notFound, session);
-      delegate = session.get().delegate.transactionManager();
+      PooledSession pooledSession = session.get();
+      delegate = pooledSession.delegate.transactionManager();
       restartedAfterSessionNotFound = true;
       return SpannerExceptionFactory.newSpannerException(
           ErrorCode.ABORTED, notFound.getMessage(), notFound);
@@ -784,7 +780,8 @@ final class SessionPool {
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
-          delegate = session.get().delegate.transactionManager();
+          PooledSession pooledSession = session.get();
+          delegate = pooledSession.delegate.transactionManager();
           restartedAfterSessionNotFound = true;
         }
       }
@@ -852,7 +849,8 @@ final class SessionPool {
             break;
           } catch (SessionNotFoundException e) {
             session = sessionPool.replaceSession(e, session);
-            runner = session.get().delegate.readWriteTransaction();
+            PooledSession ps = session.get();
+            runner = ps.delegate.readWriteTransaction();
           }
         }
         session.get().markUsed();
@@ -893,24 +891,34 @@ final class SessionPool {
           new Runnable() {
             @Override
             public void run() {
-              SpannerException se = null;
+              SpannerException exception = null;
               R r = null;
               AsyncRunner runner = null;
               while (true) {
+                SpannerException se = null;
                 try {
                   runner = session.get().runAsync();
                   r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
                   break;
                 } catch (ExecutionException e) {
-                  se = SpannerExceptionFactory.newSpannerException(e.getCause());
+                  se = SpannerExceptionFactory.asSpannerException(e.getCause());
                 } catch (InterruptedException e) {
                   se = SpannerExceptionFactory.propagateInterrupt(e);
                 } catch (Throwable t) {
                   se = SpannerExceptionFactory.newSpannerException(t);
                 } finally {
-                  if (se != null && se instanceof SessionNotFoundException) {
-                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                  if (se instanceof SessionNotFoundException) {
+                    try {
+                      // The replaceSession method will re-throw the SessionNotFoundException if the
+                      // session cannot be replaced with a new one.
+                      session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                      se = null;
+                    } catch (SessionNotFoundException e) {
+                      exception = e;
+                      break;
+                    }
                   } else {
+                    exception = se;
                     break;
                   }
                 }
@@ -918,8 +926,8 @@ final class SessionPool {
               session.get().markUsed();
               session.close();
               setCommitTimestamp(runner);
-              if (se != null) {
-                res.setException(se);
+              if (exception != null) {
+                res.setException(exception);
               } else {
                 res.set(r);
               }
@@ -1023,7 +1031,8 @@ final class SessionPool {
             new Function<PooledSessionFuture, ReadContext>() {
               @Override
               public ReadContext apply(PooledSessionFuture session) {
-                return session.get().delegate.singleUse();
+                PooledSession ps = session.get();
+                return ps.delegate.singleUse();
               }
             },
             SessionPool.this,
@@ -1042,7 +1051,8 @@ final class SessionPool {
             new Function<PooledSessionFuture, ReadContext>() {
               @Override
               public ReadContext apply(PooledSessionFuture session) {
-                return session.get().delegate.singleUse(bound);
+                PooledSession ps = session.get();
+                return ps.delegate.singleUse(bound);
               }
             },
             SessionPool.this,
@@ -1060,7 +1070,8 @@ final class SessionPool {
           new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
             public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.singleUseReadOnlyTransaction();
+              PooledSession ps = session.get();
+              return ps.delegate.singleUseReadOnlyTransaction();
             }
           },
           true);
@@ -1072,7 +1083,8 @@ final class SessionPool {
           new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
             public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.singleUseReadOnlyTransaction(bound);
+              PooledSession ps = session.get();
+              return ps.delegate.singleUseReadOnlyTransaction(bound);
             }
           },
           true);
@@ -1084,7 +1096,8 @@ final class SessionPool {
           new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
             public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.readOnlyTransaction();
+              PooledSession ps = session.get();
+              return ps.delegate.readOnlyTransaction();
             }
           },
           false);
@@ -1096,7 +1109,8 @@ final class SessionPool {
           new Function<PooledSessionFuture, ReadOnlyTransaction>() {
             @Override
             public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.readOnlyTransaction(bound);
+              PooledSession ps = session.get();
+              return ps.delegate.readOnlyTransaction(bound);
             }
           },
           false);

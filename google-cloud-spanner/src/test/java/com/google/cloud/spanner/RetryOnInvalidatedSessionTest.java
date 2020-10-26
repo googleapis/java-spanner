@@ -16,14 +16,20 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
+import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.v1.SpannerClient;
@@ -31,6 +37,7 @@ import com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -47,6 +54,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -144,7 +152,6 @@ public class RetryOnInvalidatedSessionTest {
   private static final Statement UPDATE_STATEMENT =
       Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
-  private static final float WRITE_SESSIONS_FRACTION = 0.5f;
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static LocalChannelProvider channelProvider;
@@ -194,10 +201,7 @@ public class RetryOnInvalidatedSessionTest {
   @Before
   public void setUp() {
     mockSpanner.reset();
-    SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder()
-            .setWriteSessionsFraction(WRITE_SESSIONS_FRACTION)
-            .setFailOnSessionLeak();
+    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder().setFailOnSessionLeak();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
     }
@@ -567,7 +571,6 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readWriteTransactionReadOnlySessionInPool() throws InterruptedException {
-    // Create a session pool with only read sessions.
     SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
@@ -968,9 +971,7 @@ public class RetryOnInvalidatedSessionTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReadOnlySessionInPool() throws InterruptedException {
-    // Create a session pool with only read sessions.
-    SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder().setWriteSessionsFraction(0.0f);
+    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
     if (failOnInvalidatedSession) {
       builder.setFailIfSessionNotFound();
     }
@@ -1161,6 +1162,41 @@ public class RetryOnInvalidatedSessionTest {
       }
       assertThat(count).isEqualTo(UPDATE_COUNT);
       assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void transactionManagerAborted_thenSessionNotFoundOnBeginTransaction()
+      throws InterruptedException {
+    int attempt = 0;
+    try (TransactionManager manager = client.transactionManager()) {
+      long count;
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          attempt++;
+          if (attempt == 1) {
+            mockSpanner.abortNextStatement();
+          }
+          if (attempt == 2) {
+            invalidateSessionPool();
+          }
+          count = transaction.executeUpdate(UPDATE_STATEMENT);
+          manager.commit();
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          transaction = manager.resetForRetry();
+        }
+      }
+      assertThat(count).isEqualTo(UPDATE_COUNT);
+      assertThat(failOnInvalidatedSession).isFalse();
+      // The actual number of attempts depends on when the transaction manager will actually get a
+      // valid session, as we invalidate the entire session pool.
+      assertThat(attempt).isAtLeast(3);
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();
     }
@@ -1420,6 +1456,200 @@ public class RetryOnInvalidatedSessionTest {
       Timestamp timestamp =
           client.writeAtLeastOnce(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
       assertThat(timestamp).isNotNull();
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncRunnerSelect() throws InterruptedException {
+    asyncRunner_withReadFunction(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.executeQueryAsync(SELECT1AND2);
+          }
+        });
+  }
+
+  @Test
+  public void asyncRunnerRead() throws InterruptedException {
+    asyncRunner_withReadFunction(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  @Test
+  public void asyncRunnerReadUsingIndex() throws InterruptedException {
+    asyncRunner_withReadFunction(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.readUsingIndexAsync("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  private void asyncRunner_withReadFunction(
+      final Function<TransactionContext, AsyncResultSet> readFunction) throws InterruptedException {
+    invalidateSessionPool();
+    final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    try {
+      AsyncRunner runner = client.runAsync();
+      final AtomicLong counter = new AtomicLong();
+      ApiFuture<Long> count =
+          runner.runAsync(
+              new AsyncWork<Long>() {
+                @Override
+                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                  AsyncResultSet rs = readFunction.apply(txn);
+                  ApiFuture<Void> fut =
+                      rs.setCallback(
+                          queryExecutor,
+                          new ReadyCallback() {
+                            @Override
+                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                              while (true) {
+                                switch (resultSet.tryNext()) {
+                                  case OK:
+                                    counter.incrementAndGet();
+                                    break;
+                                  case DONE:
+                                    return CallbackResponse.DONE;
+                                  case NOT_READY:
+                                    return CallbackResponse.CONTINUE;
+                                }
+                              }
+                            }
+                          });
+                  return ApiFutures.transform(
+                      fut,
+                      new ApiFunction<Void, Long>() {
+                        @Override
+                        public Long apply(Void input) {
+                          return counter.get();
+                        }
+                      },
+                      MoreExecutors.directExecutor());
+                }
+              },
+              executor);
+      assertThat(get(count)).isEqualTo(2);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    } finally {
+      queryExecutor.shutdown();
+    }
+  }
+
+  @Test
+  public void asyncRunnerReadRow() throws InterruptedException {
+    invalidateSessionPool();
+    try {
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<Struct> row =
+          runner.runAsync(
+              new AsyncWork<Struct>() {
+                @Override
+                public ApiFuture<Struct> doWorkAsync(TransactionContext txn) {
+                  return txn.readRowAsync("FOO", Key.of(), Arrays.asList("BAR"));
+                }
+              },
+              executor);
+      assertThat(get(row).getLong(0)).isEqualTo(1L);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncRunnerReadRowUsingIndex() throws InterruptedException {
+    invalidateSessionPool();
+    try {
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<Struct> row =
+          runner.runAsync(
+              new AsyncWork<Struct>() {
+                @Override
+                public ApiFuture<Struct> doWorkAsync(TransactionContext txn) {
+                  return txn.readRowUsingIndexAsync("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+                }
+              },
+              executor);
+      assertThat(get(row).getLong(0)).isEqualTo(1L);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncRunnerUpdate() throws InterruptedException {
+    invalidateSessionPool();
+    try {
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<Long> count =
+          runner.runAsync(
+              new AsyncWork<Long>() {
+                @Override
+                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
+                  return txn.executeUpdateAsync(UPDATE_STATEMENT);
+                }
+              },
+              executor);
+      assertThat(get(count)).isEqualTo(UPDATE_COUNT);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncRunnerBatchUpdate() throws InterruptedException {
+    invalidateSessionPool();
+    try {
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<long[]> count =
+          runner.runAsync(
+              new AsyncWork<long[]>() {
+                @Override
+                public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
+                  return txn.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                }
+              },
+              executor);
+      assertThat(get(count)).hasLength(2);
+      assertThat(get(count)).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncRunnerBuffer() throws InterruptedException {
+    invalidateSessionPool();
+    try {
+      AsyncRunner runner = client.runAsync();
+      ApiFuture<Void> res =
+          runner.runAsync(
+              new AsyncWork<Void>() {
+                @Override
+                public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                  txn.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
+                  return ApiFutures.immediateFuture(null);
+                }
+              },
+              executor);
+      assertThat(get(res)).isNull();
+      assertThat(get(runner.getCommitTimestamp())).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();
