@@ -36,6 +36,7 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -191,7 +192,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     AsyncTransactionManager manager = client().transactionManagerAsync();
     TransactionContext txn = manager.beginAsync().get();
     txn.executeUpdateAsync(UPDATE_STATEMENT).get();
-    final TransactionSelector selector = ((TransactionContextImpl) txn).getTransactionSelector();
+    final TransactionSelector selector =
+        ((TransactionContextImpl) ((SessionPoolTransactionContext) txn).delegate)
+            .getTransactionSelector();
 
     SpannerApiFutures.get(manager.closeAsync());
     // The mock server should already have the Rollback request, as we are waiting for the returned

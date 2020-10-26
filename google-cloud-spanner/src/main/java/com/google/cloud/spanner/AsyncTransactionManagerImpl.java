@@ -66,7 +66,9 @@ final class AsyncTransactionManagerImpl
     if (txnState == TransactionState.STARTED) {
       res = rollbackAsync();
     }
-    txn.close();
+    if (txn != null) {
+      txn.close();
+    }
     return MoreObjects.firstNonNull(res, ApiFutures.<Void>immediateFuture(null));
   }
 
@@ -172,7 +174,7 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public TransactionContextFuture resetForRetryAsync() {
-    if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
+    if (txn == null || (!txn.isAborted() && txnState != TransactionState.ABORTED)) {
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt aborted");
     }
