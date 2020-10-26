@@ -43,7 +43,7 @@ public final class KeysProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\034google/spanner/v1/keys.proto\022\021google.s"
           + "panner.v1\032\034google/protobuf/struct.proto\032"
           + "\034google/api/annotations.proto\"\364\001\n\010KeyRan"
@@ -74,14 +74,14 @@ public final class KeysProto {
     internal_static_google_spanner_v1_KeyRange_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_KeyRange_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "StartClosed", "StartOpen", "EndClosed", "EndOpen", "StartKeyType", "EndKeyType",
             });
     internal_static_google_spanner_v1_KeySet_descriptor = getDescriptor().getMessageTypes().get(1);
     internal_static_google_spanner_v1_KeySet_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_KeySet_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Keys", "Ranges", "All",
             });
     com.google.protobuf.StructProto.getDescriptor();

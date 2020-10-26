@@ -52,7 +52,7 @@ public interface TransactionOptionsOrBuilder
    *
    * @return The readWrite.
    */
-  com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite();
+  TransactionOptions.ReadWrite getReadWrite();
   /**
    *
    *
@@ -65,7 +65,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
    */
-  com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder();
+  TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder();
 
   /**
    *
@@ -96,7 +96,7 @@ public interface TransactionOptionsOrBuilder
    *
    * @return The partitionedDml.
    */
-  com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml();
+  TransactionOptions.PartitionedDml getPartitionedDml();
   /**
    *
    *
@@ -109,7 +109,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
    */
-  com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder getPartitionedDmlOrBuilder();
+  TransactionOptions.PartitionedDmlOrBuilder getPartitionedDmlOrBuilder();
 
   /**
    *
@@ -140,7 +140,7 @@ public interface TransactionOptionsOrBuilder
    *
    * @return The readOnly.
    */
-  com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly();
+  TransactionOptions.ReadOnly getReadOnly();
   /**
    *
    *
@@ -153,7 +153,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
    */
-  com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder();
+  TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder();
 
-  public com.google.spanner.v1.TransactionOptions.ModeCase getModeCase();
+  public TransactionOptions.ModeCase getModeCase();
 }

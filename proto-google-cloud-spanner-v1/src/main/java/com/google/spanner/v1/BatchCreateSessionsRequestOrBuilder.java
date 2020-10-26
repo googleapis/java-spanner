@@ -36,7 +36,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    *
    * @return The database.
    */
-  java.lang.String getDatabase();
+  String getDatabase();
   /**
    *
    *
@@ -75,7 +75,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    *
    * @return The sessionTemplate.
    */
-  com.google.spanner.v1.Session getSessionTemplate();
+  Session getSessionTemplate();
   /**
    *
    *
@@ -85,7 +85,7 @@ public interface BatchCreateSessionsRequestOrBuilder
    *
    * <code>.google.spanner.v1.Session session_template = 2;</code>
    */
-  com.google.spanner.v1.SessionOrBuilder getSessionTemplateOrBuilder();
+  SessionOrBuilder getSessionTemplateOrBuilder();
 
   /**
    *

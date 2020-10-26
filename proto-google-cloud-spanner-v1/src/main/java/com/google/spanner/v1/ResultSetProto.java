@@ -51,7 +51,7 @@ public final class ResultSetProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\"google/spanner/v1/result_set.proto\022\021go"
           + "ogle.spanner.v1\032\034google/protobuf/struct."
           + "proto\032\"google/spanner/v1/query_plan.prot"
@@ -86,9 +86,9 @@ public final class ResultSetProto {
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
               com.google.protobuf.StructProto.getDescriptor(),
-              com.google.spanner.v1.QueryPlanProto.getDescriptor(),
-              com.google.spanner.v1.TransactionProto.getDescriptor(),
-              com.google.spanner.v1.TypeProto.getDescriptor(),
+              QueryPlanProto.getDescriptor(),
+              TransactionProto.getDescriptor(),
+              TypeProto.getDescriptor(),
               com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_ResultSet_descriptor =
@@ -96,7 +96,7 @@ public final class ResultSetProto {
     internal_static_google_spanner_v1_ResultSet_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ResultSet_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Metadata", "Rows", "Stats",
             });
     internal_static_google_spanner_v1_PartialResultSet_descriptor =
@@ -104,7 +104,7 @@ public final class ResultSetProto {
     internal_static_google_spanner_v1_PartialResultSet_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartialResultSet_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Metadata", "Values", "ChunkedValue", "ResumeToken", "Stats",
             });
     internal_static_google_spanner_v1_ResultSetMetadata_descriptor =
@@ -112,7 +112,7 @@ public final class ResultSetProto {
     internal_static_google_spanner_v1_ResultSetMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ResultSetMetadata_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "RowType", "Transaction",
             });
     internal_static_google_spanner_v1_ResultSetStats_descriptor =
@@ -120,13 +120,13 @@ public final class ResultSetProto {
     internal_static_google_spanner_v1_ResultSetStats_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ResultSetStats_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "QueryPlan", "QueryStats", "RowCountExact", "RowCountLowerBound", "RowCount",
             });
     com.google.protobuf.StructProto.getDescriptor();
-    com.google.spanner.v1.QueryPlanProto.getDescriptor();
-    com.google.spanner.v1.TransactionProto.getDescriptor();
-    com.google.spanner.v1.TypeProto.getDescriptor();
+    QueryPlanProto.getDescriptor();
+    TransactionProto.getDescriptor();
+    TypeProto.getDescriptor();
     com.google.api.AnnotationsProto.getDescriptor();
   }
 

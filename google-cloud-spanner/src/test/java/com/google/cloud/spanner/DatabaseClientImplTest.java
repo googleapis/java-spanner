@@ -272,6 +272,16 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void writeAtLeastOnceWithOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnceWithOptions(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.tag("tag-1"));
+  }
+
+  @Test
   public void singleUse() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));

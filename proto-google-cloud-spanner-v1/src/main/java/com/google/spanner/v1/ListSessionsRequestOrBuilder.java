@@ -36,7 +36,7 @@ public interface ListSessionsRequestOrBuilder
    *
    * @return The database.
    */
-  java.lang.String getDatabase();
+  String getDatabase();
   /**
    *
    *
@@ -79,7 +79,7 @@ public interface ListSessionsRequestOrBuilder
    *
    * @return The pageToken.
    */
-  java.lang.String getPageToken();
+  String getPageToken();
   /**
    *
    *
@@ -112,7 +112,7 @@ public interface ListSessionsRequestOrBuilder
    *
    * @return The filter.
    */
-  java.lang.String getFilter();
+  String getFilter();
   /**
    *
    *

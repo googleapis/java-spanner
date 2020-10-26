@@ -32,7 +32,7 @@ public interface PartitionResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
-  java.util.List<com.google.spanner.v1.Partition> getPartitionsList();
+  java.util.List<Partition> getPartitionsList();
   /**
    *
    *
@@ -42,7 +42,7 @@ public interface PartitionResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
-  com.google.spanner.v1.Partition getPartitions(int index);
+  Partition getPartitions(int index);
   /**
    *
    *
@@ -62,7 +62,7 @@ public interface PartitionResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.PartitionOrBuilder> getPartitionsOrBuilderList();
+  java.util.List<? extends PartitionOrBuilder> getPartitionsOrBuilderList();
   /**
    *
    *
@@ -72,7 +72,7 @@ public interface PartitionResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Partition partitions = 1;</code>
    */
-  com.google.spanner.v1.PartitionOrBuilder getPartitionsOrBuilder(int index);
+  PartitionOrBuilder getPartitionsOrBuilder(int index);
 
   /**
    *
@@ -97,7 +97,7 @@ public interface PartitionResponseOrBuilder
    *
    * @return The transaction.
    */
-  com.google.spanner.v1.Transaction getTransaction();
+  Transaction getTransaction();
   /**
    *
    *
@@ -107,5 +107,5 @@ public interface PartitionResponseOrBuilder
    *
    * <code>.google.spanner.v1.Transaction transaction = 2;</code>
    */
-  com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder();
+  TransactionOrBuilder getTransactionOrBuilder();
 }

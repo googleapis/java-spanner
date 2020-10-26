@@ -32,7 +32,7 @@ public interface BatchCreateSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
-  java.util.List<com.google.spanner.v1.Session> getSessionList();
+  java.util.List<Session> getSessionList();
   /**
    *
    *
@@ -42,7 +42,7 @@ public interface BatchCreateSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
-  com.google.spanner.v1.Session getSession(int index);
+  Session getSession(int index);
   /**
    *
    *
@@ -62,7 +62,7 @@ public interface BatchCreateSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.SessionOrBuilder> getSessionOrBuilderList();
+  java.util.List<? extends SessionOrBuilder> getSessionOrBuilderList();
   /**
    *
    *
@@ -72,5 +72,5 @@ public interface BatchCreateSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session session = 1;</code>
    */
-  com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder(int index);
+  SessionOrBuilder getSessionOrBuilder(int index);
 }

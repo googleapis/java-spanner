@@ -240,6 +240,32 @@ public class SessionImplTest {
     assertThat(request.getMutationsList()).containsExactly(mutation);
   }
 
+  @Test
+  public void writeAtLeastOnceWithOptions() throws ParseException {
+    String tag = "tag-1";
+    String timestampString = "2015-10-01T10:54:20.021Z";
+    ArgumentCaptor<CommitRequest> commit = ArgumentCaptor.forClass(CommitRequest.class);
+    CommitResponse response =
+        CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
+    Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
+    session.writeAtLeastOnceWithOptions(
+        Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()), Options.tag(tag));
+
+    CommitRequest request = commit.getValue();
+    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo(tag);
+    com.google.spanner.v1.Mutation mutation =
+        com.google.spanner.v1.Mutation.newBuilder()
+            .setInsert(
+                Write.newBuilder()
+                    .setTable("T")
+                    .addColumns("C")
+                    .addValues(
+                        ListValue.newBuilder()
+                            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("x"))))
+            .build();
+    assertThat(request.getMutationsList()).containsExactly(mutation);
+  }
+
   private static long utcTimeSeconds(int year, int month, int day, int hour, int min, int secs) {
     GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
     calendar.set(year, month, day, hour, min, secs);

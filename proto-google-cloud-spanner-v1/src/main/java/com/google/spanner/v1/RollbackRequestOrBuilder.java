@@ -36,7 +36,7 @@ public interface RollbackRequestOrBuilder
    *
    * @return The session.
    */
-  java.lang.String getSession();
+  String getSession();
   /**
    *
    *

@@ -36,7 +36,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * @return The session.
    */
-  java.lang.String getSession();
+  String getSession();
   /**
    *
    *
@@ -87,7 +87,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * @return The transaction.
    */
-  com.google.spanner.v1.TransactionSelector getTransaction();
+  TransactionSelector getTransaction();
   /**
    *
    *
@@ -103,7 +103,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
-  com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder();
+  TransactionSelectorOrBuilder getTransactionOrBuilder();
 
   /**
    *
@@ -116,7 +116,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * @return The sql.
    */
-  java.lang.String getSql();
+  String getSql();
   /**
    *
    *
@@ -220,10 +220,10 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  boolean containsParamTypes(java.lang.String key);
+  boolean containsParamTypes(String key);
   /** Use {@link #getParamTypesMap()} instead. */
-  @java.lang.Deprecated
-  java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes();
+  @Deprecated
+  java.util.Map<String, Type> getParamTypes();
   /**
    *
    *
@@ -239,7 +239,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
+  java.util.Map<String, Type> getParamTypesMap();
   /**
    *
    *
@@ -255,8 +255,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  com.google.spanner.v1.Type getParamTypesOrDefault(
-      java.lang.String key, com.google.spanner.v1.Type defaultValue);
+  Type getParamTypesOrDefault(String key, Type defaultValue);
   /**
    *
    *
@@ -272,7 +271,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key);
+  Type getParamTypesOrThrow(String key);
 
   /**
    *
@@ -319,7 +318,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * @return The queryMode.
    */
-  com.google.spanner.v1.ExecuteSqlRequest.QueryMode getQueryMode();
+  ExecuteSqlRequest.QueryMode getQueryMode();
 
   /**
    *
@@ -380,7 +379,7 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * @return The queryOptions.
    */
-  com.google.spanner.v1.ExecuteSqlRequest.QueryOptions getQueryOptions();
+  ExecuteSqlRequest.QueryOptions getQueryOptions();
   /**
    *
    *

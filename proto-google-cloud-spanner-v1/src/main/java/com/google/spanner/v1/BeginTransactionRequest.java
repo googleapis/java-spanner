@@ -71,51 +71,51 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
             done = true;
             break;
           case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
+          {
+            java.lang.String s = input.readStringRequireUtf8();
 
-              session_ = s;
-              break;
-            }
+            session_ = s;
+            break;
+          }
           case 18:
-            {
-              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
-              if (options_ != null) {
-                subBuilder = options_.toBuilder();
-              }
-              options_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(options_);
-                options_ = subBuilder.buildPartial();
-              }
-
-              break;
+          {
+            com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
+            if (options_ != null) {
+              subBuilder = options_.toBuilder();
             }
+            options_ =
+                input.readMessage(
+                    com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(options_);
+              options_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 26:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
+          {
+            com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+            if (requestOptions_ != null) {
+              subBuilder = requestOptions_.toBuilder();
+            }
+            requestOptions_ =
+                input.readMessage(
+                    com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(requestOptions_);
+              requestOptions_ = subBuilder.buildPartial();
+            }
 
-              break;
-            }
+            break;
+          }
           default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
+          {
+            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+              done = true;
             }
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -135,7 +135,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+  internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_BeginTransactionRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -517,7 +517,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_BeginTransactionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -800,9 +800,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
 
     private com.google.spanner.v1.TransactionOptions options_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
+        com.google.spanner.v1.TransactionOptions,
+        com.google.spanner.v1.TransactionOptions.Builder,
+        com.google.spanner.v1.TransactionOptionsOrBuilder>
         optionsBuilder_;
     /**
      *
@@ -985,10 +985,10 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * </code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
-        getOptionsFieldBuilder() {
+        com.google.spanner.v1.TransactionOptions,
+        com.google.spanner.v1.TransactionOptions.Builder,
+        com.google.spanner.v1.TransactionOptionsOrBuilder>
+    getOptionsFieldBuilder() {
       if (optionsBuilder_ == null) {
         optionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -1003,9 +1003,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
     /**
      *
@@ -1206,10 +1206,10 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
-        getRequestOptionsFieldBuilder() {
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
+    getRequestOptionsFieldBuilder() {
       if (requestOptionsBuilder_ == null) {
         requestOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<

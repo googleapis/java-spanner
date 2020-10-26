@@ -73,72 +73,72 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             done = true;
             break;
           case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
+          {
+            java.lang.String s = input.readStringRequireUtf8();
 
-              session_ = s;
-              break;
-            }
+            session_ = s;
+            break;
+          }
           case 18:
-            {
-              transactionCase_ = 2;
-              transaction_ = input.readBytes();
-              break;
-            }
+          {
+            transactionCase_ = 2;
+            transaction_ = input.readBytes();
+            break;
+          }
           case 26:
-            {
-              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
-              if (transactionCase_ == 3) {
-                subBuilder = ((com.google.spanner.v1.TransactionOptions) transaction_).toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-              transactionCase_ = 3;
-              break;
+          {
+            com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
+            if (transactionCase_ == 3) {
+              subBuilder = ((com.google.spanner.v1.TransactionOptions) transaction_).toBuilder();
             }
+            transaction_ =
+                input.readMessage(
+                    com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) transaction_);
+              transaction_ = subBuilder.buildPartial();
+            }
+            transactionCase_ = 3;
+            break;
+          }
           case 34:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                mutations_ = new java.util.ArrayList<com.google.spanner.v1.Mutation>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              mutations_.add(
-                  input.readMessage(com.google.spanner.v1.Mutation.parser(), extensionRegistry));
-              break;
+          {
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              mutations_ = new java.util.ArrayList<com.google.spanner.v1.Mutation>();
+              mutable_bitField0_ |= 0x00000001;
             }
+            mutations_.add(
+                input.readMessage(com.google.spanner.v1.Mutation.parser(), extensionRegistry));
+            break;
+          }
           case 40:
-            {
-              returnCommitStats_ = input.readBool();
-              break;
-            }
+          {
+            returnCommitStats_ = input.readBool();
+            break;
+          }
           case 50:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
+          {
+            com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+            if (requestOptions_ != null) {
+              subBuilder = requestOptions_.toBuilder();
+            }
+            requestOptions_ =
+                input.readMessage(
+                    com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(requestOptions_);
+              requestOptions_ = subBuilder.buildPartial();
+            }
 
-              break;
-            }
+            break;
+          }
           default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
+          {
+            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+              done = true;
             }
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -161,7 +161,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+  internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_CommitRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -174,8 +174,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
   public enum TransactionCase
       implements
-          com.google.protobuf.Internal.EnumLite,
-          com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+      com.google.protobuf.Internal.EnumLite,
+      com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     TRANSACTION_ID(2),
     SINGLE_USE_TRANSACTION(3),
     TRANSACTION_NOT_SET(0);
@@ -409,7 +409,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.MutationOrBuilder>
-      getMutationsOrBuilderList() {
+  getMutationsOrBuilderList() {
     return mutations_;
   }
   /**
@@ -776,7 +776,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_CommitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -963,19 +963,19 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       }
       switch (other.getTransactionCase()) {
         case TRANSACTION_ID:
-          {
-            setTransactionId(other.getTransactionId());
-            break;
-          }
+        {
+          setTransactionId(other.getTransactionId());
+          break;
+        }
         case SINGLE_USE_TRANSACTION:
-          {
-            mergeSingleUseTransaction(other.getSingleUseTransaction());
-            break;
-          }
+        {
+          mergeSingleUseTransaction(other.getSingleUseTransaction());
+          break;
+        }
         case TRANSACTION_NOT_SET:
-          {
-            break;
-          }
+        {
+          break;
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1211,9 +1211,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
+        com.google.spanner.v1.TransactionOptions,
+        com.google.spanner.v1.TransactionOptions.Builder,
+        com.google.spanner.v1.TransactionOptionsOrBuilder>
         singleUseTransactionBuilder_;
     /**
      *
@@ -1352,7 +1352,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             && transaction_ != com.google.spanner.v1.TransactionOptions.getDefaultInstance()) {
           transaction_ =
               com.google.spanner.v1.TransactionOptions.newBuilder(
-                      (com.google.spanner.v1.TransactionOptions) transaction_)
+                  (com.google.spanner.v1.TransactionOptions) transaction_)
                   .mergeFrom(value)
                   .buildPartial();
         } else {
@@ -1467,10 +1467,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionOptions single_use_transaction = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
-        getSingleUseTransactionFieldBuilder() {
+        com.google.spanner.v1.TransactionOptions,
+        com.google.spanner.v1.TransactionOptions.Builder,
+        com.google.spanner.v1.TransactionOptionsOrBuilder>
+    getSingleUseTransactionFieldBuilder() {
       if (singleUseTransactionBuilder_ == null) {
         if (!(transactionCase_ == 3)) {
           transaction_ = com.google.spanner.v1.TransactionOptions.getDefaultInstance();
@@ -1502,9 +1502,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            com.google.spanner.v1.Mutation,
-            com.google.spanner.v1.Mutation.Builder,
-            com.google.spanner.v1.MutationOrBuilder>
+        com.google.spanner.v1.Mutation,
+        com.google.spanner.v1.Mutation.Builder,
+        com.google.spanner.v1.MutationOrBuilder>
         mutationsBuilder_;
 
     /**
@@ -1804,7 +1804,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
      */
     public java.util.List<? extends com.google.spanner.v1.MutationOrBuilder>
-        getMutationsOrBuilderList() {
+    getMutationsOrBuilderList() {
       if (mutationsBuilder_ != null) {
         return mutationsBuilder_.getMessageOrBuilderList();
       } else {
@@ -1857,10 +1857,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            com.google.spanner.v1.Mutation,
-            com.google.spanner.v1.Mutation.Builder,
-            com.google.spanner.v1.MutationOrBuilder>
-        getMutationsFieldBuilder() {
+        com.google.spanner.v1.Mutation,
+        com.google.spanner.v1.Mutation.Builder,
+        com.google.spanner.v1.MutationOrBuilder>
+    getMutationsFieldBuilder() {
       if (mutationsBuilder_ == null) {
         mutationsBuilder_ =
             new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -1933,9 +1933,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
     /**
      *
@@ -2100,10 +2100,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
-        getRequestOptionsFieldBuilder() {
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
+    getRequestOptionsFieldBuilder() {
       if (requestOptionsBuilder_ == null) {
         requestOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<

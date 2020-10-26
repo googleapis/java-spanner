@@ -36,7 +36,7 @@ public interface CreateSessionRequestOrBuilder
    *
    * @return The database.
    */
-  java.lang.String getDatabase();
+  String getDatabase();
   /**
    *
    *
@@ -75,7 +75,7 @@ public interface CreateSessionRequestOrBuilder
    *
    * @return The session.
    */
-  com.google.spanner.v1.Session getSession();
+  Session getSession();
   /**
    *
    *
@@ -85,5 +85,5 @@ public interface CreateSessionRequestOrBuilder
    *
    * <code>.google.spanner.v1.Session session = 2;</code>
    */
-  com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder();
+  SessionOrBuilder getSessionOrBuilder();
 }

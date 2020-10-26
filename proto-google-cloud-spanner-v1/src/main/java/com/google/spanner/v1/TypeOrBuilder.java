@@ -46,7 +46,7 @@ public interface TypeOrBuilder
    *
    * @return The code.
    */
-  com.google.spanner.v1.TypeCode getCode();
+  TypeCode getCode();
 
   /**
    *
@@ -73,7 +73,7 @@ public interface TypeOrBuilder
    *
    * @return The arrayElementType.
    */
-  com.google.spanner.v1.Type getArrayElementType();
+  Type getArrayElementType();
   /**
    *
    *
@@ -84,7 +84,7 @@ public interface TypeOrBuilder
    *
    * <code>.google.spanner.v1.Type array_element_type = 2;</code>
    */
-  com.google.spanner.v1.TypeOrBuilder getArrayElementTypeOrBuilder();
+  TypeOrBuilder getArrayElementTypeOrBuilder();
 
   /**
    *
@@ -111,7 +111,7 @@ public interface TypeOrBuilder
    *
    * @return The structType.
    */
-  com.google.spanner.v1.StructType getStructType();
+  StructType getStructType();
   /**
    *
    *
@@ -122,5 +122,5 @@ public interface TypeOrBuilder
    *
    * <code>.google.spanner.v1.StructType struct_type = 3;</code>
    */
-  com.google.spanner.v1.StructTypeOrBuilder getStructTypeOrBuilder();
+  StructTypeOrBuilder getStructTypeOrBuilder();
 }

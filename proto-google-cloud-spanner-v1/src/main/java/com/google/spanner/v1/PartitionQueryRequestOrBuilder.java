@@ -36,7 +36,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * @return The session.
    */
-  java.lang.String getSession();
+  String getSession();
   /**
    *
    *
@@ -77,7 +77,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * @return The transaction.
    */
-  com.google.spanner.v1.TransactionSelector getTransaction();
+  TransactionSelector getTransaction();
   /**
    *
    *
@@ -88,7 +88,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
-  com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder();
+  TransactionSelectorOrBuilder getTransactionOrBuilder();
 
   /**
    *
@@ -109,7 +109,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * @return The sql.
    */
-  java.lang.String getSql();
+  String getSql();
   /**
    *
    *
@@ -218,10 +218,10 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  boolean containsParamTypes(java.lang.String key);
+  boolean containsParamTypes(String key);
   /** Use {@link #getParamTypesMap()} instead. */
-  @java.lang.Deprecated
-  java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypes();
+  @Deprecated
+  java.util.Map<String, Type> getParamTypes();
   /**
    *
    *
@@ -237,7 +237,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  java.util.Map<java.lang.String, com.google.spanner.v1.Type> getParamTypesMap();
+  java.util.Map<String, Type> getParamTypesMap();
   /**
    *
    *
@@ -253,8 +253,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  com.google.spanner.v1.Type getParamTypesOrDefault(
-      java.lang.String key, com.google.spanner.v1.Type defaultValue);
+  Type getParamTypesOrDefault(String key, Type defaultValue);
   /**
    *
    *
@@ -270,7 +269,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-  com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key);
+  Type getParamTypesOrThrow(String key);
 
   /**
    *
@@ -295,7 +294,7 @@ public interface PartitionQueryRequestOrBuilder
    *
    * @return The partitionOptions.
    */
-  com.google.spanner.v1.PartitionOptions getPartitionOptions();
+  PartitionOptions getPartitionOptions();
   /**
    *
    *
@@ -305,5 +304,5 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>.google.spanner.v1.PartitionOptions partition_options = 6;</code>
    */
-  com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder();
+  PartitionOptionsOrBuilder getPartitionOptionsOrBuilder();
 }

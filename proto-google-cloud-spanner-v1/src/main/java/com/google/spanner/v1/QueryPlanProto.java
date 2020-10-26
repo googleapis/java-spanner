@@ -55,7 +55,7 @@ public final class QueryPlanProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\"google/spanner/v1/query_plan.proto\022\021go"
           + "ogle.spanner.v1\032\034google/protobuf/struct."
           + "proto\032\034google/api/annotations.proto\"\370\004\n\010"
@@ -95,7 +95,7 @@ public final class QueryPlanProto {
     internal_static_google_spanner_v1_PlanNode_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PlanNode_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Index",
               "Kind",
               "DisplayName",
@@ -109,7 +109,7 @@ public final class QueryPlanProto {
     internal_static_google_spanner_v1_PlanNode_ChildLink_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PlanNode_ChildLink_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "ChildIndex", "Type", "Variable",
             });
     internal_static_google_spanner_v1_PlanNode_ShortRepresentation_descriptor =
@@ -117,7 +117,7 @@ public final class QueryPlanProto {
     internal_static_google_spanner_v1_PlanNode_ShortRepresentation_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PlanNode_ShortRepresentation_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Description", "Subqueries",
             });
     internal_static_google_spanner_v1_PlanNode_ShortRepresentation_SubqueriesEntry_descriptor =
@@ -127,7 +127,7 @@ public final class QueryPlanProto {
     internal_static_google_spanner_v1_PlanNode_ShortRepresentation_SubqueriesEntry_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PlanNode_ShortRepresentation_SubqueriesEntry_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Key", "Value",
             });
     internal_static_google_spanner_v1_QueryPlan_descriptor =
@@ -135,7 +135,7 @@ public final class QueryPlanProto {
     internal_static_google_spanner_v1_QueryPlan_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_QueryPlan_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "PlanNodes",
             });
     com.google.protobuf.StructProto.getDescriptor();

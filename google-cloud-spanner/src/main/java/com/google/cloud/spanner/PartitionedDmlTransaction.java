@@ -185,7 +185,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
       builder.setRequestOptions(
           RequestOptions.newBuilder().setPriority(options.priority()).build());
     }
-
+    if (options.hasTag()) {
+      builder.setRequestOptions(RequestOptions.newBuilder().setRequestTag(options.tag()).build());
+    }
     return builder.build();
   }
 

@@ -545,7 +545,8 @@ public interface DatabaseClient {
    * execution strategy that provides different, and often better, scalability properties for large,
    * table-wide operations than DML in a {@link #readWriteTransaction()} transaction. Smaller scoped
    * statements, such as an OLTP workload, should prefer using {@link
-   * TransactionContext#executeUpdate(Statement)} with {@link #readWriteTransaction()}.
+   * TransactionContext#executeUpdate(Statement, UpdateOption...)} with {@link
+   * #readWriteTransaction()}.
    *
    * <p>That said, Partitioned DML is not a drop-in replacement for standard DML used in {@link
    * #readWriteTransaction()}.

@@ -176,6 +176,10 @@ class SessionImpl implements Session {
     if (commitRequestOptions.hasPriority()) {
       requestBuilder.setRequestOptions(
           RequestOptions.newBuilder().setPriority(commitRequestOptions.priority()).build());
+    Options opts = Options.fromTransactionOptions(transactionOptions);
+    if (opts.hasTag()) {
+      requestBuilder.setRequestOptions(
+          RequestOptions.newBuilder().setTransactionTag(opts.tag()).build());
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {

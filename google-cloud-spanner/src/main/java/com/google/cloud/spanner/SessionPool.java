@@ -682,6 +682,15 @@ class SessionPool {
     }
 
     @Override
+    public long executeUpdate(Statement statement, UpdateOption... options) {
+      try {
+        return delegate.executeUpdate(statement, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
     }
@@ -690,6 +699,15 @@ class SessionPool {
     public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
       try {
         return delegate.readRowUsingIndex(table, index, key, columns);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
+      try {
+        return delegate.batchUpdate(statements, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
       }
@@ -718,15 +736,6 @@ class SessionPool {
     }
 
     @Override
-    public long executeUpdate(Statement statement, UpdateOption... options) {
-      try {
-        return delegate.executeUpdate(statement, options);
-      } catch (SessionNotFoundException e) {
-        throw handler.handleSessionNotFound(e);
-      }
-    }
-
-    @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
       return ApiFutures.catching(
           delegate.executeUpdateAsync(statement, options),
@@ -738,15 +747,6 @@ class SessionPool {
             }
           },
           MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
-      try {
-        return delegate.batchUpdate(statements, options);
-      } catch (SessionNotFoundException e) {
-        throw handler.handleSessionNotFound(e);
-      }
     }
 
     @Override

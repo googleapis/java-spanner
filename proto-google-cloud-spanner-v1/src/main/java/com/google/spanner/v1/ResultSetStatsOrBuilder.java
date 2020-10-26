@@ -46,7 +46,7 @@ public interface ResultSetStatsOrBuilder
    *
    * @return The queryPlan.
    */
-  com.google.spanner.v1.QueryPlan getQueryPlan();
+  QueryPlan getQueryPlan();
   /**
    *
    *
@@ -56,7 +56,7 @@ public interface ResultSetStatsOrBuilder
    *
    * <code>.google.spanner.v1.QueryPlan query_plan = 1;</code>
    */
-  com.google.spanner.v1.QueryPlanOrBuilder getQueryPlanOrBuilder();
+  QueryPlanOrBuilder getQueryPlanOrBuilder();
 
   /**
    *
@@ -166,5 +166,5 @@ public interface ResultSetStatsOrBuilder
    */
   long getRowCountLowerBound();
 
-  public com.google.spanner.v1.ResultSetStats.RowCountCase getRowCountCase();
+  public ResultSetStats.RowCountCase getRowCountCase();
 }

@@ -162,4 +162,18 @@ public class AbstractReadContextTest {
             Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
   }
+
+  public void executeSqlRequestBuilderWithRequestOptions() {
+    ExecuteSqlRequest request =
+        context
+            .getExecuteSqlRequestBuilder(
+                Statement.newBuilder("SELECT FOO FROM BAR").build(),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.tag("tag-1")))
+            .build();
+    assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
+    assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("tag-1");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+  }
 }

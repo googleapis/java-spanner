@@ -47,7 +47,7 @@ public final class MutationProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n google/spanner/v1/mutation.proto\022\021goog"
           + "le.spanner.v1\032\034google/protobuf/struct.pr"
           + "oto\032\034google/spanner/v1/keys.proto\032\034googl"
@@ -74,7 +74,7 @@ public final class MutationProto {
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
               com.google.protobuf.StructProto.getDescriptor(),
-              com.google.spanner.v1.KeysProto.getDescriptor(),
+              KeysProto.getDescriptor(),
               com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_Mutation_descriptor =
@@ -82,7 +82,7 @@ public final class MutationProto {
     internal_static_google_spanner_v1_Mutation_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Mutation_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Insert", "Update", "InsertOrUpdate", "Replace", "Delete", "Operation",
             });
     internal_static_google_spanner_v1_Mutation_Write_descriptor =
@@ -90,7 +90,7 @@ public final class MutationProto {
     internal_static_google_spanner_v1_Mutation_Write_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Mutation_Write_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Table", "Columns", "Values",
             });
     internal_static_google_spanner_v1_Mutation_Delete_descriptor =
@@ -98,11 +98,11 @@ public final class MutationProto {
     internal_static_google_spanner_v1_Mutation_Delete_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Mutation_Delete_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Table", "KeySet",
             });
     com.google.protobuf.StructProto.getDescriptor();
-    com.google.spanner.v1.KeysProto.getDescriptor();
+    KeysProto.getDescriptor();
     com.google.api.AnnotationsProto.getDescriptor();
   }
 

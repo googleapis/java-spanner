@@ -32,7 +32,7 @@ public interface ListSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
-  java.util.List<com.google.spanner.v1.Session> getSessionsList();
+  java.util.List<Session> getSessionsList();
   /**
    *
    *
@@ -42,7 +42,7 @@ public interface ListSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
-  com.google.spanner.v1.Session getSessions(int index);
+  Session getSessions(int index);
   /**
    *
    *
@@ -62,7 +62,7 @@ public interface ListSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.SessionOrBuilder> getSessionsOrBuilderList();
+  java.util.List<? extends SessionOrBuilder> getSessionsOrBuilderList();
   /**
    *
    *
@@ -72,7 +72,7 @@ public interface ListSessionsResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.Session sessions = 1;</code>
    */
-  com.google.spanner.v1.SessionOrBuilder getSessionsOrBuilder(int index);
+  SessionOrBuilder getSessionsOrBuilder(int index);
 
   /**
    *
@@ -87,7 +87,7 @@ public interface ListSessionsResponseOrBuilder
    *
    * @return The nextPageToken.
    */
-  java.lang.String getNextPageToken();
+  String getNextPageToken();
   /**
    *
    *

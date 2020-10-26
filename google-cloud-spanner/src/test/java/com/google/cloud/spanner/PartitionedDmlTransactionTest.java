@@ -67,6 +67,7 @@ public class PartitionedDmlTransactionTest {
   private final ByteString txId = ByteString.copyFromUtf8("tx");
   private final ByteString resumeToken = ByteString.copyFromUtf8("resume");
   private final String sql = "UPDATE FOO SET BAR=1 WHERE TRUE";
+  private final String tag = "tag-1";
   private final ExecuteSqlRequest executeRequestWithoutResumeToken =
       ExecuteSqlRequest.newBuilder()
           .setQueryMode(QueryMode.NORMAL)
@@ -76,6 +77,11 @@ public class PartitionedDmlTransactionTest {
           .build();
   private final ExecuteSqlRequest executeRequestWithResumeToken =
       executeRequestWithoutResumeToken.toBuilder().setResumeToken(resumeToken).build();
+  private final ExecuteSqlRequest executeRequestWithRequestOptions =
+      executeRequestWithoutResumeToken
+          .toBuilder()
+          .setRequestOptions(RequestOptions.newBuilder().setRequestTag(tag).build())
+          .build();
 
   @Before
   public void setup() {
@@ -106,6 +112,28 @@ public class PartitionedDmlTransactionTest {
     verify(rpc)
         .executeStreamingPartitionedDml(
             Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+  }
+
+  @Test
+  public void testExecuteStreamingPartitionedUpdateWithUpdateOptions() {
+    ResultSetStats stats = ResultSetStats.newBuilder().setRowCountLowerBound(1000L).build();
+    PartialResultSet p1 = PartialResultSet.newBuilder().setResumeToken(resumeToken).build();
+    PartialResultSet p2 = PartialResultSet.newBuilder().setStats(stats).build();
+    ServerStream<PartialResultSet> stream = mock(ServerStream.class);
+    when(stream.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
+    when(rpc.executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class)))
+        .thenReturn(stream);
+
+    long count =
+        tx.executeStreamingPartitionedUpdate(
+            Statement.of(sql), Duration.ofMinutes(10), Options.tag(tag));
+
+    assertThat(count).isEqualTo(1000L);
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class));
   }
 
   @Test

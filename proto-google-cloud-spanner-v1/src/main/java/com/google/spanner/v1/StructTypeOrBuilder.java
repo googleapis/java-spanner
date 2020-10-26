@@ -37,7 +37,7 @@ public interface StructTypeOrBuilder
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  java.util.List<com.google.spanner.v1.StructType.Field> getFieldsList();
+  java.util.List<StructType.Field> getFieldsList();
   /**
    *
    *
@@ -52,7 +52,7 @@ public interface StructTypeOrBuilder
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  com.google.spanner.v1.StructType.Field getFields(int index);
+  StructType.Field getFields(int index);
   /**
    *
    *
@@ -82,8 +82,7 @@ public interface StructTypeOrBuilder
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.StructType.FieldOrBuilder>
-      getFieldsOrBuilderList();
+  java.util.List<? extends StructType.FieldOrBuilder> getFieldsOrBuilderList();
   /**
    *
    *
@@ -98,5 +97,5 @@ public interface StructTypeOrBuilder
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  com.google.spanner.v1.StructType.FieldOrBuilder getFieldsOrBuilder(int index);
+  StructType.FieldOrBuilder getFieldsOrBuilder(int index);
 }

@@ -36,7 +36,7 @@ public interface BeginTransactionRequestOrBuilder
    *
    * @return The session.
    */
-  java.lang.String getSession();
+  String getSession();
   /**
    *
    *
@@ -79,7 +79,7 @@ public interface BeginTransactionRequestOrBuilder
    *
    * @return The options.
    */
-  com.google.spanner.v1.TransactionOptions getOptions();
+  TransactionOptions getOptions();
   /**
    *
    *

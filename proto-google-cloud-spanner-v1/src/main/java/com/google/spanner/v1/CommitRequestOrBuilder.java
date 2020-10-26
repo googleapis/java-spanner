@@ -36,7 +36,7 @@ public interface CommitRequestOrBuilder
    *
    * @return The session.
    */
-  java.lang.String getSession();
+  String getSession();
   /**
    *
    *
@@ -116,7 +116,7 @@ public interface CommitRequestOrBuilder
    *
    * @return The singleUseTransaction.
    */
-  com.google.spanner.v1.TransactionOptions getSingleUseTransaction();
+  TransactionOptions getSingleUseTransaction();
   /**
    *
    *
@@ -134,7 +134,7 @@ public interface CommitRequestOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions single_use_transaction = 3;</code>
    */
-  com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseTransactionOrBuilder();
+  TransactionOptionsOrBuilder getSingleUseTransactionOrBuilder();
 
   /**
    *
@@ -147,7 +147,7 @@ public interface CommitRequestOrBuilder
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
-  java.util.List<com.google.spanner.v1.Mutation> getMutationsList();
+  java.util.List<Mutation> getMutationsList();
   /**
    *
    *
@@ -159,7 +159,7 @@ public interface CommitRequestOrBuilder
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
-  com.google.spanner.v1.Mutation getMutations(int index);
+  Mutation getMutations(int index);
   /**
    *
    *
@@ -183,7 +183,7 @@ public interface CommitRequestOrBuilder
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.MutationOrBuilder> getMutationsOrBuilderList();
+  java.util.List<? extends MutationOrBuilder> getMutationsOrBuilderList();
   /**
    *
    *
@@ -195,12 +195,13 @@ public interface CommitRequestOrBuilder
    *
    * <code>repeated .google.spanner.v1.Mutation mutations = 4;</code>
    */
-  com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index);
+  MutationOrBuilder getMutationsOrBuilder(int index);
 
   /**
    *
    *
    * <pre>
+<<<<<<< HEAD
    * If `true`, then statistics related to the transaction will be included in
    * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
    * `false`.
@@ -216,6 +217,8 @@ public interface CommitRequestOrBuilder
    *
    *
    * <pre>
+=======
+>>>>>>> 5bbb0fe8 ([Tagging Feature] add support for tagging feature)
    * Common options for this request.
    * </pre>
    *

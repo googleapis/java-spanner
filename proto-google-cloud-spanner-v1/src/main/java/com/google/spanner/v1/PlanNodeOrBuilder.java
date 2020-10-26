@@ -67,7 +67,7 @@ public interface PlanNodeOrBuilder
    *
    * @return The kind.
    */
-  com.google.spanner.v1.PlanNode.Kind getKind();
+  PlanNode.Kind getKind();
 
   /**
    *
@@ -80,7 +80,7 @@ public interface PlanNodeOrBuilder
    *
    * @return The displayName.
    */
-  java.lang.String getDisplayName();
+  String getDisplayName();
   /**
    *
    *
@@ -103,7 +103,7 @@ public interface PlanNodeOrBuilder
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
-  java.util.List<com.google.spanner.v1.PlanNode.ChildLink> getChildLinksList();
+  java.util.List<PlanNode.ChildLink> getChildLinksList();
   /**
    *
    *
@@ -113,7 +113,7 @@ public interface PlanNodeOrBuilder
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
-  com.google.spanner.v1.PlanNode.ChildLink getChildLinks(int index);
+  PlanNode.ChildLink getChildLinks(int index);
   /**
    *
    *
@@ -133,8 +133,7 @@ public interface PlanNodeOrBuilder
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.PlanNode.ChildLinkOrBuilder>
-      getChildLinksOrBuilderList();
+  java.util.List<? extends PlanNode.ChildLinkOrBuilder> getChildLinksOrBuilderList();
   /**
    *
    *
@@ -144,7 +143,7 @@ public interface PlanNodeOrBuilder
    *
    * <code>repeated .google.spanner.v1.PlanNode.ChildLink child_links = 4;</code>
    */
-  com.google.spanner.v1.PlanNode.ChildLinkOrBuilder getChildLinksOrBuilder(int index);
+  PlanNode.ChildLinkOrBuilder getChildLinksOrBuilder(int index);
 
   /**
    *
@@ -169,7 +168,7 @@ public interface PlanNodeOrBuilder
    *
    * @return The shortRepresentation.
    */
-  com.google.spanner.v1.PlanNode.ShortRepresentation getShortRepresentation();
+  PlanNode.ShortRepresentation getShortRepresentation();
   /**
    *
    *
@@ -179,7 +178,7 @@ public interface PlanNodeOrBuilder
    *
    * <code>.google.spanner.v1.PlanNode.ShortRepresentation short_representation = 5;</code>
    */
-  com.google.spanner.v1.PlanNode.ShortRepresentationOrBuilder getShortRepresentationOrBuilder();
+  PlanNode.ShortRepresentationOrBuilder getShortRepresentationOrBuilder();
 
   /**
    *

@@ -59,7 +59,7 @@ public final class TransactionProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n#google/spanner/v1/transaction.proto\022\021g"
           + "oogle.spanner.v1\032\036google/protobuf/durati"
           + "on.proto\032\037google/protobuf/timestamp.prot"
@@ -104,7 +104,7 @@ public final class TransactionProto {
     internal_static_google_spanner_v1_TransactionOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionOptions_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "ReadWrite", "PartitionedDml", "ReadOnly", "Mode",
             });
     internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor =
@@ -112,19 +112,19 @@ public final class TransactionProto {
     internal_static_google_spanner_v1_TransactionOptions_ReadWrite_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor,
-            new java.lang.String[] {});
+            new String[] {});
     internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor =
         internal_static_google_spanner_v1_TransactionOptions_descriptor.getNestedTypes().get(1);
     internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor,
-            new java.lang.String[] {});
+            new String[] {});
     internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor =
         internal_static_google_spanner_v1_TransactionOptions_descriptor.getNestedTypes().get(2);
     internal_static_google_spanner_v1_TransactionOptions_ReadOnly_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Strong",
               "MinReadTimestamp",
               "MaxStaleness",
@@ -138,7 +138,7 @@ public final class TransactionProto {
     internal_static_google_spanner_v1_Transaction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Transaction_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Id", "ReadTimestamp",
             });
     internal_static_google_spanner_v1_TransactionSelector_descriptor =
@@ -146,7 +146,7 @@ public final class TransactionProto {
     internal_static_google_spanner_v1_TransactionSelector_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_TransactionSelector_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "SingleUse", "Id", "Begin", "Selector",
             });
     com.google.protobuf.DurationProto.getDescriptor();

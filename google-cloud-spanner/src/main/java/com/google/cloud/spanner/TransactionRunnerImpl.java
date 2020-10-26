@@ -352,6 +352,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (options.hasPriority()) {
             requestBuilder.setRequestOptions(
                 RequestOptions.newBuilder().setPriority(options.priority()).build());
+          if (options.hasTag()) {
+            requestBuilder.setRequestOptions(
+                RequestOptions.newBuilder().setTransactionTag(options.tag()).build());
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");

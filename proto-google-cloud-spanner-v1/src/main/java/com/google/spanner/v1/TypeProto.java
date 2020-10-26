@@ -47,7 +47,7 @@ public final class TypeProto {
   private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\034google/spanner/v1/type.proto\022\021google.s"
           + "panner.v1\032\037google/api/field_behavior.pro"
           + "to\032\034google/api/annotations.proto\"\237\001\n\004Typ"
@@ -79,7 +79,7 @@ public final class TypeProto {
     internal_static_google_spanner_v1_Type_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Type_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Code", "ArrayElementType", "StructType",
             });
     internal_static_google_spanner_v1_StructType_descriptor =
@@ -87,7 +87,7 @@ public final class TypeProto {
     internal_static_google_spanner_v1_StructType_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_StructType_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Fields",
             });
     internal_static_google_spanner_v1_StructType_Field_descriptor =
@@ -95,7 +95,7 @@ public final class TypeProto {
     internal_static_google_spanner_v1_StructType_Field_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_StructType_Field_descriptor,
-            new java.lang.String[] {
+            new String[] {
               "Name", "Type",
             });
     com.google.protobuf.ExtensionRegistry registry =

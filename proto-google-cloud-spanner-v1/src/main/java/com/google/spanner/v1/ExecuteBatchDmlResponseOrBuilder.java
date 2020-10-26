@@ -37,7 +37,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
-  java.util.List<com.google.spanner.v1.ResultSet> getResultSetsList();
+  java.util.List<ResultSet> getResultSetsList();
   /**
    *
    *
@@ -52,7 +52,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
-  com.google.spanner.v1.ResultSet getResultSets(int index);
+  ResultSet getResultSets(int index);
   /**
    *
    *
@@ -82,7 +82,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
-  java.util.List<? extends com.google.spanner.v1.ResultSetOrBuilder> getResultSetsOrBuilderList();
+  java.util.List<? extends ResultSetOrBuilder> getResultSetsOrBuilderList();
   /**
    *
    *
@@ -97,7 +97,7 @@ public interface ExecuteBatchDmlResponseOrBuilder
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
    */
-  com.google.spanner.v1.ResultSetOrBuilder getResultSetsOrBuilder(int index);
+  ResultSetOrBuilder getResultSetsOrBuilder(int index);
 
   /**
    *

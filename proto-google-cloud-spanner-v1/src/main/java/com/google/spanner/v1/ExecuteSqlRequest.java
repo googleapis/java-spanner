@@ -77,127 +77,127 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
             done = true;
             break;
           case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
+          {
+            java.lang.String s = input.readStringRequireUtf8();
 
-              session_ = s;
-              break;
-            }
+            session_ = s;
+            break;
+          }
           case 18:
-            {
-              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-
-              break;
+          {
+            com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
+            if (transaction_ != null) {
+              subBuilder = transaction_.toBuilder();
             }
+            transaction_ =
+                input.readMessage(
+                    com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(transaction_);
+              transaction_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
+          {
+            java.lang.String s = input.readStringRequireUtf8();
 
-              sql_ = s;
-              break;
-            }
+            sql_ = s;
+            break;
+          }
           case 34:
-            {
-              com.google.protobuf.Struct.Builder subBuilder = null;
-              if (params_ != null) {
-                subBuilder = params_.toBuilder();
-              }
-              params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(params_);
-                params_ = subBuilder.buildPartial();
-              }
-
-              break;
+          {
+            com.google.protobuf.Struct.Builder subBuilder = null;
+            if (params_ != null) {
+              subBuilder = params_.toBuilder();
             }
+            params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(params_);
+              params_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 42:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                paramTypes_ =
-                    com.google.protobuf.MapField.newMapField(
-                        ParamTypesDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
-                  paramTypes__ =
-                      input.readMessage(
-                          ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
-                          extensionRegistry);
-              paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
-              break;
+          {
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              paramTypes_ =
+                  com.google.protobuf.MapField.newMapField(
+                      ParamTypesDefaultEntryHolder.defaultEntry);
+              mutable_bitField0_ |= 0x00000001;
             }
+            com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
+                paramTypes__ =
+                input.readMessage(
+                    ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
+                    extensionRegistry);
+            paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
+            break;
+          }
           case 50:
-            {
-              resumeToken_ = input.readBytes();
-              break;
-            }
+          {
+            resumeToken_ = input.readBytes();
+            break;
+          }
           case 56:
-            {
-              int rawValue = input.readEnum();
+          {
+            int rawValue = input.readEnum();
 
-              queryMode_ = rawValue;
-              break;
-            }
+            queryMode_ = rawValue;
+            break;
+          }
           case 66:
-            {
-              partitionToken_ = input.readBytes();
-              break;
-            }
+          {
+            partitionToken_ = input.readBytes();
+            break;
+          }
           case 72:
-            {
-              seqno_ = input.readInt64();
-              break;
-            }
+          {
+            seqno_ = input.readInt64();
+            break;
+          }
           case 82:
-            {
-              com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder subBuilder = null;
-              if (queryOptions_ != null) {
-                subBuilder = queryOptions_.toBuilder();
-              }
-              queryOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(queryOptions_);
-                queryOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
+          {
+            com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder subBuilder = null;
+            if (queryOptions_ != null) {
+              subBuilder = queryOptions_.toBuilder();
             }
+            queryOptions_ =
+                input.readMessage(
+                    com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.parser(),
+                    extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(queryOptions_);
+              queryOptions_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 90:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
+          {
+            com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+            if (requestOptions_ != null) {
+              subBuilder = requestOptions_.toBuilder();
+            }
+            requestOptions_ =
+                input.readMessage(
+                    com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(requestOptions_);
+              requestOptions_ = subBuilder.buildPartial();
+            }
 
-              break;
-            }
+            break;
+          }
           default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
+          {
+            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+              done = true;
             }
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -228,7 +228,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+  internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ExecuteSqlRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -570,26 +570,26 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
               done = true;
               break;
             case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-                optimizerVersion_ = s;
-                break;
-              }
+              optimizerVersion_ = s;
+              break;
+            }
             case 18:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-                optimizerStatisticsPackage_ = s;
-                break;
-              }
+              optimizerStatisticsPackage_ = s;
+              break;
+            }
             default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
+            {
+              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
               }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -609,7 +609,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteSqlRequest_QueryOptions_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -973,7 +973,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.google.spanner.v1.SpannerProto
             .internal_static_google_spanner_v1_ExecuteSqlRequest_QueryOptions_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1788,20 +1788,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
   private static final class ParamTypesDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
         defaultEntry =
-            com.google.protobuf.MapEntry
-                .<java.lang.String, com.google.spanner.v1.Type>newDefaultInstance(
-                    com.google.spanner.v1.SpannerProto
-                        .internal_static_google_spanner_v1_ExecuteSqlRequest_ParamTypesEntry_descriptor,
-                    com.google.protobuf.WireFormat.FieldType.STRING,
-                    "",
-                    com.google.protobuf.WireFormat.FieldType.MESSAGE,
-                    com.google.spanner.v1.Type.getDefaultInstance());
+        com.google.protobuf.MapEntry
+            .<java.lang.String, com.google.spanner.v1.Type>newDefaultInstance(
+                com.google.spanner.v1.SpannerProto
+                    .internal_static_google_spanner_v1_ExecuteSqlRequest_ParamTypesEntry_descriptor,
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "",
+                com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                com.google.spanner.v1.Type.getDefaultInstance());
   }
 
   private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type> paramTypes_;
 
   private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-      internalGetParamTypes() {
+  internalGetParamTypes() {
     if (paramTypes_ == null) {
       return com.google.protobuf.MapField.emptyMapField(ParamTypesDefaultEntryHolder.defaultEntry);
     }
@@ -2433,7 +2433,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteSqlRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2782,9 +2782,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private com.google.spanner.v1.TransactionSelector transaction_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionSelector,
-            com.google.spanner.v1.TransactionSelector.Builder,
-            com.google.spanner.v1.TransactionSelectorOrBuilder>
+        com.google.spanner.v1.TransactionSelector,
+        com.google.spanner.v1.TransactionSelector.Builder,
+        com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
     /**
      *
@@ -3004,10 +3004,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionSelector,
-            com.google.spanner.v1.TransactionSelector.Builder,
-            com.google.spanner.v1.TransactionSelectorOrBuilder>
-        getTransactionFieldBuilder() {
+        com.google.spanner.v1.TransactionSelector,
+        com.google.spanner.v1.TransactionSelector.Builder,
+        com.google.spanner.v1.TransactionSelectorOrBuilder>
+    getTransactionFieldBuilder() {
       if (transactionBuilder_ == null) {
         transactionBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -3128,9 +3128,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private com.google.protobuf.Struct params_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.protobuf.Struct,
-            com.google.protobuf.Struct.Builder,
-            com.google.protobuf.StructOrBuilder>
+        com.google.protobuf.Struct,
+        com.google.protobuf.Struct.Builder,
+        com.google.protobuf.StructOrBuilder>
         paramsBuilder_;
     /**
      *
@@ -3360,10 +3360,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>.google.protobuf.Struct params = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.protobuf.Struct,
-            com.google.protobuf.Struct.Builder,
-            com.google.protobuf.StructOrBuilder>
-        getParamsFieldBuilder() {
+        com.google.protobuf.Struct,
+        com.google.protobuf.Struct.Builder,
+        com.google.protobuf.StructOrBuilder>
+    getParamsFieldBuilder() {
       if (paramsBuilder_ == null) {
         paramsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -3379,7 +3379,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type> paramTypes_;
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-        internalGetParamTypes() {
+    internalGetParamTypes() {
       if (paramTypes_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
             ParamTypesDefaultEntryHolder.defaultEntry);
@@ -3388,7 +3388,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-        internalGetMutableParamTypes() {
+    internalGetMutableParamTypes() {
       onChanged();
       ;
       if (paramTypes_ == null) {
@@ -3893,9 +3893,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private com.google.spanner.v1.ExecuteSqlRequest.QueryOptions queryOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptions,
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder,
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder>
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptions,
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder,
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder>
         queryOptionsBuilder_;
     /**
      *
@@ -4043,7 +4043,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.ExecuteSqlRequest.QueryOptions query_options = 10;</code>
      */
     public com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder
-        getQueryOptionsOrBuilder() {
+    getQueryOptionsOrBuilder() {
       if (queryOptionsBuilder_ != null) {
         return queryOptionsBuilder_.getMessageOrBuilder();
       } else {
@@ -4062,10 +4062,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.ExecuteSqlRequest.QueryOptions query_options = 10;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptions,
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder,
-            com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder>
-        getQueryOptionsFieldBuilder() {
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptions,
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptions.Builder,
+        com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder>
+    getQueryOptionsFieldBuilder() {
       if (queryOptionsBuilder_ == null) {
         queryOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -4080,9 +4080,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
     /**
      *
@@ -4247,10 +4247,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.RequestOptions,
-            com.google.spanner.v1.RequestOptions.Builder,
-            com.google.spanner.v1.RequestOptionsOrBuilder>
-        getRequestOptionsFieldBuilder() {
+        com.google.spanner.v1.RequestOptions,
+        com.google.spanner.v1.RequestOptions.Builder,
+        com.google.spanner.v1.RequestOptionsOrBuilder>
+    getRequestOptionsFieldBuilder() {
       if (requestOptionsBuilder_ == null) {
         requestOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
