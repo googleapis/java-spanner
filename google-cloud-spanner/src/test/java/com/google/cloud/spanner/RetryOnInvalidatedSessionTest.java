@@ -30,6 +30,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
+import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.v1.SpannerClient;
@@ -1650,6 +1654,334 @@ public class RetryOnInvalidatedSessionTest {
               executor);
       assertThat(get(res)).isNull();
       assertThat(get(runner.getCommitTimestamp())).isNotNull();
+      assertThat(failOnInvalidatedSession).isFalse();
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    }
+  }
+
+  @Test
+  public void asyncTransactionManagerAsyncSelect() throws InterruptedException {
+    asyncTransactionManager_readAsync(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.executeQueryAsync(SELECT1AND2);
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerAsyncRead() throws InterruptedException {
+    asyncTransactionManager_readAsync(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerAsyncReadUsingIndex() throws InterruptedException {
+    asyncTransactionManager_readAsync(
+        new Function<TransactionContext, AsyncResultSet>() {
+          @Override
+          public AsyncResultSet apply(TransactionContext input) {
+            return input.readUsingIndexAsync("FOO", "idx", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  private void asyncTransactionManager_readAsync(
+      final Function<TransactionContext, AsyncResultSet> fn) throws InterruptedException {
+    invalidateSessionPool();
+    final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture context = manager.beginAsync();
+      while (true) {
+        try {
+          final AtomicLong counter = new AtomicLong();
+          AsyncTransactionStep<Void, Long> count =
+              context.then(
+                  new AsyncTransactionFunction<Void, Long>() {
+                    @Override
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      AsyncResultSet rs = fn.apply(txn);
+                      ApiFuture<Void> fut =
+                          rs.setCallback(
+                              queryExecutor,
+                              new ReadyCallback() {
+                                @Override
+                                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                                  while (true) {
+                                    switch (resultSet.tryNext()) {
+                                      case OK:
+                                        counter.incrementAndGet();
+                                        break;
+                                      case DONE:
+                                        return CallbackResponse.DONE;
+                                      case NOT_READY:
+                                        return CallbackResponse.CONTINUE;
+                                    }
+                                  }
+                                }
+                              });
+                      return ApiFutures.transform(
+                          fut,
+                          new ApiFunction<Void, Long>() {
+                            @Override
+                            public Long apply(Void input) {
+                              return counter.get();
+                            }
+                          },
+                          MoreExecutors.directExecutor());
+                    }
+                  },
+                  executor);
+          CommitTimestampFuture ts = count.commitAsync();
+          assertThat(get(ts)).isNotNull();
+          assertThat(get(count)).isEqualTo(2);
+          assertThat(failOnInvalidatedSession).isFalse();
+          break;
+        } catch (AbortedException e) {
+          context = manager.resetForRetryAsync();
+        }
+      }
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    } finally {
+      queryExecutor.shutdown();
+    }
+  }
+
+  @Test
+  public void asyncTransactionManagerSelect() throws InterruptedException {
+    asyncTransactionManager_readSync(
+        new Function<TransactionContext, ResultSet>() {
+          @Override
+          public ResultSet apply(TransactionContext input) {
+            return input.executeQuery(SELECT1AND2);
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerRead() throws InterruptedException {
+    asyncTransactionManager_readSync(
+        new Function<TransactionContext, ResultSet>() {
+          @Override
+          public ResultSet apply(TransactionContext input) {
+            return input.read("FOO", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerReadUsingIndex() throws InterruptedException {
+    asyncTransactionManager_readSync(
+        new Function<TransactionContext, ResultSet>() {
+          @Override
+          public ResultSet apply(TransactionContext input) {
+            return input.readUsingIndex("FOO", "idx", KeySet.all(), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  private void asyncTransactionManager_readSync(final Function<TransactionContext, ResultSet> fn)
+      throws InterruptedException {
+    invalidateSessionPool();
+    final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture context = manager.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Long> count =
+              context.then(
+                  new AsyncTransactionFunction<Void, Long>() {
+                    @Override
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      long counter = 0L;
+                      try (ResultSet rs = fn.apply(txn)) {
+                        while (rs.next()) {
+                          counter++;
+                        }
+                      }
+                      return ApiFutures.immediateFuture(counter);
+                    }
+                  },
+                  executor);
+          CommitTimestampFuture ts = count.commitAsync();
+          assertThat(get(ts)).isNotNull();
+          assertThat(get(count)).isEqualTo(2);
+          assertThat(failOnInvalidatedSession).isFalse();
+          break;
+        } catch (AbortedException e) {
+          context = manager.resetForRetryAsync();
+        }
+      }
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    } finally {
+      queryExecutor.shutdown();
+    }
+  }
+
+  @Test
+  public void asyncTransactionManagerReadRow() throws InterruptedException {
+    asyncTransactionManager_readRowFunction(
+        new Function<TransactionContext, ApiFuture<Struct>>() {
+          @Override
+          public ApiFuture<Struct> apply(TransactionContext input) {
+            return ApiFutures.immediateFuture(
+                input.readRow("FOO", Key.of("foo"), Arrays.asList("BAR")));
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerReadRowUsingIndex() throws InterruptedException {
+    asyncTransactionManager_readRowFunction(
+        new Function<TransactionContext, ApiFuture<Struct>>() {
+          @Override
+          public ApiFuture<Struct> apply(TransactionContext input) {
+            return ApiFutures.immediateFuture(
+                input.readRowUsingIndex("FOO", "idx", Key.of("foo"), Arrays.asList("BAR")));
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerReadRowAsync() throws InterruptedException {
+    asyncTransactionManager_readRowFunction(
+        new Function<TransactionContext, ApiFuture<Struct>>() {
+          @Override
+          public ApiFuture<Struct> apply(TransactionContext input) {
+            return input.readRowAsync("FOO", Key.of("foo"), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  @Test
+  public void asyncTransactionManagerReadRowUsingIndexAsync() throws InterruptedException {
+    asyncTransactionManager_readRowFunction(
+        new Function<TransactionContext, ApiFuture<Struct>>() {
+          @Override
+          public ApiFuture<Struct> apply(TransactionContext input) {
+            return input.readRowUsingIndexAsync("FOO", "idx", Key.of("foo"), Arrays.asList("BAR"));
+          }
+        });
+  }
+
+  private void asyncTransactionManager_readRowFunction(
+      final Function<TransactionContext, ApiFuture<Struct>> fn) throws InterruptedException {
+    invalidateSessionPool();
+    final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture context = manager.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, Struct> row =
+              context.then(
+                  new AsyncTransactionFunction<Void, Struct>() {
+                    @Override
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      return fn.apply(txn);
+                    }
+                  },
+                  executor);
+          CommitTimestampFuture ts = row.commitAsync();
+          assertThat(get(ts)).isNotNull();
+          assertThat(get(row)).isEqualTo(Struct.newBuilder().set("BAR").to(1L).build());
+          assertThat(failOnInvalidatedSession).isFalse();
+          break;
+        } catch (AbortedException e) {
+          context = manager.resetForRetryAsync();
+        }
+      }
+    } catch (SessionNotFoundException e) {
+      assertThat(failOnInvalidatedSession).isTrue();
+    } finally {
+      queryExecutor.shutdown();
+    }
+  }
+
+  @Test
+  public void asyncTransactionManagerUpdateAsync() throws InterruptedException {
+    asyncTransactionManager_updateFunction(
+        new Function<TransactionContext, ApiFuture<Long>>() {
+          @Override
+          public ApiFuture<Long> apply(TransactionContext input) {
+            return input.executeUpdateAsync(UPDATE_STATEMENT);
+          }
+        },
+        UPDATE_COUNT);
+  }
+
+  @Test
+  public void asyncTransactionManagerUpdate() throws InterruptedException {
+    asyncTransactionManager_updateFunction(
+        new Function<TransactionContext, ApiFuture<Long>>() {
+          @Override
+          public ApiFuture<Long> apply(TransactionContext input) {
+            return ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT));
+          }
+        },
+        UPDATE_COUNT);
+  }
+
+  @Test
+  public void asyncTransactionManagerBatchUpdateAsync() throws InterruptedException {
+    asyncTransactionManager_updateFunction(
+        new Function<TransactionContext, ApiFuture<long[]>>() {
+          @Override
+          public ApiFuture<long[]> apply(TransactionContext input) {
+            return input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
+          }
+        },
+        new long[] {UPDATE_COUNT, UPDATE_COUNT});
+  }
+
+  @Test
+  public void asyncTransactionManagerBatchUpdate() throws InterruptedException {
+    asyncTransactionManager_updateFunction(
+        new Function<TransactionContext, ApiFuture<long[]>>() {
+          @Override
+          public ApiFuture<long[]> apply(TransactionContext input) {
+            return ApiFutures.immediateFuture(
+                input.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)));
+          }
+        },
+        new long[] {UPDATE_COUNT, UPDATE_COUNT});
+  }
+
+  private <T> void asyncTransactionManager_updateFunction(
+      final Function<TransactionContext, ApiFuture<T>> fn, T expected) throws InterruptedException {
+    invalidateSessionPool();
+    try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      while (true) {
+        try {
+          AsyncTransactionStep<Void, T> res =
+              transaction.then(
+                  new AsyncTransactionFunction<Void, T>() {
+                    @Override
+                    public ApiFuture<T> apply(TransactionContext txn, Void input) throws Exception {
+                      return fn.apply(txn);
+                    }
+                  },
+                  executor);
+          CommitTimestampFuture ts = res.commitAsync();
+          assertThat(get(res)).isEqualTo(expected);
+          assertThat(get(ts)).isNotNull();
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetryAsync();
+        }
+      }
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();

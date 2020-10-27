@@ -38,6 +38,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEY
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -540,177 +541,248 @@ final class SessionPool {
     }
   }
 
-  private static class AutoClosingTransactionManager implements TransactionManager {
-    private class SessionPoolResultSet extends ForwardingResultSet {
-      private SessionPoolResultSet(ResultSet delegate) {
-        super(delegate);
-      }
-
-      @Override
-      public boolean next() {
-        try {
-          return super.next();
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-    }
-
+  interface SessionNotFoundHandler {
     /**
-     * {@link TransactionContext} that is used in combination with an {@link
-     * AutoClosingTransactionManager}. This {@link TransactionContext} handles {@link
-     * SessionNotFoundException}s by replacing the underlying session with a fresh one, and then
-     * throws an {@link AbortedException} to trigger the retry-loop that has been created by the
-     * caller.
+     * Handles the given {@link SessionNotFoundException} by possibly converting it to a different
+     * exception that should be thrown.
      */
-    private class SessionPoolTransactionContext implements TransactionContext {
-      private final TransactionContext delegate;
+    SpannerException handleSessionNotFound(SessionNotFoundException notFound);
+  }
 
-      private SessionPoolTransactionContext(TransactionContext delegate) {
-        this.delegate = delegate;
+  static class SessionPoolResultSet extends ForwardingResultSet {
+    private final SessionNotFoundHandler handler;
+
+    private SessionPoolResultSet(SessionNotFoundHandler handler, ResultSet delegate) {
+      super(delegate);
+      this.handler = Preconditions.checkNotNull(handler);
+    }
+
+    @Override
+    public boolean next() {
+      try {
+        return super.next();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
       }
+    }
+  }
 
-      @Override
-      public ResultSet read(
-          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-        return new SessionPoolResultSet(delegate.read(table, keys, columns, options));
-      }
+  static class AsyncSessionPoolResultSet extends ForwardingAsyncResultSet {
+    private final SessionNotFoundHandler handler;
 
-      @Override
-      public AsyncResultSet readAsync(
-          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, "not yet implemented");
-      }
+    private AsyncSessionPoolResultSet(SessionNotFoundHandler handler, AsyncResultSet delegate) {
+      super(delegate);
+      this.handler = Preconditions.checkNotNull(handler);
+    }
 
-      @Override
-      public ResultSet readUsingIndex(
-          String table,
-          String index,
-          KeySet keys,
-          Iterable<String> columns,
-          ReadOption... options) {
-        return new SessionPoolResultSet(
-            delegate.readUsingIndex(table, index, keys, columns, options));
-      }
+    @Override
+    public ApiFuture<Void> setCallback(Executor executor, final ReadyCallback callback) {
+      return super.setCallback(
+          executor,
+          new ReadyCallback() {
+            @Override
+            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+              try {
+                return callback.cursorReady(resultSet);
+              } catch (SessionNotFoundException e) {
+                throw handler.handleSessionNotFound(e);
+              }
+            }
+          });
+    }
 
-      @Override
-      public AsyncResultSet readUsingIndexAsync(
-          String table,
-          String index,
-          KeySet keys,
-          Iterable<String> columns,
-          ReadOption... options) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, "not yet implemented");
-      }
-
-      @Override
-      public Struct readRow(String table, Key key, Iterable<String> columns) {
-        try {
-          return delegate.readRow(table, key, columns);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-        try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
-          return AbstractReadContext.consumeSingleRowAsync(rs);
-        }
-      }
-
-      @Override
-      public void buffer(Mutation mutation) {
-        delegate.buffer(mutation);
-      }
-
-      @Override
-      public Struct readRowUsingIndex(
-          String table, String index, Key key, Iterable<String> columns) {
-        try {
-          return delegate.readRowUsingIndex(table, index, key, columns);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Struct> readRowUsingIndexAsync(
-          String table, String index, Key key, Iterable<String> columns) {
-        try (AsyncResultSet rs =
-            readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
-          return AbstractReadContext.consumeSingleRowAsync(rs);
-        }
-      }
-
-      @Override
-      public void buffer(Iterable<Mutation> mutations) {
-        delegate.buffer(mutations);
-      }
-
-      @Override
-      public long executeUpdate(Statement statement) {
-        try {
-          return delegate.executeUpdate(statement);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Long> executeUpdateAsync(Statement statement) {
-        try {
-          return delegate.executeUpdateAsync(statement);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public long[] batchUpdate(Iterable<Statement> statements) {
-        try {
-          return delegate.batchUpdate(statements);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
-        try {
-          return delegate.batchUpdateAsync(statements);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ResultSet executeQuery(Statement statement, QueryOption... options) {
-        return new SessionPoolResultSet(delegate.executeQuery(statement, options));
-      }
-
-      @Override
-      public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-        try {
-          return delegate.executeQueryAsync(statement, options);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-        return new SessionPoolResultSet(delegate.analyzeQuery(statement, queryMode));
-      }
-
-      @Override
-      public void close() {
-        delegate.close();
+    @Override
+    public boolean next() {
+      try {
+        return super.next();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
       }
     }
 
+    @Override
+    public CursorState tryNext() {
+      try {
+        return super.tryNext();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+  }
+
+  /**
+   * {@link TransactionContext} that is used in combination with an {@link
+   * AutoClosingTransactionManager}. This {@link TransactionContext} handles {@link
+   * SessionNotFoundException}s by replacing the underlying session with a fresh one, and then
+   * throws an {@link AbortedException} to trigger the retry-loop that has been created by the
+   * caller.
+   */
+  static class SessionPoolTransactionContext implements TransactionContext {
+    private final SessionNotFoundHandler handler;
+    final TransactionContext delegate;
+
+    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate) {
+      this.handler = Preconditions.checkNotNull(handler);
+      this.delegate = delegate;
+    }
+
+    @Override
+    public ResultSet read(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+    }
+
+    @Override
+    public AsyncResultSet readAsync(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readAsync(table, keys, columns, options));
+    }
+
+    @Override
+    public ResultSet readUsingIndex(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new SessionPoolResultSet(
+          handler, delegate.readUsingIndex(table, index, keys, columns, options));
+    }
+
+    @Override
+    public AsyncResultSet readUsingIndexAsync(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
+    }
+
+    @Override
+    public Struct readRow(String table, Key key, Iterable<String> columns) {
+      try {
+        return delegate.readRow(table, key, columns);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+        return ApiFutures.catching(
+            AbstractReadContext.consumeSingleRowAsync(rs),
+            SessionNotFoundException.class,
+            new ApiFunction<SessionNotFoundException, Struct>() {
+              @Override
+              public Struct apply(SessionNotFoundException input) {
+                throw handler.handleSessionNotFound(input);
+              }
+            },
+            MoreExecutors.directExecutor());
+      }
+    }
+
+    @Override
+    public void buffer(Mutation mutation) {
+      delegate.buffer(mutation);
+    }
+
+    @Override
+    public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
+      try {
+        return delegate.readRowUsingIndex(table, index, key, columns);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowUsingIndexAsync(
+        String table, String index, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+        return ApiFutures.catching(
+            AbstractReadContext.consumeSingleRowAsync(rs),
+            SessionNotFoundException.class,
+            new ApiFunction<SessionNotFoundException, Struct>() {
+              @Override
+              public Struct apply(SessionNotFoundException input) {
+                throw handler.handleSessionNotFound(input);
+              }
+            },
+            MoreExecutors.directExecutor());
+      }
+    }
+
+    @Override
+    public void buffer(Iterable<Mutation> mutations) {
+      delegate.buffer(mutations);
+    }
+
+    @Override
+    public long executeUpdate(Statement statement) {
+      try {
+        return delegate.executeUpdate(statement);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+      return ApiFutures.catching(
+          delegate.executeUpdateAsync(statement),
+          SessionNotFoundException.class,
+          new ApiFunction<SessionNotFoundException, Long>() {
+            @Override
+            public Long apply(SessionNotFoundException input) {
+              throw handler.handleSessionNotFound(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public long[] batchUpdate(Iterable<Statement> statements) {
+      try {
+        return delegate.batchUpdate(statements);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+      return ApiFutures.catching(
+          delegate.batchUpdateAsync(statements),
+          SessionNotFoundException.class,
+          new ApiFunction<SessionNotFoundException, long[]>() {
+            @Override
+            public long[] apply(SessionNotFoundException input) {
+              throw handler.handleSessionNotFound(input);
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ResultSet executeQuery(Statement statement, QueryOption... options) {
+      return new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+    }
+
+    @Override
+    public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+      return new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+    }
+
+    @Override
+    public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
+      return new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+    }
+
+    @Override
+    public void close() {
+      delegate.close();
+    }
+  }
+
+  private static class AutoClosingTransactionManager
+      implements TransactionManager, SessionNotFoundHandler {
     private TransactionManager delegate;
     private final SessionPool sessionPool;
     private PooledSessionFuture session;
@@ -731,12 +803,13 @@ final class SessionPool {
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res = new SessionPoolTransactionContext(delegate.begin());
+      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();
       return res;
     }
 
-    private SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
+    @Override
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
       session = sessionPool.replaceSession(notFound, session);
       PooledSession pooledSession = session.get();
       delegate = pooledSession.delegate.transactionManager();
@@ -772,11 +845,11 @@ final class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res = new SessionPoolTransactionContext(delegate.begin());
+            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(delegate.resetForRetry());
+            return new SessionPoolTransactionContext(this, delegate.resetForRetry());
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
@@ -1145,7 +1218,7 @@ final class SessionPool {
 
     @Override
     public AsyncTransactionManager transactionManagerAsync() {
-      return new SessionPoolAsyncTransactionManager(this);
+      return new SessionPoolAsyncTransactionManager(SessionPool.this, this);
     }
 
     @Override
