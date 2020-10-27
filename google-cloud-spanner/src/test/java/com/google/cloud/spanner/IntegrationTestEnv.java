@@ -165,6 +165,18 @@ public class IntegrationTestEnv extends ExternalResource {
       if (isOwnedInstance) {
         // Delete the instance, which implicitly drops all databases in it.
         try {
+          // Backups must be explicitly deleted before the instance may be deleted.
+          logger.log(
+              Level.FINE, "Deleting backups on test instance {0}", testHelper.getInstanceId());
+          for (Backup backup :
+              testHelper
+                  .getClient()
+                  .getDatabaseAdminClient()
+                  .listBackups(testHelper.getInstanceId().getInstance())
+                  .iterateAll()) {
+            logger.log(Level.FINE, "Deleting backup {0}", backup.getId());
+            backup.delete();
+          }
           logger.log(Level.FINE, "Deleting test instance {0}", testHelper.getInstanceId());
           instanceAdminClient.deleteInstance(testHelper.getInstanceId().getInstance());
           logger.log(Level.INFO, "Deleted test instance {0}", testHelper.getInstanceId());
