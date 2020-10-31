@@ -409,6 +409,17 @@
   
   <!-- Support for CommitStats added -->
   <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/CommitResponse</className>
+    <method>CommitResponse(com.google.cloud.Timestamp)</method>
+    <to>CommitResponse(com.google.spanner.v1.CommitResponse)</to>
+  </difference>
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/CommitResponse</className>
+    <method>CommitResponse(com.google.cloud.Timestamp)</method>
+  </difference>
+  <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/AsyncTransactionManager</className>
     <method>com.google.api.core.ApiFuture getCommitResponse()</method>

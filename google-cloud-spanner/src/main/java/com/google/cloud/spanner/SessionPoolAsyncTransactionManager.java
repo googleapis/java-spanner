@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiAsyncFunction;
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -24,25 +25,36 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.SessionNotFoundHandler;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import javax.annotation.concurrent.GuardedBy;
 
-class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionManager {
+class SessionPoolAsyncTransactionManager
+    implements CommittableAsyncTransactionManager, SessionNotFoundHandler {
   private final Object lock = new Object();
 
   @GuardedBy("lock")
   private TransactionState txnState;
 
+  private final SessionPool pool;
+  private final TransactionOption[] options;
   private volatile PooledSessionFuture session;
-  private final SettableApiFuture<AsyncTransactionManagerImpl> delegate =
-      SettableApiFuture.create();
+  private volatile SettableApiFuture<AsyncTransactionManagerImpl> delegate;
+  private boolean restartedAfterSessionNotFound;
 
   SessionPoolAsyncTransactionManager(
-      PooledSessionFuture session, final TransactionOption... options) {
+      SessionPool pool, PooledSessionFuture session, final TransactionOption... options) {
+    this.pool = Preconditions.checkNotNull(pool);
+    this.options = options;
+    createTransaction(session);
+  }
+
+  private void createTransaction(PooledSessionFuture session) {
     this.session = session;
+    this.delegate = SettableApiFuture.create();
     this.session.addListener(
         new Runnable() {
           @Override
@@ -59,6 +71,16 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
           }
         },
         MoreExecutors.directExecutor());
+  }
+
+  @Override
+  public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
+    // Restart the entire transaction with a new session and throw an AbortedException to force the
+    // client application to retry.
+    createTransaction(pool.replaceSession(notFound, session));
+    restartedAfterSessionNotFound = true;
+    return SpannerExceptionFactory.newSpannerException(
+        ErrorCode.ABORTED, notFound.getMessage(), notFound);
   }
 
   @Override
@@ -127,7 +149,9 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
 
                   @Override
                   public void onSuccess(TransactionContext result) {
-                    delegateTxnFuture.set(result);
+                    delegateTxnFuture.set(
+                        new SessionPool.SessionPoolTransactionContext(
+                            SessionPoolAsyncTransactionManager.this, result));
                   }
                 },
                 MoreExecutors.directExecutor());
@@ -220,19 +244,33 @@ class SessionPoolAsyncTransactionManager implements CommittableAsyncTransactionM
   public TransactionContextFuture resetForRetryAsync() {
     synchronized (lock) {
       Preconditions.checkState(
-          txnState == TransactionState.ABORTED,
+          txnState == TransactionState.ABORTED || restartedAfterSessionNotFound,
           "resetForRetry can only be called after the transaction aborted.");
       txnState = TransactionState.STARTED;
     }
     return new TransactionContextFutureImpl(
         this,
-        ApiFutures.transformAsync(
-            delegate,
-            new ApiAsyncFunction<AsyncTransactionManagerImpl, TransactionContext>() {
+        ApiFutures.transform(
+            ApiFutures.transformAsync(
+                delegate,
+                new ApiAsyncFunction<AsyncTransactionManagerImpl, TransactionContext>() {
+                  @Override
+                  public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input)
+                      throws Exception {
+                    if (restartedAfterSessionNotFound) {
+                      restartedAfterSessionNotFound = false;
+                      return input.beginAsync();
+                    }
+                    return input.resetForRetryAsync();
+                  }
+                },
+                MoreExecutors.directExecutor()),
+            new ApiFunction<TransactionContext, TransactionContext>() {
+
               @Override
-              public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input)
-                  throws Exception {
-                return input.resetForRetryAsync();
+              public TransactionContext apply(TransactionContext input) {
+                return new SessionPool.SessionPoolTransactionContext(
+                    SessionPoolAsyncTransactionManager.this, input);
               }
             },
             MoreExecutors.directExecutor()));

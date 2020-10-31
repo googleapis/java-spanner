@@ -20,6 +20,7 @@ import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
+import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -667,6 +668,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
    */
   public void abortTransaction(TransactionContext transactionContext) {
     Preconditions.checkNotNull(transactionContext);
+    if (transactionContext instanceof SessionPoolTransactionContext) {
+      transactionContext = ((SessionPoolTransactionContext) transactionContext).delegate;
+    }
     if (transactionContext instanceof TransactionContextImpl) {
       TransactionContextImpl impl = (TransactionContextImpl) transactionContext;
       ByteString id =
