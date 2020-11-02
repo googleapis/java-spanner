@@ -541,6 +541,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private boolean stickyGlobalExceptions = false;
   private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
   private ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
+  private ConcurrentMap<String, StatementResult> partialStatementResults =
+      new ConcurrentHashMap<>();
   private ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
   private ConcurrentMap<String, Instant> sessionLastUsed = new ConcurrentHashMap<>();
   private ConcurrentMap<ByteString, Transaction> transactions = new ConcurrentHashMap<>();
@@ -630,6 +632,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public void putPartialStatementResult(StatementResult result) {
+    synchronized (lock) {
+      partialStatementResults.put(result.statement.getSql(), result);
+    }
+  }
+
   private StatementResult getResult(Statement statement) {
     StatementResult res;
     synchronized (lock) {
@@ -638,6 +646,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         statementGetCounts.put(statement, statementGetCounts.get(statement) + 1L);
       } else {
         statementGetCounts.put(statement, 1L);
+      }
+      if (res == null) {
+        for (String partialSql : partialStatementResults.keySet()) {
+          if (statement.getSql().startsWith(partialSql)) {
+            res = partialStatementResults.get(partialSql);
+          }
+        }
       }
     }
     if (res == null) {
