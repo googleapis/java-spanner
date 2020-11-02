@@ -196,9 +196,15 @@ public class ITDatabaseAdminTest {
     }
     Page<Database> page = dbAdminClient.listDatabases(instanceId, Options.pageSize(1));
     List<String> dbIdsGot = new ArrayList<>();
-    while (page != null) {
+    // A valid page will contain 0 or 1 elements.
+    while (page != null && page.getValues().iterator().hasNext()) {
       Database db = Iterables.getOnlyElement(page.getValues());
       dbIdsGot.add(db.getId().getDatabase());
+      // page.getNextPage() will return null if the previous call did not return a 'nextPageToken'.
+      // That is an indication that the server knows that there are no more results. The method may
+      // however also return a page with zero results. That happens if there was another result on
+      // the server when the previous call was executed (and returned a nextPageToken), but that
+      // result has been deleted in the meantime.
       page = page.getNextPage();
     }
     assertThat(dbIdsGot).containsAtLeastElementsIn(dbIds);
