@@ -769,11 +769,9 @@ abstract class AbstractReadContext
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
     }
-    if (readOptions.hasTag()) {
-      // TODO: set transaction tag when executed within a RW transaction
-      builder.setRequestOptions(
-          RequestOptions.newBuilder().setRequestTag(readOptions.tag()).build());
-    }
+    // TODO: set transaction tag when executed within a RW transaction
+    builder.setRequestOptions(buildRequestOptions(readOptions, null));
+
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
