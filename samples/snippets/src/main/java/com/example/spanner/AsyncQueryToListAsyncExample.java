@@ -17,7 +17,6 @@
 package com.example.spanner;
 
 // [START spanner_async_query_to_list]
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
@@ -63,7 +62,7 @@ class AsyncQueryToListAsyncExample {
   static void asyncQueryToList(DatabaseClient client)
       throws InterruptedException, ExecutionException, TimeoutException {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    ApiFuture<List<Album>> albums;
+    ApiFuture<? extends List<Album>> albums;
     try (AsyncResultSet resultSet =
         client
             .singleUse()
