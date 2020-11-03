@@ -713,6 +713,15 @@ abstract class AbstractReadContext
   @Nullable
   abstract TransactionSelector getTransactionSelector();
 
+  /**
+   * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
+   * {@link AbstractReadContext} does not have a transaction tag.
+   */
+  @Nullable
+  String getTransactionTag() {
+    return null;
+  }
+
   /** This method is called when a statement returned a new transaction as part of its results. */
   @Override
   public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
@@ -761,6 +770,7 @@ abstract class AbstractReadContext
       builder.setPartitionToken(partitionToken);
     }
     if (readOptions.hasTag()) {
+      // TODO: set transaction tag when executed within a RW transaction
       builder.setRequestOptions(
           RequestOptions.newBuilder().setRequestTag(readOptions.tag()).build());
     }
