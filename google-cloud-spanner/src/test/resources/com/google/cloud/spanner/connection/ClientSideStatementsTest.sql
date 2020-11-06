@@ -1931,6 +1931,671 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 show variable/-read_only_staleness;
 NEW_CONNECTION;
+show variable optimizer_version;
+NEW_CONNECTION;
+SHOW VARIABLE OPTIMIZER_VERSION;
+NEW_CONNECTION;
+show variable optimizer_version;
+NEW_CONNECTION;
+   show variable optimizer_version;
+NEW_CONNECTION;
+			show variable optimizer_version;
+NEW_CONNECTION;
+
+
+
+show variable optimizer_version;
+NEW_CONNECTION;
+show variable optimizer_version  ;
+NEW_CONNECTION;
+show variable optimizer_version		;
+NEW_CONNECTION;
+show variable optimizer_version
+
+;
+NEW_CONNECTION;
+show   variable   optimizer_version;
+NEW_CONNECTION;
+show	variable	optimizer_version;
+NEW_CONNECTION;
+show
+variable
+optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable%optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable_optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable&optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable$optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable@optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable!optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable*optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable(optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable)optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable+optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-#optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable\optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable?optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-/optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/#optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable optimizer_version;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_version/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/-optimizer_version;
+NEW_CONNECTION;
+show variable return_commit_stats;
+NEW_CONNECTION;
+SHOW VARIABLE RETURN_COMMIT_STATS;
+NEW_CONNECTION;
+show variable return_commit_stats;
+NEW_CONNECTION;
+   show variable return_commit_stats;
+NEW_CONNECTION;
+			show variable return_commit_stats;
+NEW_CONNECTION;
+
+
+
+show variable return_commit_stats;
+NEW_CONNECTION;
+show variable return_commit_stats  ;
+NEW_CONNECTION;
+show variable return_commit_stats		;
+NEW_CONNECTION;
+show variable return_commit_stats
+
+;
+NEW_CONNECTION;
+show   variable   return_commit_stats;
+NEW_CONNECTION;
+show	variable	return_commit_stats;
+NEW_CONNECTION;
+show
+variable
+return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable%return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable_return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable&return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable$return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable@return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable!return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable*return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable(return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable)return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable+return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-#return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable\return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable?return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-/return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/#return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable return_commit_stats;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable return_commit_stats/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/-return_commit_stats;
+NEW_CONNECTION;
+update foo set bar=1;
+show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+SHOW VARIABLE COMMIT_RESPONSE;
+NEW_CONNECTION;
+update foo set bar=1;
+show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+   show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+			show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+
+
+
+show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+show variable commit_response  ;
+NEW_CONNECTION;
+update foo set bar=1;
+show variable commit_response		;
+NEW_CONNECTION;
+update foo set bar=1;
+show variable commit_response
+
+;
+NEW_CONNECTION;
+update foo set bar=1;
+show   variable   commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+show	variable	commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+show
+variable
+commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response bar;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response%;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable%commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response_;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable_commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response&;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable&commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response$;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable$commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response@;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable@commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response!;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable!commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response*;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable*commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response(;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable(commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response);
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable)commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response-;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response+;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable+commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response-#;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-#commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response/;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response\;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable\commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response?;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable?commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response-/;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-/commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response/#;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/#commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable commit_response;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable commit_response/-;
+NEW_CONNECTION;
+update foo set bar=1;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/-commit_response;
+NEW_CONNECTION;
 begin;
 NEW_CONNECTION;
 BEGIN;
@@ -11076,3 +11741,1195 @@ set read_only_staleness='EXACT_STALENESS 9999ns'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set read_only_staleness='EXACT_STALENESS/-9999ns';
+NEW_CONNECTION;
+set optimizer_version='1';
+NEW_CONNECTION;
+SET OPTIMIZER_VERSION='1';
+NEW_CONNECTION;
+set optimizer_version='1';
+NEW_CONNECTION;
+   set optimizer_version='1';
+NEW_CONNECTION;
+			set optimizer_version='1';
+NEW_CONNECTION;
+
+
+
+set optimizer_version='1';
+NEW_CONNECTION;
+set optimizer_version='1'  ;
+NEW_CONNECTION;
+set optimizer_version='1'		;
+NEW_CONNECTION;
+set optimizer_version='1'
+
+;
+NEW_CONNECTION;
+set   optimizer_version='1';
+NEW_CONNECTION;
+set	optimizer_version='1';
+NEW_CONNECTION;
+set
+optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_version='1';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='1'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_version='1';
+NEW_CONNECTION;
+set optimizer_version='200';
+NEW_CONNECTION;
+SET OPTIMIZER_VERSION='200';
+NEW_CONNECTION;
+set optimizer_version='200';
+NEW_CONNECTION;
+   set optimizer_version='200';
+NEW_CONNECTION;
+			set optimizer_version='200';
+NEW_CONNECTION;
+
+
+
+set optimizer_version='200';
+NEW_CONNECTION;
+set optimizer_version='200'  ;
+NEW_CONNECTION;
+set optimizer_version='200'		;
+NEW_CONNECTION;
+set optimizer_version='200'
+
+;
+NEW_CONNECTION;
+set   optimizer_version='200';
+NEW_CONNECTION;
+set	optimizer_version='200';
+NEW_CONNECTION;
+set
+optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_version='200';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='200'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_version='200';
+NEW_CONNECTION;
+set optimizer_version='LATEST';
+NEW_CONNECTION;
+SET OPTIMIZER_VERSION='LATEST';
+NEW_CONNECTION;
+set optimizer_version='latest';
+NEW_CONNECTION;
+   set optimizer_version='LATEST';
+NEW_CONNECTION;
+			set optimizer_version='LATEST';
+NEW_CONNECTION;
+
+
+
+set optimizer_version='LATEST';
+NEW_CONNECTION;
+set optimizer_version='LATEST'  ;
+NEW_CONNECTION;
+set optimizer_version='LATEST'		;
+NEW_CONNECTION;
+set optimizer_version='LATEST'
+
+;
+NEW_CONNECTION;
+set   optimizer_version='LATEST';
+NEW_CONNECTION;
+set	optimizer_version='LATEST';
+NEW_CONNECTION;
+set
+optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_version='LATEST';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='LATEST'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_version='LATEST';
+NEW_CONNECTION;
+set optimizer_version='';
+NEW_CONNECTION;
+SET OPTIMIZER_VERSION='';
+NEW_CONNECTION;
+set optimizer_version='';
+NEW_CONNECTION;
+   set optimizer_version='';
+NEW_CONNECTION;
+			set optimizer_version='';
+NEW_CONNECTION;
+
+
+
+set optimizer_version='';
+NEW_CONNECTION;
+set optimizer_version=''  ;
+NEW_CONNECTION;
+set optimizer_version=''		;
+NEW_CONNECTION;
+set optimizer_version=''
+
+;
+NEW_CONNECTION;
+set   optimizer_version='';
+NEW_CONNECTION;
+set	optimizer_version='';
+NEW_CONNECTION;
+set
+optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version='');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_version='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_version=''/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_version='';
+NEW_CONNECTION;
+set return_commit_stats = true;
+NEW_CONNECTION;
+SET RETURN_COMMIT_STATS = TRUE;
+NEW_CONNECTION;
+set return_commit_stats = true;
+NEW_CONNECTION;
+   set return_commit_stats = true;
+NEW_CONNECTION;
+			set return_commit_stats = true;
+NEW_CONNECTION;
+
+
+
+set return_commit_stats = true;
+NEW_CONNECTION;
+set return_commit_stats = true  ;
+NEW_CONNECTION;
+set return_commit_stats = true		;
+NEW_CONNECTION;
+set return_commit_stats = true
+
+;
+NEW_CONNECTION;
+set   return_commit_stats   =   true;
+NEW_CONNECTION;
+set	return_commit_stats	=	true;
+NEW_CONNECTION;
+set
+return_commit_stats
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set return_commit_stats = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/-true;
+NEW_CONNECTION;
+set return_commit_stats = false;
+NEW_CONNECTION;
+SET RETURN_COMMIT_STATS = FALSE;
+NEW_CONNECTION;
+set return_commit_stats = false;
+NEW_CONNECTION;
+   set return_commit_stats = false;
+NEW_CONNECTION;
+			set return_commit_stats = false;
+NEW_CONNECTION;
+
+
+
+set return_commit_stats = false;
+NEW_CONNECTION;
+set return_commit_stats = false  ;
+NEW_CONNECTION;
+set return_commit_stats = false		;
+NEW_CONNECTION;
+set return_commit_stats = false
+
+;
+NEW_CONNECTION;
+set   return_commit_stats   =   false;
+NEW_CONNECTION;
+set	return_commit_stats	=	false;
+NEW_CONNECTION;
+set
+return_commit_stats
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set return_commit_stats = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set return_commit_stats =/-false;

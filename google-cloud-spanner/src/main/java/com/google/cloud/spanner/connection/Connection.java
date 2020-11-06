@@ -22,6 +22,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -439,6 +440,15 @@ public interface Connection extends AutoCloseable {
   String getOptimizerVersion();
 
   /**
+   * Sets whether this connection should request commit statistics from Cloud Spanner for read/write
+   * transactions and DML statements in autocommit mode.
+   */
+  void setReturnCommitStats(boolean returnCommitStats);
+
+  /** @return true if this connection requests commit statistics from Cloud Spanner. */
+  boolean isReturnCommitStats();
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *
@@ -631,6 +641,17 @@ public interface Connection extends AutoCloseable {
    *     transaction was empty when committed.
    */
   Timestamp getCommitTimestamp();
+
+  /**
+   * @return the {@link CommitResponse} of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *     transaction. This method will throw a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction (i.e. the last transaction was a {@link
+   *     TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It will also throw a
+   *     {@link SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *     transaction was empty when committed.
+   */
+  CommitResponse getCommitResponse();
 
   /**
    * Starts a new DDL batch on this connection. A DDL batch allows several DDL statements to be

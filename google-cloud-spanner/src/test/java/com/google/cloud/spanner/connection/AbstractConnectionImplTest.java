@@ -72,7 +72,7 @@ public abstract class AbstractConnectionImplTest {
    * subclasses of {@link AbstractConnectionImplTest}.
    */
   private static final String LOG_FILE =
-      "src/test/resources/com/google/cloud/spanner/jdbc/ConnectionImplGeneratedSqlScriptTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
 
   private static final String DO_LOG_PROPERTY = "do_log_statements";
   private static boolean doLog;

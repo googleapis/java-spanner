@@ -34,6 +34,11 @@ public class CommitResponse {
     return Timestamp.fromProto(proto.getCommitTimestamp());
   }
 
+  /** @return true if the {@link CommitResponse} includes {@link CommitStats}. */
+  public boolean hasCommitStats() {
+    return proto.hasCommitStats();
+  }
+
   /**
    * Commit statistics are returned by a read/write transaction if specifically requested by passing
    * in {@link Options#commitStats()} to the transaction.

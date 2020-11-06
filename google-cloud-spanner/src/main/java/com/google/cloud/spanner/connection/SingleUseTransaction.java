@@ -20,9 +20,11 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -70,6 +72,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final DatabaseClient dbClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
+  private final boolean returnCommitStats;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionManager txManager;
   private volatile TransactionRunner writeTransaction;
@@ -82,6 +85,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
+    private boolean returnCommitStats;
 
     private Builder() {}
 
@@ -114,6 +118,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setReturnCommitStats(boolean returnCommitStats) {
+      this.returnCommitStats = returnCommitStats;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
@@ -135,6 +144,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
+    this.returnCommitStats = builder.returnCommitStats;
   }
 
   @Override
@@ -220,7 +230,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return SpannerApiFutures.getOrNull(readTimestamp);
   }
 
-  private boolean hasCommitTimestamp() {
+  private boolean hasCommitResponse() {
     return state == UnitOfWorkState.COMMITTED
         && (writeTransaction != null
             || (txManager != null
@@ -231,7 +241,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   @Override
   public Timestamp getCommitTimestamp() {
     ConnectionPreconditions.checkState(
-        hasCommitTimestamp(), "There is no commit timestamp available for this transaction.");
+        hasCommitResponse(), "There is no commit timestamp available for this transaction.");
     return writeTransaction != null
         ? writeTransaction.getCommitTimestamp()
         : txManager.getCommitTimestamp();
@@ -239,11 +249,34 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
-    if (hasCommitTimestamp()) {
+    if (hasCommitResponse()) {
       try {
         return writeTransaction != null
             ? writeTransaction.getCommitTimestamp()
             : txManager.getCommitTimestamp();
+      } catch (SpannerException e) {
+        // ignore
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    ConnectionPreconditions.checkState(
+        hasCommitResponse(), "There is no commit timestamp available for this transaction.");
+    return writeTransaction != null
+        ? writeTransaction.getCommitResponse()
+        : txManager.getCommitResponse();
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
+    if (hasCommitResponse()) {
+      try {
+        return writeTransaction != null
+            ? writeTransaction.getCommitResponse()
+            : txManager.getCommitResponse();
       } catch (SpannerException e) {
         // ignore
       }
@@ -329,13 +362,19 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
   }
 
+  private TransactionRunner createWriteTransaction() {
+    return returnCommitStats
+        ? dbClient.readWriteTransaction(Options.commitStats())
+        : dbClient.readWriteTransaction();
+  }
+
   private ApiFuture<Long> executeTransactionalUpdateAsync(final ParsedStatement update) {
     Callable<Long> callable =
         new Callable<Long>() {
           @Override
           public Long call() throws Exception {
             try {
-              writeTransaction = dbClient.readWriteTransaction();
+              writeTransaction = createWriteTransaction();
               Long res =
                   writeTransaction.run(
                       new TransactionCallable<Long>() {
@@ -383,7 +422,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         new Callable<long[]>() {
           @Override
           public long[] call() throws Exception {
-            writeTransaction = dbClient.readWriteTransaction();
+            writeTransaction = createWriteTransaction();
             return writeTransaction.run(
                 new TransactionCallable<long[]>() {
                   @Override
@@ -433,7 +472,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           @Override
           public Void call() throws Exception {
             try {
-              writeTransaction = dbClient.readWriteTransaction();
+              writeTransaction = createWriteTransaction();
               Void res =
                   writeTransaction.run(
                       new TransactionCallable<Void>() {
