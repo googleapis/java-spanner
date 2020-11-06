@@ -242,29 +242,19 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   public Timestamp getCommitTimestamp() {
     ConnectionPreconditions.checkState(
         hasCommitResponse(), "There is no commit timestamp available for this transaction.");
-    return writeTransaction != null
-        ? writeTransaction.getCommitTimestamp()
-        : txManager.getCommitTimestamp();
+    return getCommitResponse().getCommitTimestamp();
   }
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
-    if (hasCommitResponse()) {
-      try {
-        return writeTransaction != null
-            ? writeTransaction.getCommitTimestamp()
-            : txManager.getCommitTimestamp();
-      } catch (SpannerException e) {
-        // ignore
-      }
-    }
-    return null;
+    CommitResponse response = getCommitResponseOrNull();
+    return response == null ? null : response.getCommitTimestamp();
   }
 
   @Override
   public CommitResponse getCommitResponse() {
     ConnectionPreconditions.checkState(
-        hasCommitResponse(), "There is no commit timestamp available for this transaction.");
+        hasCommitResponse(), "There is no commit response available for this transaction.");
     return writeTransaction != null
         ? writeTransaction.getCommitResponse()
         : txManager.getCommitResponse();
