@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 /** Enum used to define the transaction type of a {@link Connection} */
-enum TransactionMode {
+public enum TransactionMode {
   READ_ONLY_TRANSACTION("READ ONLY"),
   READ_WRITE_TRANSACTION("READ WRITE");
 

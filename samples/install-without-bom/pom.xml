@@ -22,7 +22,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.28.2</opencensus.version>
-    <trace.version>1.2.5</trace.version>
+    <trace.version>1.2.6</trace.version>
     <cloudmonitoring.version>2.0.6</cloudmonitoring.version>
   </properties>
 
@@ -135,6 +135,18 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <configuration>
+          <systemPropertyVariables>
+            <spanner.test.instance>default-instance</spanner.test.instance>
+            <spanner.sample.database>mysample</spanner.sample.database>
+            <spanner.quickstart.database>quickstart-db</spanner.quickstart.database>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>

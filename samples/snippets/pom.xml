@@ -33,7 +33,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>13.4.0</version>
+        <version>15.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -148,8 +148,7 @@
           <systemPropertyVariables>
             <spanner.test.instance>default-instance</spanner.test.instance>
             <spanner.sample.database>mysample</spanner.sample.database>
-            <spanner.quickstart.database>quickstart-db
-            </spanner.quickstart.database>
+            <spanner.quickstart.database>quickstart-db</spanner.quickstart.database>
           </systemPropertyVariables>
         </configuration>
       </plugin>
