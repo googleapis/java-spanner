@@ -464,4 +464,21 @@
     <to>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync(com.google.cloud.spanner.TransactionOption[])</to>
   </difference>
   
+  <!-- Support for Commit Stats in Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isReturnCommitStats()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setReturnCommitStats(boolean)</method>
+  </difference>
+  
 </differences>

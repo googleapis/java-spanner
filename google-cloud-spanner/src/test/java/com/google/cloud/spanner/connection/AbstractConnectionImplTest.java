@@ -735,6 +735,22 @@ public abstract class AbstractConnectionImplTest {
     }
   }
 
+  @Test
+  public void testGetCommitResponse() {
+    try (Connection connection = getConnection()) {
+      if (isGetCommitTimestampAllowed()) {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP'");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        assertThat(connection.getCommitResponse(), is(notNullValue()));
+      } else {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP',null");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getCommitResponse();
+      }
+    }
+  }
+
   abstract boolean isExecuteAllowed(StatementType type);
 
   @Test

@@ -215,6 +215,7 @@ class ConnectionImpl implements Connection {
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -239,6 +240,7 @@ class ConnectionImpl implements Connection {
     this.dbClient = dbClient;
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
+    setReturnCommitStats(options.isReturnCommitStats());
     setDefaultTransactionOptions();
   }
 

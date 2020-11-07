@@ -152,6 +152,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -176,6 +177,8 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Query optimizer version to use for a connection. */
+  private static final String RETURN_COMMIT_STATS_PROPERTY_NAME = "returnCommitStats";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -194,7 +197,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty(
                       USE_PLAIN_TEXT_PROPERTY_NAME, "", DEFAULT_USE_PLAIN_TEXT),
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""))));
+                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""),
+                  ConnectionProperty.createBooleanProperty(
+                      RETURN_COMMIT_STATS_PROPERTY_NAME, "", DEFAULT_RETURN_COMMIT_STATS))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -412,6 +417,7 @@ public class ConnectionOptions {
   private final Integer numChannels;
   private final String userAgent;
   private final QueryOptions queryOptions;
+  private final boolean returnCommitStats;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -442,6 +448,7 @@ public class ConnectionOptions {
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
+    this.returnCommitStats = parseReturnCommitStats(this.uri);
 
     this.host =
         matcher.group(Builder.HOST_GROUP) == null
@@ -554,6 +561,12 @@ public class ConnectionOptions {
   static String parseOptimizerVersion(String uri) {
     String value = parseUriProperty(uri, OPTIMIZER_VERSION_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OPTIMIZER_VERSION;
+  }
+
+  @VisibleForTesting
+  static boolean parseReturnCommitStats(String uri) {
+    String value = parseUriProperty(uri, RETURN_COMMIT_STATS_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_RETURN_COMMIT_STATS;
   }
 
   @VisibleForTesting
@@ -704,6 +717,13 @@ public class ConnectionOptions {
   /** The {@link QueryOptions} to use for the connection. */
   QueryOptions getQueryOptions() {
     return queryOptions;
+  }
+
+  /**
+   * The initial returnCommitStats value for connections created by this {@link ConnectionOptions}
+   */
+  public boolean isReturnCommitStats() {
+    return returnCommitStats;
   }
 
   /** Interceptors that should be executed after each statement */
