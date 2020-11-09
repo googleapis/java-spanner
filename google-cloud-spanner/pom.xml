@@ -377,38 +377,5 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <!-- Profile for generating new sql test scripts. See ConnectionImplGeneratedSqlScriptTest 
-        for more information. -->
-      <id>generate-test-sql-scripts</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>generateTestScripts</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>com.google.cloud.spanner.connection.SqlTestScriptsGenerator</mainClass>
-                  <systemProperties>
-                    <systemProperty>
-                      <key>do_log_statements</key>
-                      <value>true</value>
-                    </systemProperty>
-                  </systemProperties>
-                  <classpathScope>test</classpathScope>
-                  <skip>false</skip>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 </project>
