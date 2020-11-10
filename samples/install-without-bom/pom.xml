@@ -142,7 +142,7 @@
         <version>3.0.0-M5</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>default-instance</spanner.test.instance>
+            <spanner.test.instance>spanner-testing</spanner.test.instance>
             <spanner.sample.database>mysample</spanner.sample.database>
             <spanner.quickstart.database>quickstart-db</spanner.quickstart.database>
           </systemPropertyVariables>
