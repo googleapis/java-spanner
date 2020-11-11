@@ -38,6 +38,9 @@ class SessionPoolAsyncTransactionManager
   @GuardedBy("lock")
   private TransactionState txnState;
 
+  @GuardedBy("lock")
+  private AbortedException abortedException;
+
   private final SessionPool pool;
   private volatile PooledSessionFuture session;
   private volatile SettableApiFuture<AsyncTransactionManagerImpl> delegate;
@@ -159,6 +162,7 @@ class SessionPoolAsyncTransactionManager
     if (t instanceof AbortedException) {
       synchronized (lock) {
         txnState = TransactionState.ABORTED;
+        abortedException = (AbortedException) t;
       }
     }
   }
@@ -167,9 +171,12 @@ class SessionPoolAsyncTransactionManager
   public ApiFuture<Timestamp> commitAsync() {
     synchronized (lock) {
       Preconditions.checkState(
-          txnState == TransactionState.STARTED,
+          txnState == TransactionState.STARTED || txnState == TransactionState.ABORTED,
           "commit can only be invoked if the transaction is in progress. Current state: "
               + txnState);
+      if (txnState == TransactionState.ABORTED) {
+        return ApiFutures.immediateFailedFuture(abortedException);
+      }
       txnState = TransactionState.COMMITTED;
     }
     return ApiFutures.transformAsync(
@@ -186,6 +193,7 @@ class SessionPoolAsyncTransactionManager
                     synchronized (lock) {
                       if (t instanceof AbortedException) {
                         txnState = TransactionState.ABORTED;
+                        abortedException = (AbortedException) t;
                       } else {
                         txnState = TransactionState.COMMIT_FAILED;
                       }
