@@ -817,16 +817,15 @@ public class GapicSpannerRpc implements SpannerRpc {
     final String databaseId =
         createDatabaseStatement.substring(
             "CREATE DATABASE `".length(), createDatabaseStatement.length() - 1);
-    CreateDatabaseRequest request =
+    CreateDatabaseRequest.Builder requestBuilder =
         CreateDatabaseRequest.newBuilder()
             .setParent(instanceName)
             .setCreateStatement(createDatabaseStatement)
-            .addAllExtraStatements(additionalStatements)
-            .setEncryptionConfig(
-                databaseInfo.getEncryptionConfigInfo() == null
-                    ? null
-                    : databaseInfo.getEncryptionConfigInfo().toProto())
-            .build();
+            .addAllExtraStatements(additionalStatements);
+    if (databaseInfo.getEncryptionConfigInfo() != null) {
+      requestBuilder.setEncryptionConfig(databaseInfo.getEncryptionConfigInfo().toProto());
+    }
+    final CreateDatabaseRequest request = requestBuilder.build();
 
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>(
