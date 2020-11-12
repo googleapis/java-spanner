@@ -103,7 +103,6 @@ import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
-import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
@@ -985,7 +984,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .addAllExtraStatements(additionalStatements)
             .setEncryptionConfig(
                 databaseInfo.getEncryptionConfigInfo() == null
-                    ? EncryptionConfig.getDefaultInstance()
+                    ? null
                     : databaseInfo.getEncryptionConfigInfo().toProto())
             .build();
 
