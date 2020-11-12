@@ -190,16 +190,31 @@ public class DatabaseInfo {
     return id.equals(that.id)
         && state == that.state
         && Objects.equals(createTime, that.createTime)
-        && Objects.equals(restoreInfo, that.restoreInfo);
+        && Objects.equals(restoreInfo, that.restoreInfo)
+        && Objects.equals(versionRetentionPeriod, that.versionRetentionPeriod)
+        && Objects.equals(earliestVersionTime, that.earliestVersionTime);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, state, createTime, restoreInfo);
+    return Objects.hash(
+        id,
+        state,
+        createTime,
+        restoreInfo,
+        versionRetentionPeriod,
+        earliestVersionTime);
   }
 
   @Override
   public String toString() {
-    return String.format("Database[%s, %s, %s, %s]", id.getName(), state, createTime, restoreInfo);
+    return String.format(
+        "Database[%s, %s, %s, %s, %s, %s]",
+        id.getName(),
+        state,
+        createTime,
+        restoreInfo,
+        versionRetentionPeriod,
+        earliestVersionTime);
   }
 }
