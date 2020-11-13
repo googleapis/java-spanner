@@ -69,6 +69,14 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetReturnCommitStats(Boolean returnCommitStats);
 
   StatementResult statementShowReturnCommitStats();
+  
+  StatementResult statementSetStatementTag(String tag);
+
+  StatementResult statementShowStatementTag();
+
+  StatementResult statementSetTransactionTag(String tag);
+
+  StatementResult statementShowTransactionTag();
 
   StatementResult statementBeginTransaction();
 

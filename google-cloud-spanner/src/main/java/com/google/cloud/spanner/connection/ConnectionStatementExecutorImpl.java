@@ -28,8 +28,10 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
@@ -40,7 +42,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DDL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DML;
 import static com.google.cloud.spanner.connection.StatementResultImpl.noResult;
@@ -55,6 +59,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import java.util.Arrays;
@@ -240,6 +245,34 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowReturnCommitStats() {
     return resultSet(
         "RETURN_COMMIT_STATS", getConnection().isReturnCommitStats(), SHOW_RETURN_COMMIT_STATS);
+  }
+  
+  @Override
+  public StatementResult statementSetStatementTag(String tag) {
+    getConnection().setStatementTag("".equals(tag) ? null : tag);
+    return noResult(SET_STATEMENT_TAG);
+  }
+
+  @Override
+  public StatementResult statementShowStatementTag() {
+    return resultSet(
+        "STATEMENT_TAG",
+        MoreObjects.firstNonNull(getConnection().getStatementTag(), ""),
+        SHOW_STATEMENT_TAG);
+  }
+
+  @Override
+  public StatementResult statementSetTransactionTag(String tag) {
+    getConnection().setTransactionTag("".equals(tag) ? null : tag);
+    return noResult(SET_TRANSACTION_TAG);
+  }
+
+  @Override
+  public StatementResult statementShowTransactionTag() {
+    return resultSet(
+        "TRANSACTION_TAG",
+        MoreObjects.firstNonNull(getConnection().getTransactionTag(), ""),
+        SHOW_TRANSACTION_TAG);
   }
 
   @Override

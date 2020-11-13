@@ -36,6 +36,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * Internal connection API for Google Cloud Spanner. This interface may introduce breaking changes
@@ -324,6 +325,39 @@ public interface Connection extends AutoCloseable {
    *     the connection is in a transaction.
    */
   TransactionMode getTransactionMode();
+
+  /**
+   * Sets the transaction tag to use for the current transaction. This method may only be called
+   * when in a transaction, and before the transaction is actually started, i.e. before any
+   * statements have been executed in the transaction.
+   *
+   * <p>The tag will be set as the transaction tag of all statements during the transaction, and as
+   * the transaction tag of the commit.
+   *
+   * <p>The transaction tag will automatically be cleared after the transaction has ended.
+   *
+   * @param tag The tag to use.
+   */
+  void setTransactionTag(String tag);
+
+  /** @return The transaction tag of the current transaction. */
+  String getTransactionTag();
+
+  /**
+   * Sets the statement tag to use for the next statement that will be executed. The tag is
+   * automatically cleared after the statement is executed. Statement tags can be used both with
+   * autocommit=true and autocommit=false, and can be used for partitioned DML.
+   *
+   * @param tag The statement tag to use with the next statement that will be executed on this
+   *     connection.
+   */
+  void setStatementTag(String tag);
+
+  /**
+   * @return The statement tag that will be used with the next statement that is executed on this
+   *     connection.
+   */
+  String getStatementTag();
 
   /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions

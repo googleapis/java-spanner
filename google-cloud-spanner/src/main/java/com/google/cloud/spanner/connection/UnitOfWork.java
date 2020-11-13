@@ -22,6 +22,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -91,11 +92,12 @@ interface UnitOfWork {
    * batch. This method will throw a {@link SpannerException} if called for a {@link
    * Type#TRANSACTION}.
    *
+   * @param options The update options to apply to the batch update statement.
    * @return an {@link ApiFuture} containing the update counts in case of a DML batch. Returns an
    *     array containing 1 for each successful statement and 0 for each failed statement or
    *     statement that was not executed in case of a DDL batch.
    */
-  ApiFuture<long[]> runBatchAsync();
+  ApiFuture<long[]> runBatchAsync(UpdateOption... options);
 
   /**
    * Clears the currently buffered statements in this unit of work and ends the batch. This method
@@ -170,20 +172,23 @@ interface UnitOfWork {
    * Execute a DML statement on Spanner.
    *
    * @param update The DML statement to execute.
+   * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing the number of records that were
    *     inserted/updated/deleted by this statement.
    */
-  ApiFuture<Long> executeUpdateAsync(ParsedStatement update);
+  ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options);
 
   /**
    * Execute a batch of DML statements on Spanner.
    *
    * @param updates The DML statements to execute.
+   * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing an array with the number of records that were
    *     inserted/updated/deleted per statement.
    * @see TransactionContext#batchUpdate(Iterable)
    */
-  ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates);
+  ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options);
 
   /**
    * Writes a batch of {@link Mutation}s to Spanner. For {@link ReadWriteTransaction}s, this means

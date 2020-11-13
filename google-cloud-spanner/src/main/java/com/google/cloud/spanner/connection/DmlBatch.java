@@ -25,6 +25,7 @@ import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
@@ -138,7 +139,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -152,7 +153,8 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
   }
@@ -164,7 +166,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync() {
+  public ApiFuture<long[]> runBatchAsync(UpdateOption... options) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
     if (statements.isEmpty()) {
@@ -178,7 +180,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     // executed AFTER a Future is done, which means that a user could read the state of the Batch
     // before it has been changed.
     final SettableApiFuture<long[]> res = SettableApiFuture.create();
-    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements);
+    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements, options);
     ApiFutures.addCallback(
         updateCounts,
         new ApiFutureCallback<long[]>() {

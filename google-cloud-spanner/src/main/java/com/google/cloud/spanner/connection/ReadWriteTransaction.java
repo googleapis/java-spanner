@@ -32,6 +32,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -191,7 +192,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               new Callable<TransactionContext>() {
                 @Override
                 public TransactionContext call() throws Exception {
-                  return txManager.begin();
+                  TransactionContext context = txManager.begin();
+                  if (transactionTag != null) {
+                    context.withTransactionTag(transactionTag);
+                  }
+                  return context;
                 }
               },
               SpannerGrpc.getBeginTransactionMethod());
@@ -373,7 +378,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(final ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(
+      final ParsedStatement update, final UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
@@ -396,7 +402,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                     StatementExecutionStep.EXECUTE_STATEMENT,
                                     ReadWriteTransaction.this);
                             long updateCount =
-                                get(txContextFuture).executeUpdate(update.getStatement());
+                                get(txContextFuture).executeUpdate(update.getStatement(), options);
                             createAndAddRetriableUpdate(update, updateCount);
                             return updateCount;
                           } catch (AbortedException e) {
@@ -457,7 +463,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     final List<Statement> updateStatements = new LinkedList<>();
     for (ParsedStatement update : updates) {
@@ -487,7 +494,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                     StatementExecutionStep.EXECUTE_STATEMENT,
                                     ReadWriteTransaction.this);
                             long[] updateCounts =
-                                get(txContextFuture).batchUpdate(updateStatements);
+                                get(txContextFuture).batchUpdate(updateStatements, options);
                             createAndAddRetriableBatchUpdate(updateStatements, updateCounts);
                             return updateCounts;
                           } catch (AbortedException e) {
@@ -760,7 +767,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               ErrorCode.CANCELLED, "The statement was cancelled");
         }
         try {
-          txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
+          TransactionContext context = txManager.resetForRetry();
+          if (transactionTag != null) {
+            context.withTransactionTag(transactionTag);
+          }
+          txContextFuture = ApiFutures.immediateFuture(context);
           // Inform listeners about the transaction retry that is about to start.
           invokeTransactionRetryListenersOnStart();
           // Then retry all transaction statements.
