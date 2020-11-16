@@ -88,4 +88,5 @@ java.common_templates(excludes=[
     'samples/install-without-bom/pom.xml',
     'samples/snapshot/pom.xml',
     'samples/snippets/pom.xml',
+    '.github/CODEOWNERS',
 ])
