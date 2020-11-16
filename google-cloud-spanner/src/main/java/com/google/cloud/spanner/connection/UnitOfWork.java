@@ -92,12 +92,11 @@ interface UnitOfWork {
    * batch. This method will throw a {@link SpannerException} if called for a {@link
    * Type#TRANSACTION}.
    *
-   * @param options The update options to apply to the batch update statement.
    * @return an {@link ApiFuture} containing the update counts in case of a DML batch. Returns an
    *     array containing 1 for each successful statement and 0 for each failed statement or
    *     statement that was not executed in case of a DDL batch.
    */
-  ApiFuture<long[]> runBatchAsync(UpdateOption... options);
+  ApiFuture<long[]> runBatchAsync();
 
   /**
    * Clears the currently buffered statements in this unit of work and ends the batch. This method

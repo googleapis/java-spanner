@@ -224,7 +224,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public ApiFuture<long[]> runBatchAsync(UpdateOption... options) {
+  public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
     if (statements.isEmpty()) {

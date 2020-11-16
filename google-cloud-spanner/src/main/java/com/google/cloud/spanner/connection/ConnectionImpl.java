@@ -545,14 +545,16 @@ class ConnectionImpl implements Connection {
   @Override
   public String getStatementTag() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
     return statementTag;
   }
 
   @Override
   public void setStatementTag(String tag) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
 
     this.statementTag = tag;
   }
@@ -763,6 +765,8 @@ class ConnectionImpl implements Connection {
   private ApiFuture<Void> endCurrentTransactionAsync(EndTransactionMethod endTransactionMethod) {
     ConnectionPreconditions.checkState(!isBatchActive(), "This connection has an active batch");
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        statementTag == null, "Statement tags are not supported for COMMIT or ROLLBACK");
     ApiFuture<Void> res;
     try {
       if (isTransactionStarted()) {
@@ -1119,6 +1123,7 @@ class ConnectionImpl implements Connection {
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setStatementTag(statementTag)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()
@@ -1236,7 +1241,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(isBatchActive(), "This connection has no active batch");
     try {
       if (this.currentUnitOfWork != null) {
-        return this.currentUnitOfWork.runBatchAsync(mergeUpdateStatementTag());
+        return this.currentUnitOfWork.runBatchAsync();
       }
       return ApiFutures.immediateFuture(new long[0]);
     } finally {

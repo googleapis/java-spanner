@@ -17,13 +17,17 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import java.util.Arrays;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +35,54 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class TaggingTest extends AbstractMockServerTest {
+
+  @After
+  public void clearRequests() {
+    mockSpanner.clearRequests();
+  }
+
+  @Test
+  public void testStatementTagNotAllowedForCommit() {
+    try (Connection connection = createConnection()) {
+      connection.setStatementTag("tag-1");
+      try {
+        connection.commit();
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      }
+    }
+  }
+
+  @Test
+  public void testStatementTagNotAllowedForRollback() {
+    try (Connection connection = createConnection()) {
+      connection.setStatementTag("tag-1");
+      try {
+        connection.rollback();
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      }
+    }
+  }
+
+  @Test
+  public void testStatementTagNotAllowedInsideBatch() {
+    try (Connection connection = createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        connection.startBatchDml();
+        try {
+          connection.setStatementTag("tag-1");
+          fail("missing expected exception");
+        } catch (SpannerException e) {
+          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+        }
+        connection.abortBatch();
+      }
+    }
+  }
 
   @Test
   public void testQuery_NoTags() {
@@ -574,15 +626,15 @@ public class TaggingTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testRunBatch_StatementTag() {
+  public void testDmlBatch_StatementTag() {
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
 
+        connection.setStatementTag("batch-tag");
         connection.startBatchDml();
         connection.execute(INSERT_STATEMENT);
         connection.execute(INSERT_STATEMENT);
-        connection.setStatementTag("batch-tag");
         connection.runBatch();
 
         assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(1);

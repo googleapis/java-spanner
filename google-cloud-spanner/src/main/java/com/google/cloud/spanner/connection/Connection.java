@@ -33,10 +33,10 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * Internal connection API for Google Cloud Spanner. This interface may introduce breaking changes
@@ -347,6 +347,12 @@ public interface Connection extends AutoCloseable {
    * Sets the statement tag to use for the next statement that will be executed. The tag is
    * automatically cleared after the statement is executed. Statement tags can be used both with
    * autocommit=true and autocommit=false, and can be used for partitioned DML.
+   *
+   * <p>Statement tags are not allowed before COMMIT and ROLLBACK statements.
+   *
+   * <p>Statement tags are allowed before START BATCH DML statements and will be included in the
+   * {@link ExecuteBatchDmlRequest} that is sent to Spanner. Statement tags are not allowed inside a
+   * batch.
    *
    * @param tag The statement tag to use with the next statement that will be executed on this
    *     connection.

@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -89,7 +88,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync(UpdateOption... options) {
+  public ApiFuture<long[]> runBatchAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Run batch is not supported for transactions");
   }

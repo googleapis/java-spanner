@@ -491,7 +491,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync(UpdateOption... options) {
+  public ApiFuture<long[]> runBatchAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Run batch is not supported for single-use transactions");
   }
