@@ -198,23 +198,13 @@ public class DatabaseInfo {
   @Override
   public int hashCode() {
     return Objects.hash(
-        id,
-        state,
-        createTime,
-        restoreInfo,
-        versionRetentionPeriod,
-        earliestVersionTime);
+        id, state, createTime, restoreInfo, versionRetentionPeriod, earliestVersionTime);
   }
 
   @Override
   public String toString() {
     return String.format(
         "Database[%s, %s, %s, %s, %s, %s]",
-        id.getName(),
-        state,
-        createTime,
-        restoreInfo,
-        versionRetentionPeriod,
-        earliestVersionTime);
+        id.getName(), state, createTime, restoreInfo, versionRetentionPeriod, earliestVersionTime);
   }
 }
