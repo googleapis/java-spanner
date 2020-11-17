@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "34221d7a889c131fb1f797a0f9434deee60d755b"
+        "sha": "79fad94f75e982da4e79313917588d05f0289fec"
       }
     },
     {
@@ -83,7 +83,6 @@
     ".kokoro/nightly/java8-osx.cfg",
     ".kokoro/nightly/java8-win.cfg",
     ".kokoro/nightly/java8.cfg",
-    ".kokoro/nightly/samples.cfg",
     ".kokoro/populate-secrets.sh",
     ".kokoro/presubmit/clirr.cfg",
     ".kokoro/presubmit/dependencies.cfg",
@@ -95,7 +94,6 @@
     ".kokoro/presubmit/java8.cfg",
     ".kokoro/presubmit/linkage-monitor.cfg",
     ".kokoro/presubmit/lint.cfg",
-    ".kokoro/presubmit/samples.cfg",
     ".kokoro/readme.sh",
     ".kokoro/release/bump_snapshot.cfg",
     ".kokoro/release/common.cfg",
@@ -339,9 +337,6 @@
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/transaction.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/type.proto",
     "renovate.json",
-    "samples/install-without-bom/pom.xml",
-    "samples/pom.xml",
-    "samples/snapshot/pom.xml",
-    "samples/snippets/pom.xml"
+    "samples/pom.xml"
   ]
 }
