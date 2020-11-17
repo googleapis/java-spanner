@@ -75,13 +75,14 @@ public class GrpcResultSetTest {
 
           @Override
           public void request(int numMessages) {}
-        });
+        },
+        false);
     consumer = stream.consumer();
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
+    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
   }
 
   public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
-    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
+    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
   }
 
   @Test
@@ -642,7 +643,7 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
+    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
     PartialResultSet.Builder builder = PartialResultSet.newBuilder();
     List<Type.StructField> types = new ArrayList<>();
     for (Value value : values) {

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -65,6 +66,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -1137,6 +1139,123 @@ public class InlineBeginTransactionTest {
     }
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
     assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void queryWithoutNext() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        // This will not actually send an RPC, so it will also not request a
+                        // transaction.
+                        transaction.executeQuery(SELECT1);
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
+                      }
+                    }))
+        .isEqualTo(UPDATE_COUNT);
+    assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(1L);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void queryAsyncWithoutCallback() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        transaction.executeQueryAsync(SELECT1);
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
+                      }
+                    }))
+        .isEqualTo(UPDATE_COUNT);
+    assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(1L);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void readWithoutNext() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"));
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
+                      }
+                    }))
+        .isEqualTo(UPDATE_COUNT);
+    assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ReadRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(1L);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void readAsyncWithoutCallback() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        transaction.readAsync("FOO", KeySet.all(), Arrays.asList("ID"));
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
+                      }
+                    }))
+        .isEqualTo(UPDATE_COUNT);
+    assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ReadRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(1L);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+  }
+
+  @Test
+  public void query_ThenUpdate_ThenConsumeResultSet()
+      throws InterruptedException, TimeoutException {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    assertThat(
+            client
+                .readWriteTransaction()
+                .run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        ResultSet rs = transaction.executeQuery(SELECT1);
+                        long updateCount = transaction.executeUpdate(UPDATE_STATEMENT);
+                        // Consume the result set.
+                        while (rs.next()) {}
+                        return updateCount;
+                      }
+                    }))
+        .isEqualTo(UPDATE_COUNT);
+    // The update statement should start the transaction, and the query should use the transaction
+    // id returned by the update.
+    assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(2L);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+    List<AbstractMessage> requests = mockSpanner.getRequests();
+    requests = requests.subList(requests.size() - 3, requests.size());
+    assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
+    assertThat(((ExecuteSqlRequest) requests.get(0)).getSql()).isEqualTo(UPDATE_STATEMENT.getSql());
+    assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
+    assertThat(((ExecuteSqlRequest) requests.get(1)).getSql()).isEqualTo(SELECT1.getSql());
+    assertThat(requests.get(2)).isInstanceOf(CommitRequest.class);
   }
 
   private int countRequests(Class<? extends AbstractMessage> requestType) {

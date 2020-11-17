@@ -116,6 +116,11 @@ public class ResumableStreamIteratorTest {
     public void close(@Nullable String message) {
       stream.close();
     }
+
+    @Override
+    public boolean isWithBeginTransaction() {
+      return false;
+    }
   }
 
   Starter starter = Mockito.mock(Starter.class);
