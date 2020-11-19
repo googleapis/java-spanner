@@ -23,6 +23,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Instance;
+import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Spanner;
@@ -187,5 +188,23 @@ public class SpannerStandaloneExamplesIT {
     String out =
         runExample(() -> QueryWithNumericParameterSample.queryWithNumericParameter(client));
     assertThat(out).contains("4 35000");
+  }
+
+  @Test
+  public void createInstanceWithProcessingUnits_shouldReturnNumberOfProcessingUnits() {
+    String projectId = spanner.getOptions().getProjectId();
+    String instanceId = SpannerSampleIT.formatForTest("inst-pu");
+
+    try {
+      String out =
+          runExample(() -> CreateInstanceWithProcessingUnitsExample.createInstance(projectId, instanceId));
+      assertThat(out)
+          .contains(
+              String.format(
+                  "Instance %s was successfully created with %d processing units",
+                  InstanceId.of(projectId, instanceId), 200));
+    } finally {
+      spanner.getInstanceAdminClient().deleteInstance(instanceId);
+    }
   }
 }
