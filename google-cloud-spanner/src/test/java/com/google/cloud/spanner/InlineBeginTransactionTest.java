@@ -1248,14 +1248,13 @@ public class InlineBeginTransactionTest {
     // id returned by the update.
     assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
     assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(2L);
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(1L);
     assertThat(countTransactionsStarted()).isEqualTo(1);
-    List<AbstractMessage> requests = mockSpanner.getRequests();
-    requests = requests.subList(requests.size() - 3, requests.size());
+    List<AbstractMessage> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
     assertThat(((ExecuteSqlRequest) requests.get(0)).getSql()).isEqualTo(UPDATE_STATEMENT.getSql());
     assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
     assertThat(((ExecuteSqlRequest) requests.get(1)).getSql()).isEqualTo(SELECT1.getSql());
-    assertThat(requests.get(2)).isInstanceOf(CommitRequest.class);
   }
 
   private int countRequests(Class<? extends AbstractMessage> requestType) {
