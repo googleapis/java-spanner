@@ -33,7 +33,16 @@ public class InstanceInfo {
   public enum InstanceField implements FieldSelector {
     DISPLAY_NAME("display_name"),
     NODE_COUNT("node_count"),
+    PROCESSING_UNITS("processing_units"),
     LABELS("labels");
+
+    static InstanceField[] defaultFieldsToUpdate(InstanceInfo info) {
+      if (info.getNodeCount() > 0) {
+        return new InstanceField[] {DISPLAY_NAME, NODE_COUNT, LABELS};
+      } else {
+        return new InstanceField[] {DISPLAY_NAME, PROCESSING_UNITS, LABELS};
+      }
+    }
 
     private final String selector;
 
@@ -68,7 +77,19 @@ public class InstanceInfo {
 
     public abstract Builder setDisplayName(String displayName);
 
+    /**
+     * Sets the number of nodes for the instance. Only one of processing units or node count must be
+     * set when creating a new instance.
+     */
     public abstract Builder setNodeCount(int nodeCount);
+
+    /**
+     * Sets the number of processing units for the instance. Only one of processing units or node
+     * count must be set when creating a new instance. Processing units must be between 1 and 999
+     * (inclusive) when creating a new instance with node count = 0. Processing units from 1000 and
+     * up must always be a multiple of 1000 (i.e. equal to an integer number of nodes).
+     */
+    public abstract Builder setProcessingUnits(int processingUnits);
 
     public abstract Builder setState(State state);
 
@@ -84,6 +105,7 @@ public class InstanceInfo {
     private InstanceConfigId configId;
     private String displayName;
     private int nodeCount;
+    private int processingUnits;
     private State state;
     private Map<String, String> labels;
 
@@ -97,6 +119,7 @@ public class InstanceInfo {
       this.configId = instance.configId;
       this.displayName = instance.displayName;
       this.nodeCount = instance.nodeCount;
+      this.processingUnits = instance.processingUnits;
       this.state = instance.state;
       this.labels = new HashMap<>(instance.labels);
     }
@@ -116,6 +139,12 @@ public class InstanceInfo {
     @Override
     public BuilderImpl setNodeCount(int nodeCount) {
       this.nodeCount = nodeCount;
+      return this;
+    }
+
+    @Override
+    public BuilderImpl setProcessingUnits(int processingUnits) {
+      this.processingUnits = processingUnits;
       return this;
     }
 
@@ -147,6 +176,7 @@ public class InstanceInfo {
   private final InstanceConfigId configId;
   private final String displayName;
   private final int nodeCount;
+  private final int processingUnits;
   private final State state;
   private final ImmutableMap<String, String> labels;
 
@@ -155,6 +185,7 @@ public class InstanceInfo {
     this.configId = builder.configId;
     this.displayName = builder.displayName;
     this.nodeCount = builder.nodeCount;
+    this.processingUnits = builder.processingUnits;
     this.state = builder.state;
     this.labels = ImmutableMap.copyOf(builder.labels);
   }
@@ -179,6 +210,11 @@ public class InstanceInfo {
     return nodeCount;
   }
 
+  /** Returns the number of processing units of the instance. */
+  public int getProcessingUnits() {
+    return processingUnits;
+  }
+
   /** Returns the current state of the instance. */
   public State getState() {
     return state;
@@ -200,6 +236,7 @@ public class InstanceInfo {
         .add("configName", configId == null ? null : configId.getName())
         .add("displayName", displayName)
         .add("nodeCount", nodeCount)
+        .add("processingUnits", processingUnits)
         .add("state", state)
         .add("labels", labels)
         .toString();
@@ -218,13 +255,14 @@ public class InstanceInfo {
         && Objects.equals(configId, that.configId)
         && Objects.equals(displayName, that.displayName)
         && nodeCount == that.nodeCount
+        && processingUnits == that.processingUnits
         && state == that.state
         && Objects.equals(labels, that.labels);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configId, displayName, nodeCount, state, labels);
+    return Objects.hash(id, configId, displayName, nodeCount, processingUnits, state, labels);
   }
 
   com.google.spanner.admin.instance.v1.Instance toProto() {
@@ -232,6 +270,7 @@ public class InstanceInfo {
         com.google.spanner.admin.instance.v1.Instance.newBuilder()
             .setName(getId().getName())
             .setNodeCount(getNodeCount())
+            .setProcessingUnits(getProcessingUnits())
             .putAllLabels(getLabels());
     if (getDisplayName() != null) {
       builder.setDisplayName(getDisplayName());

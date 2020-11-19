@@ -406,4 +406,10 @@
     <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
     <method>java.lang.Object initialize()</method>
   </difference>
+  
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/InstanceInfo$Builder</className>
+    <method>com.google.cloud.spanner.InstanceInfo$Builder setProcessingUnits(int)</method>
+  </difference>
 </differences>
