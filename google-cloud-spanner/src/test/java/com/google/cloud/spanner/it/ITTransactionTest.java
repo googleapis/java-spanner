@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -37,6 +36,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -44,6 +44,9 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -80,6 +84,11 @@ public class ITTransactionTest {
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @Before
+  public void removeTestData() {
+    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
   }
 
   private static String uniqueKey() {
@@ -422,7 +431,9 @@ public class ITTransactionTest {
               new TransactionCallable<Void>() {
                 @Override
                 public Void run(TransactionContext transaction) throws SpannerException {
-                  client.readOnlyTransaction().getReadTimestamp();
+                  try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+                    tx.getReadTimestamp();
+                  }
 
                   return null;
                 }
@@ -505,5 +516,118 @@ public class ITTransactionTest {
                 return null;
               }
             });
+  }
+
+  @Test
+  public void testTxWithCaughtError() {
+    assumeFalse(
+        "Emulator does not recover from an error within a transaction",
+        EmulatorSpannerHelper.isUsingEmulator());
+
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    try {
+                      transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      if (e.getErrorCode() == ErrorCode.ABORTED) {
+                        // Aborted -> Let the transaction be retried
+                        throw e;
+                      }
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                    }
+                    return transaction.executeUpdate(
+                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                  }
+                });
+    assertThat(updateCount).isEqualTo(1L);
+  }
+
+  @Test
+  public void testTxWithConstraintError() {
+    assumeFalse(
+        "Emulator does not recover from an error within a transaction",
+        EmulatorSpannerHelper.isUsingEmulator());
+
+    // First insert a single row.
+    client.writeAtLeastOnce(
+        ImmutableList.of(
+            Mutation.newInsertOrUpdateBuilder("T").set("K").to("One").set("V").to(1L).build()));
+
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  try {
+                    // Try to insert a duplicate row. This statement will fail. When the statement
+                    // is executed against an already existing transaction (i.e.
+                    // inlineBegin=false), the entire transaction will remain invalid and cannot
+                    // be committed. When it is executed as the first statement of a transaction
+                    // that also tries to start a transaction, then no transaction will be started
+                    // and the next statement will start the transaction. This will cause the
+                    // transaction to succeed.
+                    transaction.executeUpdate(
+                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    if (e.getErrorCode() == ErrorCode.ABORTED) {
+                      // Aborted -> Let the transaction be retried
+                      throw e;
+                    }
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+                  }
+                  return transaction.executeUpdate(
+                      Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
+                }
+              });
+      fail("missing expected ALREADY_EXISTS error");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
+  }
+
+  @Test
+  public void testTxWithUncaughtError() {
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
+  }
+
+  @Test
+  public void testTxWithUncaughtErrorAfterSuccessfulBegin() {
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Long>() {
+                @Override
+                public Long run(TransactionContext transaction) throws Exception {
+                  transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    }
   }
 }

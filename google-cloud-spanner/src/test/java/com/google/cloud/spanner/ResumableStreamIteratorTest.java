@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.google.api.client.util.BackOff;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
@@ -29,10 +30,12 @@ import com.google.protobuf.Value;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.PartialResultSet;
 import io.grpc.Metadata;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -79,6 +82,11 @@ public class ResumableStreamIteratorTest {
       // OK to instantiate SpannerException directly for this unit test.
       super(DoNotConstructDirectly.ALLOWED, code, true, message, statusWithRetryInfo(code));
     }
+
+    RetryableException(ErrorCode code, @Nullable String message, StatusRuntimeException cause) {
+      // OK to instantiate SpannerException directly for this unit test.
+      super(DoNotConstructDirectly.ALLOWED, code, true, message, cause);
+    }
   }
 
   static class NonRetryableException extends SpannerException {
@@ -107,6 +115,11 @@ public class ResumableStreamIteratorTest {
     @Override
     public void close(@Nullable String message) {
       stream.close();
+    }
+
+    @Override
+    public boolean isWithBeginTransaction() {
+      return false;
     }
   }
 
@@ -218,6 +231,30 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator))
         .containsExactly("a", "b", "c", "d", "e", "f")
         .inOrder();
+  }
+
+  @Test
+  public void retryableErrorWithoutRetryInfo() throws IOException {
+    BackOff backOff = mock(BackOff.class);
+    Mockito.when(backOff.nextBackOffMillis()).thenReturn(1L);
+    Whitebox.setInternalState(this.resumableStreamIterator, "backOff", backOff);
+
+    ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
+    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(s1.next())
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
+        .thenThrow(
+            new RetryableException(
+                ErrorCode.UNAVAILABLE, "failed by test", Status.UNAVAILABLE.asRuntimeException()));
+
+    ResultSetStream s2 = Mockito.mock(ResultSetStream.class);
+    Mockito.when(starter.startStream(ByteString.copyFromUtf8("r1")))
+        .thenReturn(new ResultSetIterator(s2));
+    Mockito.when(s2.next())
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
+        .thenReturn(null);
+    assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
+    verify(backOff).nextBackOffMillis();
   }
 
   @Test

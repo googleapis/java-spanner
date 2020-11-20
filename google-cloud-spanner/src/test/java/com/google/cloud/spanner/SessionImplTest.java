@@ -31,6 +31,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -40,6 +41,7 @@ import com.google.spanner.v1.Mutation.Write;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
@@ -85,6 +87,7 @@ public class SessionImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
     String dbName = "projects/p1/instances/i1/databases/d1";
@@ -109,6 +112,8 @@ public class SessionImplTest {
             .build();
     Mockito.when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.any(Map.class)))
         .thenReturn(ApiFutures.immediateFuture(commitResponse));
+    Mockito.when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
+        .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     session = spanner.getSessionClient(db).createSession();
     ((SessionImpl) session).setCurrentSpan(mock(Span.class));
     // We expect the same options, "options", on all calls on "session".

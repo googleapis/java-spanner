@@ -19,12 +19,12 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.rules.ExternalResource;
@@ -126,7 +126,7 @@ public class IntegrationTestEnv extends ExternalResource {
         instanceAdminClient.createInstance(instance);
     Instance createdInstance;
     try {
-      createdInstance = op.get(30000L, TimeUnit.MILLISECONDS);
+      createdInstance = op.get();
     } catch (Exception e) {
       boolean cancelled = false;
       try {
@@ -166,6 +166,20 @@ public class IntegrationTestEnv extends ExternalResource {
       if (isOwnedInstance) {
         // Delete the instance, which implicitly drops all databases in it.
         try {
+          if (!EmulatorSpannerHelper.isUsingEmulator()) {
+            // Backups must be explicitly deleted before the instance may be deleted.
+            logger.log(
+                Level.FINE, "Deleting backups on test instance {0}", testHelper.getInstanceId());
+            for (Backup backup :
+                testHelper
+                    .getClient()
+                    .getDatabaseAdminClient()
+                    .listBackups(testHelper.getInstanceId().getInstance())
+                    .iterateAll()) {
+              logger.log(Level.FINE, "Deleting backup {0}", backup.getId());
+              backup.delete();
+            }
+          }
           logger.log(Level.FINE, "Deleting test instance {0}", testHelper.getInstanceId());
           instanceAdminClient.deleteInstance(testHelper.getInstanceId().getInstance());
           logger.log(Level.INFO, "Deleted test instance {0}", testHelper.getInstanceId());

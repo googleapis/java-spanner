@@ -16,16 +16,20 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
+import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,7 +91,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ResultSet executeQuery(
+  public ApiFuture<ResultSet> executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing queries is not allowed for DML batches.");
@@ -116,13 +120,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void executeDdl(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing DDL statements is not allowed for DML batches.");
   }
 
   @Override
-  public long executeUpdate(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -132,44 +136,54 @@ class DmlBatch extends AbstractBaseUnitOfWork {
             + update.getSqlWithoutComments()
             + "\" is not a DML-statement.");
     statements.add(update);
-    return -1L;
+    return ApiFutures.immediateFuture(-1L);
   }
 
   @Override
-  public long[] executeBatchUpdate(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
   }
 
   @Override
-  public void write(Mutation mutation) {
+  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DML batches.");
   }
 
   @Override
-  public void write(Iterable<Mutation> mutations) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DML batches.");
-  }
-
-  @Override
-  public long[] runBatch() {
+  public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
-    try {
-      long[] res;
-      if (statements.isEmpty()) {
-        res = new long[0];
-      } else {
-        res = transaction.executeBatchUpdate(statements);
-      }
+    if (statements.isEmpty()) {
       this.state = UnitOfWorkState.RAN;
-      return res;
-    } catch (SpannerException e) {
-      this.state = UnitOfWorkState.RUN_FAILED;
-      throw e;
+      return ApiFutures.immediateFuture(new long[0]);
     }
+    this.state = UnitOfWorkState.RUNNING;
+    // Use a SettableApiFuture to return the result, instead of directly returning the future that
+    // is returned by the executeBatchUpdateAsync method. This is needed because the state of the
+    // batch is set after the update has finished, and this happens in a listener. A listener is
+    // executed AFTER a Future is done, which means that a user could read the state of the Batch
+    // before it has been changed.
+    final SettableApiFuture<long[]> res = SettableApiFuture.create();
+    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements);
+    ApiFutures.addCallback(
+        updateCounts,
+        new ApiFutureCallback<long[]>() {
+          @Override
+          public void onFailure(Throwable t) {
+            state = UnitOfWorkState.RUN_FAILED;
+            res.setException(t);
+          }
+
+          @Override
+          public void onSuccess(long[] result) {
+            state = UnitOfWorkState.RAN;
+            res.set(result);
+          }
+        },
+        MoreExecutors.directExecutor());
+    return res;
   }
 
   @Override
@@ -180,13 +194,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void commit() {
+  public ApiFuture<Void> commitAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DML batches.");
   }
 
   @Override
-  public void rollback() {
+  public ApiFuture<Void> rollbackAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DML batches.");
   }

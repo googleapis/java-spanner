@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -24,8 +25,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.Empty;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -54,7 +57,19 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public void close() {
-    txn.close();
+    closeAsync();
+  }
+
+  @Override
+  public ApiFuture<Void> closeAsync() {
+    ApiFuture<Void> res = null;
+    if (txnState == TransactionState.STARTED) {
+      res = rollbackAsync();
+    }
+    if (txn != null) {
+      txn.close();
+    }
+    return MoreObjects.firstNonNull(res, ApiFutures.<Void>immediateFuture(null));
   }
 
   @Override
@@ -65,19 +80,25 @@ final class AsyncTransactionManagerImpl
     return begin;
   }
 
-  private ApiFuture<TransactionContext> internalBeginAsync(boolean setActive) {
+  private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
     txn = session.newTransaction();
-    if (setActive) {
+    if (firstAttempt) {
       session.setActive(this);
     }
     final SettableApiFuture<TransactionContext> res = SettableApiFuture.create();
-    final ApiFuture<Void> fut = txn.ensureTxnAsync();
+    final ApiFuture<Void> fut;
+    if (firstAttempt) {
+      fut = ApiFutures.immediateFuture(null);
+    } else {
+      fut = txn.ensureTxnAsync();
+    }
     ApiFutures.addCallback(
         fut,
         new ApiFutureCallback<Void>() {
           @Override
           public void onFailure(Throwable t) {
+            onError(t);
             res.setException(SpannerExceptionFactory.newSpannerException(t));
           }
 
@@ -110,6 +131,7 @@ final class AsyncTransactionManagerImpl
     }
     ApiFuture<Timestamp> res = txn.commitAsync();
     txnState = TransactionState.COMMITTED;
+
     ApiFutures.addCallback(
         res,
         new ApiFutureCallback<Timestamp>() {
@@ -138,7 +160,15 @@ final class AsyncTransactionManagerImpl
         txnState == TransactionState.STARTED,
         "rollback can only be called if the transaction is in progress");
     try {
-      return txn.rollbackAsync();
+      return ApiFutures.transformAsync(
+          txn.rollbackAsync(),
+          new ApiAsyncFunction<Empty, Void>() {
+            @Override
+            public ApiFuture<Void> apply(Empty input) throws Exception {
+              return ApiFutures.immediateFuture(null);
+            }
+          },
+          MoreExecutors.directExecutor());
     } finally {
       txnState = TransactionState.ROLLED_BACK;
     }
@@ -146,10 +176,6 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public TransactionContextFuture resetForRetryAsync() {
-    if (txn == null || !txn.isAborted() && txnState != TransactionState.ABORTED) {
-      throw new IllegalStateException(
-          "resetForRetry can only be called if the previous attempt aborted");
-    }
     return new TransactionContextFutureImpl(this, internalBeginAsync(false));
   }
 

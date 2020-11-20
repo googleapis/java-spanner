@@ -767,7 +767,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
       }
       assertThat(expectedException, is(true));
       assertRetryStatistics(1, 1, 0);
-      // the next statement should be in a new transaction as the previous transaction rolled back
+      // Rollback the aborted transaction to start a new one.
+      connection.rollback();
       try (ResultSet rs = connection.executeQuery(Statement.of("SELECT * FROM TEST"))) {
         // there should be one record from the transaction on connection2
         assertThat(rs.next(), is(true));
@@ -1519,6 +1520,7 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   @Test
   public void testAbortWithConcurrentInsertOnEmptyTable() {
     assumeFalse("concurrent transactions are not supported on the emulator", isUsingEmulator());
+
     AbortInterceptor interceptor = new AbortInterceptor(0);
     try (ITConnection connection =
         createConnection(interceptor, new CountTransactionRetryListener())) {

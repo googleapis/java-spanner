@@ -98,12 +98,12 @@ public class ITSessionPoolIntegrationTest {
 
   @Test
   public void sessionCreation() {
-    try (PooledSessionFuture session = pool.getReadSession()) {
+    try (PooledSessionFuture session = pool.getSession()) {
       assertThat(session.get()).isNotNull();
     }
 
-    try (PooledSessionFuture session = pool.getReadSession();
-        PooledSessionFuture session2 = pool.getReadSession()) {
+    try (PooledSessionFuture session = pool.getSession();
+        PooledSessionFuture session2 = pool.getSession()) {
       assertThat(session.get()).isNotNull();
       assertThat(session2.get()).isNotNull();
     }
@@ -111,14 +111,14 @@ public class ITSessionPoolIntegrationTest {
 
   @Test
   public void poolExhaustion() throws Exception {
-    Session session1 = pool.getReadSession().get();
-    Session session2 = pool.getReadSession().get();
+    Session session1 = pool.getSession().get();
+    Session session2 = pool.getSession().get();
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(
             new Runnable() {
               @Override
               public void run() {
-                try (Session session3 = pool.getReadSession().get()) {
+                try (Session session3 = pool.getSession().get()) {
                   latch.countDown();
                 }
               }
@@ -132,8 +132,8 @@ public class ITSessionPoolIntegrationTest {
 
   @Test
   public void multipleWaiters() throws Exception {
-    Session session1 = pool.getReadSession().get();
-    Session session2 = pool.getReadSession().get();
+    Session session1 = pool.getSession().get();
+    Session session2 = pool.getSession().get();
     int numSessions = 5;
     final CountDownLatch latch = new CountDownLatch(numSessions);
     for (int i = 0; i < numSessions; i++) {
@@ -141,7 +141,7 @@ public class ITSessionPoolIntegrationTest {
               new Runnable() {
                 @Override
                 public void run() {
-                  try (Session session = pool.getReadSession().get()) {
+                  try (Session session = pool.getSession().get()) {
                     latch.countDown();
                   }
                 }
@@ -161,13 +161,13 @@ public class ITSessionPoolIntegrationTest {
 
   @Test
   public void closeAfterInitialCreateDoesNotBlockIndefinitely() throws Exception {
-    pool.getReadSession().close();
+    pool.getSession().close();
     pool.closeAsync(new SpannerImpl.ClosedException()).get();
   }
 
   @Test
   public void closeWhenSessionsActiveFinishes() throws Exception {
-    pool.getReadSession().get();
+    pool.getSession().get();
     // This will log a warning that a session has been leaked, as the session that we retrieved in
     // the previous statement was never returned to the pool.
     pool.closeAsync(new SpannerImpl.ClosedException()).get();

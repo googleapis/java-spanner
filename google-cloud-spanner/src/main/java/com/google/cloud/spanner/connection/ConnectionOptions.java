@@ -183,18 +183,36 @@ public class ConnectionOptions {
           new HashSet<>(
               Arrays.asList(
                   ConnectionProperty.createBooleanProperty(
-                      AUTOCOMMIT_PROPERTY_NAME, "", DEFAULT_AUTOCOMMIT),
+                      AUTOCOMMIT_PROPERTY_NAME,
+                      "Should the connection start in autocommit (true/false)",
+                      DEFAULT_AUTOCOMMIT),
                   ConnectionProperty.createBooleanProperty(
-                      READONLY_PROPERTY_NAME, "", DEFAULT_READONLY),
+                      READONLY_PROPERTY_NAME,
+                      "Should the connection start in read-only mode (true/false)",
+                      DEFAULT_READONLY),
                   ConnectionProperty.createBooleanProperty(
-                      RETRY_ABORTS_INTERNALLY_PROPERTY_NAME, "", DEFAULT_RETRY_ABORTS_INTERNALLY),
-                  ConnectionProperty.createStringProperty(CREDENTIALS_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(OAUTH_TOKEN_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(NUM_CHANNELS_PROPERTY_NAME, ""),
+                      RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
+                      "Should the connection automatically retry Aborted errors (true/false)",
+                      DEFAULT_RETRY_ABORTS_INTERNALLY),
+                  ConnectionProperty.createStringProperty(
+                      CREDENTIALS_PROPERTY_NAME,
+                      "The location of the credentials file to use for this connection. If this property is not set, the connection will use the default Google Cloud credentials for the runtime environment."),
+                  ConnectionProperty.createStringProperty(
+                      OAUTH_TOKEN_PROPERTY_NAME,
+                      "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file."),
+                  ConnectionProperty.createStringProperty(
+                      NUM_CHANNELS_PROPERTY_NAME,
+                      "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
                   ConnectionProperty.createBooleanProperty(
-                      USE_PLAIN_TEXT_PROPERTY_NAME, "", DEFAULT_USE_PLAIN_TEXT),
-                  ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""),
-                  ConnectionProperty.createStringProperty(OPTIMIZER_VERSION_PROPERTY_NAME, ""))));
+                      USE_PLAIN_TEXT_PROPERTY_NAME,
+                      "Use a plain text communication channel (i.e. non-TLS) for communicating with the server (true/false). Set this value to true for communication with the Cloud Spanner emulator.",
+                      DEFAULT_USE_PLAIN_TEXT),
+                  ConnectionProperty.createStringProperty(
+                      USER_AGENT_PROPERTY_NAME,
+                      "The custom user-agent property name to use when communicating with Cloud Spanner. This property is intended for internal library usage, and should not be set by applications."),
+                  ConnectionProperty.createStringProperty(
+                      OPTIMIZER_VERSION_PROPERTY_NAME,
+                      "Sets the default query optimizer version to use for this connection."))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -237,6 +255,15 @@ public class ConnectionOptions {
     SpannerPool.INSTANCE.checkAndCloseSpanners();
   }
 
+  /**
+   * {@link SpannerOptionsConfigurator} can be used to add additional configuration for a {@link
+   * Spanner} instance. Intended for tests.
+   */
+  @VisibleForTesting
+  interface SpannerOptionsConfigurator {
+    void configure(SpannerOptions.Builder options);
+  }
+
   /** Builder for {@link ConnectionOptions} instances. */
   public static class Builder {
     private String uri;
@@ -246,6 +273,7 @@ public class ConnectionOptions {
     private SessionPoolOptions sessionPoolOptions;
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
+    private SpannerOptionsConfigurator configurator;
 
     private Builder() {}
 
@@ -359,6 +387,12 @@ public class ConnectionOptions {
     }
 
     @VisibleForTesting
+    Builder setConfigurator(SpannerOptionsConfigurator configurator) {
+      this.configurator = Preconditions.checkNotNull(configurator);
+      return this;
+    }
+
+    @VisibleForTesting
     Builder setCredentials(Credentials credentials) {
       this.credentials = credentials;
       return this;
@@ -384,6 +418,7 @@ public class ConnectionOptions {
   private final String uri;
   private final String credentialsUrl;
   private final String oauthToken;
+  private final Credentials fixedCredentials;
 
   private final boolean usePlainText;
   private final String host;
@@ -400,6 +435,7 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
+  private final SpannerOptionsConfigurator configurator;
 
   private ConnectionOptions(Builder builder) {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
@@ -413,6 +449,7 @@ public class ConnectionOptions {
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.oauthToken =
         builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
+    this.fixedCredentials = builder.credentials;
     // Check that not both credentials and an OAuth token have been specified.
     Preconditions.checkArgument(
         (builder.credentials == null && this.credentialsUrl == null) || this.oauthToken == null,
@@ -441,11 +478,10 @@ public class ConnectionOptions {
       this.credentials = NoCredentials.getInstance();
     } else if (this.oauthToken != null) {
       this.credentials = new GoogleCredentials(new AccessToken(oauthToken, null));
+    } else if (this.fixedCredentials != null) {
+      this.credentials = fixedCredentials;
     } else {
-      this.credentials =
-          builder.credentials == null
-              ? getCredentialsService().createCredentials(this.credentialsUrl)
-              : builder.credentials;
+      this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
     }
     String numChannelsValue = parseNumChannels(builder.uri);
     if (numChannelsValue != null) {
@@ -472,6 +508,11 @@ public class ConnectionOptions {
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
+    this.configurator = builder.configurator;
+  }
+
+  SpannerOptionsConfigurator getConfigurator() {
+    return configurator;
   }
 
   @VisibleForTesting
@@ -591,6 +632,14 @@ public class ConnectionOptions {
   /** The credentials URL of this {@link ConnectionOptions} */
   public String getCredentialsUrl() {
     return credentialsUrl;
+  }
+
+  String getOAuthToken() {
+    return this.oauthToken;
+  }
+
+  Credentials getFixedCredentials() {
+    return this.fixedCredentials;
   }
 
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */

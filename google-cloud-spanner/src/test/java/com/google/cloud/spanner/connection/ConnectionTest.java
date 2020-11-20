@@ -17,10 +17,15 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
+import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.Test;
@@ -92,6 +97,78 @@ public class ConnectionTest extends AbstractMockServerTest {
       }
     } finally {
       SpannerOptions.useDefaultEnvironment();
+    }
+  }
+
+  @Test
+  public void testExecuteInvalidBatchUpdate() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeBatchUpdate(ImmutableList.of(INSERT_STATEMENT, SELECT_RANDOM_STATEMENT));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
+  public void testQueryAborted() {
+    try (Connection connection = createConnection()) {
+      connection.setRetryAbortsInternally(false);
+      for (boolean abort : new Boolean[] {true, false}) {
+        try {
+          if (abort) {
+            mockSpanner.abortNextStatement();
+          }
+          connection.executeQuery(SELECT_RANDOM_STATEMENT);
+          assertThat(abort).isFalse();
+          connection.commit();
+        } catch (AbortedException e) {
+          assertThat(abort).isTrue();
+          connection.rollback();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testUpdateAborted() {
+    try (Connection connection = createConnection()) {
+      connection.setRetryAbortsInternally(false);
+      for (boolean abort : new Boolean[] {true, false}) {
+        try {
+          if (abort) {
+            mockSpanner.abortNextStatement();
+          }
+          connection.executeUpdate(INSERT_STATEMENT);
+          assertThat(abort).isFalse();
+          connection.commit();
+        } catch (AbortedException e) {
+          assertThat(abort).isTrue();
+          connection.rollback();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testBatchUpdateAborted() {
+    try (Connection connection = createConnection()) {
+      connection.setRetryAbortsInternally(false);
+      for (boolean abort : new Boolean[] {true, false}) {
+        try {
+          if (abort) {
+            mockSpanner.abortNextStatement();
+          }
+          connection.executeBatchUpdate(ImmutableList.of(INSERT_STATEMENT, INSERT_STATEMENT));
+          assertThat(abort).isFalse();
+          connection.commit();
+        } catch (AbortedException e) {
+          assertThat(abort).isTrue();
+          connection.rollback();
+        }
+      }
     }
   }
 }

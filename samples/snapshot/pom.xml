@@ -14,13 +14,16 @@
   <parent>
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
-    <version>1.0.18</version>
+    <version>1.0.21</version>
   </parent>
 
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <opencensus.version>0.28.2</opencensus.version>
+    <trace.version>1.2.6</trace.version>
+    <cloudmonitoring.version>2.0.8</cloudmonitoring.version>
   </properties>
 
   <dependencies>
@@ -28,20 +31,74 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>2.0.2-SNAPSHOT</version>
+      <version>3.0.5-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
+    
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-api</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-impl</artifactId>
+        <version>${opencensus.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-contrib-zpages</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-exporter-trace-stackdriver</artifactId>
+        <version>${opencensus.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-trace</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+        <version>${opencensus.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-monitoring</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-contrib-grpc-metrics</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-trace</artifactId>
+      <version>${trace.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-monitoring</artifactId>
+      <version>${cloudmonitoring.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.0.1</version>
+      <version>1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -77,6 +134,18 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <configuration>
+          <systemPropertyVariables>
+            <spanner.test.instance>spanner-testing</spanner.test.instance>
+            <spanner.sample.database>mysample</spanner.sample.database>
+            <spanner.quickstart.database>quick-db</spanner.quickstart.database>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
@@ -26,6 +27,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
+import java.util.concurrent.ExecutionException;
 
 /** Internal interface for transactions and batches on {@link Connection}s. */
 @InternalApi
@@ -39,9 +41,11 @@ interface UnitOfWork {
 
   enum UnitOfWorkState {
     STARTED,
+    COMMITTING,
     COMMITTED,
     COMMIT_FAILED,
     ROLLED_BACK,
+    RUNNING,
     RAN,
     RUN_FAILED,
     ABORTED;
@@ -67,30 +71,35 @@ interface UnitOfWork {
    * Commits the changes in this unit of work to the database. For read-only transactions, this only
    * closes the {@link ReadContext}. This method will throw a {@link SpannerException} if called for
    * a {@link Type#BATCH}.
+   *
+   * @return An {@link ApiFuture} that is done when the commit has finished.
    */
-  void commit();
+  ApiFuture<Void> commitAsync();
 
   /**
    * Rollbacks any changes in this unit of work. For read-only transactions, this only closes the
    * {@link ReadContext}. This method will throw a {@link SpannerException} if called for a {@link
    * Type#BATCH}.
+   *
+   * @return An {@link ApiFuture} that is done when the rollback has finished.
    */
-  void rollback();
+  ApiFuture<Void> rollbackAsync();
 
   /**
    * Sends the currently buffered statements in this unit of work to the database and ends the
    * batch. This method will throw a {@link SpannerException} if called for a {@link
    * Type#TRANSACTION}.
    *
-   * @return the update counts in case of a DML batch. Returns an array containing 1 for each
-   *     successful statement and 0 for each failed statement or statement that was not executed DDL
-   *     in case of a DDL batch.
+   * @return an {@link ApiFuture} containing the update counts in case of a DML batch. Returns an
+   *     array containing 1 for each successful statement and 0 for each failed statement or
+   *     statement that was not executed in case of a DDL batch.
    */
-  long[] runBatch();
+  ApiFuture<long[]> runBatchAsync();
 
   /**
    * Clears the currently buffered statements in this unit of work and ends the batch. This method
-   * will throw a {@link SpannerException} if called for a {@link Type#TRANSACTION}.
+   * will throw a {@link SpannerException} if called for a {@link Type#TRANSACTION}. This method is
+   * always non-blocking.
    */
   void abortBatch();
 
@@ -107,11 +116,12 @@ interface UnitOfWork {
    *     ResultSet} or not. Cannot be used in combination with {@link QueryOption}s.
    * @param options the options to configure the query. May only be set if analyzeMode is set to
    *     {@link AnalyzeMode#NONE}.
-   * @return a {@link ResultSet} with the results of the query.
-   * @throws SpannerException if the query is not allowed on this {@link UnitOfWork}, or if a
-   *     database error occurs.
+   * @return an {@link ApiFuture} containing a {@link ResultSet} with the results of the query.
+   * @throws SpannerException if the query is not allowed on this {@link UnitOfWork}. The {@link
+   *     ApiFuture} will return a {@link SpannerException} wrapped in an {@link ExecutionException}
+   *     if a database error occurs.
    */
-  ResultSet executeQuery(
+  ApiFuture<ResultSet> executeQueryAsync(
       ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
 
   /**
@@ -139,36 +149,28 @@ interface UnitOfWork {
    * statement directly on Spanner.
    *
    * @param ddl The DDL statement to execute.
+   * @return an {@link ApiFuture} that is done when the DDL operation has finished.
    */
-  void executeDdl(ParsedStatement ddl);
+  ApiFuture<Void> executeDdlAsync(ParsedStatement ddl);
 
   /**
    * Execute a DML statement on Spanner.
    *
    * @param update The DML statement to execute.
-   * @return the number of records that were inserted/updated/deleted by this statement.
+   * @return an {@link ApiFuture} containing the number of records that were
+   *     inserted/updated/deleted by this statement.
    */
-  long executeUpdate(ParsedStatement update);
+  ApiFuture<Long> executeUpdateAsync(ParsedStatement update);
 
   /**
    * Execute a batch of DML statements on Spanner.
    *
    * @param updates The DML statements to execute.
-   * @return an array containing the number of records that were inserted/updated/deleted per
-   *     statement.
+   * @return an {@link ApiFuture} containing an array with the number of records that were
+   *     inserted/updated/deleted per statement.
    * @see TransactionContext#batchUpdate(Iterable)
    */
-  long[] executeBatchUpdate(Iterable<ParsedStatement> updates);
-
-  /**
-   * Writes a {@link Mutation} to Spanner. For {@link ReadWriteTransaction}s, this means buffering
-   * the {@link Mutation} locally and writing the {@link Mutation} to Spanner upon {@link
-   * UnitOfWork#commit()}. For {@link SingleUseTransaction}s, the {@link Mutation} will be sent
-   * directly to Spanner.
-   *
-   * @param mutation The mutation to write.
-   */
-  void write(Mutation mutation);
+  ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates);
 
   /**
    * Writes a batch of {@link Mutation}s to Spanner. For {@link ReadWriteTransaction}s, this means
@@ -177,6 +179,8 @@ interface UnitOfWork {
    * sent directly to Spanner.
    *
    * @param mutations The mutations to write.
+   * @return an {@link ApiFuture} that is done when the {@link Mutation}s have been successfully
+   *     buffered or written to Cloud Spanner.
    */
-  void write(Iterable<Mutation> mutations);
+  ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
 }

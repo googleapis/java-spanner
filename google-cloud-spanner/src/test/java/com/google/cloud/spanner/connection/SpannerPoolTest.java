@@ -26,7 +26,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -34,8 +33,11 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
+import com.google.common.base.Ticker;
+import com.google.common.testing.FakeTicker;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
@@ -51,35 +53,43 @@ public class SpannerPoolTest {
   private ConnectionImpl connection1 = mock(ConnectionImpl.class);
   private ConnectionImpl connection2 = mock(ConnectionImpl.class);
   private ConnectionImpl connection3 = mock(ConnectionImpl.class);
-  private GoogleCredentials credentials1 = mock(GoogleCredentials.class);
-  private GoogleCredentials credentials2 = mock(GoogleCredentials.class);
+  private String credentials1 = "credentials1";
+  private String credentials2 = "credentials2";
   private ConnectionOptions options1 = mock(ConnectionOptions.class);
   private ConnectionOptions options2 = mock(ConnectionOptions.class);
   private ConnectionOptions options3 = mock(ConnectionOptions.class);
   private ConnectionOptions options4 = mock(ConnectionOptions.class);
 
+  private ConnectionOptions options5 = mock(ConnectionOptions.class);
+  private ConnectionOptions options6 = mock(ConnectionOptions.class);
+
   private SpannerPool createSubjectAndMocks() {
-    return createSubjectAndMocks(0L);
+    return createSubjectAndMocks(0L, Ticker.systemTicker());
   }
 
-  private SpannerPool createSubjectAndMocks(long closeSpannerAfterMillisecondsUnused) {
+  private SpannerPool createSubjectAndMocks(
+      long closeSpannerAfterMillisecondsUnused, Ticker ticker) {
     SpannerPool pool =
-        new SpannerPool(closeSpannerAfterMillisecondsUnused) {
+        new SpannerPool(closeSpannerAfterMillisecondsUnused, ticker) {
           @Override
-          Spanner createSpanner(SpannerPoolKey key) {
+          Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
             return mock(Spanner.class);
           }
         };
 
-    when(options1.getCredentials()).thenReturn(credentials1);
+    when(options1.getCredentialsUrl()).thenReturn(credentials1);
     when(options1.getProjectId()).thenReturn("test-project-1");
-    when(options2.getCredentials()).thenReturn(credentials2);
+    when(options2.getCredentialsUrl()).thenReturn(credentials2);
     when(options2.getProjectId()).thenReturn("test-project-1");
 
-    when(options3.getCredentials()).thenReturn(credentials1);
+    when(options3.getCredentialsUrl()).thenReturn(credentials1);
     when(options3.getProjectId()).thenReturn("test-project-2");
-    when(options4.getCredentials()).thenReturn(credentials2);
+    when(options4.getCredentialsUrl()).thenReturn(credentials2);
     when(options4.getProjectId()).thenReturn("test-project-2");
+
+    // ConnectionOptions with no specific credentials.
+    when(options5.getProjectId()).thenReturn("test-project-3");
+    when(options6.getProjectId()).thenReturn("test-project-3");
 
     return pool;
   }
@@ -107,6 +117,10 @@ public class SpannerPoolTest {
     assertThat(spanner1, is(equalTo(spanner2)));
     spanner1 = pool.getSpanner(options4, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
+    assertThat(spanner1, is(equalTo(spanner2)));
+    // Options 5 and 6 both use default credentials.
+    spanner1 = pool.getSpanner(options5, connection1);
+    spanner2 = pool.getSpanner(options6, connection2);
     assertThat(spanner1, is(equalTo(spanner2)));
 
     // assert not equal
@@ -329,73 +343,77 @@ public class SpannerPoolTest {
     verify(spanner3).close();
   }
 
-  /** Allow the automatic close test to be run multiple times to ensure it is stable */
-  private static final int NUMBER_OF_AUTOMATIC_CLOSE_TEST_RUNS = 1;
-
-  private static final long TEST_AUTOMATIC_CLOSE_TIMEOUT = 2L;
-  private static final long SLEEP_BEFORE_VERIFICATION = 100L;
+  private static final long TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS = 60_000L;
+  private static final long TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS =
+      TimeUnit.NANOSECONDS.convert(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+  private static final long MILLISECOND = TimeUnit.NANOSECONDS.convert(1L, TimeUnit.MILLISECONDS);
 
   @Test
   public void testAutomaticCloser() throws InterruptedException {
-    for (int testRun = 0; testRun < NUMBER_OF_AUTOMATIC_CLOSE_TEST_RUNS; testRun++) {
-      // create a pool that will close unused spanners after 5 milliseconds
-      SpannerPool pool = createSubjectAndMocks(TEST_AUTOMATIC_CLOSE_TIMEOUT);
-      Spanner spanner1;
-      Spanner spanner2;
-      Spanner spanner3;
+    FakeTicker ticker = new FakeTicker();
+    SpannerPool pool = createSubjectAndMocks(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS, ticker);
+    Spanner spanner1;
+    Spanner spanner2;
+    Spanner spanner3;
 
-      // create two connections that use the same Spanner
-      spanner1 = pool.getSpanner(options1, connection1);
-      spanner2 = pool.getSpanner(options1, connection2);
-      assertThat(spanner1, is(equalTo(spanner2)));
+    // create two connections that use the same Spanner
+    spanner1 = pool.getSpanner(options1, connection1);
+    spanner2 = pool.getSpanner(options1, connection2);
+    assertThat(spanner1, is(equalTo(spanner2)));
 
-      // all spanners are in use, this should have no effect
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1, never()).close();
+    // all spanners are in use, this should have no effect
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1, never()).close();
 
-      // close one connection. This should also have no effect.
-      pool.removeConnection(options1, connection1);
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1, never()).close();
+    // close one connection. This should also have no effect.
+    pool.removeConnection(options1, connection1);
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1, never()).close();
 
-      // close the other connection as well, the Spanner object should now be closed.
-      pool.removeConnection(options1, connection2);
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1).close();
+    // close the other connection as well, the Spanner object should now be closed.
+    pool.removeConnection(options1, connection2);
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1).close();
 
-      // create three connections that use two different Spanners
-      spanner1 = pool.getSpanner(options1, connection1);
-      spanner2 = pool.getSpanner(options2, connection2);
-      spanner3 = pool.getSpanner(options2, connection3);
-      assertThat(spanner1, not(equalTo(spanner2)));
-      assertThat(spanner2, is(equalTo(spanner3)));
+    // create three connections that use two different Spanners
+    spanner1 = pool.getSpanner(options1, connection1);
+    spanner2 = pool.getSpanner(options2, connection2);
+    spanner3 = pool.getSpanner(options2, connection3);
+    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner2, is(equalTo(spanner3)));
 
-      // all spanners are in use, this should have no effect
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1, never()).close();
-      verify(spanner2, never()).close();
-      verify(spanner3, never()).close();
+    // all spanners are in use, this should have no effect
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1, never()).close();
+    verify(spanner2, never()).close();
+    verify(spanner3, never()).close();
 
-      // close connection1. That should also mark spanner1 as no longer in use
-      pool.removeConnection(options1, connection1);
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1).close();
-      verify(spanner2, never()).close();
-      verify(spanner3, never()).close();
+    // close connection1. That should also mark spanner1 as no longer in use
+    pool.removeConnection(options1, connection1);
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1).close();
+    verify(spanner2, never()).close();
+    verify(spanner3, never()).close();
 
-      // close connection2. That should have no effect, as connection3 is still using spanner2
-      pool.removeConnection(options2, connection2);
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1).close();
-      verify(spanner2, never()).close();
-      verify(spanner3, never()).close();
+    // close connection2. That should have no effect, as connection3 is still using spanner2
+    pool.removeConnection(options2, connection2);
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1).close();
+    verify(spanner2, never()).close();
+    verify(spanner3, never()).close();
 
-      // close connection3. Now all should be closed.
-      pool.removeConnection(options2, connection3);
-      Thread.sleep(SLEEP_BEFORE_VERIFICATION);
-      verify(spanner1).close();
-      verify(spanner2).close();
-      verify(spanner3).close();
-    }
+    // close connection3. Now all should be closed.
+    pool.removeConnection(options2, connection3);
+    ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
+    pool.closeUnusedSpanners(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS);
+    verify(spanner1).close();
+    verify(spanner2).close();
+    verify(spanner3).close();
   }
 }

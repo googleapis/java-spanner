@@ -18,9 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
-import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -200,4 +197,11 @@ public interface AsyncTransactionManager extends AutoCloseable {
    */
   @Override
   void close();
+
+  /**
+   * Closes the transaction manager. If there is an active transaction, it will be rolled back. The
+   * underlying session will be released back to the session pool. The returned {@link ApiFuture} is
+   * done when the transaction (if any) has been rolled back.
+   */
+  ApiFuture<Void> closeAsync();
 }

@@ -205,15 +205,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     }
   }
 
-  private void assertWritePrepared(Session session) {
-    String name = session.getName();
-    synchronized (lock) {
-      if (!sessions.containsKey(name) || !sessions.get(name)) {
-        setFailed();
-      }
-    }
-  }
-
   private void resetTransaction(SessionImpl session) {
     String name = session.getName();
     synchronized (lock) {
@@ -242,7 +233,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     final int numOperationsPerThread = 1000;
     final CountDownLatch releaseThreads = new CountDownLatch(1);
     final CountDownLatch threadsDone = new CountDownLatch(concurrentThreads);
-    final int writeOperationFraction = 5;
     setupSpanner(db);
     int minSessions = 2;
     int maxSessions = concurrentThreads / 2;
@@ -280,15 +270,8 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                   Uninterruptibles.awaitUninterruptibly(releaseThreads);
                   for (int j = 0; j < numOperationsPerThread; j++) {
                     try {
-                      PooledSessionFuture session = null;
-                      if (random.nextInt(10) < writeOperationFraction) {
-                        session = pool.getReadWriteSession();
-                        PooledSession sess = session.get();
-                        assertWritePrepared(sess);
-                      } else {
-                        session = pool.getReadSession();
-                        session.get();
-                      }
+                      PooledSessionFuture session = pool.getSession();
+                      session.get();
                       Uninterruptibles.sleepUninterruptibly(
                           random.nextInt(5), TimeUnit.MILLISECONDS);
                       resetTransaction(session.get().delegate);

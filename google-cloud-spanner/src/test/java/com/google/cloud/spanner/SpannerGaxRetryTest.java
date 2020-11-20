@@ -360,7 +360,7 @@ public class SpannerGaxRetryTest {
               @Override
               public Long run(TransactionContext transaction) {
                 if (attempts.getAndIncrement() == 0) {
-                  mockSpanner.abortTransaction(transaction);
+                  mockSpanner.abortNextStatement();
                 }
                 return transaction.executeUpdate(UPDATE_STATEMENT);
               }
@@ -418,7 +418,7 @@ public class SpannerGaxRetryTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerTimeout() {
-    mockSpanner.setBeginTransactionExecutionTime(ONE_SECOND);
+    mockSpanner.setExecuteSqlExecutionTime(ONE_SECOND);
     try (TransactionManager txManager = clientWithTimeout.transactionManager()) {
       TransactionContext tx = txManager.begin();
       while (true) {

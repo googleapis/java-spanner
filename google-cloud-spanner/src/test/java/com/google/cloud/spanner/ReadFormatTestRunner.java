@@ -47,7 +47,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     public void onTransactionMetadata(Transaction transaction) throws SpannerException {}
 
     @Override
-    public void onError(SpannerException e) {}
+    public void onError(SpannerException e, boolean withBeginTransaction) {}
 
     @Override
     public void onDone() {}
@@ -117,7 +117,8 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
 
             @Override
             public void request(int numMessages) {}
-          });
+          },
+          false);
       consumer = stream.consumer();
       resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
 

@@ -96,22 +96,6 @@ public class SpanTest {
 
   private static final SimulatedExecutionTime ONE_SECOND =
       SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0);
-  private static final Statement SELECT1AND2 =
-      Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
-  private static final ResultSetMetadata SELECT1AND2_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
   private static final StatusRuntimeException FAILED_PRECONDITION =
       io.grpc.Status.FAILED_PRECONDITION
           .withDescription("Non-retryable test exception.")
@@ -162,11 +146,7 @@ public class SpanTest {
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build());
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
 
     spanner = builder.build().getService();
 
@@ -227,7 +207,7 @@ public class SpanTest {
 
   @Test
   public void singleUseNonRetryableErrorOnNext() {
-    try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       mockSpanner.addException(FAILED_PRECONDITION);
       while (rs.next()) {
         // Just consume the result set.
@@ -241,7 +221,7 @@ public class SpanTest {
 
   @Test
   public void singleUseExecuteStreamingSqlTimeout() {
-    try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
+    try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1)) {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
       while (rs.next()) {
         // Just consume the result set.
@@ -302,7 +282,6 @@ public class SpanTest {
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
   }
 
@@ -324,11 +303,10 @@ public class SpanTest {
     }
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans.size()).isEqualTo(5);
+    assertThat(spans.size()).isEqualTo(4);
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
   }
 }

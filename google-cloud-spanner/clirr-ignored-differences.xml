@@ -319,4 +319,91 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getNumericArray()</method>
   </difference>
+  
+  <!-- Async Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture commitAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.AsyncStatementResult executeAsync(com.google.cloud.spanner.Statement)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture executeBatchUpdateAsync(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture rollbackAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture runBatchAsync()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture writeAsync(com.google.cloud.spanner.Mutation)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture writeAsync(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/ResultSets</className>
+    <method>com.google.cloud.spanner.AsyncResultSet toAsyncResultSet(com.google.cloud.spanner.ResultSet, com.google.api.gax.core.ExecutorProvider)</method>
+  </difference>
+
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.api.core.ApiFuture closeAsync()</method>
+  </difference>
+
+  <!-- Write with options API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.CommitResponse writeWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$TransactionOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.CommitResponse writeAtLeastOnceWithOptions(java.lang.Iterable, com.google.cloud.spanner.Options$TransactionOption[])</method>
+  </difference>
+
+  <!-- Note: The following change for the LazySpannerInitializer.initialize() method must be specified twice, both with return type java.lang.Object and with com.google.cloud.spanner.Spanner. -->
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/LazySpannerInitializer</className>
+    <method>com.google.cloud.spanner.Spanner initialize()</method>
+  </difference>
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/LazySpannerInitializer</className>
+    <method>java.lang.Object initialize()</method>
+  </difference>
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
+    <method>java.lang.Object initialize()</method>
+  </difference>
 </differences>

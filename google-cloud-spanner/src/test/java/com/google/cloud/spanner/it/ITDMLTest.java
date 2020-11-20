@@ -80,7 +80,8 @@ public final class ITDMLTest {
   }
 
   @Before
-  public void increaseTestId() {
+  public void increaseTestIdAndDeleteTestData() {
+    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
     id++;
   }
 

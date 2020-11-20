@@ -54,7 +54,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
-import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -180,7 +179,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(pool.isValid()).isTrue();
     closePoolWithStacktrace();
     try {
-      pool.getReadSession();
+      pool.getSession();
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       assertThat(e.getCause()).isInstanceOf(ClosedException.class);
@@ -198,7 +197,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void sessionCreation() {
     setupMockSessionCreation();
     pool = createPool();
-    try (Session session = pool.getReadSession()) {
+    try (Session session = pool.getSession()) {
       assertThat(session).isNotNull();
     }
   }
@@ -207,25 +206,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolLifo() {
     setupMockSessionCreation();
     pool = createPool();
-    Session session1 = pool.getReadSession().get();
-    Session session2 = pool.getReadSession().get();
+    Session session1 = pool.getSession().get();
+    Session session2 = pool.getSession().get();
     assertThat(session1).isNotEqualTo(session2);
 
     session2.close();
     session1.close();
-    Session session3 = pool.getReadSession().get();
-    Session session4 = pool.getReadSession().get();
+    Session session3 = pool.getSession().get();
+    Session session4 = pool.getSession().get();
     assertThat(session3).isEqualTo(session1);
     assertThat(session4).isEqualTo(session2);
     session3.close();
     session4.close();
-
-    Session session5 = pool.getReadWriteSession().get();
-    Session session6 = pool.getReadWriteSession().get();
-    assertThat(session5).isEqualTo(session4);
-    assertThat(session6).isEqualTo(session3);
-    session6.close();
-    session5.close();
   }
 
   @Test
@@ -260,9 +252,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    Session session1 = pool.getReadSession();
+    Session session1 = pool.getSession();
     // Leaked sessions
-    PooledSessionFuture leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Clear the leaked exception to suppress logging of expected exceptions.
     leakedSession.clearLeakedException();
     session1.close();
@@ -338,7 +330,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
@@ -396,12 +388,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getSession();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     AtomicBoolean failed = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
-    getReadWriteSessionAsync(latch, failed);
+    getSessionAsync(latch, failed);
     insideCreation.await();
     pool.closeAsync(new SpannerImpl.ClosedException());
     releaseCreation.countDown();
@@ -447,51 +439,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void poolClosesEvenIfPreparationFails() throws Exception {
-    final SessionImpl session = mockSession();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    final CountDownLatch insidePrepare = new CountDownLatch(1);
-    final CountDownLatch releasePrepare = new CountDownLatch(1);
-    doAnswer(
-            new Answer<Session>() {
-              @Override
-              public Session answer(InvocationOnMock invocation) throws Throwable {
-                insidePrepare.countDown();
-                releasePrepare.await();
-                throw SpannerExceptionFactory.newSpannerException(new RuntimeException());
-              }
-            })
-        .when(session)
-        .prepareReadWriteTransaction();
-    pool = createPool();
-    AtomicBoolean failed = new AtomicBoolean(false);
-    CountDownLatch latch = new CountDownLatch(1);
-    getReadWriteSessionAsync(latch, failed);
-    insidePrepare.await();
-    ListenableFuture<Void> f = pool.closeAsync(new SpannerImpl.ClosedException());
-    releasePrepare.countDown();
-    f.get();
-    assertThat(f.isDone()).isTrue();
-  }
-
-  @Test
   public void poolClosureFailsNewRequests() {
     final SessionImpl session = mockSession();
     doAnswer(
@@ -513,13 +460,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    PooledSessionFuture leakedSession = pool.getReadSession();
+    PooledSessionFuture leakedSession = pool.getSession();
     leakedSession.get();
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     pool.closeAsync(new SpannerImpl.ClosedException());
     try {
-      pool.getReadSession();
+      pool.getSession();
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertNotNull(ex.getMessage());
@@ -566,281 +513,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
     try {
-      pool.getReadSession().get();
+      pool.getSession().get();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
     }
-  }
-
-  @Test
-  public void creationExceptionPropagatesToReadWriteSession() {
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionCreateFailure(
-                            SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
-                        return null;
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    pool = createPool();
-    try {
-      pool.getReadWriteSession().get();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
-  }
-
-  @Test
-  public void prepareExceptionPropagatesToReadWriteSession() {
-    final SessionImpl session = mockSession();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""))
-        .when(session)
-        .prepareReadWriteTransaction();
-    pool = createPool();
-    try {
-      pool.getReadWriteSession().get();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
-  }
-
-  @Test
-  public void getReadWriteSession() {
-    final SessionImpl mockSession = mockSession();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(mockSession);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    pool = createPool();
-    try (PooledSessionFuture session = pool.getReadWriteSession()) {
-      assertThat(session).isNotNull();
-      session.get();
-      verify(mockSession).prepareReadWriteTransaction();
-    }
-  }
-
-  @Test
-  public void getMultipleReadWriteSessions() throws Exception {
-    SessionImpl mockSession1 = mockSession();
-    SessionImpl mockSession2 = mockSession();
-    final LinkedList<SessionImpl> sessions =
-        new LinkedList<>(Arrays.asList(mockSession1, mockSession2));
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    pool = createPool();
-    PooledSessionFuture session1 = pool.getReadWriteSession();
-    PooledSessionFuture session2 = pool.getReadWriteSession();
-    session1.get();
-    session2.get();
-    verify(mockSession1).prepareReadWriteTransaction();
-    verify(mockSession2).prepareReadWriteTransaction();
-    session1.close();
-    session2.close();
-  }
-
-  @Test
-  public void getMultipleConcurrentReadWriteSessions() {
-    AtomicBoolean failed = new AtomicBoolean(false);
-    final SessionImpl session = mockSession();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-
-    pool = createPool();
-    int numSessions = 5;
-    final CountDownLatch latch = new CountDownLatch(numSessions);
-    for (int i = 0; i < numSessions; i++) {
-      getReadWriteSessionAsync(latch, failed);
-    }
-    Uninterruptibles.awaitUninterruptibly(latch);
-  }
-
-  @Test
-  public void sessionIsPrePrepared() {
-    final SessionImpl mockSession1 = mockSession();
-    final SessionImpl mockSession2 = mockSession();
-    final CountDownLatch prepareLatch = new CountDownLatch(1);
-    doAnswer(
-            new Answer<Void>() {
-
-              @Override
-              public Void answer(InvocationOnMock arg0) {
-                prepareLatch.countDown();
-                return null;
-              }
-            })
-        .when(mockSession1)
-        .prepareReadWriteTransaction();
-    doAnswer(
-            new Answer<Void>() {
-
-              @Override
-              public Void answer(InvocationOnMock arg0) {
-                prepareLatch.countDown();
-                return null;
-              }
-            })
-        .when(mockSession2)
-        .prepareReadWriteTransaction();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(mockSession1);
-                        consumer.onSessionReady(mockSession2);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(2), Mockito.anyBoolean(), any(SessionConsumer.class));
-
-    options =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(2)
-            .setMaxSessions(2)
-            .setWriteSessionsFraction(0.5f)
-            .build();
-    pool = createPool();
-    // One of the sessions would be pre prepared.
-    Uninterruptibles.awaitUninterruptibly(prepareLatch);
-    PooledSession readSession = pool.getReadSession().get();
-    PooledSession writeSession = pool.getReadWriteSession().get();
-    verify(writeSession.delegate, times(1)).prepareReadWriteTransaction();
-    verify(readSession.delegate, never()).prepareReadWriteTransaction();
-    readSession.close();
-    writeSession.close();
-  }
-
-  @Test
-  public void getReadSessionFallsBackToWritePreparedSession() throws Exception {
-    final SessionImpl mockSession1 = mockSession();
-    final CountDownLatch prepareLatch = new CountDownLatch(2);
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(InvocationOnMock arg0) {
-                prepareLatch.countDown();
-                return null;
-              }
-            })
-        .when(mockSession1)
-        .prepareReadWriteTransaction();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(mockSession1);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    options =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(minSessions)
-            .setMaxSessions(1)
-            .setWriteSessionsFraction(1.0f)
-            .build();
-    pool = createPool();
-    pool.getReadWriteSession().close();
-    prepareLatch.await();
-    // This session should also be write prepared.
-    PooledSession readSession = pool.getReadSession().get();
-    verify(readSession.delegate, times(2)).prepareReadWriteTransaction();
   }
 
   @Test
@@ -870,48 +547,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    Session session1 = pool.getReadSession();
+    Session session1 = pool.getSession();
     try {
-      pool.getReadSession();
+      pool.getSession();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
     }
     session1.close();
-    session1 = pool.getReadSession();
+    session1 = pool.getSession();
     assertThat(session1).isNotNull();
     session1.close();
-  }
-
-  @Test
-  public void poolWorksWhenSessionNotFound() {
-    SessionImpl mockSession1 = mockSession();
-    SessionImpl mockSession2 = mockSession();
-    final LinkedList<SessionImpl> sessions =
-        new LinkedList<>(Arrays.asList(mockSession1, mockSession2));
-    doThrow(SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName))
-        .when(mockSession1)
-        .prepareReadWriteTransaction();
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    pool = createPool();
-    assertThat(pool.getReadWriteSession().get().delegate).isEqualTo(mockSession2);
   }
 
   @Test
@@ -953,12 +599,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
     // Make sure pool has been initialized
-    pool.getReadSession().close();
+    pool.getSession().close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
-    PooledSessionFuture readSession1 = pool.getReadSession();
-    PooledSessionFuture readSession2 = pool.getReadSession();
-    PooledSessionFuture readSession3 = pool.getReadSession();
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
     // Wait until the sessions have actually been gotten in order to make sure they are in use in
     // parallel.
     readSession1.get();
@@ -973,9 +619,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     // Counters have now been reset
     // Use all 3 sessions sequentially
-    pool.getReadSession().close();
-    pool.getReadSession().close();
-    pool.getReadSession().close();
+    pool.getSession().close();
+    pool.getSession().close();
+    pool.getSession().close();
     // Advance the time by running the maintainer. This should cause
     // one session to be kept alive and two sessions to be removed.
     long cycles =
@@ -1017,8 +663,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    PooledSessionFuture session1 = pool.getReadSession();
-    PooledSessionFuture session2 = pool.getReadSession();
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
     session1.get();
     session2.get();
     session1.close();
@@ -1029,7 +675,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(session, times(2)).singleUse(any(TimestampBound.class));
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
-    session1 = pool.getReadSession();
+    session1 = pool.getSession();
     session1.writeAtLeastOnce(new ArrayList<Mutation>());
     session1.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
@@ -1040,156 +686,53 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testMaintainerKeepsWriteProportion() throws Exception {
+  public void blockAndTimeoutOnPoolExhaustion() throws Exception {
+    // Create a session pool with max 1 session and a low timeout for waiting for a session.
     options =
         SessionPoolOptions.newBuilder()
-            .setMinSessions(10)
-            .setMaxSessions(20)
-            .setWriteSessionsFraction(0.5f)
+            .setMinSessions(minSessions)
+            .setMaxSessions(1)
+            .setInitialWaitForSessionTimeoutMillis(20L)
             .build();
-    final SessionImpl session = mockSession();
-    mockKeepAlive(session);
-    // This is cheating as we are returning the same session each but it makes the verification
-    // easier.
-    doAnswer(
-            new Answer<Void>() {
+    setupMockSessionCreation();
+    pool = createPool();
+    // Take the only session that can be in the pool.
+    PooledSessionFuture checkedOutSession = pool.getSession();
+    checkedOutSession.get();
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    // Then try asynchronously to take another session. This attempt should time out.
+    Future<Void> fut =
+        executor.submit(
+            new Callable<Void>() {
               @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(session);
-                        }
-                      }
-                    });
+              public Void call() {
+                latch.countDown();
+                PooledSessionFuture session = pool.getSession();
+                session.close();
                 return null;
               }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
-    pool = createPool(clock);
-    // Wait until all sessions have been created and prepared.
-    waitForExpectedSessionPool(options.getMinSessions(), options.getWriteSessionsFraction());
-    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
-    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
-        .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
-
-    // Run maintainer numKeepAliveCycles. No pings should be executed during these.
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, never()).singleUse(any(TimestampBound.class));
-    // Run maintainer numKeepAliveCycles again. All sessions should now be pinged.
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
-    // Verify that all sessions are still in the pool, and that the write fraction is maintained.
-    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
-    assertThat(pool.getNumberOfWriteSessionsInPool())
-        .isEqualTo(
-            (int) Math.ceil(pool.getNumberOfSessionsInPool() * options.getWriteSessionsFraction()));
-
-    // Check out MaxSessions sessions to add additional sessions to the pool.
-    List<Session> sessions = new ArrayList<>(options.getMaxSessions());
-    for (int i = 0; i < options.getMaxSessions(); i++) {
-      sessions.add(pool.getReadSession());
+            });
+    // Wait until the background thread is actually waiting for a session.
+    latch.await();
+    // Wait until the request has timed out.
+    int waitCount = 0;
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+      Thread.sleep(5L);
+      waitCount++;
     }
-    for (Session s : sessions) {
-      s.close();
-    }
-    // There should be MaxSessions in the pool and the writeFraction should be respected.
-    waitForExpectedSessionPool(options.getMaxSessions(), options.getWriteSessionsFraction());
-    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMaxSessions());
-    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
-        .isEqualTo((int) Math.ceil(options.getMaxSessions() * options.getWriteSessionsFraction()));
+    // Return the checked out session to the pool so the async request will get a session and
+    // finish.
+    checkedOutSession.close();
+    // Verify that the async request also succeeds.
+    fut.get(10L, TimeUnit.SECONDS);
+    executor.shutdown();
 
-    // Advance the clock to allow the sessions to time out or be kept alive.
-    clock.currentTimeMillis +=
-        clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    // The session pool only keeps MinSessions alive.
-    verify(session, times(options.getMinSessions())).singleUse(any(TimestampBound.class));
-    // Verify that MinSessions and WriteFraction are respected.
-    waitForExpectedSessionPool(options.getMinSessions(), options.getWriteSessionsFraction());
-    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(options.getMinSessions());
-    assertThat(pool.getNumberOfAvailableWritePreparedSessions())
-        .isEqualTo((int) Math.ceil(options.getMinSessions() * options.getWriteSessionsFraction()));
-
-    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
-  }
-
-  private void waitForExpectedSessionPool(int expectedSessions, float writeFraction)
-      throws InterruptedException {
-    Stopwatch watch = Stopwatch.createStarted();
-    while ((pool.getNumberOfSessionsInPool() < expectedSessions
-            || pool.getNumberOfAvailableWritePreparedSessions()
-                < Math.ceil(expectedSessions * writeFraction))
-        && watch.elapsed(TimeUnit.SECONDS) < 5) {
-      Thread.sleep(1L);
-    }
-  }
-
-  @Test
-  public void blockAndTimeoutOnPoolExhaustion() throws Exception {
-    // Try to take a read or a read/write session. These requests should block.
-    for (Boolean write : new Boolean[] {true, false}) {
-      // Create a session pool with max 1 session and a low timeout for waiting for a session.
-      options =
-          SessionPoolOptions.newBuilder()
-              .setMinSessions(minSessions)
-              .setMaxSessions(1)
-              .setInitialWaitForSessionTimeoutMillis(20L)
-              .build();
-      setupMockSessionCreation();
-      pool = createPool();
-      // Take the only session that can be in the pool.
-      PooledSessionFuture checkedOutSession = pool.getReadSession();
-      checkedOutSession.get();
-      final Boolean finWrite = write;
-      ExecutorService executor = Executors.newFixedThreadPool(1);
-      final CountDownLatch latch = new CountDownLatch(1);
-      // Then try asynchronously to take another session. This attempt should time out.
-      Future<Void> fut =
-          executor.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() {
-                  PooledSessionFuture session;
-                  latch.countDown();
-                  if (finWrite) {
-                    session = pool.getReadWriteSession();
-                  } else {
-                    session = pool.getReadSession();
-                  }
-                  session.close();
-                  return null;
-                }
-              });
-      // Wait until the background thread is actually waiting for a session.
-      latch.await();
-      // Wait until the request has timed out.
-      int waitCount = 0;
-      while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-        Thread.sleep(5L);
-        waitCount++;
-      }
-      // Return the checked out session to the pool so the async request will get a session and
-      // finish.
-      checkedOutSession.close();
-      // Verify that the async request also succeeds.
-      fut.get(10L, TimeUnit.SECONDS);
-      executor.shutdown();
-
-      // Verify that the session was returned to the pool and that we can get it again.
-      Session session = pool.getReadSession();
-      assertThat(session).isNotNull();
-      session.close();
-      assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
-    }
+    // Verify that the session was returned to the pool and that we can get it again.
+    Session session = pool.getSession();
+    assertThat(session).isNotNull();
+    session.close();
+    assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
   }
 
   @Test
@@ -1247,7 +790,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    ReadContext context = pool.getReadSession().singleUse();
+    ReadContext context = pool.getSession().singleUse();
     ResultSet resultSet = context.executeQuery(statement);
     assertThat(resultSet.next()).isTrue();
   }
@@ -1303,7 +846,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    ReadOnlyTransaction transaction = pool.getReadSession().readOnlyTransaction();
+    ReadOnlyTransaction transaction = pool.getSession().readOnlyTransaction();
     ResultSet resultSet = transaction.executeQuery(statement);
     assertThat(resultSet.next()).isTrue();
   }
@@ -1327,246 +870,169 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     for (ReadWriteTransactionTestStatementType statementType :
         ReadWriteTransactionTestStatementType.values()) {
       final ReadWriteTransactionTestStatementType executeStatementType = statementType;
-      for (boolean prepared : new boolean[] {true, false}) {
-        final boolean hasPreparedTransaction = prepared;
-        SpannerRpc.StreamingCall closedStreamingCall = mock(SpannerRpc.StreamingCall.class);
-        doThrow(sessionNotFound).when(closedStreamingCall).request(Mockito.anyInt());
-        SpannerRpc rpc = mock(SpannerRpc.class);
-        when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
-        when(rpc.executeQuery(
-                any(ExecuteSqlRequest.class), any(ResultStreamConsumer.class), any(Map.class)))
-            .thenReturn(closedStreamingCall);
-        when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class)))
-            .thenThrow(sessionNotFound);
-        when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
-            .thenThrow(sessionNotFound);
-        when(rpc.commitAsync(any(CommitRequest.class), any(Map.class)))
-            .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
-        doThrow(sessionNotFound).when(rpc).rollback(any(RollbackRequest.class), any(Map.class));
-        final SessionImpl closedSession = mock(SessionImpl.class);
-        when(closedSession.getName())
-            .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
-        ByteString preparedTransactionId =
-            hasPreparedTransaction ? ByteString.copyFromUtf8("test-txn") : null;
-        final TransactionContextImpl closedTransactionContext =
-            TransactionContextImpl.newBuilder()
-                .setSession(closedSession)
-                .setTransactionId(preparedTransactionId)
-                .setRpc(rpc)
-                .build();
-        when(closedSession.asyncClose())
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
-        when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
-        when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
-        TransactionRunnerImpl closedTransactionRunner =
-            new TransactionRunnerImpl(closedSession, rpc, 10);
-        closedTransactionRunner.setSpan(mock(Span.class));
-        when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
+      SpannerRpc.StreamingCall closedStreamingCall = mock(SpannerRpc.StreamingCall.class);
+      doThrow(sessionNotFound).when(closedStreamingCall).request(Mockito.anyInt());
+      SpannerRpc rpc = mock(SpannerRpc.class);
+      when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
+          .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+      when(rpc.executeQuery(
+              any(ExecuteSqlRequest.class), any(ResultStreamConsumer.class), any(Map.class)))
+          .thenReturn(closedStreamingCall);
+      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class)))
+          .thenThrow(sessionNotFound);
+      when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
+          .thenThrow(sessionNotFound);
+      when(rpc.commitAsync(any(CommitRequest.class), any(Map.class)))
+          .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
+      when(rpc.rollbackAsync(any(RollbackRequest.class), any(Map.class)))
+          .thenReturn(ApiFutures.<Empty>immediateFailedFuture(sessionNotFound));
+      final SessionImpl closedSession = mock(SessionImpl.class);
+      when(closedSession.getName())
+          .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
+      final TransactionContextImpl closedTransactionContext =
+          TransactionContextImpl.newBuilder().setSession(closedSession).setRpc(rpc).build();
+      when(closedSession.asyncClose())
+          .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+      when(closedSession.newTransaction()).thenReturn(closedTransactionContext);
+      when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
+      TransactionRunnerImpl closedTransactionRunner =
+          new TransactionRunnerImpl(closedSession, rpc, 10);
+      closedTransactionRunner.setSpan(mock(Span.class));
+      when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
-        final SessionImpl openSession = mock(SessionImpl.class);
-        when(openSession.asyncClose())
-            .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
-        when(openSession.getName())
-            .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
-        final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
-        when(openSession.newTransaction()).thenReturn(openTransactionContext);
-        when(openSession.beginTransactionAsync())
-            .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
-        TransactionRunnerImpl openTransactionRunner =
-            new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
-        openTransactionRunner.setSpan(mock(Span.class));
-        when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
+      final SessionImpl openSession = mock(SessionImpl.class);
+      when(openSession.asyncClose())
+          .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+      when(openSession.getName())
+          .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
+      final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
+      when(openSession.newTransaction()).thenReturn(openTransactionContext);
+      when(openSession.beginTransactionAsync())
+          .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
+      TransactionRunnerImpl openTransactionRunner =
+          new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+      openTransactionRunner.setSpan(mock(Span.class));
+      when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
-        ResultSet openResultSet = mock(ResultSet.class);
-        when(openResultSet.next()).thenReturn(true, false);
-        ResultSet planResultSet = mock(ResultSet.class);
-        when(planResultSet.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
-        when(openTransactionContext.executeQuery(queryStatement)).thenReturn(openResultSet);
-        when(openTransactionContext.analyzeQuery(queryStatement, QueryAnalyzeMode.PLAN))
-            .thenReturn(planResultSet);
-        when(openTransactionContext.executeUpdate(updateStatement)).thenReturn(1L);
-        when(openTransactionContext.batchUpdate(Arrays.asList(updateStatement, updateStatement)))
-            .thenReturn(new long[] {1L, 1L});
-        SpannerImpl spanner = mock(SpannerImpl.class);
-        SessionClient sessionClient = mock(SessionClient.class);
-        when(spanner.getSessionClient(db)).thenReturn(sessionClient);
+      ResultSet openResultSet = mock(ResultSet.class);
+      when(openResultSet.next()).thenReturn(true, false);
+      ResultSet planResultSet = mock(ResultSet.class);
+      when(planResultSet.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
+      when(openTransactionContext.executeQuery(queryStatement)).thenReturn(openResultSet);
+      when(openTransactionContext.analyzeQuery(queryStatement, QueryAnalyzeMode.PLAN))
+          .thenReturn(planResultSet);
+      when(openTransactionContext.executeUpdate(updateStatement)).thenReturn(1L);
+      when(openTransactionContext.batchUpdate(Arrays.asList(updateStatement, updateStatement)))
+          .thenReturn(new long[] {1L, 1L});
+      SpannerImpl spanner = mock(SpannerImpl.class);
+      SessionClient sessionClient = mock(SessionClient.class);
+      when(spanner.getSessionClient(db)).thenReturn(sessionClient);
 
-        doAnswer(
-                new Answer<Void>() {
-                  @Override
-                  public Void answer(final InvocationOnMock invocation) {
-                    executor.submit(
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            SessionConsumerImpl consumer =
-                                invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                            consumer.onSessionReady(closedSession);
-                          }
-                        });
-                    return null;
+      doAnswer(
+              new Answer<Void>() {
+                @Override
+                public Void answer(final InvocationOnMock invocation) {
+                  executor.submit(
+                      new Runnable() {
+                        @Override
+                        public void run() {
+                          SessionConsumerImpl consumer =
+                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          consumer.onSessionReady(closedSession);
+                        }
+                      });
+                  return null;
+                }
+              })
+          .doAnswer(
+              new Answer<Void>() {
+                @Override
+                public Void answer(final InvocationOnMock invocation) {
+                  executor.submit(
+                      new Runnable() {
+                        @Override
+                        public void run() {
+                          SessionConsumerImpl consumer =
+                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          consumer.onSessionReady(openSession);
+                        }
+                      });
+                  return null;
+                }
+              })
+          .when(sessionClient)
+          .asyncBatchCreateSessions(
+              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+      SessionPoolOptions options =
+          SessionPoolOptions.newBuilder()
+              .setMinSessions(0) // The pool should not auto-create any sessions
+              .setMaxSessions(2)
+              .setIncStep(1)
+              .setBlockIfPoolExhausted()
+              .build();
+      SpannerOptions spannerOptions = mock(SpannerOptions.class);
+      when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
+      when(spannerOptions.getNumChannels()).thenReturn(4);
+      when(spanner.getOptions()).thenReturn(spannerOptions);
+      SessionPool pool =
+          SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
+      try (PooledSessionFuture readWriteSession = pool.getSession()) {
+        TransactionRunner runner = readWriteSession.readWriteTransaction();
+        try {
+          runner.run(
+              new TransactionCallable<Integer>() {
+                private int callNumber = 0;
+
+                @Override
+                public Integer run(TransactionContext transaction) {
+                  callNumber++;
+                  if (callNumber == 1) {
+                    assertThat(transaction).isEqualTo(closedTransactionContext);
+                  } else {
+                    assertThat(transaction).isEqualTo(openTransactionContext);
                   }
-                })
-            .doAnswer(
-                new Answer<Void>() {
-                  @Override
-                  public Void answer(final InvocationOnMock invocation) {
-                    executor.submit(
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            SessionConsumerImpl consumer =
-                                invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                            consumer.onSessionReady(openSession);
-                          }
-                        });
-                    return null;
+                  switch (executeStatementType) {
+                    case QUERY:
+                      ResultSet resultSet = transaction.executeQuery(queryStatement);
+                      assertThat(resultSet.next()).isTrue();
+                      break;
+                    case ANALYZE:
+                      ResultSet planResultSet =
+                          transaction.analyzeQuery(queryStatement, QueryAnalyzeMode.PLAN);
+                      assertThat(planResultSet.next()).isFalse();
+                      assertThat(planResultSet.getStats()).isNotNull();
+                      break;
+                    case UPDATE:
+                      long updateCount = transaction.executeUpdate(updateStatement);
+                      assertThat(updateCount).isEqualTo(1L);
+                      break;
+                    case BATCH_UPDATE:
+                      long[] updateCounts =
+                          transaction.batchUpdate(Arrays.asList(updateStatement, updateStatement));
+                      assertThat(updateCounts).isEqualTo(new long[] {1L, 1L});
+                      break;
+                    case WRITE:
+                      transaction.buffer(Mutation.delete("FOO", Key.of(1L)));
+                      break;
+                    case EXCEPTION:
+                      throw new RuntimeException("rollback at call " + callNumber);
+                    default:
+                      fail("Unknown statement type: " + executeStatementType);
                   }
-                })
-            .when(sessionClient)
-            .asyncBatchCreateSessions(
-                Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-        SessionPoolOptions options =
-            SessionPoolOptions.newBuilder()
-                .setMinSessions(0) // The pool should not auto-create any sessions
-                .setMaxSessions(2)
-                .setIncStep(1)
-                .setBlockIfPoolExhausted()
-                .build();
-        SpannerOptions spannerOptions = mock(SpannerOptions.class);
-        when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
-        when(spannerOptions.getNumChannels()).thenReturn(4);
-        when(spanner.getOptions()).thenReturn(spannerOptions);
-        SessionPool pool =
-            SessionPool.createPool(
-                options, new TestExecutorFactory(), spanner.getSessionClient(db));
-        try (PooledSessionFuture readWriteSession = pool.getReadWriteSession()) {
-          TransactionRunner runner = readWriteSession.readWriteTransaction();
-          try {
-            runner.run(
-                new TransactionCallable<Integer>() {
-                  private int callNumber = 0;
-
-                  @Override
-                  public Integer run(TransactionContext transaction) {
-                    callNumber++;
-                    if (hasPreparedTransaction) {
-                      // If the session had a prepared read/write transaction, that transaction will
-                      // be given to the runner in the first place and the SessionNotFoundException
-                      // will occur on the first query / update statement.
-                      if (callNumber == 1) {
-                        assertThat(transaction).isEqualTo(closedTransactionContext);
-                      } else {
-                        assertThat(transaction).isEqualTo(openTransactionContext);
-                      }
-                    } else {
-                      // If the session did not have a prepared read/write transaction, the library
-                      // tried to create a new transaction before handing it to the transaction
-                      // runner. The creation of the new transaction failed with a
-                      // SessionNotFoundException, and the session was re-created before the run
-                      // method was called.
-                      assertThat(transaction).isEqualTo(openTransactionContext);
-                    }
-                    switch (executeStatementType) {
-                      case QUERY:
-                        ResultSet resultSet = transaction.executeQuery(queryStatement);
-                        assertThat(resultSet.next()).isTrue();
-                        break;
-                      case ANALYZE:
-                        ResultSet planResultSet =
-                            transaction.analyzeQuery(queryStatement, QueryAnalyzeMode.PLAN);
-                        assertThat(planResultSet.next()).isFalse();
-                        assertThat(planResultSet.getStats()).isNotNull();
-                        break;
-                      case UPDATE:
-                        long updateCount = transaction.executeUpdate(updateStatement);
-                        assertThat(updateCount).isEqualTo(1L);
-                        break;
-                      case BATCH_UPDATE:
-                        long[] updateCounts =
-                            transaction.batchUpdate(
-                                Arrays.asList(updateStatement, updateStatement));
-                        assertThat(updateCounts).isEqualTo(new long[] {1L, 1L});
-                        break;
-                      case WRITE:
-                        transaction.buffer(Mutation.delete("FOO", Key.of(1L)));
-                        break;
-                      case EXCEPTION:
-                        throw new RuntimeException("rollback at call " + callNumber);
-                      default:
-                        fail("Unknown statement type: " + executeStatementType);
-                    }
-                    return callNumber;
-                  }
-                });
-          } catch (Exception e) {
-            // The rollback will also cause a SessionNotFoundException, but this is caught, logged
-            // and further ignored by the library, meaning that the session will not be re-created
-            // for retry. Hence rollback at call 1.
-            assertThat(
-                    executeStatementType == ReadWriteTransactionTestStatementType.EXCEPTION
-                        && e.getMessage().contains("rollback at call 1"))
-                .isTrue();
-          }
+                  return callNumber;
+                }
+              });
+        } catch (Exception e) {
+          // The rollback will also cause a SessionNotFoundException, but this is caught, logged
+          // and further ignored by the library, meaning that the session will not be re-created
+          // for retry. Hence rollback at call 1.
+          assertThat(executeStatementType)
+              .isEqualTo(ReadWriteTransactionTestStatementType.EXCEPTION);
+          assertThat(e.getMessage()).contains("rollback at call 1");
         }
-        pool.closeAsync(new SpannerImpl.ClosedException());
       }
+      pool.closeAsync(new SpannerImpl.ClosedException());
     }
-  }
-
-  @Test
-  public void testSessionNotFoundOnPrepareTransaction() {
-    final SpannerException sessionNotFound =
-        SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
-    final SessionImpl closedSession = mock(SessionImpl.class);
-    when(closedSession.getName())
-        .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
-    when(closedSession.beginTransaction()).thenThrow(sessionNotFound);
-    doThrow(sessionNotFound).when(closedSession).prepareReadWriteTransaction();
-
-    final SessionImpl openSession = mock(SessionImpl.class);
-    when(openSession.getName())
-        .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-open");
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
-                    });
-                return null;
-              }
-            })
-        .doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
-                    });
-                return null;
-              }
-            })
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
-    pool = createPool(clock);
-    PooledSession session = pool.getReadWriteSession().get();
-    assertThat(session.delegate).isEqualTo(openSession);
   }
 
   @Test
@@ -1745,8 +1211,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     setupMockSessionCreation();
     pool = createPool(clock, metricRegistry, labelValues);
-    PooledSessionFuture session1 = pool.getReadSession();
-    PooledSessionFuture session2 = pool.getReadSession();
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
     session1.get();
     session2.get();
 
@@ -1824,7 +1290,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void call() {
                 latch.countDown();
-                Session session = pool.getReadSession();
+                Session session = pool.getSession();
                 session.close();
                 return null;
               }
@@ -1882,30 +1348,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             new Runnable() {
               @Override
               public void run() {
-                try (PooledSessionFuture future = pool.getReadSession()) {
+                try (PooledSessionFuture future = pool.getSession()) {
                   PooledSession session = future.get();
                   failed.compareAndSet(false, session == null);
                   Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
                 } catch (Throwable e) {
-                  failed.compareAndSet(false, true);
-                } finally {
-                  latch.countDown();
-                }
-              }
-            })
-        .start();
-  }
-
-  private void getReadWriteSessionAsync(final CountDownLatch latch, final AtomicBoolean failed) {
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                try (PooledSessionFuture future = pool.getReadWriteSession()) {
-                  PooledSession session = future.get();
-                  failed.compareAndSet(false, session == null);
-                  Uninterruptibles.sleepUninterruptibly(2, TimeUnit.MILLISECONDS);
-                } catch (SpannerException e) {
                   failed.compareAndSet(false, true);
                 } finally {
                   latch.countDown();
