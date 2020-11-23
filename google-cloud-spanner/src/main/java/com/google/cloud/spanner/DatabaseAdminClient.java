@@ -132,8 +132,8 @@ public interface DatabaseAdminClient {
    * Backup backup = op.get();
    * }</pre>
    *
-   * @param instanceId the id of the instance where the database to backup is located and where the
-   *     backup will be created.
+   * @param sourceInstanceId the id of the instance where the database to backup is located and
+   *     where the backup will be created.
    * @param backupId the id of the backup which will be created. It must conform to the regular
    *     expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
    * @param databaseId the id of the database to backup.
@@ -144,21 +144,27 @@ public interface DatabaseAdminClient {
       throws SpannerException;
 
   /**
-   * Creates a new backup from a database in a Cloud Spanner instance.
+   * Creates a new backup from a database in a Cloud Spanner. Any configuration options in the
+   * {@link Backup} instance will be included in the {@link
+   * com.google.spanner.admin.database.v1.CreateBackupRequest}.
    *
-   * <p>Example to create a backup.
+   * <p>Example to create an encrypted backup.
    *
    * <pre>{@code
-   * BackupId backupId     = BackupId.of("project", "instance", "backup-id");
+   * BackupId backupId = BackupId.of("project", "instance", "backup-id");
    * DatabaseId databaseId = DatabaseId.of("project", "instance", "database-id");
-   * Timestamp expireTime  = Timestamp.ofTimeMicroseconds(expireTimeMicros);
+   * Timestamp expireTime = Timestamp.ofTimeMicroseconds(expireTimeMicros);
    * Timestamp versionTime = Timestamp.ofTimeMicroseconds(versionTimeMicros);
+   * EncryptionConfigInfo encryptionConfigInfo =
+   *         EncryptionConfigInfo.ofKey(
+   *             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"));
    *
    * Backup backupToCreate = dbAdminClient
    *     .newBackupBuilder(backupId)
    *     .setDatabase(databaseId)
    *     .setExpireTime(expireTime)
    *     .setVersionTime(versionTime)
+   *     .setEncryptionConfigInfo(encryptionConfigInfo)
    *     .build();
    *
    * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackup(backupToCreate);

@@ -95,6 +95,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -1149,15 +1150,31 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
-      final String instanceName, final String backupId, final Backup backup)
-      throws SpannerException {
-    CreateBackupRequest request =
+      final com.google.cloud.spanner.Backup backupInfo) throws SpannerException {
+    final String instanceName = backupInfo.getInstanceId().getName();
+    final String databaseName = backupInfo.getDatabase().getName();
+    final String backupId = backupInfo.getId().getBackup();
+    final Backup.Builder backupBuilder =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setDatabase(databaseName)
+            .setExpireTime(backupInfo.getExpireTime().toProto());
+    if (backupInfo.getVersionTime() != null) {
+      backupBuilder.setVersionTime(backupInfo.getVersionTime().toProto());
+    }
+    final Backup backup = backupBuilder.build();
+
+    final CreateBackupRequest.Builder requestBuilder =
         CreateBackupRequest.newBuilder()
             .setParent(instanceName)
             .setBackupId(backupId)
-            .setBackup(backup)
-            .build();
-    OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
+            .setBackup(backup);
+    if (backupInfo.getEncryptionConfigInfo() != null) {
+      requestBuilder.setEncryptionConfig(
+          CreateBackupEncryptionConfig.newBuilder()
+              .setKmsKeyName(backupInfo.getEncryptionConfigInfo().getKmsKeyName()));
+    }
+    final CreateBackupRequest request = requestBuilder.build();
+    final OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
         new OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata>(
             databaseAdminStub.createBackupOperationCallable(),
             request,

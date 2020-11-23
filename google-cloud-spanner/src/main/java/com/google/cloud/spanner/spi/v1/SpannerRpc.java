@@ -219,16 +219,15 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   /**
-   * Creates a new backup from the source database specified in the {@link Backup} instance.
+   * Creates a new backup from the source database specified in the {@link
+   * com.google.cloud.spanner.Backup} instance.
    *
-   * @param instanceName the name of the instance where the backup should be created.
-   * @param backupId the id of the backup to create.
-   * @param backup the backup to create. The database and expireTime fields of the backup must be
-   *     filled.
+   * @param backupInfo the backup to create. The instance, database and expireTime fields of the
+   *     backup must be filled.
    * @return the operation that monitors the backup creation.
    */
   OperationFuture<Backup, CreateBackupMetadata> createBackup(
-      String instanceName, String backupId, Backup backup) throws SpannerException;
+      com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
 
   /**
    * Restore a backup into the given database.

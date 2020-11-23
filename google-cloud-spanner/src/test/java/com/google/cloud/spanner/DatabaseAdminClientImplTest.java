@@ -45,6 +45,7 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
+import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
@@ -59,7 +60,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.DatabaseAdminClientImpl}. */
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
@@ -76,6 +76,7 @@ public class DatabaseAdminClientImplTest {
   private static final String VERSION_RETENTION_PERIOD = "7d";
   private static final String KMS_KEY_NAME =
       "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
+  private static final String KMS_KEY_VERSION = "1";
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -118,6 +119,15 @@ public class DatabaseAdminClientImplTest {
         .setName(BK_NAME)
         .setDatabase(DB_NAME)
         .setState(Backup.State.READY)
+        .build();
+  }
+
+  private Backup getEncryptedBackupProto() {
+    return Backup.newBuilder()
+        .setName(BK_NAME)
+        .setDatabase(DB_NAME)
+        .setState(Backup.State.READY)
+        .setEncryptionInfo(EncryptionInfo.newBuilder().setKmsKeyVersion(KMS_KEY_VERSION).build())
         .build();
   }
 
@@ -350,8 +360,13 @@ public class DatabaseAdminClientImplTest {
         Timestamp.ofTimeMicroseconds(
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
                 + TimeUnit.HOURS.toMicros(28));
-    Backup backup = Backup.newBuilder().setDatabase(DB_NAME).setExpireTime(t.toProto()).build();
-    when(rpc.createBackup(INSTANCE_NAME, BK_ID, backup)).thenReturn(rawOperationFuture);
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .build();
+    when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, BK_ID, DB_ID, t);
     assertThat(op.isDone()).isTrue();
@@ -390,6 +405,30 @@ public class DatabaseAdminClientImplTest {
         client.createBackup(requestBackup);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void createEncryptedBackup() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getEncryptedBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
+            .build();
+    when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
   }
 
   @Test

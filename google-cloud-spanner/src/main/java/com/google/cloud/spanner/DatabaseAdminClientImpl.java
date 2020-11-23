@@ -120,29 +120,20 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
       String instanceId, String backupId, String databaseId, Timestamp expireTime)
       throws SpannerException {
-    final Backup backup =
+    final Backup backupInfo =
         newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
             .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
             .setExpireTime(expireTime)
             .build();
-    return createBackup(backup);
+
+    return createBackup(backupInfo);
   }
 
   @Override
-  public OperationFuture<Backup, CreateBackupMetadata> createBackup(final Backup backup) {
-    final String instanceId = backup.getInstanceId().getInstance();
-    final String databaseId = backup.getDatabase().getDatabase();
-    final String backupId = backup.getId().getBackup();
-    final com.google.spanner.admin.database.v1.Backup.Builder backupBuilder =
-        com.google.spanner.admin.database.v1.Backup.newBuilder()
-            .setDatabase(getDatabaseName(instanceId, databaseId))
-            .setExpireTime(backup.getExpireTime().toProto());
-    if (backup.getVersionTime() != null) {
-      backupBuilder.setVersionTime(backup.getVersionTime().toProto());
-    }
-    final String instanceName = getInstanceName(instanceId);
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backupInfo)
+      throws SpannerException {
     final OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
-        rawOperationFuture = rpc.createBackup(instanceName, backupId, backupBuilder.build());
+        rawOperationFuture = rpc.createBackup(backupInfo);
 
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
@@ -160,6 +151,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
                     .setExpireTime(proto.getExpireTime())
                     .setVersionTime(proto.getVersionTime())
                     .setState(proto.getState())
+                    .setEncryptionInfo(proto.getEncryptionInfo())
                     .build(),
                 DatabaseAdminClientImpl.this);
           }
