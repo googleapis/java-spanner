@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "34221d7a889c131fb1f797a0f9434deee60d755b"
+        "sha": "0f9b7bdc81a4eeecf772022bcec585bd1630895b"
       }
     },
     {
@@ -19,7 +19,7 @@
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "7db8a6c5ffb12a6e4c2f799c18f00f7f3d60e279"
+        "sha": "7fcc405a579d5d53a726ff3da1b7c8c08f0f2d58"
       }
     }
   ],
@@ -53,7 +53,6 @@
     }
   ],
   "generatedFiles": [
-    ".github/CODEOWNERS",
     ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/ISSUE_TEMPLATE/support_request.md",
@@ -83,7 +82,6 @@
     ".kokoro/nightly/java8-osx.cfg",
     ".kokoro/nightly/java8-win.cfg",
     ".kokoro/nightly/java8.cfg",
-    ".kokoro/nightly/samples.cfg",
     ".kokoro/populate-secrets.sh",
     ".kokoro/presubmit/clirr.cfg",
     ".kokoro/presubmit/dependencies.cfg",
@@ -95,7 +93,6 @@
     ".kokoro/presubmit/java8.cfg",
     ".kokoro/presubmit/linkage-monitor.cfg",
     ".kokoro/presubmit/lint.cfg",
-    ".kokoro/presubmit/samples.cfg",
     ".kokoro/readme.sh",
     ".kokoro/release/bump_snapshot.cfg",
     ".kokoro/release/common.cfg",
@@ -339,9 +336,6 @@
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/transaction.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/type.proto",
     "renovate.json",
-    "samples/install-without-bom/pom.xml",
-    "samples/pom.xml",
-    "samples/snapshot/pom.xml",
-    "samples/snippets/pom.xml"
+    "samples/pom.xml"
   ]
 }
