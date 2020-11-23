@@ -35,9 +35,7 @@ import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.common.collect.ImmutableList;
 import com.google.longrunning.Operation;
-import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
@@ -78,8 +76,6 @@ public class DatabaseAdminClientTest {
   private static final String TEST_BCK_NAME = String.format("%s/backups/test-bck", TEST_PARENT);
   private static final List<String> INITIAL_STATEMENTS =
       Arrays.asList("CREATE TABLE FOO", "CREATE TABLE BAR");
-  private static final String KMS_KEY_NAME =
-      "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
 
   private static MockOperationsServiceImpl mockOperations;
   private static MockDatabaseAdminServiceImpl mockDatabaseAdmin;
@@ -958,38 +954,5 @@ public class DatabaseAdminClientTest {
     Database retrieved = client.getDatabase(INSTANCE_ID, databaseId);
     assertThat(retrieved.getCreateTime()).isEqualTo(database.getCreateTime());
     assertThat(mockDatabaseAdmin.countRequestsOfType(RestoreDatabaseRequest.class)).isAtLeast(3);
-  }
-
-  @Test
-  public void testCreateEncryptedDatabase() throws InterruptedException, ExecutionException {
-    Database database =
-        client
-            .newDatabaseBuilder(DatabaseId.of(PROJECT_ID, INSTANCE_ID, "encrypted-db"))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
-            .build();
-    client.createDatabase(database, ImmutableList.<String>of()).get();
-    List<AbstractMessage> messages = mockDatabaseAdmin.getRequests();
-    AbstractMessage msg = messages.get(messages.size() - 1);
-    assertThat(msg).isInstanceOf(CreateDatabaseRequest.class);
-    CreateDatabaseRequest request = (CreateDatabaseRequest) msg;
-    assertThat(request.getEncryptionConfig().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
-  }
-
-  @Test
-  public void testCreateEncryptedBackup() {
-    final String backupId = "encrypted-backup-id";
-    final Backup backupInfo =
-        client
-            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
-            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
-            .setExpireTime(after7Days())
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
-            .build();
-    client.createBackup(backupInfo);
-    final List<AbstractMessage> messages = mockDatabaseAdmin.getRequests();
-    final AbstractMessage message = messages.get(messages.size() - 1);
-    assertThat(message).isInstanceOf(CreateBackupRequest.class);
-    final CreateBackupRequest request = (CreateBackupRequest) message;
-    assertThat(request.getEncryptionConfig().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
   }
 }
