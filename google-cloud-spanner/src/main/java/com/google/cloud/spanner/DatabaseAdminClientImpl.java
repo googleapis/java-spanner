@@ -84,15 +84,26 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public Restore.Builder newRestoreBuilder(BackupId source, DatabaseId destination) {
+    return new Restore.Builder(source, destination);
+  }
+
+  @Override
   public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
       throws SpannerException {
-    String databaseInstanceName = getInstanceName(restoreInstanceId);
-    String backupName = getBackupName(backupInstanceId, backupId);
+    return restoreDatabase(
+        newRestoreBuilder(
+                BackupId.of(projectId, backupInstanceId, backupId),
+                DatabaseId.of(projectId, restoreInstanceId, restoreDatabaseId))
+            .build());
+  }
 
-    OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
-        rawOperationFuture =
-            rpc.restoreDatabase(databaseInstanceName, restoreDatabaseId, backupName);
+  @Override
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore)
+      throws SpannerException {
+    final OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
+        rawOperationFuture = rpc.restoreDatabase(restore);
 
     return new OperationFutureImpl<Database, RestoreDatabaseMetadata>(
         rawOperationFuture.getPollingFuture(),

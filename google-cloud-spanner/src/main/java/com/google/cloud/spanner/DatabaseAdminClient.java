@@ -113,6 +113,9 @@ public interface DatabaseAdminClient {
   /** Returns a builder for a {@code Backup} object with the given id. */
   Backup.Builder newBackupBuilder(BackupId id);
 
+  /** Returns a builder for a {@link Restore} object with the given source and destination */
+  Restore.Builder newRestoreBuilder(BackupId source, DatabaseId destination);
+
   /**
    * Creates a new backup from a database in a Cloud Spanner instance.
    *
@@ -186,7 +189,7 @@ public interface DatabaseAdminClient {
    * String backupId           = my_backup_id;
    * String restoreInstanceId  = my_db_instance_id;
    * String restoreDatabaseId  = my_database_id;
-   * OperationFuture<Backup, RestoreDatabaseMetadata> op = dbAdminClient
+   * OperationFuture<Database, RestoreDatabaseMetadata> op = dbAdminClient
    *     .restoreDatabase(
    *         backupInstanceId,
    *         backupId,
@@ -201,8 +204,35 @@ public interface DatabaseAdminClient {
    *     be a different instance than where the backup is stored.
    * @param restoreDatabaseId the id of the database to restore to.
    */
-  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
+      throws SpannerException;
+
+  /**
+   * Restore a database from a backup. The database that is restored will be created and may not
+   * already exist.
+   *
+   * <p>Example to restore an encrypted database.
+   *
+   * <pre>{@code
+   * final Restore restore = dbAdminClient
+   *     .newRestoreBuilder(
+   *         BackupId.of("my-project", "my-instance", "my-backup"),
+   *         DatabaseId.of("my-project", "my-instance", "my-database")
+   *     )
+   *     .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(
+   *         "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+   *     .build();
+   *
+   * final OperationFuture<Database, RestoreDatabaseMetadata> op = dbAdminClient
+   *     .restoreDatabase(restore);
+   *
+   * Database database = op.get();
+   * }</pre>
+   *
+   * @param restore a {@link Restore} instance with the backup source and destination database
+   */
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore)
       throws SpannerException;
 
   /** Lists long-running database operations on the specified instance. */

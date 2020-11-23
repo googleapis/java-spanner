@@ -483,10 +483,35 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             "restoreDatabase", getDatabaseProto(), RestoreDatabaseMetadata.getDefaultInstance());
-    when(rpc.restoreDatabase(INSTANCE_NAME, DB_ID, BK_NAME)).thenReturn(rawOperationFuture);
+    final Restore restore =
+        new Restore.Builder(
+                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+    when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabase(INSTANCE_ID, BK_ID, INSTANCE_ID, DB_ID);
+        client.restoreDatabase(restore);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+  }
+
+  @Test
+  public void restoreEncryptedDatabase() throws Exception {
+    OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "restoreEncryptedDatabase",
+            getEncryptedDatabaseProto(),
+            RestoreDatabaseMetadata.getDefaultInstance());
+    final Restore restore =
+        new Restore.Builder(
+                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+    when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
+        client.restoreDatabase(restore);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+    assertThat(op.get().getEncryptionConfigInfo().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
   }
 }

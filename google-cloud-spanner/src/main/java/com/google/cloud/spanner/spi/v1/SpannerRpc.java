@@ -22,6 +22,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ServiceRpc;
+import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
@@ -232,12 +233,9 @@ public interface SpannerRpc extends ServiceRpc {
   /**
    * Restore a backup into the given database.
    *
-   * @param instanceName Fully qualified name of instance where to restore the database
-   * @param databaseId DatabaseId to restore into
-   * @param backupName Fully qualified name of backup to restore from
+   * @param restore a {@link Restore} instance with the backup source and destination database
    */
-  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
-      String instanceName, String databaseId, String backupName);
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore);
 
   /** Gets the backup with the specified name. */
   Backup getBackup(String backupName) throws SpannerException;
