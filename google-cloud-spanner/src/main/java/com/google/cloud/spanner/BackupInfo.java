@@ -32,13 +32,6 @@ public class BackupInfo {
     abstract Builder setSize(long size);
 
     /**
-     * Optional for creating a new backup.
-     *
-     * <p>Sets the customer-managed encryption key to be used for the given backup.
-     */
-    abstract Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo);
-
-    /**
      * Output only.
      *
      * <p>The customer-manager encryption key version used to encrypt the backup.
@@ -46,6 +39,13 @@ public class BackupInfo {
     abstract Builder setEncryptionInfo(EncryptionInfo encryptionInfo);
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Backup proto);
+
+    /**
+     * Optional for creating a new backup.
+     *
+     * <p>Sets the customer-managed encryption key to be used for the given backup.
+     */
+    public abstract Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo);
 
     /**
      * Required for creating a new backup.
@@ -134,14 +134,14 @@ public class BackupInfo {
     }
 
     @Override
-    Builder setSize(long size) {
-      this.size = size;
+    public Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo) {
+      this.encryptionConfigInfo = encryptionConfigInfo;
       return this;
     }
 
     @Override
-    Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo) {
-      this.encryptionConfigInfo = encryptionConfigInfo;
+    Builder setSize(long size) {
+      this.size = size;
       return this;
     }
 
