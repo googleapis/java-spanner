@@ -39,6 +39,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -123,6 +124,20 @@ public class InlineBeginTransactionTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  private static final Statement SELECT1_UNION_ALL_SELECT2 =
+      Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
+  private static final com.google.spanner.v1.ResultSet SELECT1_UNION_ALL_SELECT2_RESULTSET =
+      com.google.spanner.v1.ResultSet.newBuilder()
+          .addRows(
+              ListValue.newBuilder()
+                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
+                  .build())
+          .addRows(
+              ListValue.newBuilder()
+                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2").build())
+                  .build())
+          .setMetadata(SELECT1_METADATA)
+          .build();
   private static final Statement INVALID_SELECT = Statement.of("SELECT * FROM NON_EXISTING_TABLE");
   private static final Statement READ_STATEMENT = Statement.of("SELECT ID FROM FOO WHERE 1=1");
 
@@ -134,6 +149,8 @@ public class InlineBeginTransactionTest {
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT1_UNION_ALL_SELECT2, SELECT1_UNION_ALL_SELECT2_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.query(READ_STATEMENT, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
@@ -1255,6 +1272,45 @@ public class InlineBeginTransactionTest {
     assertThat(((ExecuteSqlRequest) requests.get(0)).getSql()).isEqualTo(UPDATE_STATEMENT.getSql());
     assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
     assertThat(((ExecuteSqlRequest) requests.get(1)).getSql()).isEqualTo(SELECT1.getSql());
+  }
+
+  @Test
+  public void testInlinedBeginTxWithStreamRetry() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(Status.UNAVAILABLE.asRuntimeException(), 1));
+
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    client
+        .readWriteTransaction()
+        .run(
+            new TransactionCallable<Void>() {
+              @Override
+              public Void run(TransactionContext transaction) throws Exception {
+                try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
+                  while (rs.next()) {}
+                }
+                return null;
+              }
+            });
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+    assertThat(countTransactionsStarted()).isEqualTo(1);
+
+    List<AbstractMessage> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
+    ExecuteSqlRequest request1 = (ExecuteSqlRequest) requests.get(0);
+    assertThat(request1.getSql()).isEqualTo(SELECT1_UNION_ALL_SELECT2.getSql());
+    assertThat(request1.getTransaction().getBegin().hasReadWrite()).isTrue();
+    assertThat(request1.getTransaction().getId()).isEqualTo(ByteString.EMPTY);
+    assertThat(request1.getResumeToken()).isEqualTo(ByteString.EMPTY);
+
+    assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
+    ExecuteSqlRequest request2 = (ExecuteSqlRequest) requests.get(1);
+    assertThat(request2.getSql()).isEqualTo(SELECT1_UNION_ALL_SELECT2.getSql());
+    assertThat(request2.getTransaction().hasBegin()).isFalse();
+    assertThat(request2.getTransaction().getId()).isNotEqualTo(ByteString.EMPTY);
+    assertThat(request2.getResumeToken()).isNotEqualTo(ByteString.EMPTY);
   }
 
   private int countRequests(Class<? extends AbstractMessage> requestType) {
