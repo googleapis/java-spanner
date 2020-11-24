@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * Internal connection API for Google Cloud Spanner. This class may introduce breaking changes
@@ -152,6 +153,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final boolean DEFAULT_LENIENT = false;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -176,6 +178,8 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Name of the 'lenientMode' connection property. */
+  public static final String LENIENT_PROPERTY_NAME = "lenient";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -212,7 +216,11 @@ public class ConnectionOptions {
                       "The custom user-agent property name to use when communicating with Cloud Spanner. This property is intended for internal library usage, and should not be set by applications."),
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_VERSION_PROPERTY_NAME,
-                      "Sets the default query optimizer version to use for this connection."))));
+                      "Sets the default query optimizer version to use for this connection."),
+                  ConnectionProperty.createBooleanProperty(
+                      LENIENT_PROPERTY_NAME,
+                      "Silently ignore unknown properties in the connection string/properties (true/false)",
+                      DEFAULT_LENIENT))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -416,6 +424,7 @@ public class ConnectionOptions {
   }
 
   private final String uri;
+  private final String warnings;
   private final String credentialsUrl;
   private final String oauthToken;
   private final Credentials fixedCredentials;
@@ -441,7 +450,7 @@ public class ConnectionOptions {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     Preconditions.checkArgument(
         matcher.find(), String.format("Invalid connection URI specified: %s", builder.uri));
-    checkValidProperties(builder.uri);
+    this.warnings = checkValidProperties(builder.uri);
 
     this.uri = builder.uri;
     this.sessionPoolOptions = builder.sessionPoolOptions;
@@ -575,6 +584,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseLenient(String uri) {
+    String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_LENIENT;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -586,9 +601,10 @@ public class ConnectionOptions {
 
   /** Check that only valid properties have been specified. */
   @VisibleForTesting
-  static void checkValidProperties(String uri) {
+  static String checkValidProperties(String uri) {
     String invalidProperties = "";
     List<String> properties = parseProperties(uri);
+    boolean lenient = parseLenient(uri);
     for (String property : properties) {
       if (!INTERNAL_VALID_PROPERTIES.contains(ConnectionProperty.createEmptyProperty(property))) {
         if (invalidProperties.length() > 0) {
@@ -597,9 +613,17 @@ public class ConnectionOptions {
         invalidProperties = invalidProperties + property;
       }
     }
-    Preconditions.checkArgument(
-        invalidProperties.isEmpty(),
-        "Invalid properties found in connection URI: " + invalidProperties.toString());
+    if (lenient) {
+      return String.format(
+          "Invalid properties found in connection URI: %s", invalidProperties.toString());
+    } else {
+      Preconditions.checkArgument(
+          invalidProperties.isEmpty(),
+          String.format(
+              "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
+              invalidProperties.toString()));
+      return null;
+    }
   }
 
   @VisibleForTesting
@@ -704,6 +728,12 @@ public class ConnectionOptions {
    */
   public boolean isRetryAbortsInternally() {
     return retryAbortsInternally;
+  }
+
+  /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */
+  @Nullable
+  public String getWarnings() {
+    return warnings;
   }
 
   /** Use http instead of https. Only valid for (local) test servers. */

@@ -386,4 +386,36 @@ public class ConnectionOptionsTest {
       assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
     }
   }
+
+  @Test
+  public void testLenient() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?lenient=true;foo=bar")
+            .build();
+    assertThat(options.getWarnings()).isNotNull();
+    assertThat(options.getWarnings()).contains("foo");
+    assertThat(options.getWarnings()).doesNotContain("lenient");
+
+    options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo;lenient=true")
+            .build();
+    assertThat(options.getWarnings()).isNotNull();
+    assertThat(options.getWarnings()).contains("bar");
+    assertThat(options.getWarnings()).doesNotContain("lenient");
+
+    try {
+      options =
+          ConnectionOptions.newBuilder()
+              .setUri(
+                  "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+              .build();
+      fail("missing expected exception");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).contains("bar");
+    }
+  }
 }
