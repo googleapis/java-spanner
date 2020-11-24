@@ -566,4 +566,9 @@
     <className>com/google/cloud/spanner/DatabaseInfo$Builder</className>
     <method>com.google.cloud.spanner.DatabaseInfo$Builder setEncryptionConfigInfo(com.google.cloud.spanner.EncryptionConfigInfo)</method>
   </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/BackupInfo$Builder</className>
+    <method>com.google.cloud.spanner.BackupInfo$Builder setEncryptionConfigInfo(com.google.cloud.spanner.EncryptionConfigInfo)</method>
+  </difference>
 </differences>
