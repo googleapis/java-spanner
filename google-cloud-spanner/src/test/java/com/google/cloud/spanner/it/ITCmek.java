@@ -22,6 +22,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.kms.v1.CryptoKey;
 import com.google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose;
+import com.google.cloud.kms.v1.CryptoKeyVersion;
 import com.google.cloud.kms.v1.KeyManagementServiceClient;
 import com.google.cloud.kms.v1.KeyRing;
 import com.google.cloud.kms.v1.KeyRingName;
@@ -63,12 +64,14 @@ import org.junit.runners.JUnit4;
 public class ITCmek {
 
   private static final String BACKUP_ID_PREFIX = "spanner-test-backup";
+  // FIXME: This should not be hardcoded
   private static final String KMS_KEY_LOCATION = "eur5";
   private static final String KMS_KEY_RING_ID = "spanner-test-keyring";
   private static final String KMS_KEY_ID_PREFIX = "spanner-test-key";
   private static final List<CryptoKey> keys = new ArrayList<>();
   private static final List<DatabaseId> dbs = new ArrayList<>();
   private static final List<BackupId> backups = new ArrayList<>();
+  // FIXME: This should not be hardcoded
   public static final String SPANNER_PRODUCTION_ACCOUNT = "serviceAccount:service-353504090643@gcp-sa-spanner.iam.gserviceaccount.com";
   public static final String KMS_KEY_ENCRYPTER_DECRYPTER = "roles/cloudkms.cryptoKeyEncrypterDecrypter";
 
@@ -90,12 +93,12 @@ public class ITCmek {
 
   @AfterClass
   public static void afterClass() {
-    // for (CryptoKey key : keys) {
-    //   for (CryptoKeyVersion keyVersion : kmsClient.listCryptoKeyVersions(key.getName())
-    //       .iterateAll()) {
-    //     kmsClient.destroyCryptoKeyVersion(keyVersion.getName());
-    //   }
-    // }
+    for (CryptoKey key : keys) {
+      for (CryptoKeyVersion keyVersion : kmsClient.listCryptoKeyVersions(key.getName())
+          .iterateAll()) {
+        kmsClient.destroyCryptoKeyVersion(keyVersion.getName());
+      }
+    }
     for (DatabaseId db : dbs) {
       dbAdminClient
           .dropDatabase(db.getInstanceId().getInstance(), db.getDatabase());
