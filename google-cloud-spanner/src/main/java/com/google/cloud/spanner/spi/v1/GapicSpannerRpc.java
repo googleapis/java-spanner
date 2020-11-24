@@ -496,9 +496,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   @VisibleForTesting
   static final class AdminRequestsLimitExceededRetryAlgorithm<T>
       implements ResultRetryAlgorithm<T> {
-    static final String ERROR_MSG =
-        "Quota exceeded for quota metric 'Administrative requests' and limit 'Administrative requests per minute'";
-
     @Override
     public TimedAttemptSettings createNextAttempt(
         Throwable prevThrowable, T prevResponse, TimedAttemptSettings prevSettings) {
