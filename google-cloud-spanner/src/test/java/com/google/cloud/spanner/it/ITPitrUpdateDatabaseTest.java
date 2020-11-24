@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -33,6 +34,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,7 @@ public class ITPitrUpdateDatabaseTest {
   private static DatabaseClient dbClient;
   private static String instanceId;
   private static String databaseId;
+  private static UpdateDatabaseDdlMetadata metadata;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -69,7 +72,9 @@ public class ITPitrUpdateDatabaseTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
 
     createDatabase(dbAdminClient, instanceId, databaseId, Collections.<String>emptyList());
-    updateVersionRetentionPeriod(dbAdminClient, instanceId, databaseId, VERSION_RETENTION_PERIOD);
+    metadata =
+        updateVersionRetentionPeriod(
+            dbAdminClient, instanceId, databaseId, VERSION_RETENTION_PERIOD);
 
     dbClient =
         testHelper.getClient().getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
@@ -80,6 +85,11 @@ public class ITPitrUpdateDatabaseTest {
     if (!isUsingEmulator()) {
       dbAdminClient.dropDatabase(instanceId, databaseId);
     }
+  }
+
+  @Test
+  public void checksThatTheOperationWasNotThrottled() {
+    assertThat(metadata.getThrottled()).isFalse();
   }
 
   @Test
@@ -174,14 +184,14 @@ public class ITPitrUpdateDatabaseTest {
         .get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  private static void updateVersionRetentionPeriod(
+  private static UpdateDatabaseDdlMetadata updateVersionRetentionPeriod(
       final DatabaseAdminClient dbAdminClient,
       final String instanceId,
       final String databaseId,
       final String versionRetentionPeriod)
       throws Exception {
-    dbAdminClient
-        .updateDatabaseDdl(
+    final OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
+        dbAdminClient.updateDatabaseDdl(
             instanceId,
             databaseId,
             Collections.singletonList(
@@ -190,7 +200,8 @@ public class ITPitrUpdateDatabaseTest {
                     + " SET OPTIONS ( version_retention_period = '"
                     + versionRetentionPeriod
                     + "' )"),
-            "updateddl_version_retention_period")
-        .get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
+            "updateddl_version_retention_period");
+    op.get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
+    return op.getMetadata().get(OPERATION_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS);
   }
 }
