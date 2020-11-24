@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -72,11 +73,12 @@ public class ITCmek {
   private static final List<DatabaseId> dbs = new ArrayList<>();
   private static final List<BackupId> backups = new ArrayList<>();
   // FIXME: This should not be hardcoded
-  public static final String SPANNER_PRODUCTION_ACCOUNT = "serviceAccount:service-353504090643@gcp-sa-spanner.iam.gserviceaccount.com";
-  public static final String KMS_KEY_ENCRYPTER_DECRYPTER = "roles/cloudkms.cryptoKeyEncrypterDecrypter";
+  public static final String SPANNER_PRODUCTION_ACCOUNT =
+      "serviceAccount:service-353504090643@gcp-sa-spanner.iam.gserviceaccount.com";
+  public static final String KMS_KEY_ENCRYPTER_DECRYPTER =
+      "roles/cloudkms.cryptoKeyEncrypterDecrypter";
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static KeyManagementServiceClient kmsClient;
   private static DatabaseAdminClient dbAdminClient;
 
@@ -94,14 +96,13 @@ public class ITCmek {
   @AfterClass
   public static void afterClass() {
     for (CryptoKey key : keys) {
-      for (CryptoKeyVersion keyVersion : kmsClient.listCryptoKeyVersions(key.getName())
-          .iterateAll()) {
+      for (CryptoKeyVersion keyVersion :
+          kmsClient.listCryptoKeyVersions(key.getName()).iterateAll()) {
         kmsClient.destroyCryptoKeyVersion(keyVersion.getName());
       }
     }
     for (DatabaseId db : dbs) {
-      dbAdminClient
-          .dropDatabase(db.getInstanceId().getInstance(), db.getDatabase());
+      dbAdminClient.dropDatabase(db.getInstanceId().getInstance(), db.getDatabase());
     }
     for (BackupId backup : backups) {
       dbAdminClient.deleteBackup(backup.getInstanceId().getInstance(), backup.getBackup());
@@ -109,34 +110,36 @@ public class ITCmek {
     kmsClient.close();
   }
 
+  @Ignore("Backup and restore is not yet enabled for CMEK")
   @Test
-  public void createsEncryptedDatabaseBackupAndRestore() throws ExecutionException, InterruptedException {
+  public void createsEncryptedDatabaseBackupAndRestore()
+      throws ExecutionException, InterruptedException {
     final InstanceId instanceId = testHelper.getInstanceId();
     final String sourceDatabaseId = testHelper.getUniqueDatabaseId();
     final String destinationDatabaseId = testHelper.getUniqueDatabaseId();
     final String backupId = randomBackupId();
 
     final CryptoKey key = createKey(randomKeyId());
-    final Database sourceDatabase = dbAdminClient
-        .newDatabaseBuilder(DatabaseId.of(instanceId, sourceDatabaseId))
-        .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
-        .build();
-    final Backup backup = dbAdminClient
-        .newBackupBuilder(BackupId.of(
-            testHelper.getInstanceId(),
-            backupId
-        ))
-        .setDatabase(DatabaseId.of(instanceId, sourceDatabaseId))
-        .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
-        .setExpireTime(com.google.cloud.Timestamp.ofTimeSecondsAndNanos(after7DaysInSeconds(), 0))
-        .build();
-    final Restore restore = dbAdminClient
-        .newRestoreBuilder(
-            BackupId.of(testHelper.getInstanceId(), backupId),
-            DatabaseId.of(testHelper.getInstanceId(), destinationDatabaseId)
-        )
-        .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
-        .build();
+    final Database sourceDatabase =
+        dbAdminClient
+            .newDatabaseBuilder(DatabaseId.of(instanceId, sourceDatabaseId))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .build();
+    final Backup backup =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(testHelper.getInstanceId(), backupId))
+            .setDatabase(DatabaseId.of(instanceId, sourceDatabaseId))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .setExpireTime(
+                com.google.cloud.Timestamp.ofTimeSecondsAndNanos(after7DaysInSeconds(), 0))
+            .build();
+    final Restore restore =
+        dbAdminClient
+            .newRestoreBuilder(
+                BackupId.of(testHelper.getInstanceId(), backupId),
+                DatabaseId.of(testHelper.getInstanceId(), destinationDatabaseId))
+            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .build();
 
     final Database createdDatabase = createDatabase(sourceDatabase);
     final Backup createdBackup = createBackup(backup);
@@ -158,28 +161,25 @@ public class ITCmek {
   }
 
   private CryptoKey createKey(final String keyId) {
-    final LocationName locationName = LocationName.of(
-        testHelper.getOptions().getProjectId(),
-        KMS_KEY_LOCATION
-    );
+    final LocationName locationName =
+        LocationName.of(testHelper.getOptions().getProjectId(), KMS_KEY_LOCATION);
     final KeyRing keyRing = createOrRetrieveKeyRing(locationName);
-    final Timestamp.Builder rotationTime = Timestamp
-        .newBuilder()
-        .setSeconds(after7DaysInSeconds());
+    final Timestamp.Builder rotationTime = Timestamp.newBuilder().setSeconds(after7DaysInSeconds());
 
-    final CryptoKey cryptoKeyInput = CryptoKey.newBuilder()
-        .setPurpose(CryptoKeyPurpose.ENCRYPT_DECRYPT)
-        .setNextRotationTime(rotationTime)
-        .build();
-    final CryptoKey cryptoKey = kmsClient
-        .createCryptoKey(KeyRingName.parse(keyRing.getName()), keyId, cryptoKeyInput);
+    final CryptoKey cryptoKeyInput =
+        CryptoKey.newBuilder()
+            .setPurpose(CryptoKeyPurpose.ENCRYPT_DECRYPT)
+            .setNextRotationTime(rotationTime)
+            .build();
+    final CryptoKey cryptoKey =
+        kmsClient.createCryptoKey(KeyRingName.parse(keyRing.getName()), keyId, cryptoKeyInput);
 
     final Policy policy = kmsClient.getIamPolicy(cryptoKey.getName());
-    final Binding binding = Binding
-        .newBuilder()
-        .addMembers(SPANNER_PRODUCTION_ACCOUNT)
-        .setRole(KMS_KEY_ENCRYPTER_DECRYPTER)
-        .build();
+    final Binding binding =
+        Binding.newBuilder()
+            .addMembers(SPANNER_PRODUCTION_ACCOUNT)
+            .setRole(KMS_KEY_ENCRYPTER_DECRYPTER)
+            .build();
     final Policy newPolicy = policy.toBuilder().addBindings(binding).build();
     kmsClient.setIamPolicy(cryptoKey.getName(), newPolicy);
 
@@ -190,15 +190,13 @@ public class ITCmek {
   private long after7DaysInSeconds() {
     return TimeUnit.SECONDS.convert(
         System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(7L, TimeUnit.DAYS),
-        TimeUnit.MILLISECONDS
-    );
+        TimeUnit.MILLISECONDS);
   }
 
   private KeyRing createOrRetrieveKeyRing(final LocationName locationName) {
     try {
       return kmsClient.getKeyRing(
-          KeyRingName.of(locationName.getProject(), locationName.getLocation(), KMS_KEY_RING_ID)
-      );
+          KeyRingName.of(locationName.getProject(), locationName.getLocation(), KMS_KEY_RING_ID));
     } catch (NotFoundException e) {
       return kmsClient.createKeyRing(locationName, KMS_KEY_RING_ID, KeyRing.getDefaultInstance());
     }
@@ -206,8 +204,8 @@ public class ITCmek {
 
   private Database createDatabase(final Database database)
       throws ExecutionException, InterruptedException {
-    final OperationFuture<Database, CreateDatabaseMetadata> op = dbAdminClient
-        .createDatabase(database, Collections.<String>emptyList());
+    final OperationFuture<Database, CreateDatabaseMetadata> op =
+        dbAdminClient.createDatabase(database, Collections.<String>emptyList());
     final Database createdDatabase = op.get();
     dbs.add(createdDatabase.getId());
 
@@ -215,8 +213,7 @@ public class ITCmek {
   }
 
   private Backup createBackup(final Backup backup) throws ExecutionException, InterruptedException {
-    final OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient
-        .createBackup(backup);
+    final OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackup(backup);
     final Backup createdBackup = op.get();
     dbs.add(createdBackup.getDatabase());
     backups.add(backup.getId());
@@ -226,8 +223,8 @@ public class ITCmek {
 
   private Database restoreDatabase(final Restore restore)
       throws ExecutionException, InterruptedException {
-    final OperationFuture<Database, RestoreDatabaseMetadata> op = dbAdminClient
-        .restoreDatabase(restore);
+    final OperationFuture<Database, RestoreDatabaseMetadata> op =
+        dbAdminClient.restoreDatabase(restore);
     final Database database = op.get();
     dbs.add(database.getId());
 
