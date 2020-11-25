@@ -393,6 +393,7 @@ public class ConnectionOptionsTest {
         ConnectionOptions.newBuilder()
             .setUri(
                 "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?lenient=true;foo=bar")
+            .setCredentialsUrl(FILE_TEST_PATH)
             .build();
     assertThat(options.getWarnings()).isNotNull();
     assertThat(options.getWarnings()).contains("foo");
@@ -402,6 +403,7 @@ public class ConnectionOptionsTest {
         ConnectionOptions.newBuilder()
             .setUri(
                 "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo;lenient=true")
+            .setCredentialsUrl(FILE_TEST_PATH)
             .build();
     assertThat(options.getWarnings()).isNotNull();
     assertThat(options.getWarnings()).contains("bar");
@@ -412,6 +414,7 @@ public class ConnectionOptionsTest {
           ConnectionOptions.newBuilder()
               .setUri(
                   "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+              .setCredentialsUrl(FILE_TEST_PATH)
               .build();
       fail("missing expected exception");
     } catch (IllegalArgumentException e) {
