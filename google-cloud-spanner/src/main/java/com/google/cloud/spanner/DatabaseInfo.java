@@ -155,12 +155,19 @@ public class DatabaseInfo {
     return createTime;
   }
 
-  /** Returns the version retention period of the database. */
+  /**
+   * Returns the version retention period of the database. This is the period for which Cloud
+   * Spanner retains all versions of data for the database. For instance, if set to 3 days, Cloud
+   * Spanner will retain data versions that are up to 3 days old.
+   */
   public String getVersionRetentionPeriod() {
     return versionRetentionPeriod;
   }
 
-  /** Returns the earliest version time of the database. */
+  /**
+   * Returns the earliest version time of the database. This is the oldest timestamp that can be
+   * used to read old versions of the data.
+   */
   public Timestamp getEarliestVersionTime() {
     return earliestVersionTime;
   }
