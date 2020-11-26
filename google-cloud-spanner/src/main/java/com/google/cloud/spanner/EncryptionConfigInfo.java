@@ -41,7 +41,7 @@ public class EncryptionConfigInfo {
 
   /**
    * Returns a {@link EncryptionConfigInfo} instance from the given proto, or <code>null</code> if
-   * the given proto is the default proto instance (i.e. there is no encryption info).
+   * the given proto is the default proto instance (i.e. there is no encryption config info).
    */
   static EncryptionConfigInfo fromProtoOrNullIfDefaultInstance(
       com.google.spanner.admin.database.v1.EncryptionConfig proto) {

@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import com.google.api.client.util.Preconditions;
 import com.google.cloud.Timestamp;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -219,7 +218,7 @@ public class BackupInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfig} of the backup if the backup is encrypted, or <code>null
+   * Returns the {@link EncryptionInfo} of the backup if the backup is encrypted, or <code>null
    * </code> if this backup is not encrypted.
    *
    * @return
