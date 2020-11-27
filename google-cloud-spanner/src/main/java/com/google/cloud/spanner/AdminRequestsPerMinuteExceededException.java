@@ -25,6 +25,9 @@ import javax.annotation.Nullable;
 public class AdminRequestsPerMinuteExceededException extends SpannerException {
   private static final long serialVersionUID = -6395746612598975751L;
 
+  static final String ADMIN_REQUESTS_LIMIT_KEY = "quota_limit";
+  static final String ADMIN_REQUESTS_LIMIT_VALUE = "AdminMethodQuotaPerMinutePerProject";
+
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   AdminRequestsPerMinuteExceededException(
       DoNotConstructDirectly token, @Nullable String message, @Nullable Throwable cause) {

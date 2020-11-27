@@ -236,9 +236,11 @@ public final class SpannerExceptionFactory {
       case RESOURCE_EXHAUSTED:
         ErrorInfo info = extractErrorInfo(cause);
         if (info != null
-            && info.getMetadataMap().containsKey("quota_limit")
-            && "AdminMethodQuotaPerMinutePerProject"
-                .equals(info.getMetadataMap().get("quota_limit"))) {
+            && info.getMetadataMap()
+                .containsKey(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY)
+            && AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_VALUE.equals(
+                info.getMetadataMap()
+                    .get(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY))) {
           return new AdminRequestsPerMinuteExceededException(token, message, cause);
         }
       case NOT_FOUND:
