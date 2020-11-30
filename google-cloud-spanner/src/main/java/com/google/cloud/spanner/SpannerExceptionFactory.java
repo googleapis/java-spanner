@@ -22,6 +22,7 @@ import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
+import com.google.rpc.ErrorInfo;
 import com.google.rpc.ResourceInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -46,6 +47,8 @@ public final class SpannerExceptionFactory {
       "type.googleapis.com/google.spanner.admin.instance.v1.Instance";
   private static final Metadata.Key<ResourceInfo> KEY_RESOURCE_INFO =
       ProtoUtils.keyForProto(ResourceInfo.getDefaultInstance());
+  private static final Metadata.Key<ErrorInfo> KEY_ERROR_INFO =
+      ProtoUtils.keyForProto(ErrorInfo.getDefaultInstance());
 
   public static SpannerException newSpannerException(ErrorCode code, @Nullable String message) {
     return newSpannerException(code, message, null);
@@ -213,6 +216,16 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
+  private static ErrorInfo extractErrorInfo(Throwable cause) {
+    if (cause != null) {
+      Metadata trailers = Status.trailersFromThrowable(cause);
+      if (trailers != null) {
+        return trailers.get(KEY_ERROR_INFO);
+      }
+    }
+    return null;
+  }
+
   static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
     // This is the one place in the codebase that is allowed to call constructors directly.
@@ -220,6 +233,16 @@ public final class SpannerExceptionFactory {
     switch (code) {
       case ABORTED:
         return new AbortedException(token, message, cause);
+      case RESOURCE_EXHAUSTED:
+        ErrorInfo info = extractErrorInfo(cause);
+        if (info != null
+            && info.getMetadataMap()
+                .containsKey(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY)
+            && AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_VALUE.equals(
+                info.getMetadataMap()
+                    .get(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY))) {
+          return new AdminRequestsPerMinuteExceededException(token, message, cause);
+        }
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
         if (resourceInfo != null) {
