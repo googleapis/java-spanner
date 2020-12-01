@@ -37,6 +37,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.common.Scope;
@@ -160,9 +161,10 @@ class SessionImpl implements Session {
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
+    Options opts = Options.fromTransactionOptions(transactionOptions);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
-    final CommitRequest request =
+    final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
             .setSession(name)
             .setReturnCommitStats(
@@ -170,13 +172,19 @@ class SessionImpl implements Session {
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
-                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
-            .build();
+                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+    if (opts.hasPriority()) {
+      requestBuilder.setRequestOptions(
+          RequestOptions.newBuilder().setPriority(opts.priority()).build());
+    }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       com.google.spanner.v1.CommitResponse response =
-          spanner.getRpc().commit(request, this.options);
+          spanner.getRpc().commit(requestBuilder.build(), this.options);
       return new CommitResponse(response);
+    } catch (IllegalArgumentException e) {
+      TraceUtil.setWithFailure(span, e);
+      throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit timestamp", e);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;

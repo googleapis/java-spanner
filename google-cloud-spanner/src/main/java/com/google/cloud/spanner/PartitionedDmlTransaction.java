@@ -32,6 +32,7 @@ import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
@@ -178,6 +179,11 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     setParameters(builder, statement.getParameters());
 
     builder.setResumeToken(ByteString.EMPTY);
+
+    if (options.hasPriority()) {
+      builder.setRequestOptions(
+          RequestOptions.newBuilder().setPriority(options.priority()).build());
+    }
 
     return builder.build();
   }

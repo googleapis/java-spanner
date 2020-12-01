@@ -1941,11 +1941,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     this.requests.clear();
   }
 
-  public List<AbstractMessage> getRequestsOfType(Class<? extends AbstractMessage> type) {
-    List<AbstractMessage> res = new ArrayList<>();
+  @SuppressWarnings("unchecked")
+  public <T extends AbstractMessage> List<T> getRequestsOfType(Class<T> type) {
+    List<T> res = new ArrayList<>();
     for (AbstractMessage m : this.requests) {
       if (m.getClass().equals(type)) {
-        res.add(m);
+        res.add((T) m);
       }
     }
     return res;

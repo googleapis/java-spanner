@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import com.google.cloud.spanner.Options.RpcPriority;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -86,6 +87,7 @@ public class OptionsTest {
     assertThat(options.hasPrefetchChunks()).isFalse();
     assertThat(options.hasFilter()).isFalse();
     assertThat(options.hasPageToken()).isFalse();
+    assertThat(options.hasPriority()).isFalse();
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
@@ -293,5 +295,34 @@ public class OptionsTest {
 
     o2 = Options.fromReadOptions(Options.prefetchChunks(1));
     assertThat(o1.equals(o2)).isFalse();
+  }
+  
+  @Test
+  public void testTransactionOptions() {
+    RpcPriority prio = RpcPriority.HIGH;
+    Options opts = Options.fromTransactionOptions(Options.priority(prio));
+    assertThat(opts.toString()).isEqualTo("priority: " + prio + " ");
+    assertThat(opts.priority()).isEqualTo(prio.toProto());
+  }
+
+  @Test
+  public void testTransactionOptionsEquality() {
+    Options o1;
+    Options o2;
+    Options o3;
+
+    o1 = Options.fromTransactionOptions();
+    o2 = Options.fromTransactionOptions();
+    assertThat(o1.equals(o2)).isTrue();
+
+    o2 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    assertThat(o1.equals(o2)).isFalse();
+    assertThat(o2.equals(o1)).isFalse();
+
+    o3 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    assertThat(o2.equals(o3)).isTrue();
+
+    o3 = Options.fromTransactionOptions(Options.priority(RpcPriority.LOW));
+    assertThat(o2.equals(o3)).isFalse();
   }
 }

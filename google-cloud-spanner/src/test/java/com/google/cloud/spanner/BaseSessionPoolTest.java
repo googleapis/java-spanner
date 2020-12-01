@@ -68,7 +68,11 @@ abstract class BaseSessionPoolTest {
     when(session.writeWithOptions(any(Iterable.class)))
         .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
     when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
-        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+        .thenReturn(
+            CommitResponse.fromProto(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+    when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
+        .thenReturn(
+            CommitResponse.fromProto(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
     sessionIndex++;
     return session;
   }

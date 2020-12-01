@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 
@@ -75,7 +76,9 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.writeWithOptions(Collections.singletonList(mutation));
+   * dbClient.writeWithOptions(
+   *         Collections.singletonList(mutation),
+   *         Options.priority(RpcPriority.HIGH));
    * }</pre>
    *
    * @return a response with the timestamp at which the write was committed
@@ -138,7 +141,9 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.writeAtLeastOnce(Collections.singletonList(mutation));
+   * dbClient.writeAtLeastOnceWithOptions(
+   *         Collections.singletonList(mutation),
+   *         Options.priority(RpcPriority.LOW));
    * }</pre>
    *
    * @return a response with the timestamp at which the write was committed
@@ -308,6 +313,14 @@ public interface DatabaseClient {
    *       }
    *     });
    * </code></pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not
+   *       automatically be applied to any other requests on the transaction.
+   * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
 
@@ -338,6 +351,14 @@ public interface DatabaseClient {
    *   }
    * }
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not
+   *       automatically be applied to any other requests on the transaction.
+   * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
 
@@ -371,6 +392,14 @@ public interface DatabaseClient {
    *         },
    *         executor);
    * </code></pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not
+   *       automatically be applied to any other requests on the transaction.
+   * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
 
@@ -459,6 +488,14 @@ public interface DatabaseClient {
    *   }
    * }
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not
+   *       automatically be applied to any other requests on the transaction.
+   * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
 

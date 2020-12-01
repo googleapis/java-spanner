@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_COLUMN_NAMES;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
+import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
@@ -37,9 +41,12 @@ import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -48,9 +55,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RequestOptions.Priority;
 import io.grpc.Context;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -106,6 +117,8 @@ public class DatabaseClientImplTest {
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT1, MockSpannerTestUtil.SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(READ_ONE_KEY_VALUE_STATEMENT, READ_ONE_KEY_VALUE_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
@@ -168,6 +181,28 @@ public class DatabaseClientImplTest {
             Arrays.asList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
+
+    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commits).hasSize(1);
+    CommitRequest commit = commits.get(0);
+    assertThat(commit.getRequestOptions()).isNotNull();
+    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_UNSPECIFIED);
+  }
+
+  @Test
+  public void writewithoptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeWithOptions(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.priority(RpcPriority.HIGH));
+
+    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commits).hasSize(1);
+    CommitRequest commit = commits.get(0);
+    assertThat(commit.getRequestOptions()).isNotNull();
+    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
   }
 
   @Test
@@ -207,6 +242,32 @@ public class DatabaseClientImplTest {
     assertNotNull(response);
     assertNotNull(response.getCommitTimestamp());
     assertNotNull(response.getCommitStats());
+
+    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commits).hasSize(1);
+    CommitRequest commit = commits.get(0);
+    assertThat(commit.getSingleUseTransaction()).isNotNull();
+    assertThat(commit.getSingleUseTransaction().hasReadWrite()).isTrue();
+    assertThat(commit.getRequestOptions()).isNotNull();
+    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_UNSPECIFIED);
+  }
+
+  @Test
+  public void writeAtLeastOnceWithOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnceWithOptions(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.priority(RpcPriority.LOW));
+
+    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commits).hasSize(1);
+    CommitRequest commit = commits.get(0);
+    assertThat(commit.getSingleUseTransaction()).isNotNull();
+    assertThat(commit.getSingleUseTransaction().hasReadWrite()).isTrue();
+    assertThat(commit.getRequestOptions()).isNotNull();
+    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_LOW);
   }
 
   @Test
@@ -1641,5 +1702,239 @@ public class DatabaseClientImplTest {
     client.transactionManagerAsync(option);
 
     verify(session).transactionManagerAsync(option);
+  }
+  
+  @Test
+  public void testExecuteQueryWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client.singleUse().executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+      while (rs.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testExecuteReadWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet rs =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.priority(RpcPriority.HIGH))) {
+      while (rs.next()) {}
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testReadWriteExecuteQueryWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            try (ResultSet rs =
+                transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+              while (rs.next()) {}
+            }
+            return null;
+          }
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testReadWriteExecuteReadWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            try (ResultSet rs =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.priority(RpcPriority.HIGH))) {
+              while (rs.next()) {}
+            }
+            return null;
+          }
+        });
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testExecuteUpdateWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Long>() {
+          @Override
+          public Long run(TransactionContext transaction) throws Exception {
+            return transaction.executeUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH));
+          }
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testBatchUpdateWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<long[]>() {
+          @Override
+          public long[] run(TransactionContext transaction) throws Exception {
+            return transaction.batchUpdate(
+                Arrays.asList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH));
+          }
+        });
+
+    List<ExecuteBatchDmlRequest> requests =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteBatchDmlRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testPartitionedDMLWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.executePartitionedUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH));
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testCommitWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.priority(RpcPriority.HIGH));
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+            return null;
+          }
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionManager mgr = client.transactionManager(Options.priority(RpcPriority.HIGH));
+    TransactionContext transaction = mgr.begin();
+    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+    mgr.commit();
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.priority(RpcPriority.HIGH));
+    get(
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor));
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithPriority() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager mgr =
+        client.transactionManagerAsync(Options.priority(RpcPriority.HIGH))) {
+      TransactionContextFuture transaction = mgr.beginAsync();
+      get(
+          transaction
+              .then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertThat(request.getRequestOptions()).isNotNull();
+    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
   }
 }
