@@ -22,7 +22,17 @@ import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
-/** */
+/**
+ *
+ *
+ * <pre>
+ * Cloud Spanner Database Admin API
+ * The Cloud Spanner Database Admin API can be used to create, drop, and
+ * list databases. It also enables updating the schema of pre-existing
+ * databases. It can be also used to create, delete and list backups for a
+ * database and to restore from an existing backup.
+ * </pre>
+ */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/database/v1/spanner_database_admin.proto")
@@ -840,10 +850,26 @@ public final class DatabaseAdminGrpc {
     return DatabaseAdminFutureStub.newStub(factory, channel);
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Database Admin API
+   * The Cloud Spanner Database Admin API can be used to create, drop, and
+   * list databases. It also enables updating the schema of pre-existing
+   * databases. It can be also used to create, delete and list backups for a
+   * database and to restore from an existing backup.
+   * </pre>
+   */
   public abstract static class DatabaseAdminImplBase implements io.grpc.BindableService {
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists Cloud Spanner databases.
+     * </pre>
+     */
     public void listDatabases(
         com.google.spanner.admin.database.v1.ListDatabasesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListDatabasesResponse>
@@ -851,14 +877,33 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getListDatabasesMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new Cloud Spanner database and starts to prepare it for serving.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track preparation of the database. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
     public void createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getCreateDatabaseMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the state of a Cloud Spanner database.
+     * </pre>
+     */
     public void getDatabase(
         com.google.spanner.admin.database.v1.GetDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Database>
@@ -866,21 +911,49 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getGetDatabaseMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates the schema of a Cloud Spanner database by
+     * creating/altering/dropping tables, columns, indexes, etc. The returned
+     * [long-running operation][google.longrunning.Operation] will have a name of
+     * the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track execution of the schema change(s). The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.
+     * </pre>
+     */
     public void updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getUpdateDatabaseDdlMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Drops (aka deletes) a Cloud Spanner database.
+     * Completed backups for the database will be retained according to their
+     * `expire_time`.
+     * </pre>
+     */
     public void dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getDropDatabaseMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns the schema of a Cloud Spanner database as a list of formatted
+     * DDL statements. This method does not show pending schema updates, those may
+     * be queried using the [Operations][google.longrunning.Operations] API.
+     * </pre>
+     */
     public void getDatabaseDdl(
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
@@ -888,21 +961,58 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getGetDatabaseDdlMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on a database or backup resource.
+     * Replaces any existing policy.
+     * Authorization requires `spanner.databases.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnimplementedUnaryCall(getSetIamPolicyMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for a database or backup resource.
+     * Returns an empty policy if a database or backup exists but does not have a
+     * policy set.
+     * Authorization requires `spanner.databases.getIamPolicy` permission on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.getIamPolicy`
+     * permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnimplementedUnaryCall(getGetIamPolicyMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified database or backup
+     * resource.
+     * Attempting this RPC on a non-existent Cloud Spanner database will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.databases.list` permission on the containing Cloud
+     * Spanner instance. Otherwise returns an empty set of permissions.
+     * Calling this method on a backup that does not exist will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.backups.list` permission on the containing instance.
+     * </pre>
+     */
     public void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
@@ -910,35 +1020,78 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getTestIamPermissionsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Starts creating a new Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track creation of the backup. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * creation and delete the backup.
+     * There can be only one pending backup creation per database. Backup creation
+     * of different databases can run concurrently.
+     * </pre>
+     */
     public void createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getCreateBackupMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
       asyncUnimplementedUnaryCall(getGetBackupMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
       asyncUnimplementedUnaryCall(getUpdateBackupMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getDeleteBackupMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists completed and pending backups.
+     * Backups returned are ordered by `create_time` in descending order,
+     * starting from the most recent `create_time`.
+     * </pre>
+     */
     public void listBackups(
         com.google.spanner.admin.database.v1.ListBackupsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListBackupsResponse>
@@ -946,14 +1099,49 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getListBackupsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Create a new database by restoring from a completed backup. The new
+     * database must be in the same project and in an instance with the same
+     * instance configuration as the instance containing
+     * the backup. The returned database [long-running
+     * operation][google.longrunning.Operation] has a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+     * and can be used to track the progress of the operation, and to cancel it.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] type
+     * is [Database][google.spanner.admin.database.v1.Database], if
+     * successful. Cancelling the returned operation will stop the restore and
+     * delete the database.
+     * There can be only one database being restored into an instance at a time.
+     * Once the restore operation completes, a new restore operation can be
+     * initiated, without waiting for the optimize operation associated with the
+     * first restore to complete.
+     * </pre>
+     */
     public void restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getRestoreDatabaseMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists database [longrunning-operations][google.longrunning.Operation].
+     * A database operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations.
+     * </pre>
+     */
     public void listDatabaseOperations(
         com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request,
         io.grpc.stub.StreamObserver<
@@ -962,7 +1150,22 @@ public final class DatabaseAdminGrpc {
       asyncUnimplementedUnaryCall(getListDatabaseOperationsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the backup [long-running operations][google.longrunning.Operation] in
+     * the given instance. A backup operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.progress.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
     public void listBackupOperations(
         com.google.spanner.admin.database.v1.ListBackupOperationsRequest request,
         io.grpc.stub.StreamObserver<
@@ -1086,7 +1289,17 @@ public final class DatabaseAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Database Admin API
+   * The Cloud Spanner Database Admin API can be used to create, drop, and
+   * list databases. It also enables updating the schema of pre-existing
+   * databases. It can be also used to create, delete and list backups for a
+   * database and to restore from an existing backup.
+   * </pre>
+   */
   public static final class DatabaseAdminStub
       extends io.grpc.stub.AbstractAsyncStub<DatabaseAdminStub> {
     private DatabaseAdminStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -1098,7 +1311,13 @@ public final class DatabaseAdminGrpc {
       return new DatabaseAdminStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists Cloud Spanner databases.
+     * </pre>
+     */
     public void listDatabases(
         com.google.spanner.admin.database.v1.ListDatabasesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListDatabasesResponse>
@@ -1109,7 +1328,20 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new Cloud Spanner database and starts to prepare it for serving.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track preparation of the database. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
     public void createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -1119,7 +1351,13 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the state of a Cloud Spanner database.
+     * </pre>
+     */
     public void getDatabase(
         com.google.spanner.admin.database.v1.GetDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Database>
@@ -1130,7 +1368,19 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates the schema of a Cloud Spanner database by
+     * creating/altering/dropping tables, columns, indexes, etc. The returned
+     * [long-running operation][google.longrunning.Operation] will have a name of
+     * the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track execution of the schema change(s). The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.
+     * </pre>
+     */
     public void updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -1140,7 +1390,15 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Drops (aka deletes) a Cloud Spanner database.
+     * Completed backups for the database will be retained according to their
+     * `expire_time`.
+     * </pre>
+     */
     public void dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -1150,7 +1408,15 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns the schema of a Cloud Spanner database as a list of formatted
+     * DDL statements. This method does not show pending schema updates, those may
+     * be queried using the [Operations][google.longrunning.Operations] API.
+     * </pre>
+     */
     public void getDatabaseDdl(
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
@@ -1161,7 +1427,18 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on a database or backup resource.
+     * Replaces any existing policy.
+     * Authorization requires `spanner.databases.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
@@ -1171,7 +1448,19 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for a database or backup resource.
+     * Returns an empty policy if a database or backup exists but does not have a
+     * policy set.
+     * Authorization requires `spanner.databases.getIamPolicy` permission on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.getIamPolicy`
+     * permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
@@ -1181,7 +1470,21 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified database or backup
+     * resource.
+     * Attempting this RPC on a non-existent Cloud Spanner database will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.databases.list` permission on the containing Cloud
+     * Spanner instance. Otherwise returns an empty set of permissions.
+     * Calling this method on a backup that does not exist will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.backups.list` permission on the containing instance.
+     * </pre>
+     */
     public void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
@@ -1192,7 +1495,24 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Starts creating a new Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track creation of the backup. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * creation and delete the backup.
+     * There can be only one pending backup creation per database. Backup creation
+     * of different databases can run concurrently.
+     * </pre>
+     */
     public void createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -1202,7 +1522,13 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
@@ -1210,7 +1536,13 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getGetBackupMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
@@ -1220,7 +1552,13 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public void deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -1230,7 +1568,15 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists completed and pending backups.
+     * Backups returned are ordered by `create_time` in descending order,
+     * starting from the most recent `create_time`.
+     * </pre>
+     */
     public void listBackups(
         com.google.spanner.admin.database.v1.ListBackupsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListBackupsResponse>
@@ -1241,7 +1587,29 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Create a new database by restoring from a completed backup. The new
+     * database must be in the same project and in an instance with the same
+     * instance configuration as the instance containing
+     * the backup. The returned database [long-running
+     * operation][google.longrunning.Operation] has a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+     * and can be used to track the progress of the operation, and to cancel it.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] type
+     * is [Database][google.spanner.admin.database.v1.Database], if
+     * successful. Cancelling the returned operation will stop the restore and
+     * delete the database.
+     * There can be only one database being restored into an instance at a time.
+     * Once the restore operation completes, a new restore operation can be
+     * initiated, without waiting for the optimize operation associated with the
+     * first restore to complete.
+     * </pre>
+     */
     public void restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -1251,7 +1619,20 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists database [longrunning-operations][google.longrunning.Operation].
+     * A database operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations.
+     * </pre>
+     */
     public void listDatabaseOperations(
         com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request,
         io.grpc.stub.StreamObserver<
@@ -1263,7 +1644,22 @@ public final class DatabaseAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the backup [long-running operations][google.longrunning.Operation] in
+     * the given instance. A backup operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.progress.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
     public void listBackupOperations(
         com.google.spanner.admin.database.v1.ListBackupOperationsRequest request,
         io.grpc.stub.StreamObserver<
@@ -1276,7 +1672,17 @@ public final class DatabaseAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Database Admin API
+   * The Cloud Spanner Database Admin API can be used to create, drop, and
+   * list databases. It also enables updating the schema of pre-existing
+   * databases. It can be also used to create, delete and list backups for a
+   * database and to restore from an existing backup.
+   * </pre>
+   */
   public static final class DatabaseAdminBlockingStub
       extends io.grpc.stub.AbstractBlockingStub<DatabaseAdminBlockingStub> {
     private DatabaseAdminBlockingStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -1289,97 +1695,265 @@ public final class DatabaseAdminGrpc {
       return new DatabaseAdminBlockingStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists Cloud Spanner databases.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.ListDatabasesResponse listDatabases(
         com.google.spanner.admin.database.v1.ListDatabasesRequest request) {
       return blockingUnaryCall(getChannel(), getListDatabasesMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new Cloud Spanner database and starts to prepare it for serving.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track preparation of the database. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
     public com.google.longrunning.Operation createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request) {
       return blockingUnaryCall(getChannel(), getCreateDatabaseMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the state of a Cloud Spanner database.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.Database getDatabase(
         com.google.spanner.admin.database.v1.GetDatabaseRequest request) {
       return blockingUnaryCall(getChannel(), getGetDatabaseMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates the schema of a Cloud Spanner database by
+     * creating/altering/dropping tables, columns, indexes, etc. The returned
+     * [long-running operation][google.longrunning.Operation] will have a name of
+     * the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track execution of the schema change(s). The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.
+     * </pre>
+     */
     public com.google.longrunning.Operation updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request) {
       return blockingUnaryCall(
           getChannel(), getUpdateDatabaseDdlMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Drops (aka deletes) a Cloud Spanner database.
+     * Completed backups for the database will be retained according to their
+     * `expire_time`.
+     * </pre>
+     */
     public com.google.protobuf.Empty dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request) {
       return blockingUnaryCall(getChannel(), getDropDatabaseMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns the schema of a Cloud Spanner database as a list of formatted
+     * DDL statements. This method does not show pending schema updates, those may
+     * be queried using the [Operations][google.longrunning.Operations] API.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse getDatabaseDdl(
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request) {
       return blockingUnaryCall(getChannel(), getGetDatabaseDdlMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on a database or backup resource.
+     * Replaces any existing policy.
+     * Authorization requires `spanner.databases.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
       return blockingUnaryCall(getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for a database or backup resource.
+     * Returns an empty policy if a database or backup exists but does not have a
+     * policy set.
+     * Authorization requires `spanner.databases.getIamPolicy` permission on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.getIamPolicy`
+     * permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
       return blockingUnaryCall(getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified database or backup
+     * resource.
+     * Attempting this RPC on a non-existent Cloud Spanner database will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.databases.list` permission on the containing Cloud
+     * Spanner instance. Otherwise returns an empty set of permissions.
+     * Calling this method on a backup that does not exist will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.backups.list` permission on the containing instance.
+     * </pre>
+     */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request) {
       return blockingUnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Starts creating a new Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track creation of the backup. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * creation and delete the backup.
+     * There can be only one pending backup creation per database. Backup creation
+     * of different databases can run concurrently.
+     * </pre>
+     */
     public com.google.longrunning.Operation createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request) {
       return blockingUnaryCall(getChannel(), getCreateBackupMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.Backup getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request) {
       return blockingUnaryCall(getChannel(), getGetBackupMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.Backup updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request) {
       return blockingUnaryCall(getChannel(), getUpdateBackupMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.protobuf.Empty deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request) {
       return blockingUnaryCall(getChannel(), getDeleteBackupMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists completed and pending backups.
+     * Backups returned are ordered by `create_time` in descending order,
+     * starting from the most recent `create_time`.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.ListBackupsResponse listBackups(
         com.google.spanner.admin.database.v1.ListBackupsRequest request) {
       return blockingUnaryCall(getChannel(), getListBackupsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Create a new database by restoring from a completed backup. The new
+     * database must be in the same project and in an instance with the same
+     * instance configuration as the instance containing
+     * the backup. The returned database [long-running
+     * operation][google.longrunning.Operation] has a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+     * and can be used to track the progress of the operation, and to cancel it.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] type
+     * is [Database][google.spanner.admin.database.v1.Database], if
+     * successful. Cancelling the returned operation will stop the restore and
+     * delete the database.
+     * There can be only one database being restored into an instance at a time.
+     * Once the restore operation completes, a new restore operation can be
+     * initiated, without waiting for the optimize operation associated with the
+     * first restore to complete.
+     * </pre>
+     */
     public com.google.longrunning.Operation restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request) {
       return blockingUnaryCall(getChannel(), getRestoreDatabaseMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists database [longrunning-operations][google.longrunning.Operation].
+     * A database operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse
         listDatabaseOperations(
             com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request) {
@@ -1387,7 +1961,22 @@ public final class DatabaseAdminGrpc {
           getChannel(), getListDatabaseOperationsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the backup [long-running operations][google.longrunning.Operation] in
+     * the given instance. A backup operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.progress.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
     public com.google.spanner.admin.database.v1.ListBackupOperationsResponse listBackupOperations(
         com.google.spanner.admin.database.v1.ListBackupOperationsRequest request) {
       return blockingUnaryCall(
@@ -1395,7 +1984,17 @@ public final class DatabaseAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Database Admin API
+   * The Cloud Spanner Database Admin API can be used to create, drop, and
+   * list databases. It also enables updating the schema of pre-existing
+   * databases. It can be also used to create, delete and list backups for a
+   * database and to restore from an existing backup.
+   * </pre>
+   */
   public static final class DatabaseAdminFutureStub
       extends io.grpc.stub.AbstractFutureStub<DatabaseAdminFutureStub> {
     private DatabaseAdminFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -1408,7 +2007,13 @@ public final class DatabaseAdminGrpc {
       return new DatabaseAdminFutureStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists Cloud Spanner databases.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListDatabasesResponse>
         listDatabases(com.google.spanner.admin.database.v1.ListDatabasesRequest request) {
@@ -1416,14 +2021,33 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getListDatabasesMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new Cloud Spanner database and starts to prepare it for serving.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track preparation of the database. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createDatabase(com.google.spanner.admin.database.v1.CreateDatabaseRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getCreateDatabaseMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the state of a Cloud Spanner database.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Database>
         getDatabase(com.google.spanner.admin.database.v1.GetDatabaseRequest request) {
@@ -1431,21 +2055,49 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getGetDatabaseMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates the schema of a Cloud Spanner database by
+     * creating/altering/dropping tables, columns, indexes, etc. The returned
+     * [long-running operation][google.longrunning.Operation] will have a name of
+     * the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track execution of the schema change(s). The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         updateDatabaseDdl(com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getUpdateDatabaseDdlMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Drops (aka deletes) a Cloud Spanner database.
+     * Completed backups for the database will be retained according to their
+     * `expire_time`.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         dropDatabase(com.google.spanner.admin.database.v1.DropDatabaseRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getDropDatabaseMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns the schema of a Cloud Spanner database as a list of formatted
+     * DDL statements. This method does not show pending schema updates, those may
+     * be queried using the [Operations][google.longrunning.Operations] API.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
         getDatabaseDdl(com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request) {
@@ -1453,21 +2105,58 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getGetDatabaseDdlMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on a database or backup resource.
+     * Replaces any existing policy.
+     * Authorization requires `spanner.databases.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.setIamPolicy`
+     * permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for a database or backup resource.
+     * Returns an empty policy if a database or backup exists but does not have a
+     * policy set.
+     * Authorization requires `spanner.databases.getIamPolicy` permission on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * For backups, authorization requires `spanner.backups.getIamPolicy`
+     * permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified database or backup
+     * resource.
+     * Attempting this RPC on a non-existent Cloud Spanner database will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.databases.list` permission on the containing Cloud
+     * Spanner instance. Otherwise returns an empty set of permissions.
+     * Calling this method on a backup that does not exist will
+     * result in a NOT_FOUND error if the user has
+     * `spanner.backups.list` permission on the containing instance.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.iam.v1.TestIamPermissionsResponse>
         testIamPermissions(com.google.iam.v1.TestIamPermissionsRequest request) {
@@ -1475,21 +2164,50 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Starts creating a new Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track creation of the backup. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The
+     * [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * creation and delete the backup.
+     * There can be only one pending backup creation per database. Backup creation
+     * of different databases can run concurrently.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createBackup(com.google.spanner.admin.database.v1.CreateBackupRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getCreateBackupMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Backup>
         getBackup(com.google.spanner.admin.database.v1.GetBackupRequest request) {
       return futureUnaryCall(getChannel().newCall(getGetBackupMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Backup>
         updateBackup(com.google.spanner.admin.database.v1.UpdateBackupRequest request) {
@@ -1497,14 +2215,28 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getUpdateBackupMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteBackup(com.google.spanner.admin.database.v1.DeleteBackupRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getDeleteBackupMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists completed and pending backups.
+     * Backups returned are ordered by `create_time` in descending order,
+     * starting from the most recent `create_time`.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListBackupsResponse>
         listBackups(com.google.spanner.admin.database.v1.ListBackupsRequest request) {
@@ -1512,14 +2244,49 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getListBackupsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Create a new database by restoring from a completed backup. The new
+     * database must be in the same project and in an instance with the same
+     * instance configuration as the instance containing
+     * the backup. The returned database [long-running
+     * operation][google.longrunning.Operation] has a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`,
+     * and can be used to track the progress of the operation, and to cancel it.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] type
+     * is [Database][google.spanner.admin.database.v1.Database], if
+     * successful. Cancelling the returned operation will stop the restore and
+     * delete the database.
+     * There can be only one database being restored into an instance at a time.
+     * Once the restore operation completes, a new restore operation can be
+     * initiated, without waiting for the optimize operation associated with the
+     * first restore to complete.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         restoreDatabase(com.google.spanner.admin.database.v1.RestoreDatabaseRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getRestoreDatabaseMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists database [longrunning-operations][google.longrunning.Operation].
+     * A database operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse>
         listDatabaseOperations(
@@ -1528,7 +2295,22 @@ public final class DatabaseAdminGrpc {
           getChannel().newCall(getListDatabaseOperationsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the backup [long-running operations][google.longrunning.Operation] in
+     * the given instance. A backup operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.progress.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListBackupOperationsResponse>
         listBackupOperations(

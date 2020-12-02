@@ -25,7 +25,15 @@ import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
-/** */
+/**
+ *
+ *
+ * <pre>
+ * Cloud Spanner API
+ * The Cloud Spanner API can be used to manage sessions and execute
+ * transactions on data stored in Cloud Spanner databases.
+ * </pre>
+ */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/v1/spanner.proto")
@@ -691,17 +699,54 @@ public final class SpannerGrpc {
     return SpannerFutureStub.newStub(factory, channel);
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner API
+   * The Cloud Spanner API can be used to manage sessions and execute
+   * transactions on data stored in Cloud Spanner databases.
+   * </pre>
+   */
   public abstract static class SpannerImplBase implements io.grpc.BindableService {
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new session. A session can be used to perform
+     * transactions that read and/or modify data in a Cloud Spanner database.
+     * Sessions are meant to be reused for many consecutive
+     * transactions.
+     * Sessions can only execute one transaction at a time. To execute
+     * multiple concurrent read-write/write-only transactions, create
+     * multiple sessions. Note that standalone reads and queries use a
+     * transaction internally, and count toward the one transaction
+     * limit.
+     * Active sessions use additional server resources, so it is a good idea to
+     * delete idle and unneeded sessions.
+     * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
+     * operations are sent for more than an hour. If a session is deleted,
+     * requests to it return `NOT_FOUND`.
+     * Idle sessions can be kept alive by sending a trivial SQL query
+     * periodically, e.g., `"SELECT 1"`.
+     * </pre>
+     */
     public void createSession(
         com.google.spanner.v1.CreateSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
       asyncUnimplementedUnaryCall(getCreateSessionMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates multiple new sessions.
+     * This API can be used to initialize a session cache on the clients.
+     * See https://goo.gl/TgSFN2 for best practices on session cache management.
+     * </pre>
+     */
     public void batchCreateSessions(
         com.google.spanner.v1.BatchCreateSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchCreateSessionsResponse>
@@ -709,42 +754,102 @@ public final class SpannerGrpc {
       asyncUnimplementedUnaryCall(getBatchCreateSessionsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets a session. Returns `NOT_FOUND` if the session does not exist.
+     * This is mainly useful for determining whether a session is still
+     * alive.
+     * </pre>
+     */
     public void getSession(
         com.google.spanner.v1.GetSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
       asyncUnimplementedUnaryCall(getGetSessionMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all sessions in a given database.
+     * </pre>
+     */
     public void listSessions(
         com.google.spanner.v1.ListSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ListSessionsResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getListSessionsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Ends a session, releasing server resources associated with it. This will
+     * asynchronously trigger cancellation of any operations that are running with
+     * this session.
+     * </pre>
+     */
     public void deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getDeleteSessionMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes an SQL statement, returning all results in a single reply. This
+     * method cannot be used to return a result set larger than 10 MiB;
+     * if the query yields more data than that, the query fails with
+     * a `FAILED_PRECONDITION` error.
+     * Operations inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be fetched in streaming fashion by calling
+     * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
+     * </pre>
+     */
     public void executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
       asyncUnimplementedUnaryCall(getExecuteSqlMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], except returns the result
+     * set as a stream. Unlike [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], there
+     * is no limit on the size of the returned result set. However, no
+     * individual row in the result set can exceed 100 MiB, and no
+     * column value can exceed 10 MiB.
+     * </pre>
+     */
     public void executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
       asyncUnimplementedUnaryCall(getExecuteStreamingSqlMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes a batch of SQL DML statements. This method allows many statements
+     * to be run with lower latency than submitting them sequentially with
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].
+     * Statements are executed in sequential order. A request can succeed even if
+     * a statement fails. The [ExecuteBatchDmlResponse.status][google.spanner.v1.ExecuteBatchDmlResponse.status] field in the
+     * response provides information about the statement that failed. Clients must
+     * inspect this field to determine whether an error occurred.
+     * Execution stops after the first failed statement; the remaining statements
+     * are not executed.
+     * </pre>
+     */
     public void executeBatchDml(
         com.google.spanner.v1.ExecuteBatchDmlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ExecuteBatchDmlResponse>
@@ -752,49 +857,140 @@ public final class SpannerGrpc {
       asyncUnimplementedUnaryCall(getExecuteBatchDmlMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Reads rows from the database using key lookups and scans, as a
+     * simple key/value style alternative to
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].  This method cannot be used to
+     * return a result set larger than 10 MiB; if the read matches more
+     * data than that, the read fails with a `FAILED_PRECONDITION`
+     * error.
+     * Reads inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be yielded in streaming fashion by calling
+     * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
+     * </pre>
+     */
     public void read(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
       asyncUnimplementedUnaryCall(getReadMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [Read][google.spanner.v1.Spanner.Read], except returns the result set as a
+     * stream. Unlike [Read][google.spanner.v1.Spanner.Read], there is no limit on the
+     * size of the returned result set. However, no individual row in
+     * the result set can exceed 100 MiB, and no column value can exceed
+     * 10 MiB.
+     * </pre>
+     */
     public void streamingRead(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
       asyncUnimplementedUnaryCall(getStreamingReadMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Begins a new transaction. This step can often be skipped:
+     * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
+     * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
+     * side-effect.
+     * </pre>
+     */
     public void beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Transaction> responseObserver) {
       asyncUnimplementedUnaryCall(getBeginTransactionMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Commits a transaction. The request includes the mutations to be
+     * applied to rows in the database.
+     * `Commit` might return an `ABORTED` error. This can occur at any time;
+     * commonly, the cause is conflicts with concurrent
+     * transactions. However, it can also happen for a variety of other
+     * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
+     * the transaction from the beginning, re-using the same session.
+     * </pre>
+     */
     public void commit(
         com.google.spanner.v1.CommitRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.CommitResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getCommitMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Rolls back a transaction, releasing any locks it holds. It is a good
+     * idea to call this for any transaction that includes one or more
+     * [Read][google.spanner.v1.Spanner.Read] or [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] requests and
+     * ultimately decides not to commit.
+     * `Rollback` returns `OK` if it successfully aborts the transaction, the
+     * transaction was already aborted, or the transaction is not
+     * found. `Rollback` never returns `ABORTED`.
+     * </pre>
+     */
     public void rollback(
         com.google.spanner.v1.RollbackRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getRollbackMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a query
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] to specify a subset
+     * of the query result to read.  The same session and read-only transaction
+     * must be used by the PartitionQueryRequest used to create the
+     * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the query, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public void partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getPartitionQueryMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a read
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [StreamingRead][google.spanner.v1.Spanner.StreamingRead] to specify a subset of the read
+     * result to read.  The same session and read-only transaction must be used by
+     * the PartitionReadRequest used to create the partition tokens and the
+     * ReadRequests that use the partition tokens.  There are no ordering
+     * guarantees on rows returned among the returned partition tokens, or even
+     * within each individual StreamingRead call issued with a partition_token.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the read, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public void partitionRead(
         com.google.spanner.v1.PartitionReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
@@ -901,7 +1097,15 @@ public final class SpannerGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner API
+   * The Cloud Spanner API can be used to manage sessions and execute
+   * transactions on data stored in Cloud Spanner databases.
+   * </pre>
+   */
   public static final class SpannerStub extends io.grpc.stub.AbstractAsyncStub<SpannerStub> {
     private SpannerStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -912,7 +1116,28 @@ public final class SpannerGrpc {
       return new SpannerStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new session. A session can be used to perform
+     * transactions that read and/or modify data in a Cloud Spanner database.
+     * Sessions are meant to be reused for many consecutive
+     * transactions.
+     * Sessions can only execute one transaction at a time. To execute
+     * multiple concurrent read-write/write-only transactions, create
+     * multiple sessions. Note that standalone reads and queries use a
+     * transaction internally, and count toward the one transaction
+     * limit.
+     * Active sessions use additional server resources, so it is a good idea to
+     * delete idle and unneeded sessions.
+     * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
+     * operations are sent for more than an hour. If a session is deleted,
+     * requests to it return `NOT_FOUND`.
+     * Idle sessions can be kept alive by sending a trivial SQL query
+     * periodically, e.g., `"SELECT 1"`.
+     * </pre>
+     */
     public void createSession(
         com.google.spanner.v1.CreateSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
@@ -922,7 +1147,15 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates multiple new sessions.
+     * This API can be used to initialize a session cache on the clients.
+     * See https://goo.gl/TgSFN2 for best practices on session cache management.
+     * </pre>
+     */
     public void batchCreateSessions(
         com.google.spanner.v1.BatchCreateSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchCreateSessionsResponse>
@@ -933,7 +1166,15 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets a session. Returns `NOT_FOUND` if the session does not exist.
+     * This is mainly useful for determining whether a session is still
+     * alive.
+     * </pre>
+     */
     public void getSession(
         com.google.spanner.v1.GetSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
@@ -941,7 +1182,13 @@ public final class SpannerGrpc {
           getChannel().newCall(getGetSessionMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all sessions in a given database.
+     * </pre>
+     */
     public void listSessions(
         com.google.spanner.v1.ListSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ListSessionsResponse> responseObserver) {
@@ -951,7 +1198,15 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Ends a session, releasing server resources associated with it. This will
+     * asynchronously trigger cancellation of any operations that are running with
+     * this session.
+     * </pre>
+     */
     public void deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -961,7 +1216,21 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes an SQL statement, returning all results in a single reply. This
+     * method cannot be used to return a result set larger than 10 MiB;
+     * if the query yields more data than that, the query fails with
+     * a `FAILED_PRECONDITION` error.
+     * Operations inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be fetched in streaming fashion by calling
+     * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
+     * </pre>
+     */
     public void executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
@@ -969,7 +1238,17 @@ public final class SpannerGrpc {
           getChannel().newCall(getExecuteSqlMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], except returns the result
+     * set as a stream. Unlike [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], there
+     * is no limit on the size of the returned result set. However, no
+     * individual row in the result set can exceed 100 MiB, and no
+     * column value can exceed 10 MiB.
+     * </pre>
+     */
     public void executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
@@ -979,7 +1258,21 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes a batch of SQL DML statements. This method allows many statements
+     * to be run with lower latency than submitting them sequentially with
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].
+     * Statements are executed in sequential order. A request can succeed even if
+     * a statement fails. The [ExecuteBatchDmlResponse.status][google.spanner.v1.ExecuteBatchDmlResponse.status] field in the
+     * response provides information about the statement that failed. Clients must
+     * inspect this field to determine whether an error occurred.
+     * Execution stops after the first failed statement; the remaining statements
+     * are not executed.
+     * </pre>
+     */
     public void executeBatchDml(
         com.google.spanner.v1.ExecuteBatchDmlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ExecuteBatchDmlResponse>
@@ -990,7 +1283,23 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Reads rows from the database using key lookups and scans, as a
+     * simple key/value style alternative to
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].  This method cannot be used to
+     * return a result set larger than 10 MiB; if the read matches more
+     * data than that, the read fails with a `FAILED_PRECONDITION`
+     * error.
+     * Reads inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be yielded in streaming fashion by calling
+     * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
+     * </pre>
+     */
     public void read(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
@@ -998,7 +1307,17 @@ public final class SpannerGrpc {
           getChannel().newCall(getReadMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [Read][google.spanner.v1.Spanner.Read], except returns the result set as a
+     * stream. Unlike [Read][google.spanner.v1.Spanner.Read], there is no limit on the
+     * size of the returned result set. However, no individual row in
+     * the result set can exceed 100 MiB, and no column value can exceed
+     * 10 MiB.
+     * </pre>
+     */
     public void streamingRead(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
@@ -1008,7 +1327,16 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Begins a new transaction. This step can often be skipped:
+     * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
+     * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
+     * side-effect.
+     * </pre>
+     */
     public void beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Transaction> responseObserver) {
@@ -1018,7 +1346,19 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Commits a transaction. The request includes the mutations to be
+     * applied to rows in the database.
+     * `Commit` might return an `ABORTED` error. This can occur at any time;
+     * commonly, the cause is conflicts with concurrent
+     * transactions. However, it can also happen for a variety of other
+     * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
+     * the transaction from the beginning, re-using the same session.
+     * </pre>
+     */
     public void commit(
         com.google.spanner.v1.CommitRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.CommitResponse> responseObserver) {
@@ -1026,7 +1366,19 @@ public final class SpannerGrpc {
           getChannel().newCall(getCommitMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Rolls back a transaction, releasing any locks it holds. It is a good
+     * idea to call this for any transaction that includes one or more
+     * [Read][google.spanner.v1.Spanner.Read] or [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] requests and
+     * ultimately decides not to commit.
+     * `Rollback` returns `OK` if it successfully aborts the transaction, the
+     * transaction was already aborted, or the transaction is not
+     * found. `Rollback` never returns `ABORTED`.
+     * </pre>
+     */
     public void rollback(
         com.google.spanner.v1.RollbackRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -1034,7 +1386,22 @@ public final class SpannerGrpc {
           getChannel().newCall(getRollbackMethod(), getCallOptions()), request, responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a query
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] to specify a subset
+     * of the query result to read.  The same session and read-only transaction
+     * must be used by the PartitionQueryRequest used to create the
+     * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the query, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public void partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
@@ -1044,7 +1411,24 @@ public final class SpannerGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a read
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [StreamingRead][google.spanner.v1.Spanner.StreamingRead] to specify a subset of the read
+     * result to read.  The same session and read-only transaction must be used by
+     * the PartitionReadRequest used to create the partition tokens and the
+     * ReadRequests that use the partition tokens.  There are no ordering
+     * guarantees on rows returned among the returned partition tokens, or even
+     * within each individual StreamingRead call issued with a partition_token.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the read, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public void partitionRead(
         com.google.spanner.v1.PartitionReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
@@ -1055,7 +1439,15 @@ public final class SpannerGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner API
+   * The Cloud Spanner API can be used to manage sessions and execute
+   * transactions on data stored in Cloud Spanner databases.
+   * </pre>
+   */
   public static final class SpannerBlockingStub
       extends io.grpc.stub.AbstractBlockingStub<SpannerBlockingStub> {
     private SpannerBlockingStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -1067,100 +1459,288 @@ public final class SpannerGrpc {
       return new SpannerBlockingStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new session. A session can be used to perform
+     * transactions that read and/or modify data in a Cloud Spanner database.
+     * Sessions are meant to be reused for many consecutive
+     * transactions.
+     * Sessions can only execute one transaction at a time. To execute
+     * multiple concurrent read-write/write-only transactions, create
+     * multiple sessions. Note that standalone reads and queries use a
+     * transaction internally, and count toward the one transaction
+     * limit.
+     * Active sessions use additional server resources, so it is a good idea to
+     * delete idle and unneeded sessions.
+     * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
+     * operations are sent for more than an hour. If a session is deleted,
+     * requests to it return `NOT_FOUND`.
+     * Idle sessions can be kept alive by sending a trivial SQL query
+     * periodically, e.g., `"SELECT 1"`.
+     * </pre>
+     */
     public com.google.spanner.v1.Session createSession(
         com.google.spanner.v1.CreateSessionRequest request) {
       return blockingUnaryCall(getChannel(), getCreateSessionMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates multiple new sessions.
+     * This API can be used to initialize a session cache on the clients.
+     * See https://goo.gl/TgSFN2 for best practices on session cache management.
+     * </pre>
+     */
     public com.google.spanner.v1.BatchCreateSessionsResponse batchCreateSessions(
         com.google.spanner.v1.BatchCreateSessionsRequest request) {
       return blockingUnaryCall(
           getChannel(), getBatchCreateSessionsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets a session. Returns `NOT_FOUND` if the session does not exist.
+     * This is mainly useful for determining whether a session is still
+     * alive.
+     * </pre>
+     */
     public com.google.spanner.v1.Session getSession(
         com.google.spanner.v1.GetSessionRequest request) {
       return blockingUnaryCall(getChannel(), getGetSessionMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all sessions in a given database.
+     * </pre>
+     */
     public com.google.spanner.v1.ListSessionsResponse listSessions(
         com.google.spanner.v1.ListSessionsRequest request) {
       return blockingUnaryCall(getChannel(), getListSessionsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Ends a session, releasing server resources associated with it. This will
+     * asynchronously trigger cancellation of any operations that are running with
+     * this session.
+     * </pre>
+     */
     public com.google.protobuf.Empty deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request) {
       return blockingUnaryCall(getChannel(), getDeleteSessionMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes an SQL statement, returning all results in a single reply. This
+     * method cannot be used to return a result set larger than 10 MiB;
+     * if the query yields more data than that, the query fails with
+     * a `FAILED_PRECONDITION` error.
+     * Operations inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be fetched in streaming fashion by calling
+     * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
+     * </pre>
+     */
     public com.google.spanner.v1.ResultSet executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request) {
       return blockingUnaryCall(getChannel(), getExecuteSqlMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], except returns the result
+     * set as a stream. Unlike [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], there
+     * is no limit on the size of the returned result set. However, no
+     * individual row in the result set can exceed 100 MiB, and no
+     * column value can exceed 10 MiB.
+     * </pre>
+     */
     public java.util.Iterator<com.google.spanner.v1.PartialResultSet> executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request) {
       return blockingServerStreamingCall(
           getChannel(), getExecuteStreamingSqlMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes a batch of SQL DML statements. This method allows many statements
+     * to be run with lower latency than submitting them sequentially with
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].
+     * Statements are executed in sequential order. A request can succeed even if
+     * a statement fails. The [ExecuteBatchDmlResponse.status][google.spanner.v1.ExecuteBatchDmlResponse.status] field in the
+     * response provides information about the statement that failed. Clients must
+     * inspect this field to determine whether an error occurred.
+     * Execution stops after the first failed statement; the remaining statements
+     * are not executed.
+     * </pre>
+     */
     public com.google.spanner.v1.ExecuteBatchDmlResponse executeBatchDml(
         com.google.spanner.v1.ExecuteBatchDmlRequest request) {
       return blockingUnaryCall(getChannel(), getExecuteBatchDmlMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Reads rows from the database using key lookups and scans, as a
+     * simple key/value style alternative to
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].  This method cannot be used to
+     * return a result set larger than 10 MiB; if the read matches more
+     * data than that, the read fails with a `FAILED_PRECONDITION`
+     * error.
+     * Reads inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be yielded in streaming fashion by calling
+     * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
+     * </pre>
+     */
     public com.google.spanner.v1.ResultSet read(com.google.spanner.v1.ReadRequest request) {
       return blockingUnaryCall(getChannel(), getReadMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Like [Read][google.spanner.v1.Spanner.Read], except returns the result set as a
+     * stream. Unlike [Read][google.spanner.v1.Spanner.Read], there is no limit on the
+     * size of the returned result set. However, no individual row in
+     * the result set can exceed 100 MiB, and no column value can exceed
+     * 10 MiB.
+     * </pre>
+     */
     public java.util.Iterator<com.google.spanner.v1.PartialResultSet> streamingRead(
         com.google.spanner.v1.ReadRequest request) {
       return blockingServerStreamingCall(
           getChannel(), getStreamingReadMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Begins a new transaction. This step can often be skipped:
+     * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
+     * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
+     * side-effect.
+     * </pre>
+     */
     public com.google.spanner.v1.Transaction beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request) {
       return blockingUnaryCall(
           getChannel(), getBeginTransactionMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Commits a transaction. The request includes the mutations to be
+     * applied to rows in the database.
+     * `Commit` might return an `ABORTED` error. This can occur at any time;
+     * commonly, the cause is conflicts with concurrent
+     * transactions. However, it can also happen for a variety of other
+     * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
+     * the transaction from the beginning, re-using the same session.
+     * </pre>
+     */
     public com.google.spanner.v1.CommitResponse commit(
         com.google.spanner.v1.CommitRequest request) {
       return blockingUnaryCall(getChannel(), getCommitMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Rolls back a transaction, releasing any locks it holds. It is a good
+     * idea to call this for any transaction that includes one or more
+     * [Read][google.spanner.v1.Spanner.Read] or [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] requests and
+     * ultimately decides not to commit.
+     * `Rollback` returns `OK` if it successfully aborts the transaction, the
+     * transaction was already aborted, or the transaction is not
+     * found. `Rollback` never returns `ABORTED`.
+     * </pre>
+     */
     public com.google.protobuf.Empty rollback(com.google.spanner.v1.RollbackRequest request) {
       return blockingUnaryCall(getChannel(), getRollbackMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a query
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] to specify a subset
+     * of the query result to read.  The same session and read-only transaction
+     * must be used by the PartitionQueryRequest used to create the
+     * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the query, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public com.google.spanner.v1.PartitionResponse partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request) {
       return blockingUnaryCall(getChannel(), getPartitionQueryMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a read
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [StreamingRead][google.spanner.v1.Spanner.StreamingRead] to specify a subset of the read
+     * result to read.  The same session and read-only transaction must be used by
+     * the PartitionReadRequest used to create the partition tokens and the
+     * ReadRequests that use the partition tokens.  There are no ordering
+     * guarantees on rows returned among the returned partition tokens, or even
+     * within each individual StreamingRead call issued with a partition_token.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the read, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public com.google.spanner.v1.PartitionResponse partitionRead(
         com.google.spanner.v1.PartitionReadRequest request) {
       return blockingUnaryCall(getChannel(), getPartitionReadMethod(), getCallOptions(), request);
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner API
+   * The Cloud Spanner API can be used to manage sessions and execute
+   * transactions on data stored in Cloud Spanner databases.
+   * </pre>
+   */
   public static final class SpannerFutureStub
       extends io.grpc.stub.AbstractFutureStub<SpannerFutureStub> {
     private SpannerFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -1172,14 +1752,43 @@ public final class SpannerGrpc {
       return new SpannerFutureStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a new session. A session can be used to perform
+     * transactions that read and/or modify data in a Cloud Spanner database.
+     * Sessions are meant to be reused for many consecutive
+     * transactions.
+     * Sessions can only execute one transaction at a time. To execute
+     * multiple concurrent read-write/write-only transactions, create
+     * multiple sessions. Note that standalone reads and queries use a
+     * transaction internally, and count toward the one transaction
+     * limit.
+     * Active sessions use additional server resources, so it is a good idea to
+     * delete idle and unneeded sessions.
+     * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
+     * operations are sent for more than an hour. If a session is deleted,
+     * requests to it return `NOT_FOUND`.
+     * Idle sessions can be kept alive by sending a trivial SQL query
+     * periodically, e.g., `"SELECT 1"`.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Session>
         createSession(com.google.spanner.v1.CreateSessionRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getCreateSessionMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates multiple new sessions.
+     * This API can be used to initialize a session cache on the clients.
+     * See https://goo.gl/TgSFN2 for best practices on session cache management.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.BatchCreateSessionsResponse>
         batchCreateSessions(com.google.spanner.v1.BatchCreateSessionsRequest request) {
@@ -1187,14 +1796,28 @@ public final class SpannerGrpc {
           getChannel().newCall(getBatchCreateSessionsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets a session. Returns `NOT_FOUND` if the session does not exist.
+     * This is mainly useful for determining whether a session is still
+     * alive.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Session>
         getSession(com.google.spanner.v1.GetSessionRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getGetSessionMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all sessions in a given database.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.ListSessionsResponse>
         listSessions(com.google.spanner.v1.ListSessionsRequest request) {
@@ -1202,21 +1825,57 @@ public final class SpannerGrpc {
           getChannel().newCall(getListSessionsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Ends a session, releasing server resources associated with it. This will
+     * asynchronously trigger cancellation of any operations that are running with
+     * this session.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteSession(com.google.spanner.v1.DeleteSessionRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getDeleteSessionMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes an SQL statement, returning all results in a single reply. This
+     * method cannot be used to return a result set larger than 10 MiB;
+     * if the query yields more data than that, the query fails with
+     * a `FAILED_PRECONDITION` error.
+     * Operations inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be fetched in streaming fashion by calling
+     * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.ResultSet>
         executeSql(com.google.spanner.v1.ExecuteSqlRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getExecuteSqlMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Executes a batch of SQL DML statements. This method allows many statements
+     * to be run with lower latency than submitting them sequentially with
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].
+     * Statements are executed in sequential order. A request can succeed even if
+     * a statement fails. The [ExecuteBatchDmlResponse.status][google.spanner.v1.ExecuteBatchDmlResponse.status] field in the
+     * response provides information about the statement that failed. Clients must
+     * inspect this field to determine whether an error occurred.
+     * Execution stops after the first failed statement; the remaining statements
+     * are not executed.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.ExecuteBatchDmlResponse>
         executeBatchDml(com.google.spanner.v1.ExecuteBatchDmlRequest request) {
@@ -1224,32 +1883,96 @@ public final class SpannerGrpc {
           getChannel().newCall(getExecuteBatchDmlMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Reads rows from the database using key lookups and scans, as a
+     * simple key/value style alternative to
+     * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].  This method cannot be used to
+     * return a result set larger than 10 MiB; if the read matches more
+     * data than that, the read fails with a `FAILED_PRECONDITION`
+     * error.
+     * Reads inside read-write transactions might return `ABORTED`. If
+     * this occurs, the application should restart the transaction from
+     * the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+     * Larger result sets can be yielded in streaming fashion by calling
+     * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.ResultSet> read(
         com.google.spanner.v1.ReadRequest request) {
       return futureUnaryCall(getChannel().newCall(getReadMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Begins a new transaction. This step can often be skipped:
+     * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
+     * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
+     * side-effect.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Transaction>
         beginTransaction(com.google.spanner.v1.BeginTransactionRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getBeginTransactionMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Commits a transaction. The request includes the mutations to be
+     * applied to rows in the database.
+     * `Commit` might return an `ABORTED` error. This can occur at any time;
+     * commonly, the cause is conflicts with concurrent
+     * transactions. However, it can also happen for a variety of other
+     * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
+     * the transaction from the beginning, re-using the same session.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.CommitResponse>
         commit(com.google.spanner.v1.CommitRequest request) {
       return futureUnaryCall(getChannel().newCall(getCommitMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Rolls back a transaction, releasing any locks it holds. It is a good
+     * idea to call this for any transaction that includes one or more
+     * [Read][google.spanner.v1.Spanner.Read] or [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] requests and
+     * ultimately decides not to commit.
+     * `Rollback` returns `OK` if it successfully aborts the transaction, the
+     * transaction was already aborted, or the transaction is not
+     * found. `Rollback` never returns `ABORTED`.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> rollback(
         com.google.spanner.v1.RollbackRequest request) {
       return futureUnaryCall(getChannel().newCall(getRollbackMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a query
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] to specify a subset
+     * of the query result to read.  The same session and read-only transaction
+     * must be used by the PartitionQueryRequest used to create the
+     * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the query, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.PartitionResponse>
         partitionQuery(com.google.spanner.v1.PartitionQueryRequest request) {
@@ -1257,7 +1980,24 @@ public final class SpannerGrpc {
           getChannel().newCall(getPartitionQueryMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates a set of partition tokens that can be used to execute a read
+     * operation in parallel.  Each of the returned partition tokens can be used
+     * by [StreamingRead][google.spanner.v1.Spanner.StreamingRead] to specify a subset of the read
+     * result to read.  The same session and read-only transaction must be used by
+     * the PartitionReadRequest used to create the partition tokens and the
+     * ReadRequests that use the partition tokens.  There are no ordering
+     * guarantees on rows returned among the returned partition tokens, or even
+     * within each individual StreamingRead call issued with a partition_token.
+     * Partition tokens become invalid when the session used to create them
+     * is deleted, is idle for too long, begins a new transaction, or becomes too
+     * old.  When any of these happen, it is not possible to resume the read, and
+     * the whole operation must be restarted from the beginning.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.PartitionResponse>
         partitionRead(com.google.spanner.v1.PartitionReadRequest request) {

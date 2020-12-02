@@ -22,7 +22,30 @@ import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
-/** */
+/**
+ *
+ *
+ * <pre>
+ * Cloud Spanner Instance Admin API
+ * The Cloud Spanner Instance Admin API can be used to create, delete,
+ * modify and list instances. Instances are dedicated Cloud Spanner serving
+ * and storage resources to be used by Cloud Spanner databases.
+ * Each instance has a "configuration", which dictates where the
+ * serving resources for the Cloud Spanner instance are located (e.g.,
+ * US-central, Europe). Configurations are created by Google based on
+ * resource availability.
+ * Cloud Spanner billing is based on the instances that exist and their
+ * sizes. After an instance exists, there are no additional
+ * per-database or per-operation charges for use of the instance
+ * (though there may be additional network bandwidth charges).
+ * Instances offer isolation: problems with databases in one instance
+ * will not affect other instances. However, within an instance
+ * databases can affect each other. For example, if one database in an
+ * instance receives a lot of requests and consumes most of the
+ * instance resources, fewer resources are available for other
+ * databases in that instance, and their performance may suffer.
+ * </pre>
+ */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/instance/v1/spanner_instance_admin.proto")
@@ -518,10 +541,39 @@ public final class InstanceAdminGrpc {
     return InstanceAdminFutureStub.newStub(factory, channel);
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
   public abstract static class InstanceAdminImplBase implements io.grpc.BindableService {
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the supported instance configurations for a given project.
+     * </pre>
+     */
     public void listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request,
         io.grpc.stub.StreamObserver<
@@ -530,7 +582,13 @@ public final class InstanceAdminGrpc {
       asyncUnimplementedUnaryCall(getListInstanceConfigsMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance configuration.
+     * </pre>
+     */
     public void getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
@@ -538,7 +596,13 @@ public final class InstanceAdminGrpc {
       asyncUnimplementedUnaryCall(getGetInstanceConfigMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all instances in the given project.
+     * </pre>
+     */
     public void listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
@@ -546,7 +610,13 @@ public final class InstanceAdminGrpc {
       asyncUnimplementedUnaryCall(getListInstancesMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance.
+     * </pre>
+     */
     public void getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
@@ -554,42 +624,151 @@ public final class InstanceAdminGrpc {
       asyncUnimplementedUnaryCall(getGetInstanceMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance and begins preparing it to begin serving. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance. The instance name is assigned by the caller. If the
+     * named instance already exists, `CreateInstance` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance is readable via the API, with all requested attributes
+     *     but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance immediately unreadable
+     *     via the API.
+     *   * The instance can be deleted.
+     *   * All other attempts to modify the instance are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can be created in the instance.
+     *   * The instance's allocated resource levels are readable via the API.
+     *   * The instance's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track creation of the instance.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * </pre>
+     */
     public void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getCreateInstanceMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance. If the named instance does not
+     * exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance's allocation
+     *     has been requested, billing is based on the newly-requested level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+     *     restoring resources to their pre-request values. The operation
+     *     is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance are rejected.
+     *   * Reading the instance via the API continues to give the pre-request
+     *     resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance's
+     *     tables.
+     *   * The instance's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track the instance modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * Authorization requires `spanner.instances.update` permission on
+     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * </pre>
+     */
     public void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       asyncUnimplementedUnaryCall(getUpdateInstanceMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an instance.
+     * Immediately upon completion of the request:
+     *   * Billing ceases for all of the instance's reserved resources.
+     * Soon afterward:
+     *   * The instance and *all of its databases* immediately and
+     *     irrevocably disappear from the API. All data in the databases
+     *     is permanently deleted.
+     * </pre>
+     */
     public void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getDeleteInstanceMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on an instance resource. Replaces any
+     * existing policy.
+     * Authorization requires `spanner.instances.setIamPolicy` on
+     * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnimplementedUnaryCall(getSetIamPolicyMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for an instance resource. Returns an empty
+     * policy if an instance exists but does not have a policy set.
+     * Authorization requires `spanner.instances.getIamPolicy` on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       asyncUnimplementedUnaryCall(getGetIamPolicyMethod(), responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified instance resource.
+     * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+     * result in a NOT_FOUND error if the user has `spanner.instances.list`
+     * permission on the containing Google Cloud Project. Otherwise returns an
+     * empty set of permissions.
+     * </pre>
+     */
     public void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
@@ -668,7 +847,30 @@ public final class InstanceAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
   public static final class InstanceAdminStub
       extends io.grpc.stub.AbstractAsyncStub<InstanceAdminStub> {
     private InstanceAdminStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -680,7 +882,13 @@ public final class InstanceAdminGrpc {
       return new InstanceAdminStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the supported instance configurations for a given project.
+     * </pre>
+     */
     public void listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request,
         io.grpc.stub.StreamObserver<
@@ -692,7 +900,13 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance configuration.
+     * </pre>
+     */
     public void getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
@@ -703,7 +917,13 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all instances in the given project.
+     * </pre>
+     */
     public void listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
@@ -714,7 +934,13 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance.
+     * </pre>
+     */
     public void getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
@@ -725,7 +951,39 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance and begins preparing it to begin serving. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance. The instance name is assigned by the caller. If the
+     * named instance already exists, `CreateInstance` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance is readable via the API, with all requested attributes
+     *     but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance immediately unreadable
+     *     via the API.
+     *   * The instance can be deleted.
+     *   * All other attempts to modify the instance are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can be created in the instance.
+     *   * The instance's allocated resource levels are readable via the API.
+     *   * The instance's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track creation of the instance.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * </pre>
+     */
     public void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -735,7 +993,44 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance. If the named instance does not
+     * exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance's allocation
+     *     has been requested, billing is based on the newly-requested level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+     *     restoring resources to their pre-request values. The operation
+     *     is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance are rejected.
+     *   * Reading the instance via the API continues to give the pre-request
+     *     resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance's
+     *     tables.
+     *   * The instance's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track the instance modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * Authorization requires `spanner.instances.update` permission on
+     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * </pre>
+     */
     public void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
@@ -745,7 +1040,19 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an instance.
+     * Immediately upon completion of the request:
+     *   * Billing ceases for all of the instance's reserved resources.
+     * Soon afterward:
+     *   * The instance and *all of its databases* immediately and
+     *     irrevocably disappear from the API. All data in the databases
+     *     is permanently deleted.
+     * </pre>
+     */
     public void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -755,7 +1062,16 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on an instance resource. Replaces any
+     * existing policy.
+     * Authorization requires `spanner.instances.setIamPolicy` on
+     * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
@@ -765,7 +1081,16 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for an instance resource. Returns an empty
+     * policy if an instance exists but does not have a policy set.
+     * Authorization requires `spanner.instances.getIamPolicy` on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
@@ -775,7 +1100,17 @@ public final class InstanceAdminGrpc {
           responseObserver);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified instance resource.
+     * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+     * result in a NOT_FOUND error if the user has `spanner.instances.list`
+     * permission on the containing Google Cloud Project. Otherwise returns an
+     * empty set of permissions.
+     * </pre>
+     */
     public void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
@@ -787,7 +1122,30 @@ public final class InstanceAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
   public static final class InstanceAdminBlockingStub
       extends io.grpc.stub.AbstractBlockingStub<InstanceAdminBlockingStub> {
     private InstanceAdminBlockingStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -800,61 +1158,194 @@ public final class InstanceAdminGrpc {
       return new InstanceAdminBlockingStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the supported instance configurations for a given project.
+     * </pre>
+     */
     public com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
       return blockingUnaryCall(
           getChannel(), getListInstanceConfigsMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance configuration.
+     * </pre>
+     */
     public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
       return blockingUnaryCall(
           getChannel(), getGetInstanceConfigMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all instances in the given project.
+     * </pre>
+     */
     public com.google.spanner.admin.instance.v1.ListInstancesResponse listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
       return blockingUnaryCall(getChannel(), getListInstancesMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance.
+     * </pre>
+     */
     public com.google.spanner.admin.instance.v1.Instance getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
       return blockingUnaryCall(getChannel(), getGetInstanceMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance and begins preparing it to begin serving. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance. The instance name is assigned by the caller. If the
+     * named instance already exists, `CreateInstance` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance is readable via the API, with all requested attributes
+     *     but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance immediately unreadable
+     *     via the API.
+     *   * The instance can be deleted.
+     *   * All other attempts to modify the instance are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can be created in the instance.
+     *   * The instance's allocated resource levels are readable via the API.
+     *   * The instance's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track creation of the instance.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * </pre>
+     */
     public com.google.longrunning.Operation createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
       return blockingUnaryCall(getChannel(), getCreateInstanceMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance. If the named instance does not
+     * exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance's allocation
+     *     has been requested, billing is based on the newly-requested level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+     *     restoring resources to their pre-request values. The operation
+     *     is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance are rejected.
+     *   * Reading the instance via the API continues to give the pre-request
+     *     resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance's
+     *     tables.
+     *   * The instance's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track the instance modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * Authorization requires `spanner.instances.update` permission on
+     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * </pre>
+     */
     public com.google.longrunning.Operation updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
       return blockingUnaryCall(getChannel(), getUpdateInstanceMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an instance.
+     * Immediately upon completion of the request:
+     *   * Billing ceases for all of the instance's reserved resources.
+     * Soon afterward:
+     *   * The instance and *all of its databases* immediately and
+     *     irrevocably disappear from the API. All data in the databases
+     *     is permanently deleted.
+     * </pre>
+     */
     public com.google.protobuf.Empty deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
       return blockingUnaryCall(getChannel(), getDeleteInstanceMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on an instance resource. Replaces any
+     * existing policy.
+     * Authorization requires `spanner.instances.setIamPolicy` on
+     * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
       return blockingUnaryCall(getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for an instance resource. Returns an empty
+     * policy if an instance exists but does not have a policy set.
+     * Authorization requires `spanner.instances.getIamPolicy` on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
       return blockingUnaryCall(getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified instance resource.
+     * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+     * result in a NOT_FOUND error if the user has `spanner.instances.list`
+     * permission on the containing Google Cloud Project. Otherwise returns an
+     * empty set of permissions.
+     * </pre>
+     */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request) {
       return blockingUnaryCall(
@@ -862,7 +1353,30 @@ public final class InstanceAdminGrpc {
     }
   }
 
-  /** */
+  /**
+   *
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
   public static final class InstanceAdminFutureStub
       extends io.grpc.stub.AbstractFutureStub<InstanceAdminFutureStub> {
     private InstanceAdminFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
@@ -875,7 +1389,13 @@ public final class InstanceAdminGrpc {
       return new InstanceAdminFutureStub(channel, callOptions);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists the supported instance configurations for a given project.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
         listInstanceConfigs(
@@ -884,7 +1404,13 @@ public final class InstanceAdminGrpc {
           getChannel().newCall(getListInstanceConfigsMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance configuration.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.InstanceConfig>
         getInstanceConfig(com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
@@ -892,7 +1418,13 @@ public final class InstanceAdminGrpc {
           getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Lists all instances in the given project.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.ListInstancesResponse>
         listInstances(com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
@@ -900,7 +1432,13 @@ public final class InstanceAdminGrpc {
           getChannel().newCall(getListInstancesMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.Instance>
         getInstance(com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
@@ -908,42 +1446,151 @@ public final class InstanceAdminGrpc {
           getChannel().newCall(getGetInstanceMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance and begins preparing it to begin serving. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance. The instance name is assigned by the caller. If the
+     * named instance already exists, `CreateInstance` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance is readable via the API, with all requested attributes
+     *     but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance immediately unreadable
+     *     via the API.
+     *   * The instance can be deleted.
+     *   * All other attempts to modify the instance are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can be created in the instance.
+     *   * The instance's allocated resource levels are readable via the API.
+     *   * The instance's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track creation of the instance.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createInstance(com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getCreateInstanceMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance. If the named instance does not
+     * exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance's allocation
+     *     has been requested, billing is based on the newly-requested level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+     *     restoring resources to their pre-request values. The operation
+     *     is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance are rejected.
+     *   * Reading the instance via the API continues to give the pre-request
+     *     resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance's
+     *     tables.
+     *   * The instance's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and
+     * can be used to track the instance modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+     * Authorization requires `spanner.instances.update` permission on
+     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         updateInstance(com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getUpdateInstanceMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an instance.
+     * Immediately upon completion of the request:
+     *   * Billing ceases for all of the instance's reserved resources.
+     * Soon afterward:
+     *   * The instance and *all of its databases* immediately and
+     *     irrevocably disappear from the API. All data in the databases
+     *     is permanently deleted.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteInstance(com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getDeleteInstanceMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Sets the access control policy on an instance resource. Replaces any
+     * existing policy.
+     * Authorization requires `spanner.instances.setIamPolicy` on
+     * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Gets the access control policy for an instance resource. Returns an empty
+     * policy if an instance exists but does not have a policy set.
+     * Authorization requires `spanner.instances.getIamPolicy` on
+     * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()), request);
     }
 
-    /** */
+    /**
+     *
+     *
+     * <pre>
+     * Returns permissions that the caller has on the specified instance resource.
+     * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+     * result in a NOT_FOUND error if the user has `spanner.instances.list`
+     * permission on the containing Google Cloud Project. Otherwise returns an
+     * empty set of permissions.
+     * </pre>
+     */
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.iam.v1.TestIamPermissionsResponse>
         testIamPermissions(com.google.iam.v1.TestIamPermissionsRequest request) {
