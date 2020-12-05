@@ -39,7 +39,6 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
@@ -288,18 +287,19 @@ public class ITBackupTest {
               || !dbAdminClient.getOperation(op2.getName()).getDone())) {
         Thread.sleep(10_000L);
       }
+      boolean giveUp = false;
       if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
         logger.warning(String.format("Operation %s still not finished", op1.getName()));
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Backup1 still not finished. Test is giving up waiting for it.");
+        logger.warning("Backup1 still not finished. Test is giving up waiting for it.");
+        giveUp = true;
       }
       if (!dbAdminClient.getOperation(op2.getName()).getDone()) {
         logger.warning(String.format("Operation %s still not finished", op2.getName()));
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Backup2 still not finished. Test is giving up waiting for it.");
+        logger.warning("Backup2 still not finished. Test is giving up waiting for it.");
+        giveUp = true;
       }
+      assumeFalse("Backup test giving up because the backup operation is taking too long.", giveUp);
+
       logger.info("Long-running operations finished. Getting backups by id.");
       backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
       backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
