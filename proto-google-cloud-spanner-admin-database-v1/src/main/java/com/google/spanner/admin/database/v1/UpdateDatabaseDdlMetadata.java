@@ -101,6 +101,11 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
                   input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry));
               break;
             }
+          case 32:
+            {
+              throttled_ = input.readBool();
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -334,6 +339,26 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     return commitTimestamps_.get(index);
   }
 
+  public static final int THROTTLED_FIELD_NUMBER = 4;
+  private boolean throttled_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. When true, indicates that the operation is throttled e.g
+   * due to resource constraints. When resources become available the operation
+   * will resume and this field will be false again.
+   * </pre>
+   *
+   * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The throttled.
+   */
+  @java.lang.Override
+  public boolean getThrottled() {
+    return throttled_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -356,6 +381,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     }
     for (int i = 0; i < commitTimestamps_.size(); i++) {
       output.writeMessage(3, commitTimestamps_.get(i));
+    }
+    if (throttled_ != false) {
+      output.writeBool(4, throttled_);
     }
     unknownFields.writeTo(output);
   }
@@ -380,6 +408,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     for (int i = 0; i < commitTimestamps_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, commitTimestamps_.get(i));
     }
+    if (throttled_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(4, throttled_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -399,6 +430,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (!getDatabase().equals(other.getDatabase())) return false;
     if (!getStatementsList().equals(other.getStatementsList())) return false;
     if (!getCommitTimestampsList().equals(other.getCommitTimestampsList())) return false;
+    if (getThrottled() != other.getThrottled()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -420,6 +452,8 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       hash = (37 * hash) + COMMIT_TIMESTAMPS_FIELD_NUMBER;
       hash = (53 * hash) + getCommitTimestampsList().hashCode();
     }
+    hash = (37 * hash) + THROTTLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getThrottled());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -579,6 +613,8 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       } else {
         commitTimestampsBuilder_.clear();
       }
+      throttled_ = false;
+
       return this;
     }
 
@@ -623,6 +659,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       } else {
         result.commitTimestamps_ = commitTimestampsBuilder_.build();
       }
+      result.throttled_ = throttled_;
       onBuilt();
       return result;
     }
@@ -714,6 +751,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
             commitTimestampsBuilder_.addAllMessages(other.commitTimestamps_);
           }
         }
+      }
+      if (other.getThrottled() != false) {
+        setThrottled(other.getThrottled());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1417,6 +1457,64 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         commitTimestamps_ = null;
       }
       return commitTimestampsBuilder_;
+    }
+
+    private boolean throttled_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. When true, indicates that the operation is throttled e.g
+     * due to resource constraints. When resources become available the operation
+     * will resume and this field will be false again.
+     * </pre>
+     *
+     * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The throttled.
+     */
+    @java.lang.Override
+    public boolean getThrottled() {
+      return throttled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. When true, indicates that the operation is throttled e.g
+     * due to resource constraints. When resources become available the operation
+     * will resume and this field will be false again.
+     * </pre>
+     *
+     * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The throttled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setThrottled(boolean value) {
+
+      throttled_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. When true, indicates that the operation is throttled e.g
+     * due to resource constraints. When resources become available the operation
+     * will resume and this field will be false again.
+     * </pre>
+     *
+     * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearThrottled() {
+
+      throttled_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

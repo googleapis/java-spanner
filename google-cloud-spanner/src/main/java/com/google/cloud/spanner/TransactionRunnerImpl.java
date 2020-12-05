@@ -277,7 +277,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               .setSession(session.getName())
               .setReturnCommitStats(options.withCommitStats());
       synchronized (lock) {
-        if (transactionIdFuture == null && transactionId == null) {
+        if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
           createTxnAsync(finishOps);
         } else {

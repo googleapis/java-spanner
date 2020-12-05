@@ -18,10 +18,19 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseNotFoundException;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,12 +41,26 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class QuickstartSampleIT {
-  private String instanceId = System.getProperty("spanner.test.instance");
-  // This database needs to exist for test to pass.
-  private String dbId = System.getProperty("spanner.quickstart.database");
+  private static String instanceId = System.getProperty("spanner.test.instance");
+  private static String dbId = formatForTest(System.getProperty("spanner.quickstart.database"));
+  private static DatabaseAdminClient dbClient;
+
   private ByteArrayOutputStream bout;
   private PrintStream stdOut = System.out;
   private PrintStream out;
+
+  @BeforeClass
+  public static void createDatabase() {
+    final SpannerOptions options = SpannerOptions.newBuilder().build();
+    final Spanner spanner = options.getService();
+    dbClient = spanner.getDatabaseAdminClient();
+    dbClient.createDatabase(instanceId, dbId, Collections.emptyList());
+  }
+
+  @AfterClass
+  public static void dropDatabase() {
+    dbClient.dropDatabase(instanceId, dbId);
+  }
 
   @Before
   public void setUp() {
@@ -58,5 +81,9 @@ public class QuickstartSampleIT {
     QuickstartSample.main(instanceId, dbId);
     String got = bout.toString();
     assertThat(got).contains("1");
+  }
+
+  private static String formatForTest(String name) {
+    return name + "-" + UUID.randomUUID().toString().substring(0, 20);
   }
 }

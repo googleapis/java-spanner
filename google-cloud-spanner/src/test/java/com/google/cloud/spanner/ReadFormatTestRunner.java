@@ -117,9 +117,10 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
 
             @Override
             public void request(int numMessages) {}
-          });
+          },
+          false);
       consumer = stream.consumer();
-      resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener(), false);
+      resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
 
       JSONArray chunks = testCase.getJSONArray("chunks");
       JSONObject expectedResult = testCase.getJSONObject("result");
