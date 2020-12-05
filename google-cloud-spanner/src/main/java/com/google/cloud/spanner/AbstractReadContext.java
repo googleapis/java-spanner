@@ -608,14 +608,10 @@ abstract class AbstractReadContext
 
   ResultSet executeQueryInternalWithOptions(
       final Statement statement,
-      com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
+      final com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
       Options options,
-      ByteString partitionToken) {
+      final ByteString partitionToken) {
     beforeReadOrQuery();
-    final ExecuteSqlRequest.Builder request = getExecuteSqlRequestBuilder(statement, queryMode);
-    if (partitionToken != null) {
-      request.setPartitionToken(partitionToken);
-    }
     final int prefetchChunks =
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
@@ -623,18 +619,22 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
+            final ExecuteSqlRequest.Builder request =
+                getExecuteSqlRequestBuilder(statement, queryMode);
+            if (partitionToken != null) {
+              request.setPartitionToken(partitionToken);
+            }
             if (resumeToken != null) {
               request.setResumeToken(resumeToken);
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call);
+            stream.setCall(call, request.hasTransaction() && request.getTransaction().hasBegin());
             return stream;
           }
         };
-    return new GrpcResultSet(
-        stream, this, request.hasTransaction() && request.getTransaction().hasBegin());
+    return new GrpcResultSet(stream, this);
   }
 
   /**
@@ -723,10 +723,6 @@ abstract class AbstractReadContext
     if (index != null) {
       builder.setIndex(index);
     }
-    TransactionSelector selector = getTransactionSelector();
-    if (selector != null) {
-      builder.setTransaction(selector);
-    }
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
     }
@@ -740,15 +736,18 @@ abstract class AbstractReadContext
             if (resumeToken != null) {
               builder.setResumeToken(resumeToken);
             }
+            TransactionSelector selector = getTransactionSelector();
+            if (selector != null) {
+              builder.setTransaction(selector);
+            }
             SpannerRpc.StreamingCall call =
                 rpc.read(builder.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call);
+            stream.setCall(call, selector != null && selector.hasBegin());
             return stream;
           }
         };
-    GrpcResultSet resultSet =
-        new GrpcResultSet(stream, this, selector != null && selector.hasBegin());
+    GrpcResultSet resultSet = new GrpcResultSet(stream, this);
     return resultSet;
   }
 

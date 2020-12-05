@@ -47,7 +47,9 @@ import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
+import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -483,6 +485,43 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+      RetrySettings.newBuilder()
+          .setInitialRetryDelay(Duration.ofSeconds(2L))
+          .setRetryDelayMultiplier(1.5)
+          .setMaxRetryDelay(Duration.ofSeconds(15L))
+          .setMaxAttempts(10)
+          .build();
+
+  @VisibleForTesting
+  static final class AdminRequestsLimitExceededRetryAlgorithm<T>
+      implements ResultRetryAlgorithm<T> {
+    @Override
+    public TimedAttemptSettings createNextAttempt(
+        Throwable prevThrowable, T prevResponse, TimedAttemptSettings prevSettings) {
+      // Use default retry settings.
+      return null;
+    }
+
+    @Override
+    public boolean shouldRetry(Throwable prevThrowable, T prevResponse)
+        throws CancellationException {
+      return prevThrowable instanceof AdminRequestsPerMinuteExceededException;
+    }
+  }
+
+  private static <T> T runWithRetryOnAdministrativeRequestsExceeded(Callable<T> callable) {
+    try {
+      return RetryHelper.runWithRetries(
+          callable,
+          ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS,
+          new AdminRequestsLimitExceededRetryAlgorithm<>(),
+          NanoClock.getDefaultClock());
+    } catch (RetryHelperException e) {
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
+    }
+  }
+
   private static final class OperationFutureRetryAlgorithm<ResultT, MetadataT>
       implements ResultRetryAlgorithm<OperationFuture<ResultT, MetadataT>> {
 
@@ -554,30 +593,39 @@ public class GapicSpannerRpc implements SpannerRpc {
     public OperationFuture<ResponseT, MetadataT> call() throws Exception {
       acquireAdministrativeRequestsRateLimiter();
 
-      String operationName = null;
-      if (isRetry) {
-        // Query the backend to see if the operation was actually created, and that the
-        // problem was caused by a network problem or other transient problem client side.
-        Operation operation = mostRecentOperation(lister, getStartTimeFunction, initialCallTime);
-        if (operation != null) {
-          // Operation found, resume tracking that operation.
-          operationName = operation.getName();
-        }
-      } else {
-        initialCallTime =
-            Timestamp.newBuilder()
-                .setSeconds(
-                    TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS))
-                .build();
-      }
-      isRetry = true;
+      return runWithRetryOnAdministrativeRequestsExceeded(
+          new Callable<OperationFuture<ResponseT, MetadataT>>() {
+            @Override
+            public OperationFuture<ResponseT, MetadataT> call() throws Exception {
+              String operationName = null;
+              if (isRetry) {
+                // Query the backend to see if the operation was actually created, and that the
+                // problem was caused by a network problem or other transient problem client side.
+                Operation operation =
+                    mostRecentOperation(lister, getStartTimeFunction, initialCallTime);
+                if (operation != null) {
+                  // Operation found, resume tracking that operation.
+                  operationName = operation.getName();
+                }
+              } else {
+                initialCallTime =
+                    Timestamp.newBuilder()
+                        .setSeconds(
+                            TimeUnit.SECONDS.convert(
+                                System.currentTimeMillis(), TimeUnit.MILLISECONDS))
+                        .build();
+              }
+              isRetry = true;
 
-      if (operationName == null) {
-        GrpcCallContext context = newCallContext(null, instanceName, initialRequest, method);
-        return operationCallable.futureCall(initialRequest, context);
-      } else {
-        return operationCallable.resumeFutureCall(operationName);
-      }
+              if (operationName == null) {
+                GrpcCallContext context =
+                    newCallContext(null, instanceName, initialRequest, method);
+                return operationCallable.futureCall(initialRequest, context);
+              } else {
+                return operationCallable.resumeFutureCall(operationName);
+              }
+            }
+          });
     }
   }
 
@@ -757,13 +805,20 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (pageToken != null) {
       requestBuilder.setPageToken(pageToken);
     }
-    ListBackupOperationsRequest request = requestBuilder.build();
+    final ListBackupOperationsRequest request = requestBuilder.build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(
             null, instanceName, request, DatabaseAdminGrpc.getListBackupOperationsMethod());
     ListBackupOperationsResponse response =
-        get(databaseAdminStub.listBackupOperationsCallable().futureCall(request, context));
+        runWithRetryOnAdministrativeRequestsExceeded(
+            new Callable<ListBackupOperationsResponse>() {
+              @Override
+              public ListBackupOperationsResponse call() throws Exception {
+                return get(
+                    databaseAdminStub.listBackupOperationsCallable().futureCall(request, context));
+              }
+            });
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
@@ -780,13 +835,23 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (pageToken != null) {
       requestBuilder.setPageToken(pageToken);
     }
-    ListDatabaseOperationsRequest request = requestBuilder.build();
+    final ListDatabaseOperationsRequest request = requestBuilder.build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(
             null, instanceName, request, DatabaseAdminGrpc.getListDatabaseOperationsMethod());
     ListDatabaseOperationsResponse response =
-        get(databaseAdminStub.listDatabaseOperationsCallable().futureCall(request, context));
+        runWithRetryOnAdministrativeRequestsExceeded(
+            new Callable<ListDatabaseOperationsResponse>() {
+              @Override
+              public ListDatabaseOperationsResponse call() throws Exception {
+                return get(
+                    databaseAdminStub
+                        .listDatabaseOperationsCallable()
+                        .futureCall(request, context));
+              }
+            });
+
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
@@ -803,12 +868,19 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (pageToken != null) {
       requestBuilder.setPageToken(pageToken);
     }
-    ListBackupsRequest request = requestBuilder.build();
+    final ListBackupsRequest request = requestBuilder.build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListBackupsMethod());
     ListBackupsResponse response =
-        get(databaseAdminStub.listBackupsCallable().futureCall(request, context));
+        runWithRetryOnAdministrativeRequestsExceeded(
+            new Callable<ListBackupsResponse>() {
+              @Override
+              public ListBackupsResponse call() throws Exception {
+                return get(databaseAdminStub.listBackupsCallable().futureCall(request, context));
+              }
+            });
+
     return new Paginated<>(response.getBackupsList(), response.getNextPageToken());
   }
 
@@ -821,12 +893,19 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (pageToken != null) {
       requestBuilder.setPageToken(pageToken);
     }
-    ListDatabasesRequest request = requestBuilder.build();
+    final ListDatabasesRequest request = requestBuilder.build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListDatabasesMethod());
     ListDatabasesResponse response =
-        get(databaseAdminStub.listDatabasesCallable().futureCall(request, context));
+        runWithRetryOnAdministrativeRequestsExceeded(
+            new Callable<ListDatabasesResponse>() {
+              @Override
+              public ListDatabasesResponse call() throws Exception {
+                return get(databaseAdminStub.listDatabasesCallable().futureCall(request, context));
+              }
+            });
+
     return new Paginated<>(response.getDatabasesList(), response.getNextPageToken());
   }
 
@@ -897,67 +976,97 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId)
+      final String databaseName,
+      final Iterable<String> updateDatabaseStatements,
+      @Nullable final String updateId)
       throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    UpdateDatabaseDdlRequest request =
+    final UpdateDatabaseDdlRequest request =
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(databaseName)
             .addAllStatements(updateDatabaseStatements)
             .setOperationId(MoreObjects.firstNonNull(updateId, ""))
             .build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
-    OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata> callable =
+    final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata> callable =
         databaseAdminStub.updateDatabaseDdlOperationCallable();
-    OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture =
-        callable.futureCall(request, context);
-    try {
-      operationFuture.getInitialFuture().get();
-    } catch (InterruptedException e) {
-      throw newSpannerException(e);
-    } catch (ExecutionException e) {
-      Throwable t = e.getCause();
-      if (t instanceof AlreadyExistsException) {
-        String operationName =
-            OPERATION_NAME_TEMPLATE.instantiate("database", databaseName, "operation", updateId);
-        return callable.resumeFutureCall(operationName, context);
-      }
-    }
-    return operationFuture;
+
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<OperationFuture<Empty, UpdateDatabaseDdlMetadata>>() {
+          @Override
+          public OperationFuture<Empty, UpdateDatabaseDdlMetadata> call() throws Exception {
+            OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture =
+                callable.futureCall(request, context);
+            try {
+              operationFuture.getInitialFuture().get();
+            } catch (InterruptedException e) {
+              throw newSpannerException(e);
+            } catch (ExecutionException e) {
+              Throwable t = e.getCause();
+              if (t instanceof AlreadyExistsException) {
+                String operationName =
+                    OPERATION_NAME_TEMPLATE.instantiate(
+                        "database", databaseName, "operation", updateId);
+                return callable.resumeFutureCall(operationName, context);
+              }
+            }
+            return operationFuture;
+          }
+        });
   }
 
   @Override
   public void dropDatabase(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    DropDatabaseRequest request =
+    final DropDatabaseRequest request =
         DropDatabaseRequest.newBuilder().setDatabase(databaseName).build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getDropDatabaseMethod());
-    get(databaseAdminStub.dropDatabaseCallable().futureCall(request, context));
+    runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            get(databaseAdminStub.dropDatabaseCallable().futureCall(request, context));
+            return null;
+          }
+        });
   }
 
   @Override
   public Database getDatabase(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    GetDatabaseRequest request = GetDatabaseRequest.newBuilder().setName(databaseName).build();
+    final GetDatabaseRequest request =
+        GetDatabaseRequest.newBuilder().setName(databaseName).build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseMethod());
-    return get(databaseAdminStub.getDatabaseCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Database>() {
+          @Override
+          public Database call() throws Exception {
+            return get(databaseAdminStub.getDatabaseCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public List<String> getDatabaseDdl(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    GetDatabaseDdlRequest request =
+    final GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder().setDatabase(databaseName).build();
 
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
-    return get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
-        .getStatementsList();
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<List<String>>() {
+          @Override
+          public List<String> call() throws Exception {
+            return get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
+                .getStatementsList();
+          }
+        });
   }
 
   @Override
@@ -1069,52 +1178,89 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public Backup updateBackup(Backup backup, FieldMask updateMask) {
     acquireAdministrativeRequestsRateLimiter();
-    UpdateBackupRequest request =
+    final UpdateBackupRequest request =
         UpdateBackupRequest.newBuilder().setBackup(backup).setUpdateMask(updateMask).build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, backup.getName(), request, DatabaseAdminGrpc.getUpdateBackupMethod());
-    return databaseAdminStub.updateBackupCallable().call(request, context);
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Backup>() {
+          @Override
+          public Backup call() throws Exception {
+            return databaseAdminStub.updateBackupCallable().call(request, context);
+          }
+        });
   }
 
   @Override
   public void deleteBackup(String backupName) {
     acquireAdministrativeRequestsRateLimiter();
-    DeleteBackupRequest request = DeleteBackupRequest.newBuilder().setName(backupName).build();
-    GrpcCallContext context =
+    final DeleteBackupRequest request =
+        DeleteBackupRequest.newBuilder().setName(backupName).build();
+    final GrpcCallContext context =
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getDeleteBackupMethod());
-    databaseAdminStub.deleteBackupCallable().call(request, context);
+    runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            databaseAdminStub.deleteBackupCallable().call(request, context);
+            return null;
+          }
+        });
   }
 
   @Override
   public Backup getBackup(String backupName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    GetBackupRequest request = GetBackupRequest.newBuilder().setName(backupName).build();
-    GrpcCallContext context =
+    final GetBackupRequest request = GetBackupRequest.newBuilder().setName(backupName).build();
+    final GrpcCallContext context =
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getGetBackupMethod());
-    return get(databaseAdminStub.getBackupCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Backup>() {
+          @Override
+          public Backup call() throws Exception {
+            return get(databaseAdminStub.getBackupCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public Operation getOperation(String name) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    GetOperationRequest request = GetOperationRequest.newBuilder().setName(name).build();
-    GrpcCallContext context =
+    final GetOperationRequest request = GetOperationRequest.newBuilder().setName(name).build();
+    final GrpcCallContext context =
         newCallContext(null, name, request, OperationsGrpc.getGetOperationMethod());
-    return get(
-        databaseAdminStub.getOperationsStub().getOperationCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Operation>() {
+          @Override
+          public Operation call() throws Exception {
+            return get(
+                databaseAdminStub
+                    .getOperationsStub()
+                    .getOperationCallable()
+                    .futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public void cancelOperation(String name) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    CancelOperationRequest request = CancelOperationRequest.newBuilder().setName(name).build();
-    GrpcCallContext context =
+    final CancelOperationRequest request =
+        CancelOperationRequest.newBuilder().setName(name).build();
+    final GrpcCallContext context =
         newCallContext(null, name, request, OperationsGrpc.getCancelOperationMethod());
-    get(
-        databaseAdminStub
-            .getOperationsStub()
-            .cancelOperationCallable()
-            .futureCall(request, context));
+    runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            get(
+                databaseAdminStub
+                    .getOperationsStub()
+                    .cancelOperationCallable()
+                    .futureCall(request, context));
+            return null;
+          }
+        });
   }
 
   @Override
@@ -1331,67 +1477,105 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public Policy getDatabaseAdminIAMPolicy(String resource) {
     acquireAdministrativeRequestsRateLimiter();
-    GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder().setResource(resource).build();
-    GrpcCallContext context =
+    final GetIamPolicyRequest request =
+        GetIamPolicyRequest.newBuilder().setResource(resource).build();
+    final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getGetIamPolicyMethod());
-    return get(databaseAdminStub.getIamPolicyCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Policy>() {
+          @Override
+          public Policy call() throws Exception {
+            return get(databaseAdminStub.getIamPolicyCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public Policy setDatabaseAdminIAMPolicy(String resource, Policy policy) {
     acquireAdministrativeRequestsRateLimiter();
-    SetIamPolicyRequest request =
+    final SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder().setResource(resource).setPolicy(policy).build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getSetIamPolicyMethod());
-    return get(databaseAdminStub.setIamPolicyCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Policy>() {
+          @Override
+          public Policy call() throws Exception {
+            return get(databaseAdminStub.setIamPolicyCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public TestIamPermissionsResponse testDatabaseAdminIAMPermissions(
       String resource, Iterable<String> permissions) {
     acquireAdministrativeRequestsRateLimiter();
-    TestIamPermissionsRequest request =
+    final TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource)
             .addAllPermissions(permissions)
             .build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getTestIamPermissionsMethod());
-    return get(databaseAdminStub.testIamPermissionsCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<TestIamPermissionsResponse>() {
+          @Override
+          public TestIamPermissionsResponse call() throws Exception {
+            return get(databaseAdminStub.testIamPermissionsCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public Policy getInstanceAdminIAMPolicy(String resource) {
     acquireAdministrativeRequestsRateLimiter();
-    GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder().setResource(resource).build();
-    GrpcCallContext context =
+    final GetIamPolicyRequest request =
+        GetIamPolicyRequest.newBuilder().setResource(resource).build();
+    final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getGetIamPolicyMethod());
-    return get(instanceAdminStub.getIamPolicyCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Policy>() {
+          @Override
+          public Policy call() throws Exception {
+            return get(instanceAdminStub.getIamPolicyCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public Policy setInstanceAdminIAMPolicy(String resource, Policy policy) {
     acquireAdministrativeRequestsRateLimiter();
-    SetIamPolicyRequest request =
+    final SetIamPolicyRequest request =
         SetIamPolicyRequest.newBuilder().setResource(resource).setPolicy(policy).build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getSetIamPolicyMethod());
-    return get(instanceAdminStub.setIamPolicyCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<Policy>() {
+          @Override
+          public Policy call() throws Exception {
+            return get(instanceAdminStub.setIamPolicyCallable().futureCall(request, context));
+          }
+        });
   }
 
   @Override
   public TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions) {
     acquireAdministrativeRequestsRateLimiter();
-    TestIamPermissionsRequest request =
+    final TestIamPermissionsRequest request =
         TestIamPermissionsRequest.newBuilder()
             .setResource(resource)
             .addAllPermissions(permissions)
             .build();
-    GrpcCallContext context =
+    final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getTestIamPermissionsMethod());
-    return get(instanceAdminStub.testIamPermissionsCallable().futureCall(request, context));
+    return runWithRetryOnAdministrativeRequestsExceeded(
+        new Callable<TestIamPermissionsResponse>() {
+          @Override
+          public TestIamPermissionsResponse call() throws Exception {
+            return get(instanceAdminStub.testIamPermissionsCallable().futureCall(request, context));
+          }
+        });
   }
 
   /** Gets the result of an async RPC call, handling any exceptions encountered. */

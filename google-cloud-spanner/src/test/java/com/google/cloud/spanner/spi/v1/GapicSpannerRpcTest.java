@@ -38,6 +38,7 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
@@ -46,9 +47,11 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
+import com.google.rpc.ErrorInfo;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.instance.v1.Instance;
@@ -72,8 +75,10 @@ import io.grpc.Server;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -462,6 +467,39 @@ public class GapicSpannerRpcTest {
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
     assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
     rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminRequestsLimitExceededRetryAlgorithm() {
+    AdminRequestsLimitExceededRetryAlgorithm<Long> alg =
+        new AdminRequestsLimitExceededRetryAlgorithm<>();
+
+    assertThat(alg.shouldRetry(null, 1L)).isFalse();
+
+    ErrorInfo info =
+        ErrorInfo.newBuilder()
+            .putMetadata("quota_limit", "AdminMethodQuotaPerMinutePerProject")
+            .build();
+    Metadata.Key<ErrorInfo> key =
+        Metadata.Key.of(
+            info.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(info));
+    Metadata trailers = new Metadata();
+    trailers.put(key, info);
+
+    SpannerException adminRateExceeded =
+        SpannerExceptionFactory.newSpannerException(
+            Status.RESOURCE_EXHAUSTED.withDescription("foo").asRuntimeException(trailers));
+    assertThat(alg.shouldRetry(adminRateExceeded, null)).isTrue();
+
+    SpannerException numDatabasesExceeded =
+        SpannerExceptionFactory.newSpannerException(
+            Status.RESOURCE_EXHAUSTED
+                .withDescription("Too many databases on instance")
+                .asRuntimeException());
+    assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
+
+    assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
   }
 
   @SuppressWarnings("rawtypes")

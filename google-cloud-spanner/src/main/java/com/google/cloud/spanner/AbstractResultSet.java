@@ -91,17 +91,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static class GrpcResultSet extends AbstractResultSet<List<Object>> {
     private final GrpcValueIterator iterator;
     private final Listener listener;
-    private final boolean beginTransaction;
     private GrpcStruct currRow;
     private SpannerException error;
     private ResultSetStats statistics;
     private boolean closed;
 
-    GrpcResultSet(
-        CloseableIterator<PartialResultSet> iterator, Listener listener, boolean beginTransaction) {
+    GrpcResultSet(CloseableIterator<PartialResultSet> iterator, Listener listener) {
       this.iterator = new GrpcValueIterator(iterator);
       this.listener = listener;
-      this.beginTransaction = beginTransaction;
     }
 
     @Override
@@ -130,7 +127,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         }
         return hasNext;
       } catch (SpannerException e) {
-        throw yieldError(e, beginTransaction && currRow == null);
+        throw yieldError(e, iterator.isWithBeginTransaction() && currRow == null);
       }
     }
 
@@ -295,6 +292,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     void close(@Nullable String message) {
       stream.close(message);
+    }
+
+    boolean isWithBeginTransaction() {
+      return stream.isWithBeginTransaction();
     }
 
     /** @param a is a mutable list and b will be concatenated into a. */
@@ -760,6 +761,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      * @param message a message to include in the final RPC status
      */
     void close(@Nullable String message);
+
+    boolean isWithBeginTransaction();
   }
 
   /** Adapts a streaming read/query call into an iterator over partial result sets. */
@@ -774,6 +777,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
+    private boolean withBeginTransaction;
     private SpannerException error;
 
     @VisibleForTesting
@@ -792,8 +796,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return consumer;
     }
 
-    public void setCall(SpannerRpc.StreamingCall call) {
+    public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
       this.call = call;
+      this.withBeginTransaction = withBeginTransaction;
     }
 
     @Override
@@ -801,6 +806,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       if (call != null) {
         call.cancel(message);
       }
+    }
+
+    @Override
+    public boolean isWithBeginTransaction() {
+      return withBeginTransaction;
     }
 
     @Override
@@ -873,8 +883,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
       // Visible only for testing.
       @VisibleForTesting
-      void setCall(SpannerRpc.StreamingCall call) {
-        GrpcStreamIterator.this.setCall(call);
+      void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
+        GrpcStreamIterator.this.setCall(call, withBeginTransaction);
       }
     }
   }
@@ -985,6 +995,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         span.end(TraceUtil.END_SPAN_OPTIONS);
         stream = null;
       }
+    }
+
+    @Override
+    public boolean isWithBeginTransaction() {
+      return stream != null && stream.isWithBeginTransaction();
     }
 
     @Override

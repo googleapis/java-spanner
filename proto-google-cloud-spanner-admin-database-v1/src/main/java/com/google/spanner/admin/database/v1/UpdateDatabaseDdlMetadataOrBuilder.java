@@ -164,4 +164,19 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
   com.google.protobuf.TimestampOrBuilder getCommitTimestampsOrBuilder(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. When true, indicates that the operation is throttled e.g
+   * due to resource constraints. When resources become available the operation
+   * will resume and this field will be false again.
+   * </pre>
+   *
+   * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The throttled.
+   */
+  boolean getThrottled();
 }

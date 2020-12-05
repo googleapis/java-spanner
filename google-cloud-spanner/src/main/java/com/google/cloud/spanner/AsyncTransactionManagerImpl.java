@@ -101,6 +101,7 @@ final class AsyncTransactionManagerImpl
         new ApiFutureCallback<Void>() {
           @Override
           public void onFailure(Throwable t) {
+            onError(t);
             res.setException(SpannerExceptionFactory.newSpannerException(t));
           }
 
@@ -133,6 +134,7 @@ final class AsyncTransactionManagerImpl
     }
     ApiFuture<CommitResponse> res = txn.commitAsync();
     txnState = TransactionState.COMMITTED;
+
     ApiFutures.addCallback(
         res,
         new ApiFutureCallback<CommitResponse>() {
@@ -185,10 +187,6 @@ final class AsyncTransactionManagerImpl
 
   @Override
   public TransactionContextFuture resetForRetryAsync() {
-    if (txn == null || (!txn.isAborted() && txnState != TransactionState.ABORTED)) {
-      throw new IllegalStateException(
-          "resetForRetry can only be called if the previous attempt aborted");
-    }
     return new TransactionContextFutureImpl(this, internalBeginAsync(false));
   }
 

@@ -78,5 +78,15 @@ java.format_code('proto-google-cloud-spanner-admin-instance-v1/src')
 java.common_templates(excludes=[
     '.kokoro/continuous/common.cfg',
     '.kokoro/nightly/common.cfg',
+    '.kokoro/nightly/java8-samples.cfg',
+    '.kokoro/nightly/java11-samples.cfg',
+    '.kokoro/nightly/samples.cfg',
     '.kokoro/presubmit/common.cfg',
+    '.kokoro/presubmit/java8-samples.cfg',
+    '.kokoro/presubmit/java11-samples.cfg',
+    '.kokoro/presubmit/samples.cfg',
+    'samples/install-without-bom/pom.xml',
+    'samples/snapshot/pom.xml',
+    'samples/snippets/pom.xml',
+    '.github/CODEOWNERS',
 ])
