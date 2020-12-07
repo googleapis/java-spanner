@@ -203,7 +203,7 @@ public class InstanceAdminClientTest {
     InstanceConfig expectedResponse =
         InstanceConfig.newBuilder()
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
@@ -243,7 +243,7 @@ public class InstanceAdminClientTest {
     InstanceConfig expectedResponse =
         InstanceConfig.newBuilder()
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
@@ -372,7 +372,7 @@ public class InstanceAdminClientTest {
         Instance.newBuilder()
             .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -415,7 +415,7 @@ public class InstanceAdminClientTest {
         Instance.newBuilder()
             .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -458,7 +458,7 @@ public class InstanceAdminClientTest {
         Instance.newBuilder()
             .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -472,7 +472,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addResponse(resultOperation);
 
     ProjectName parent = ProjectName.of("[PROJECT]");
-    String instanceId = "instance_id-2101995259";
+    String instanceId = "instanceId902024336";
     Instance instance = Instance.newBuilder().build();
 
     Instance actualResponse = client.createInstanceAsync(parent, instanceId, instance).get();
@@ -498,7 +498,7 @@ public class InstanceAdminClientTest {
 
     try {
       ProjectName parent = ProjectName.of("[PROJECT]");
-      String instanceId = "instance_id-2101995259";
+      String instanceId = "instanceId902024336";
       Instance instance = Instance.newBuilder().build();
       client.createInstanceAsync(parent, instanceId, instance).get();
       Assert.fail("No exception raised");
@@ -515,7 +515,7 @@ public class InstanceAdminClientTest {
         Instance.newBuilder()
             .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
@@ -529,7 +529,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addResponse(resultOperation);
 
     String parent = "parent-995424086";
-    String instanceId = "instance_id-2101995259";
+    String instanceId = "instanceId902024336";
     Instance instance = Instance.newBuilder().build();
 
     Instance actualResponse = client.createInstanceAsync(parent, instanceId, instance).get();
@@ -555,7 +555,7 @@ public class InstanceAdminClientTest {
 
     try {
       String parent = "parent-995424086";
-      String instanceId = "instance_id-2101995259";
+      String instanceId = "instanceId902024336";
       Instance instance = Instance.newBuilder().build();
       client.createInstanceAsync(parent, instanceId, instance).get();
       Assert.fail("No exception raised");
@@ -572,7 +572,7 @@ public class InstanceAdminClientTest {
         Instance.newBuilder()
             .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("display_name1615086568")
+            .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())

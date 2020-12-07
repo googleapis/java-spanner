@@ -227,7 +227,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    String createStatement = "create_statement552974828";
+    String createStatement = "createStatement744686547";
 
     Database actualResponse = client.createDatabaseAsync(parent, createStatement).get();
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -251,7 +251,7 @@ public class DatabaseAdminClientTest {
 
     try {
       InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-      String createStatement = "create_statement552974828";
+      String createStatement = "createStatement744686547";
       client.createDatabaseAsync(parent, createStatement).get();
       Assert.fail("No exception raised");
     } catch (ExecutionException e) {
@@ -278,7 +278,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     String parent = "parent-995424086";
-    String createStatement = "create_statement552974828";
+    String createStatement = "createStatement744686547";
 
     Database actualResponse = client.createDatabaseAsync(parent, createStatement).get();
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -302,7 +302,7 @@ public class DatabaseAdminClientTest {
 
     try {
       String parent = "parent-995424086";
-      String createStatement = "create_statement552974828";
+      String createStatement = "createStatement744686547";
       client.createDatabaseAsync(parent, createStatement).get();
       Assert.fail("No exception raised");
     } catch (ExecutionException e) {
@@ -887,7 +887,7 @@ public class DatabaseAdminClientTest {
 
     InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
     Backup backup = Backup.newBuilder().build();
-    String backupId = "backup_id1355353272";
+    String backupId = "backupId2121930365";
 
     Backup actualResponse = client.createBackupAsync(parent, backup, backupId).get();
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -913,7 +913,7 @@ public class DatabaseAdminClientTest {
     try {
       InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
       Backup backup = Backup.newBuilder().build();
-      String backupId = "backup_id1355353272";
+      String backupId = "backupId2121930365";
       client.createBackupAsync(parent, backup, backupId).get();
       Assert.fail("No exception raised");
     } catch (ExecutionException e) {
@@ -944,7 +944,7 @@ public class DatabaseAdminClientTest {
 
     String parent = "parent-995424086";
     Backup backup = Backup.newBuilder().build();
-    String backupId = "backup_id1355353272";
+    String backupId = "backupId2121930365";
 
     Backup actualResponse = client.createBackupAsync(parent, backup, backupId).get();
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -970,7 +970,7 @@ public class DatabaseAdminClientTest {
     try {
       String parent = "parent-995424086";
       Backup backup = Backup.newBuilder().build();
-      String backupId = "backup_id1355353272";
+      String backupId = "backupId2121930365";
       client.createBackupAsync(parent, backup, backupId).get();
       Assert.fail("No exception raised");
     } catch (ExecutionException e) {
@@ -1285,7 +1285,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    String databaseId = "database_id816491103";
+    String databaseId = "databaseId1688905718";
     BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
 
     Database actualResponse = client.restoreDatabaseAsync(parent, databaseId, backup).get();
@@ -1311,7 +1311,7 @@ public class DatabaseAdminClientTest {
 
     try {
       InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-      String databaseId = "database_id816491103";
+      String databaseId = "databaseId1688905718";
       BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       client.restoreDatabaseAsync(parent, databaseId, backup).get();
       Assert.fail("No exception raised");
@@ -1339,7 +1339,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    String databaseId = "database_id816491103";
+    String databaseId = "databaseId1688905718";
     String backup = "backup-1396673086";
 
     Database actualResponse = client.restoreDatabaseAsync(parent, databaseId, backup).get();
@@ -1365,7 +1365,7 @@ public class DatabaseAdminClientTest {
 
     try {
       InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
-      String databaseId = "database_id816491103";
+      String databaseId = "databaseId1688905718";
       String backup = "backup-1396673086";
       client.restoreDatabaseAsync(parent, databaseId, backup).get();
       Assert.fail("No exception raised");
@@ -1393,7 +1393,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     String parent = "parent-995424086";
-    String databaseId = "database_id816491103";
+    String databaseId = "databaseId1688905718";
     BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
 
     Database actualResponse = client.restoreDatabaseAsync(parent, databaseId, backup).get();
@@ -1419,7 +1419,7 @@ public class DatabaseAdminClientTest {
 
     try {
       String parent = "parent-995424086";
-      String databaseId = "database_id816491103";
+      String databaseId = "databaseId1688905718";
       BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       client.restoreDatabaseAsync(parent, databaseId, backup).get();
       Assert.fail("No exception raised");
@@ -1447,7 +1447,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addResponse(resultOperation);
 
     String parent = "parent-995424086";
-    String databaseId = "database_id816491103";
+    String databaseId = "databaseId1688905718";
     String backup = "backup-1396673086";
 
     Database actualResponse = client.restoreDatabaseAsync(parent, databaseId, backup).get();
@@ -1473,7 +1473,7 @@ public class DatabaseAdminClientTest {
 
     try {
       String parent = "parent-995424086";
-      String databaseId = "database_id816491103";
+      String databaseId = "databaseId1688905718";
       String backup = "backup-1396673086";
       client.restoreDatabaseAsync(parent, databaseId, backup).get();
       Assert.fail("No exception raised");
