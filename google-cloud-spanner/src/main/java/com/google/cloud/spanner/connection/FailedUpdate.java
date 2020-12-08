@@ -54,6 +54,9 @@ final class FailedUpdate implements RetriableStatement {
           .getStatementExecutor()
           .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
       transaction.getReadContext().executeUpdate(statement.getStatement());
+    } catch (AbortedException e) {
+      // Propagate abort to force a new retry.
+      throw e;
     } catch (SpannerException e) {
       // Check that we got the same exception as in the original transaction.
       if (e.getErrorCode() == exception.getErrorCode()

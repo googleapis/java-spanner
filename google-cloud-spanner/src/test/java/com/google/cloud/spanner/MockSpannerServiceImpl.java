@@ -1702,23 +1702,24 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     if (isReadWriteTransaction(transactionId)) {
       if (abortNextStatement.getAndSet(false) || abortProbability > random.nextDouble()) {
         rollbackTransaction(transactionId);
-        RetryInfo retryInfo =
-            RetryInfo.newBuilder()
-                .setRetryDelay(Duration.newBuilder().setNanos(100).build())
-                .build();
-        Metadata.Key<RetryInfo> key =
-            Metadata.Key.of(
-                retryInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
-                ProtoLiteUtils.metadataMarshaller(retryInfo));
-        Metadata trailers = new Metadata();
-        trailers.put(key, retryInfo);
-        throw Status.ABORTED
-            .withDescription(
-                String.format(
-                    "Transaction with id %s has been aborted", transactionId.toStringUtf8()))
-            .asRuntimeException(trailers);
+        throw createAbortedException(transactionId);
       }
     }
+  }
+
+  public StatusRuntimeException createAbortedException(ByteString transactionId) {
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder().setRetryDelay(Duration.newBuilder().setNanos(100).build()).build();
+    Metadata.Key<RetryInfo> key =
+        Metadata.Key.of(
+            retryInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(retryInfo));
+    Metadata trailers = new Metadata();
+    trailers.put(key, retryInfo);
+    return Status.ABORTED
+        .withDescription(
+            String.format("Transaction with id %s has been aborted", transactionId.toStringUtf8()))
+        .asRuntimeException(trailers);
   }
 
   private void ensureMostRecentTransaction(Session session, ByteString transactionId) {

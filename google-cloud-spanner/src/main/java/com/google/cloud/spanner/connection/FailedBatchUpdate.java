@@ -58,6 +58,9 @@ final class FailedBatchUpdate implements RetriableStatement {
             transaction);
     try {
       transaction.getReadContext().batchUpdate(statements);
+    } catch (AbortedException e) {
+      // Propagate abort to force a new retry.
+      throw e;
     } catch (SpannerBatchUpdateException e) {
       // Check that we got the same exception as in the original transaction.
       if (exception instanceof SpannerBatchUpdateException
