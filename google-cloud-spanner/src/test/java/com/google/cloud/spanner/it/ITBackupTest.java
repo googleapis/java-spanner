@@ -39,7 +39,9 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
@@ -70,6 +72,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
+import org.threeten.bp.temporal.ChronoUnit;
 
 /**
  * Integration tests creating, reading, updating and deleting backups. This test class combines
@@ -80,6 +84,7 @@ import org.junit.runners.JUnit4;
 public class ITBackupTest {
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
   private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
+  private static final Duration CREATE_BACKUP_TIMEOUT = Duration.ofMinutes(30L);
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   private DatabaseAdminClient dbAdminClient;
@@ -93,7 +98,15 @@ public class ITBackupTest {
 
   @BeforeClass
   public static void doNotRunOnEmulator() {
-    assumeFalse("backups are not supported on the emulator", isUsingEmulator());
+    assumeFalse("Backups are not supported on the emulator", isUsingEmulator());
+    assumeFalse(
+        "Backup integration tests are skipped on this environment",
+        isBackupIntegrationTestsSkipped());
+  }
+
+  private static boolean isBackupIntegrationTestsSkipped() {
+    return Boolean.parseBoolean(
+        MoreObjects.firstNonNull(System.getenv("SKIP_BACKUP_INTEGRATION_TESTS"), "false"));
   }
 
   @Before
@@ -282,24 +295,23 @@ public class ITBackupTest {
     } catch (TimeoutException e) {
       logger.warning(
           "Waiting for backup operations to finish timed out. Getting long-running operations.");
-      while (watch.elapsed(TimeUnit.MINUTES) < 12L
+      while (watch.elapsed(TimeUnit.MINUTES) < CREATE_BACKUP_TIMEOUT.get(ChronoUnit.MINUTES)
           && (!dbAdminClient.getOperation(op1.getName()).getDone()
               || !dbAdminClient.getOperation(op2.getName()).getDone())) {
         Thread.sleep(10_000L);
       }
-      boolean giveUp = false;
       if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
         logger.warning(String.format("Operation %s still not finished", op1.getName()));
-        logger.warning("Backup1 still not finished. Test is giving up waiting for it.");
-        giveUp = true;
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Backup1 still not finished. Test is giving up waiting for it.");
       }
       if (!dbAdminClient.getOperation(op2.getName()).getDone()) {
         logger.warning(String.format("Operation %s still not finished", op2.getName()));
-        logger.warning("Backup2 still not finished. Test is giving up waiting for it.");
-        giveUp = true;
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Backup2 still not finished. Test is giving up waiting for it.");
       }
-      assumeFalse("Backup test giving up because the backup operation is taking too long.", giveUp);
-
       logger.info("Long-running operations finished. Getting backups by id.");
       backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
       backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
