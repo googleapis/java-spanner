@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.instance.v1;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
@@ -55,7 +56,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.annotation.Generated;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
  * Settings class to configure an instance of {@link InstanceAdminClient}.
  *
@@ -72,48 +73,22 @@ import javax.annotation.Generated;
  *
  * <p>For example, to set the total timeout of getInstanceConfig to 30 seconds:
  *
- * <pre>
- * <code>
- * InstanceAdminSettings.Builder instanceAdminSettingsBuilder =
- *     InstanceAdminSettings.newBuilder();
+ * <pre>{@code
+ * InstanceAdminSettings.Builder instanceAdminSettingsBuilder = InstanceAdminSettings.newBuilder();
  * instanceAdminSettingsBuilder
  *     .getInstanceConfigSettings()
  *     .setRetrySettings(
- *         instanceAdminSettingsBuilder.getInstanceConfigSettings().getRetrySettings().toBuilder()
+ *         instanceAdminSettingsBuilder
+ *             .getInstanceConfigSettings()
+ *             .getRetrySettings()
+ *             .toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * InstanceAdminSettings instanceAdminSettings = instanceAdminSettingsBuilder.build();
- * </code>
- * </pre>
+ * }</pre>
  */
-@Generated("by gapic-generator")
-@BetaApi
+@Generated("by gapic-generator-java")
 public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings> {
-  /** Returns the object with the settings used for calls to createInstance. */
-  public UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceSettings();
-  }
-
-  /** Returns the object with the settings used for calls to createInstance. */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceOperationSettings();
-  }
-
-  /** Returns the object with the settings used for calls to updateInstance. */
-  public UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceSettings();
-  }
-
-  /** Returns the object with the settings used for calls to updateInstance. */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationSettings() {
-    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceOperationSettings();
-  }
 
   /** Returns the object with the settings used for calls to listInstanceConfigs. */
   public PagedCallSettings<
@@ -136,6 +111,28 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
   /** Returns the object with the settings used for calls to getInstance. */
   public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
     return ((InstanceAdminStubSettings) getStubSettings()).getInstanceSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstance. */
+  public UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstance. */
+  public OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstance. */
+  public UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstance. */
+  public OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceOperationSettings();
   }
 
   /** Returns the object with the settings used for calls to deleteInstance. */
@@ -219,16 +216,13 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
 
   /** Builder for InstanceAdminSettings. */
   public static class Builder extends ClientSettings.Builder<InstanceAdminSettings, Builder> {
+
     protected Builder() throws IOException {
-      this((ClientContext) null);
+      this(((ClientContext) null));
     }
 
     protected Builder(ClientContext clientContext) {
       super(InstanceAdminStubSettings.newBuilder(clientContext));
-    }
-
-    private static Builder createDefault() {
-      return new Builder(InstanceAdminStubSettings.newBuilder());
     }
 
     protected Builder(InstanceAdminSettings settings) {
@@ -239,11 +233,15 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       super(stubSettings);
     }
 
+    private static Builder createDefault() {
+      return new Builder(InstanceAdminStubSettings.newBuilder());
+    }
+
     public InstanceAdminStubSettings.Builder getStubSettingsBuilder() {
       return ((InstanceAdminStubSettings.Builder) getStubSettings());
     }
 
-    // NEXT_MAJOR_VER: remove 'throws Exception'
+    // NEXT_MAJOR_VER: remove 'throws Exception'.
     /**
      * Applies the given settings updater function to all of the unary API methods in this service.
      *
@@ -254,32 +252,6 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       super.applyToAllUnaryMethods(
           getStubSettingsBuilder().unaryMethodSettingsBuilders(), settingsUpdater);
       return this;
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
-      return getStubSettingsBuilder().createInstanceSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-        createInstanceOperationSettings() {
-      return getStubSettingsBuilder().createInstanceOperationSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
-      return getStubSettingsBuilder().updateInstanceSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    @BetaApi(
-        "The surface for long-running operations is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-        updateInstanceOperationSettings() {
-      return getStubSettingsBuilder().updateInstanceOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to listInstanceConfigs. */
@@ -307,6 +279,28 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     /** Returns the builder for the settings used for calls to getInstance. */
     public UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings() {
       return getStubSettingsBuilder().getInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstance. */
+    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
+      return getStubSettingsBuilder().createInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstance. */
+    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+        createInstanceOperationSettings() {
+      return getStubSettingsBuilder().createInstanceOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
+      return getStubSettingsBuilder().updateInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+        updateInstanceOperationSettings() {
+      return getStubSettingsBuilder().updateInstanceOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to deleteInstance. */
