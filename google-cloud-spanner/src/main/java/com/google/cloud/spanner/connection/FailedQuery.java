@@ -69,6 +69,9 @@ final class FailedQuery implements RetriableStatement {
         // Do nothing with the results, we are only interested in whether the statement throws the
         // same exception as in the original transaction.
       }
+    } catch (AbortedException e) {
+      // Propagate abort to force a new retry.
+      throw e;
     } catch (SpannerException e) {
       // Check that we got the same exception as in the original transaction
       if (e.getErrorCode() == exception.getErrorCode()
