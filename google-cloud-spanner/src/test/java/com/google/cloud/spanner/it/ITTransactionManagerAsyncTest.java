@@ -81,6 +81,9 @@ public class ITTransactionManagerAsyncTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    assumeFalse(
+        "temporarily disabling these tests, since they are not working in the emulator",
+        isUsingEmulator());
     // Empty database.
     db =
         env.getTestHelper()
