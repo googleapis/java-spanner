@@ -106,6 +106,7 @@ public class SpannerStandaloneExamplesIT {
     String projectId = spanner.getOptions().getProjectId();
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    client.write(Collections.singleton(Mutation.delete("Singers", KeySet.all())));
     client.write(Collections.singleton(Mutation.delete("Venues", KeySet.all())));
   }
 
