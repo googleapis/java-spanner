@@ -27,10 +27,10 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.SpannerGrpc;
-import java.util.concurrent.TimeUnit;
 import io.grpc.CallOptions;
 import io.grpc.Context;
 import io.grpc.MethodDescriptor;
+import java.util.concurrent.TimeUnit;
 
 class StatementTimeoutExample {
 
