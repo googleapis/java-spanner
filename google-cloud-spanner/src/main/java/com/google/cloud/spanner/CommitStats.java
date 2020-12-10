@@ -17,8 +17,6 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
-import org.threeten.bp.Duration;
-import org.threeten.bp.temporal.ChronoUnit;
 
 /**
  * Commit statistics are returned by a read/write transaction if specifically requested by passing
@@ -26,19 +24,14 @@ import org.threeten.bp.temporal.ChronoUnit;
  */
 public class CommitStats {
   private final long mutationCount;
-  private final Duration overloadDelay;
 
-  private CommitStats(long mutationCount, Duration overloadDelay) {
+  private CommitStats(long mutationCount) {
     this.mutationCount = mutationCount;
-    this.overloadDelay = overloadDelay;
   }
 
   static CommitStats fromProto(com.google.spanner.v1.CommitResponse.CommitStats proto) {
     Preconditions.checkNotNull(proto);
-    return new CommitStats(
-        proto.getMutationCount(),
-        Duration.of(proto.getOverloadDelay().getSeconds(), ChronoUnit.SECONDS)
-            .plusNanos(proto.getOverloadDelay().getNanos()));
+    return new CommitStats(proto.getMutationCount());
   }
 
   /**
@@ -57,10 +50,5 @@ public class CommitStats {
    */
   public long getMutationCount() {
     return mutationCount;
-  }
-
-  /** The duration that the commit was delayed due to overloaded servers. */
-  public Duration getOverloadDelay() {
-    return overloadDelay;
   }
 }
