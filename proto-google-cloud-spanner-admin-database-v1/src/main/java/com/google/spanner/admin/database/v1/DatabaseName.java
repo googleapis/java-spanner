@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,20 +23,32 @@ import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Generated;
 
-/** AUTO-GENERATED DOCUMENTATION AND CLASS */
-@javax.annotation.Generated("by GAPIC protoc plugin")
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
+@Generated("by gapic-generator-java")
 public class DatabaseName implements ResourceName {
-
-  private static final PathTemplate PATH_TEMPLATE =
+  private static final PathTemplate PROJECT_INSTANCE_DATABASE =
       PathTemplate.createWithoutUrlEncoding(
           "projects/{project}/instances/{instance}/databases/{database}");
-
   private volatile Map<String, String> fieldValuesMap;
-
   private final String project;
   private final String instance;
   private final String database;
+
+  @Deprecated
+  protected DatabaseName() {
+    project = null;
+    instance = null;
+    database = null;
+  }
+
+  private DatabaseName(Builder builder) {
+    project = Preconditions.checkNotNull(builder.getProject());
+    instance = Preconditions.checkNotNull(builder.getInstance());
+    database = Preconditions.checkNotNull(builder.getDatabase());
+  }
 
   public String getProject() {
     return project;
@@ -58,12 +70,6 @@ public class DatabaseName implements ResourceName {
     return new Builder(this);
   }
 
-  private DatabaseName(Builder builder) {
-    project = Preconditions.checkNotNull(builder.getProject());
-    instance = Preconditions.checkNotNull(builder.getInstance());
-    database = Preconditions.checkNotNull(builder.getDatabase());
-  }
-
   public static DatabaseName of(String project, String instance, String database) {
     return newBuilder().setProject(project).setInstance(instance).setDatabase(database).build();
   }
@@ -82,7 +88,7 @@ public class DatabaseName implements ResourceName {
       return null;
     }
     Map<String, String> matchMap =
-        PATH_TEMPLATE.validatedMatch(
+        PROJECT_INSTANCE_DATABASE.validatedMatch(
             formattedString, "DatabaseName.parse: formattedString not in valid format");
     return of(matchMap.get("project"), matchMap.get("instance"), matchMap.get("database"));
   }
@@ -96,7 +102,7 @@ public class DatabaseName implements ResourceName {
   }
 
   public static List<String> toStringList(List<DatabaseName> values) {
-    List<String> list = new ArrayList<String>(values.size());
+    List<String> list = new ArrayList<>(values.size());
     for (DatabaseName value : values) {
       if (value == null) {
         list.add("");
@@ -108,17 +114,24 @@ public class DatabaseName implements ResourceName {
   }
 
   public static boolean isParsableFrom(String formattedString) {
-    return PATH_TEMPLATE.matches(formattedString);
+    return PROJECT_INSTANCE_DATABASE.matches(formattedString);
   }
 
+  @Override
   public Map<String, String> getFieldValuesMap() {
     if (fieldValuesMap == null) {
       synchronized (this) {
         if (fieldValuesMap == null) {
           ImmutableMap.Builder<String, String> fieldMapBuilder = ImmutableMap.builder();
-          fieldMapBuilder.put("project", project);
-          fieldMapBuilder.put("instance", instance);
-          fieldMapBuilder.put("database", database);
+          if (project != null) {
+            fieldMapBuilder.put("project", project);
+          }
+          if (instance != null) {
+            fieldMapBuilder.put("instance", instance);
+          }
+          if (database != null) {
+            fieldMapBuilder.put("database", database);
+          }
           fieldValuesMap = fieldMapBuilder.build();
         }
       }
@@ -132,16 +145,43 @@ public class DatabaseName implements ResourceName {
 
   @Override
   public String toString() {
-    return PATH_TEMPLATE.instantiate(
+    return PROJECT_INSTANCE_DATABASE.instantiate(
         "project", project, "instance", instance, "database", database);
   }
 
-  /** Builder for DatabaseName. */
-  public static class Builder {
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o != null || getClass() == o.getClass()) {
+      DatabaseName that = ((DatabaseName) o);
+      return Objects.equals(this.project, that.project)
+          && Objects.equals(this.instance, that.instance)
+          && Objects.equals(this.database, that.database);
+    }
+    return false;
+  }
 
+  @Override
+  public int hashCode() {
+    int h = 1;
+    h *= 1000003;
+    h ^= Objects.hashCode(project);
+    h *= 1000003;
+    h ^= Objects.hashCode(instance);
+    h *= 1000003;
+    h ^= Objects.hashCode(database);
+    return h;
+  }
+
+  /** Builder for projects/{project}/instances/{instance}/databases/{database}. */
+  public static class Builder {
     private String project;
     private String instance;
     private String database;
+
+    protected Builder() {}
 
     public String getProject() {
       return project;
@@ -170,8 +210,6 @@ public class DatabaseName implements ResourceName {
       return this;
     }
 
-    private Builder() {}
-
     private Builder(DatabaseName databaseName) {
       project = databaseName.project;
       instance = databaseName.instance;
@@ -181,31 +219,5 @@ public class DatabaseName implements ResourceName {
     public DatabaseName build() {
       return new DatabaseName(this);
     }
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (o instanceof DatabaseName) {
-      DatabaseName that = (DatabaseName) o;
-      return (this.project.equals(that.project))
-          && (this.instance.equals(that.instance))
-          && (this.database.equals(that.database));
-    }
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    int h = 1;
-    h *= 1000003;
-    h ^= project.hashCode();
-    h *= 1000003;
-    h ^= instance.hashCode();
-    h *= 1000003;
-    h ^= database.hashCode();
-    return h;
   }
 }
