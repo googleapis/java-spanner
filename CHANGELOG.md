@@ -1,5 +1,12 @@
 # Changelog
 
+### [3.1.1](https://www.github.com/googleapis/java-spanner/compare/v3.1.0...v3.1.1) (2020-12-10)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v1.2.8 ([#699](https://www.github.com/googleapis/java-spanner/issues/699)) ([e3289bd](https://www.github.com/googleapis/java-spanner/commit/e3289bdf1f5c723c88f4e719c4a7a15f5d131556))
+
 ## [3.1.0](https://www.github.com/googleapis/java-spanner/compare/v3.0.5...v3.1.0) (2020-12-10)
 
 
