@@ -121,6 +121,15 @@ public class SpannerStandaloneExamplesIT {
   }
 
   @Test
+  public void executeSqlWithTimeout_shouldWriteData() {
+    String projectId = spanner.getOptions().getProjectId();
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    String out = runExample(() -> StatementTimeoutExample.executeSqlWithTimeout(client));
+    assertThat(out).contains("1 record inserted.");
+  }
+
+  @Test
   public void addNumericColumn_shouldSuccessfullyAddColumn()
       throws InterruptedException, ExecutionException {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
