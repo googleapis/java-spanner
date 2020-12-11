@@ -105,8 +105,8 @@ public class ITBackupTest {
   }
 
   private static boolean isBackupIntegrationTestsSkipped() {
-    return Boolean.parseBoolean(
-        MoreObjects.firstNonNull(System.getenv("SKIP_BACKUP_INTEGRATION_TESTS"), "false"));
+    return MoreObjects.firstNonNull(System.getenv("INTEGRATION_TEST_ARGS"), "")
+        .contains("SKIP_BACKUP_INTEGRATION_TESTS");
   }
 
   @Before
