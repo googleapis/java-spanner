@@ -66,7 +66,8 @@ public class SpannerStandaloneExamplesIT {
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
-    SpannerOptions options = SpannerOptions.newBuilder().build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
     if (instanceId == null) {
