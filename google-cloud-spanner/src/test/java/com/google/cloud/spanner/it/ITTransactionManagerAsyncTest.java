@@ -36,6 +36,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -48,17 +49,19 @@ import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
+@Category(ParallelIntegrationTest.class)
 public class ITTransactionManagerAsyncTest {
 
   @Parameter(0)
@@ -76,8 +79,8 @@ public class ITTransactionManagerAsyncTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
-  private Spanner spanner;
-  private DatabaseClient client;
+  private static Spanner spanner;
+  private static DatabaseClient client;
 
   @BeforeClass
   public static void setUpDatabase() {
@@ -89,18 +92,13 @@ public class ITTransactionManagerAsyncTest {
                     + "  K                   STRING(MAX) NOT NULL,"
                     + "  BoolValue           BOOL,"
                     + ") PRIMARY KEY (K)");
+    spanner = env.getTestHelper().getClient();
+    client = spanner.getDatabaseClient(db.getId());
   }
 
   @Before
   public void clearTable() {
-    spanner = env.getTestHelper().getClient();
-    client = spanner.getDatabaseClient(db.getId());
     client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
-  }
-
-  @After
-  public void closeSpanner() {
-    spanner.close();
   }
 
   @Test
@@ -224,6 +222,8 @@ public class ITTransactionManagerAsyncTest {
     }
   }
 
+  @Ignore(
+      "Cloud Spanner now seems to return CANCELLED instead of ABORTED when a transaction is invalidated by a later transaction in the same session")
   @Test
   public void testAbortAndRetry() throws InterruptedException, ExecutionException {
     assumeFalse(

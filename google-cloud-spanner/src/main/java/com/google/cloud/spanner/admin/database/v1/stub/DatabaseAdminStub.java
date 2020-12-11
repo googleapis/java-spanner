@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.database.v1.stub;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
@@ -20,7 +21,6 @@ import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.Lis
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.UnaryCallable;
@@ -59,60 +59,17 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import javax.annotation.Generated;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
- * Base stub class for Cloud Spanner Database Admin API.
+ * Base stub class for the DatabaseAdmin service API.
  *
  * <p>This class is for advanced usage and reflects the underlying API directly.
  */
 @Generated("by gapic-generator")
-@BetaApi("A restructuring of stub classes is planned, so this may break in the future")
 public abstract class DatabaseAdminStub implements BackgroundResource {
 
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
   public OperationsStub getOperationsStub() {
     throw new UnsupportedOperationException("Not implemented: getOperationsStub()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
-      createDatabaseOperationCallable() {
-    throw new UnsupportedOperationException("Not implemented: createDatabaseOperationCallable()");
-  }
-
-  public UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
-    throw new UnsupportedOperationException("Not implemented: createDatabaseCallable()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
-      updateDatabaseDdlOperationCallable() {
-    throw new UnsupportedOperationException(
-        "Not implemented: updateDatabaseDdlOperationCallable()");
-  }
-
-  public UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
-    throw new UnsupportedOperationException("Not implemented: updateDatabaseDdlCallable()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationCallable() {
-    throw new UnsupportedOperationException("Not implemented: createBackupOperationCallable()");
-  }
-
-  public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
-    throw new UnsupportedOperationException("Not implemented: createBackupCallable()");
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationCallable() {
-    throw new UnsupportedOperationException("Not implemented: restoreDatabaseOperationCallable()");
-  }
-
-  public UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
-    throw new UnsupportedOperationException("Not implemented: restoreDatabaseCallable()");
   }
 
   public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
@@ -124,8 +81,27 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
     throw new UnsupportedOperationException("Not implemented: listDatabasesCallable()");
   }
 
+  public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
+      createDatabaseOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: createDatabaseOperationCallable()");
+  }
+
+  public UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
+    throw new UnsupportedOperationException("Not implemented: createDatabaseCallable()");
+  }
+
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     throw new UnsupportedOperationException("Not implemented: getDatabaseCallable()");
+  }
+
+  public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
+      updateDatabaseDdlOperationCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: updateDatabaseDdlOperationCallable()");
+  }
+
+  public UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateDatabaseDdlCallable()");
   }
 
   public UnaryCallable<DropDatabaseRequest, Empty> dropDatabaseCallable() {
@@ -149,6 +125,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
     throw new UnsupportedOperationException("Not implemented: testIamPermissionsCallable()");
   }
 
+  public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: createBackupOperationCallable()");
+  }
+
+  public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
+    throw new UnsupportedOperationException("Not implemented: createBackupCallable()");
+  }
+
   public UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {
     throw new UnsupportedOperationException("Not implemented: getBackupCallable()");
   }
@@ -167,6 +152,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable() {
     throw new UnsupportedOperationException("Not implemented: listBackupsCallable()");
+  }
+
+  public OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: restoreDatabaseOperationCallable()");
+  }
+
+  public UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
+    throw new UnsupportedOperationException("Not implemented: restoreDatabaseCallable()");
   }
 
   public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>

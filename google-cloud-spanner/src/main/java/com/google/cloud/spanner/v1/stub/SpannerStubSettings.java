@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.v1.stub;
 
 import static com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
@@ -72,7 +73,7 @@ import java.util.List;
 import javax.annotation.Generated;
 import org.threeten.bp.Duration;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
  * Settings class to configure an instance of {@link SpannerStub}.
  *
@@ -89,21 +90,22 @@ import org.threeten.bp.Duration;
  *
  * <p>For example, to set the total timeout of createSession to 30 seconds:
  *
- * <pre>
- * <code>
- * SpannerStubSettings.Builder spannerSettingsBuilder =
- *     SpannerStubSettings.newBuilder();
+ * <pre>{@code
+ * SpannerStubSettings.Builder spannerSettingsBuilder = SpannerStubSettings.newBuilder();
  * spannerSettingsBuilder
  *     .createSessionSettings()
  *     .setRetrySettings(
- *         spannerSettingsBuilder.createSessionSettings().getRetrySettings().toBuilder()
+ *         spannerSettingsBuilder
+ *             .createSessionSettings()
+ *             .getRetrySettings()
+ *             .toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * SpannerStubSettings spannerSettings = spannerSettingsBuilder.build();
- * </code>
- * </pre>
+ * }</pre>
  */
-@Generated("by gapic-generator")
+@BetaApi
+@Generated("by gapic-generator-java")
 public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   /** The default scopes of the service. */
   private static final ImmutableList<String> DEFAULT_SERVICE_SCOPES =
@@ -132,6 +134,59 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   private final UnaryCallSettings<RollbackRequest, Empty> rollbackSettings;
   private final UnaryCallSettings<PartitionQueryRequest, PartitionResponse> partitionQuerySettings;
   private final UnaryCallSettings<PartitionReadRequest, PartitionResponse> partitionReadSettings;
+
+  private static final PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>
+      LIST_SESSIONS_PAGE_STR_DESC =
+          new PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListSessionsRequest injectToken(ListSessionsRequest payload, String token) {
+              return ListSessionsRequest.newBuilder(payload).setPageToken(token).build();
+            }
+
+            @Override
+            public ListSessionsRequest injectPageSize(ListSessionsRequest payload, int pageSize) {
+              return ListSessionsRequest.newBuilder(payload).setPageSize(pageSize).build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListSessionsRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListSessionsResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<Session> extractResources(ListSessionsResponse payload) {
+              return payload.getSessionsList() == null
+                  ? ImmutableList.<Session>of()
+                  : payload.getSessionsList();
+            }
+          };
+
+  private static final PagedListResponseFactory<
+          ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
+      LIST_SESSIONS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>() {
+            @Override
+            public ApiFuture<ListSessionsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListSessionsRequest, ListSessionsResponse> callable,
+                ListSessionsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListSessionsResponse> futureResponse) {
+              PageContext<ListSessionsRequest, ListSessionsResponse, Session> pageContext =
+                  PageContext.create(callable, LIST_SESSIONS_PAGE_STR_DESC, request, context);
+              return ListSessionsPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
 
   /** Returns the object with the settings used for calls to createSession. */
   public UnaryCallSettings<CreateSessionRequest, Session> createSessionSettings() {
@@ -218,10 +273,10 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
         .getTransportName()
         .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcSpannerStub.create(this);
-    } else {
-      throw new UnsupportedOperationException(
-          "Transport not supported: " + getTransportChannelProvider().getTransportName());
     }
+    throw new UnsupportedOperationException(
+        String.format(
+            "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
   }
 
   /** Returns a builder for the default ExecutorProvider for this service. */
@@ -297,63 +352,9 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     partitionReadSettings = settingsBuilder.partitionReadSettings().build();
   }
 
-  private static final PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>
-      LIST_SESSIONS_PAGE_STR_DESC =
-          new PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>() {
-            @Override
-            public String emptyToken() {
-              return "";
-            }
-
-            @Override
-            public ListSessionsRequest injectToken(ListSessionsRequest payload, String token) {
-              return ListSessionsRequest.newBuilder(payload).setPageToken(token).build();
-            }
-
-            @Override
-            public ListSessionsRequest injectPageSize(ListSessionsRequest payload, int pageSize) {
-              return ListSessionsRequest.newBuilder(payload).setPageSize(pageSize).build();
-            }
-
-            @Override
-            public Integer extractPageSize(ListSessionsRequest payload) {
-              return payload.getPageSize();
-            }
-
-            @Override
-            public String extractNextToken(ListSessionsResponse payload) {
-              return payload.getNextPageToken();
-            }
-
-            @Override
-            public Iterable<Session> extractResources(ListSessionsResponse payload) {
-              return payload.getSessionsList() != null
-                  ? payload.getSessionsList()
-                  : ImmutableList.<Session>of();
-            }
-          };
-
-  private static final PagedListResponseFactory<
-          ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
-      LIST_SESSIONS_PAGE_STR_FACT =
-          new PagedListResponseFactory<
-              ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>() {
-            @Override
-            public ApiFuture<ListSessionsPagedResponse> getFuturePagedResponse(
-                UnaryCallable<ListSessionsRequest, ListSessionsResponse> callable,
-                ListSessionsRequest request,
-                ApiCallContext context,
-                ApiFuture<ListSessionsResponse> futureResponse) {
-              PageContext<ListSessionsRequest, ListSessionsResponse, Session> pageContext =
-                  PageContext.create(callable, LIST_SESSIONS_PAGE_STR_DESC, request, context);
-              return ListSessionsPagedResponse.createAsync(pageContext, futureResponse);
-            }
-          };
-
   /** Builder for SpannerStubSettings. */
   public static class Builder extends StubSettings.Builder<SpannerStubSettings, Builder> {
     private final ImmutableList<UnaryCallSettings.Builder<?, ?>> unaryMethodSettingsBuilders;
-
     private final UnaryCallSettings.Builder<CreateSessionRequest, Session> createSessionSettings;
     private final UnaryCallSettings.Builder<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
         batchCreateSessionsSettings;
@@ -378,7 +379,6 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
         partitionQuerySettings;
     private final UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings;
-
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -386,17 +386,16 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       ImmutableMap.Builder<String, ImmutableSet<StatusCode.Code>> definitions =
           ImmutableMap.builder();
       definitions.put(
-          "retry_policy_1_codes",
-          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
-      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
-      definitions.put(
           "retry_policy_3_codes",
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
       definitions.put(
           "retry_policy_2_codes",
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
       definitions.put(
-          "no_retry_1_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
+          "retry_policy_1_codes",
+          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
+      definitions.put(
+          "no_retry_0_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
     }
 
@@ -405,17 +404,6 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     static {
       ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
       RetrySettings settings = null;
-      settings =
-          RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.ofMillis(250L))
-              .setRetryDelayMultiplier(1.3)
-              .setMaxRetryDelay(Duration.ofMillis(32000L))
-              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
-              .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-              .setTotalTimeout(Duration.ofMillis(3600000L))
-              .build();
-      definitions.put("retry_policy_1_params", settings);
       settings =
           RetrySettings.newBuilder()
               .setInitialRetryDelay(Duration.ofMillis(250L))
@@ -438,8 +426,17 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
               .setTotalTimeout(Duration.ofMillis(60000L))
               .build();
       definitions.put("retry_policy_2_params", settings);
-      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
-      definitions.put("no_retry_params", settings);
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setRetryDelayMultiplier(1.3)
+              .setMaxRetryDelay(Duration.ofMillis(32000L))
+              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .build();
+      definitions.put("retry_policy_1_params", settings);
       settings =
           RetrySettings.newBuilder()
               .setInitialRpcTimeout(Duration.ofMillis(3600000L))
@@ -447,45 +444,31 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
               .setMaxRpcTimeout(Duration.ofMillis(3600000L))
               .setTotalTimeout(Duration.ofMillis(3600000L))
               .build();
-      definitions.put("no_retry_1_params", settings);
+      definitions.put("no_retry_0_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
 
     protected Builder() {
-      this((ClientContext) null);
+      this(((ClientContext) null));
     }
 
     protected Builder(ClientContext clientContext) {
       super(clientContext);
 
       createSessionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       batchCreateSessionsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       getSessionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       listSessionsSettings = PagedCallSettings.newBuilder(LIST_SESSIONS_PAGE_STR_FACT);
-
       deleteSessionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       executeSqlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       executeStreamingSqlSettings = ServerStreamingCallSettings.newBuilder();
-
       executeBatchDmlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       readSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       streamingReadSettings = ServerStreamingCallSettings.newBuilder();
-
       beginTransactionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       commitSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       rollbackSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       partitionQuerySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       partitionReadSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
 
       unaryMethodSettingsBuilders =
@@ -503,97 +486,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
               rollbackSettings,
               partitionQuerySettings,
               partitionReadSettings);
-
       initDefaults(this);
-    }
-
-    private static Builder createDefault() {
-      Builder builder = new Builder((ClientContext) null);
-      builder.setTransportChannelProvider(defaultTransportChannelProvider());
-      builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
-      builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
-      builder.setEndpoint(getDefaultEndpoint());
-      return initDefaults(builder);
-    }
-
-    private static Builder initDefaults(Builder builder) {
-
-      builder
-          .createSessionSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .batchCreateSessionsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_2_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_2_params"));
-
-      builder
-          .getSessionSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .listSessionsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .deleteSessionSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .executeSqlSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .executeStreamingSqlSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .executeBatchDmlSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .readSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .streamingReadSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .beginTransactionSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .commitSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .rollbackSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .partitionQuerySettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      builder
-          .partitionReadSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
-
-      return builder;
     }
 
     protected Builder(SpannerStubSettings settings) {
@@ -632,7 +525,97 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
               partitionReadSettings);
     }
 
-    // NEXT_MAJOR_VER: remove 'throws Exception'
+    private static Builder createDefault() {
+      Builder builder = new Builder(((ClientContext) null));
+
+      builder.setTransportChannelProvider(defaultTransportChannelProvider());
+      builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
+      builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
+      builder.setEndpoint(getDefaultEndpoint());
+
+      return initDefaults(builder);
+    }
+
+    private static Builder initDefaults(Builder builder) {
+      builder
+          .createSessionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .batchCreateSessionsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_2_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_2_params"));
+
+      builder
+          .getSessionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .listSessionsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+
+      builder
+          .deleteSessionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .executeSqlSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .executeStreamingSqlSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
+
+      builder
+          .executeBatchDmlSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .readSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .streamingReadSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
+
+      builder
+          .beginTransactionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .commitSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+
+      builder
+          .rollbackSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .partitionQuerySettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .partitionReadSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      return builder;
+    }
+
+    // NEXT_MAJOR_VER: remove 'throws Exception'.
     /**
      * Applies the given settings updater function to all of the unary API methods in this service.
      *
