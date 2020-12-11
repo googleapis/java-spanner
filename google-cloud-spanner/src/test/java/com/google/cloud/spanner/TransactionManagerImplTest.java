@@ -87,7 +87,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void beginCalledTwiceFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.begin()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
     try {
@@ -130,7 +130,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void transactionRolledBackOnClose() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(txn.isAborted()).thenReturn(false);
     manager.begin();
     manager.close();
@@ -139,7 +139,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitSucceeds() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
     when(txn.commitTimestamp()).thenReturn(commitTimestamp);
     manager.begin();
@@ -150,7 +150,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterSuccessfulCommitFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
     try {
@@ -163,7 +163,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void resetAfterAbortSucceeds() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
     try {
@@ -173,14 +173,14 @@ public class TransactionManagerImplTest {
       assertThat(manager.getState()).isEqualTo(TransactionState.ABORTED);
     }
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
   }
 
   @Test
   public void resetAfterErrorFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "")).when(txn).commit();
     try {
@@ -199,7 +199,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void rollbackAfterCommitFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
     try {
@@ -212,7 +212,7 @@ public class TransactionManagerImplTest {
 
   @Test
   public void commitAfterRollbackFails() {
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.rollback();
     try {
