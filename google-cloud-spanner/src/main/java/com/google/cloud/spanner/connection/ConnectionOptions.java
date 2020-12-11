@@ -595,7 +595,7 @@ public class ConnectionOptions {
     String value = parseUriProperty(uri, RETURN_COMMIT_STATS_PROPERTY_NAME);
     return value != null ? Boolean.valueOf(value) : DEFAULT_RETURN_COMMIT_STATS;
   }
-  
+
   @VisibleForTesting
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);

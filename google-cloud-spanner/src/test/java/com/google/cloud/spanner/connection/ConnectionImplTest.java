@@ -79,7 +79,6 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class ConnectionImplTest {
@@ -112,7 +111,6 @@ public class ConnectionImplTest {
         CommitStats stats = mock(CommitStats.class);
         when(commitResponse.hasCommitStats()).thenReturn(true);
         when(stats.getMutationCount()).thenReturn(5L);
-        when(stats.getOverloadDelay()).thenReturn(Duration.ofMillis(11L));
         when(commitResponse.getCommitStats()).thenReturn(stats);
       }
       state = TransactionState.COMMITTED;
@@ -839,7 +837,6 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().next(), is(true));
       assertThat(res.getResultSet().getTimestamp("COMMIT_TIMESTAMP"), is(notNullValue()));
       assertThat(res.getResultSet().isNull("MUTATION_COUNT"), is(true));
-      assertThat(res.getResultSet().isNull("OVERLOAD_DELAY"), is(true));
       assertThat(res.getResultSet().next(), is(false));
     }
 
@@ -857,7 +854,6 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().next(), is(true));
       assertThat(res.getResultSet().getTimestamp("COMMIT_TIMESTAMP"), is(notNullValue()));
       assertThat(res.getResultSet().isNull("MUTATION_COUNT"), is(false));
-      assertThat(res.getResultSet().isNull("OVERLOAD_DELAY"), is(false));
       assertThat(res.getResultSet().next(), is(false));
     }
   }
