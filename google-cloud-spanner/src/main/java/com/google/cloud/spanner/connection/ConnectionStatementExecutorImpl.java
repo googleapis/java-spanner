@@ -190,16 +190,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         ResultSets.forRows(
             Type.struct(
                 StructField.of("COMMIT_TIMESTAMP", Type.timestamp()),
-                StructField.of("MUTATION_COUNT", Type.int64()),
-                StructField.of("OVERLOAD_DELAY", Type.string())),
+                StructField.of("MUTATION_COUNT", Type.int64())),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("COMMIT_TIMESTAMP")
                     .to(response == null ? null : response.getCommitTimestamp())
                     .set("MUTATION_COUNT")
                     .to(stats == null ? null : stats.getMutationCount())
-                    .set("OVERLOAD_DELAY")
-                    .to(stats == null ? null : stats.getOverloadDelay().toString())
                     .build()));
     return StatementResultImpl.of(rs, SHOW_COMMIT_RESPONSE);
   }
