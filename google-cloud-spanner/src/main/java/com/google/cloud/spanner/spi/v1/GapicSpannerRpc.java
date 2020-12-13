@@ -454,11 +454,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                         .addAll(callSettings.getRetryableCodes())
                         .add(StatusCode.Code.RESOURCE_EXHAUSTED)
                         .build();
-                callSettings =
-                    callSettings
-                        .toBuilder()
-                        .setRetryableCodes(codes)
-                        .build();
+                callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
               }
               return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
             }
