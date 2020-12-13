@@ -26,6 +26,8 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.grpc.GrpcCallSettings;
+import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
@@ -35,6 +37,7 @@ import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
@@ -43,6 +46,8 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnaryCallSettings;
+import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
@@ -58,7 +63,7 @@ import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
-import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
@@ -70,6 +75,7 @@ import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -155,6 +161,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -428,7 +435,43 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setCredentialsProvider(credentialsProvider)
               .setStreamWatchdogProvider(watchdogProvider)
               .build();
-      this.databaseAdminStub = GrpcDatabaseAdminStub.create(this.databaseAdminStubSettings);
+      GrpcStubCallableFactory factory =
+          new GrpcDatabaseAdminCallableFactory() {
+            @Override
+            public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
+                GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
+                UnaryCallSettings<RequestT, ResponseT> callSettings,
+                ClientContext clientContext) {
+              // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations from
+              // failing with an Administrative requests limit exceeded error.
+              if (grpcCallSettings
+                  .getMethodDescriptor()
+                  .getFullMethodName()
+                  .equals("google.longrunning.Operations/GetOperation")) {
+                Set<StatusCode.Code> codes =
+                    ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
+                            callSettings.getRetryableCodes().size() + 1)
+                        .addAll(callSettings.getRetryableCodes())
+                        .add(StatusCode.Code.RESOURCE_EXHAUSTED)
+                        .build();
+                callSettings =
+                    callSettings
+                        .toBuilder()
+                        .setRetryableCodes(codes)
+                        .setRetrySettings(
+                            callSettings
+                                .getRetrySettings()
+                                .toBuilder()
+                                .setInitialRetryDelay(Duration.ofSeconds(10L))
+                                .build())
+                        .build();
+              }
+              return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
+            }
+          };
+      this.databaseAdminStub =
+          new GrpcDatabaseAdminStubWithCustomCallableFactory(
+              databaseAdminStubSettings, ClientContext.create(databaseAdminStubSettings), factory);
 
       // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
       // actually running.
@@ -487,9 +530,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
       RetrySettings.newBuilder()
-          .setInitialRetryDelay(Duration.ofSeconds(2L))
-          .setRetryDelayMultiplier(1.5)
-          .setMaxRetryDelay(Duration.ofSeconds(15L))
+          .setInitialRetryDelay(Duration.ofSeconds(5L))
+          .setRetryDelayMultiplier(2.0)
+          .setMaxRetryDelay(Duration.ofSeconds(60L))
           .setMaxAttempts(10)
           .build();
 
@@ -1004,6 +1047,11 @@ public class GapicSpannerRpc implements SpannerRpc {
               throw newSpannerException(e);
             } catch (ExecutionException e) {
               Throwable t = e.getCause();
+              SpannerException se = SpannerExceptionFactory.asSpannerException(t);
+              if (se instanceof AdminRequestsPerMinuteExceededException) {
+                // Propagate this to trigger a retry.
+                throw se;
+              }
               if (t instanceof AlreadyExistsException) {
                 String operationName =
                     OPERATION_NAME_TEMPLATE.instantiate(
