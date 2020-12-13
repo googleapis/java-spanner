@@ -458,12 +458,6 @@ public class GapicSpannerRpc implements SpannerRpc {
                     callSettings
                         .toBuilder()
                         .setRetryableCodes(codes)
-                        .setRetrySettings(
-                            callSettings
-                                .getRetrySettings()
-                                .toBuilder()
-                                .setInitialRetryDelay(Duration.ofSeconds(10L))
-                                .build())
                         .build();
               }
               return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
