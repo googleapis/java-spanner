@@ -203,11 +203,21 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
         InstanceAdminStubSettings.newBuilder().build(), clientContext, callableFactory);
   }
 
+  /**
+   * Constructs an instance of GrpcInstanceAdminStub, using the given settings. This is protected so
+   * that it is easy to make a subclass, but otherwise, the static factory methods should be
+   * preferred.
+   */
   protected GrpcInstanceAdminStub(InstanceAdminStubSettings settings, ClientContext clientContext)
       throws IOException {
     this(settings, clientContext, new GrpcInstanceAdminCallableFactory());
   }
 
+  /**
+   * Constructs an instance of GrpcInstanceAdminStub, using the given settings. This is protected so
+   * that it is easy to make a subclass, but otherwise, the static factory methods should be
+   * preferred.
+   */
   protected GrpcInstanceAdminStub(
       InstanceAdminStubSettings settings,
       ClientContext clientContext,

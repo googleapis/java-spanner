@@ -19,12 +19,10 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.After;
@@ -43,6 +41,7 @@ import org.junit.runners.JUnit4;
 public class QuickstartSampleIT {
   private static String instanceId = System.getProperty("spanner.test.instance");
   private static String dbId = formatForTest(System.getProperty("spanner.quickstart.database"));
+  private static Spanner spanner;
   private static DatabaseAdminClient dbClient;
 
   private ByteArrayOutputStream bout;
@@ -51,8 +50,9 @@ public class QuickstartSampleIT {
 
   @BeforeClass
   public static void createDatabase() {
-    final SpannerOptions options = SpannerOptions.newBuilder().build();
-    final Spanner spanner = options.getService();
+    final SpannerOptions options =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
+    spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
     dbClient.createDatabase(instanceId, dbId, Collections.emptyList());
   }
@@ -60,6 +60,7 @@ public class QuickstartSampleIT {
   @AfterClass
   public static void dropDatabase() {
     dbClient.dropDatabase(instanceId, dbId);
+    spanner.close();
   }
 
   @Before

@@ -1,5 +1,12 @@
 # Changelog
 
+### [3.1.2](https://www.github.com/googleapis/java-spanner/compare/v3.1.1...v3.1.2) (2020-12-14)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.9 ([#710](https://www.github.com/googleapis/java-spanner/issues/710)) ([37a636d](https://www.github.com/googleapis/java-spanner/commit/37a636d989d2783875065b89141e532064f2647b))
+
 ### [3.1.1](https://www.github.com/googleapis/java-spanner/compare/v3.1.0...v3.1.1) (2020-12-10)
 
 
