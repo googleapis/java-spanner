@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.database.v1.stub;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
@@ -20,7 +21,6 @@ import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.Lis
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.core.BackgroundResourceAggregation;
 import com.google.api.gax.grpc.GrpcCallSettings;
@@ -70,51 +70,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Generated;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
- * gRPC stub implementation for Cloud Spanner Database Admin API.
+ * gRPC stub implementation for the DatabaseAdmin service API.
  *
  * <p>This class is for advanced usage and reflects the underlying API directly.
  */
-@Generated("by gapic-generator")
-@BetaApi("A restructuring of stub classes is planned, so this may break in the future")
+@Generated("by gapic-generator-java")
 public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
-
-  private static final MethodDescriptor<CreateDatabaseRequest, Operation>
-      createDatabaseMethodDescriptor =
-          MethodDescriptor.<CreateDatabaseRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CreateDatabase")
-              .setRequestMarshaller(
-                  ProtoUtils.marshaller(CreateDatabaseRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
-  private static final MethodDescriptor<UpdateDatabaseDdlRequest, Operation>
-      updateDatabaseDdlMethodDescriptor =
-          MethodDescriptor.<UpdateDatabaseDdlRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/UpdateDatabaseDdl")
-              .setRequestMarshaller(
-                  ProtoUtils.marshaller(UpdateDatabaseDdlRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
-  private static final MethodDescriptor<CreateBackupRequest, Operation>
-      createBackupMethodDescriptor =
-          MethodDescriptor.<CreateBackupRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CreateBackup")
-              .setRequestMarshaller(ProtoUtils.marshaller(CreateBackupRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
-  private static final MethodDescriptor<RestoreDatabaseRequest, Operation>
-      restoreDatabaseMethodDescriptor =
-          MethodDescriptor.<RestoreDatabaseRequest, Operation>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/RestoreDatabase")
-              .setRequestMarshaller(
-                  ProtoUtils.marshaller(RestoreDatabaseRequest.getDefaultInstance()))
-              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
-              .build();
   private static final MethodDescriptor<ListDatabasesRequest, ListDatabasesResponse>
       listDatabasesMethodDescriptor =
           MethodDescriptor.<ListDatabasesRequest, ListDatabasesResponse>newBuilder()
@@ -125,6 +88,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListDatabasesResponse.getDefaultInstance()))
               .build();
+
+  private static final MethodDescriptor<CreateDatabaseRequest, Operation>
+      createDatabaseMethodDescriptor =
+          MethodDescriptor.<CreateDatabaseRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CreateDatabase")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(CreateDatabaseRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<GetDatabaseRequest, Database> getDatabaseMethodDescriptor =
       MethodDescriptor.<GetDatabaseRequest, Database>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -132,6 +106,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetDatabaseRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Database.getDefaultInstance()))
           .build();
+
+  private static final MethodDescriptor<UpdateDatabaseDdlRequest, Operation>
+      updateDatabaseDdlMethodDescriptor =
+          MethodDescriptor.<UpdateDatabaseDdlRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/UpdateDatabaseDdl")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(UpdateDatabaseDdlRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<DropDatabaseRequest, Empty> dropDatabaseMethodDescriptor =
       MethodDescriptor.<DropDatabaseRequest, Empty>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -139,6 +124,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(DropDatabaseRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
       getDatabaseDdlMethodDescriptor =
           MethodDescriptor.<GetDatabaseDdlRequest, GetDatabaseDdlResponse>newBuilder()
@@ -149,6 +135,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(GetDatabaseDdlResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<SetIamPolicyRequest, Policy> setIamPolicyMethodDescriptor =
       MethodDescriptor.<SetIamPolicyRequest, Policy>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -156,6 +143,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(SetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<GetIamPolicyRequest, Policy> getIamPolicyMethodDescriptor =
       MethodDescriptor.<GetIamPolicyRequest, Policy>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -163,6 +151,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetIamPolicyRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Policy.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsMethodDescriptor =
           MethodDescriptor.<TestIamPermissionsRequest, TestIamPermissionsResponse>newBuilder()
@@ -174,6 +163,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(TestIamPermissionsResponse.getDefaultInstance()))
               .build();
+
+  private static final MethodDescriptor<CreateBackupRequest, Operation>
+      createBackupMethodDescriptor =
+          MethodDescriptor.<CreateBackupRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CreateBackup")
+              .setRequestMarshaller(ProtoUtils.marshaller(CreateBackupRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<GetBackupRequest, Backup> getBackupMethodDescriptor =
       MethodDescriptor.<GetBackupRequest, Backup>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -181,6 +180,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Backup.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<UpdateBackupRequest, Backup> updateBackupMethodDescriptor =
       MethodDescriptor.<UpdateBackupRequest, Backup>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -188,6 +188,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(UpdateBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Backup.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<DeleteBackupRequest, Empty> deleteBackupMethodDescriptor =
       MethodDescriptor.<DeleteBackupRequest, Empty>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -195,6 +196,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(DeleteBackupRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<ListBackupsRequest, ListBackupsResponse>
       listBackupsMethodDescriptor =
           MethodDescriptor.<ListBackupsRequest, ListBackupsResponse>newBuilder()
@@ -204,6 +206,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListBackupsResponse.getDefaultInstance()))
               .build();
+
+  private static final MethodDescriptor<RestoreDatabaseRequest, Operation>
+      restoreDatabaseMethodDescriptor =
+          MethodDescriptor.<RestoreDatabaseRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/RestoreDatabase")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(RestoreDatabaseRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<
           ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
       listDatabaseOperationsMethodDescriptor =
@@ -217,6 +230,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListDatabaseOperationsResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsMethodDescriptor =
           MethodDescriptor.<ListBackupOperationsRequest, ListBackupOperationsResponse>newBuilder()
@@ -229,37 +243,34 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListBackupOperationsResponse.getDefaultInstance()))
               .build();
 
-  private final BackgroundResource backgroundResources;
-  private final GrpcOperationsStub operationsStub;
-
-  private final UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable;
-  private final OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
-      createDatabaseOperationCallable;
-  private final UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable;
-  private final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
-      updateDatabaseDdlOperationCallable;
-  private final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable;
-  private final OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationCallable;
-  private final UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable;
-  private final OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable;
+  private final UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable;
+  private final OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
+      createDatabaseOperationCallable;
   private final UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable;
+  private final UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable;
+  private final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
+      updateDatabaseDdlOperationCallable;
   private final UnaryCallable<DropDatabaseRequest, Empty> dropDatabaseCallable;
   private final UnaryCallable<GetDatabaseDdlRequest, GetDatabaseDdlResponse> getDatabaseDdlCallable;
   private final UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable;
   private final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable;
   private final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable;
+  private final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable;
+  private final OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationCallable;
   private final UnaryCallable<GetBackupRequest, Backup> getBackupCallable;
   private final UnaryCallable<UpdateBackupRequest, Backup> updateBackupCallable;
   private final UnaryCallable<DeleteBackupRequest, Empty> deleteBackupCallable;
   private final UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable;
   private final UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse>
       listBackupsPagedCallable;
+  private final UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable;
+  private final OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationCallable;
   private final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
       listDatabaseOperationsCallable;
   private final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
@@ -269,6 +280,8 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   private final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
       listBackupOperationsPagedCallable;
 
+  private final BackgroundResource backgroundResources;
+  private final GrpcOperationsStub operationsStub;
   private final GrpcStubCallableFactory callableFactory;
 
   public static final GrpcDatabaseAdminStub create(DatabaseAdminStubSettings settings)
@@ -309,58 +322,6 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     this.callableFactory = callableFactory;
     this.operationsStub = GrpcOperationsStub.create(clientContext, callableFactory);
 
-    GrpcCallSettings<CreateDatabaseRequest, Operation> createDatabaseTransportSettings =
-        GrpcCallSettings.<CreateDatabaseRequest, Operation>newBuilder()
-            .setMethodDescriptor(createDatabaseMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<CreateDatabaseRequest>() {
-                  @Override
-                  public Map<String, String> extract(CreateDatabaseRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("parent", String.valueOf(request.getParent()));
-                    return params.build();
-                  }
-                })
-            .build();
-    GrpcCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlTransportSettings =
-        GrpcCallSettings.<UpdateDatabaseDdlRequest, Operation>newBuilder()
-            .setMethodDescriptor(updateDatabaseDdlMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<UpdateDatabaseDdlRequest>() {
-                  @Override
-                  public Map<String, String> extract(UpdateDatabaseDdlRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("database", String.valueOf(request.getDatabase()));
-                    return params.build();
-                  }
-                })
-            .build();
-    GrpcCallSettings<CreateBackupRequest, Operation> createBackupTransportSettings =
-        GrpcCallSettings.<CreateBackupRequest, Operation>newBuilder()
-            .setMethodDescriptor(createBackupMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<CreateBackupRequest>() {
-                  @Override
-                  public Map<String, String> extract(CreateBackupRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("parent", String.valueOf(request.getParent()));
-                    return params.build();
-                  }
-                })
-            .build();
-    GrpcCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseTransportSettings =
-        GrpcCallSettings.<RestoreDatabaseRequest, Operation>newBuilder()
-            .setMethodDescriptor(restoreDatabaseMethodDescriptor)
-            .setParamsExtractor(
-                new RequestParamsExtractor<RestoreDatabaseRequest>() {
-                  @Override
-                  public Map<String, String> extract(RestoreDatabaseRequest request) {
-                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                    params.put("parent", String.valueOf(request.getParent()));
-                    return params.build();
-                  }
-                })
-            .build();
     GrpcCallSettings<ListDatabasesRequest, ListDatabasesResponse> listDatabasesTransportSettings =
         GrpcCallSettings.<ListDatabasesRequest, ListDatabasesResponse>newBuilder()
             .setMethodDescriptor(listDatabasesMethodDescriptor)
@@ -368,6 +329,19 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 new RequestParamsExtractor<ListDatabasesRequest>() {
                   @Override
                   public Map<String, String> extract(ListDatabasesRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("parent", String.valueOf(request.getParent()));
+                    return params.build();
+                  }
+                })
+            .build();
+    GrpcCallSettings<CreateDatabaseRequest, Operation> createDatabaseTransportSettings =
+        GrpcCallSettings.<CreateDatabaseRequest, Operation>newBuilder()
+            .setMethodDescriptor(createDatabaseMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<CreateDatabaseRequest>() {
+                  @Override
+                  public Map<String, String> extract(CreateDatabaseRequest request) {
                     ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
                     params.put("parent", String.valueOf(request.getParent()));
                     return params.build();
@@ -383,6 +357,19 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   public Map<String, String> extract(GetDatabaseRequest request) {
                     ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
                     params.put("name", String.valueOf(request.getName()));
+                    return params.build();
+                  }
+                })
+            .build();
+    GrpcCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlTransportSettings =
+        GrpcCallSettings.<UpdateDatabaseDdlRequest, Operation>newBuilder()
+            .setMethodDescriptor(updateDatabaseDdlMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<UpdateDatabaseDdlRequest>() {
+                  @Override
+                  public Map<String, String> extract(UpdateDatabaseDdlRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("database", String.valueOf(request.getDatabase()));
                     return params.build();
                   }
                 })
@@ -454,6 +441,19 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                       }
                     })
                 .build();
+    GrpcCallSettings<CreateBackupRequest, Operation> createBackupTransportSettings =
+        GrpcCallSettings.<CreateBackupRequest, Operation>newBuilder()
+            .setMethodDescriptor(createBackupMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<CreateBackupRequest>() {
+                  @Override
+                  public Map<String, String> extract(CreateBackupRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("parent", String.valueOf(request.getParent()));
+                    return params.build();
+                  }
+                })
+            .build();
     GrpcCallSettings<GetBackupRequest, Backup> getBackupTransportSettings =
         GrpcCallSettings.<GetBackupRequest, Backup>newBuilder()
             .setMethodDescriptor(getBackupMethodDescriptor)
@@ -506,6 +506,19 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   }
                 })
             .build();
+    GrpcCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseTransportSettings =
+        GrpcCallSettings.<RestoreDatabaseRequest, Operation>newBuilder()
+            .setMethodDescriptor(restoreDatabaseMethodDescriptor)
+            .setParamsExtractor(
+                new RequestParamsExtractor<RestoreDatabaseRequest>() {
+                  @Override
+                  public Map<String, String> extract(RestoreDatabaseRequest request) {
+                    ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                    params.put("parent", String.valueOf(request.getParent()));
+                    return params.build();
+                  }
+                })
+            .build();
     GrpcCallSettings<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
         listDatabaseOperationsTransportSettings =
             GrpcCallSettings
@@ -536,6 +549,12 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                     })
                 .build();
 
+    this.listDatabasesCallable =
+        callableFactory.createUnaryCallable(
+            listDatabasesTransportSettings, settings.listDatabasesSettings(), clientContext);
+    this.listDatabasesPagedCallable =
+        callableFactory.createPagedCallable(
+            listDatabasesTransportSettings, settings.listDatabasesSettings(), clientContext);
     this.createDatabaseCallable =
         callableFactory.createUnaryCallable(
             createDatabaseTransportSettings, settings.createDatabaseSettings(), clientContext);
@@ -544,7 +563,10 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             createDatabaseTransportSettings,
             settings.createDatabaseOperationSettings(),
             clientContext,
-            this.operationsStub);
+            operationsStub);
+    this.getDatabaseCallable =
+        callableFactory.createUnaryCallable(
+            getDatabaseTransportSettings, settings.getDatabaseSettings(), clientContext);
     this.updateDatabaseDdlCallable =
         callableFactory.createUnaryCallable(
             updateDatabaseDdlTransportSettings,
@@ -555,34 +577,7 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             updateDatabaseDdlTransportSettings,
             settings.updateDatabaseDdlOperationSettings(),
             clientContext,
-            this.operationsStub);
-    this.createBackupCallable =
-        callableFactory.createUnaryCallable(
-            createBackupTransportSettings, settings.createBackupSettings(), clientContext);
-    this.createBackupOperationCallable =
-        callableFactory.createOperationCallable(
-            createBackupTransportSettings,
-            settings.createBackupOperationSettings(),
-            clientContext,
-            this.operationsStub);
-    this.restoreDatabaseCallable =
-        callableFactory.createUnaryCallable(
-            restoreDatabaseTransportSettings, settings.restoreDatabaseSettings(), clientContext);
-    this.restoreDatabaseOperationCallable =
-        callableFactory.createOperationCallable(
-            restoreDatabaseTransportSettings,
-            settings.restoreDatabaseOperationSettings(),
-            clientContext,
-            this.operationsStub);
-    this.listDatabasesCallable =
-        callableFactory.createUnaryCallable(
-            listDatabasesTransportSettings, settings.listDatabasesSettings(), clientContext);
-    this.listDatabasesPagedCallable =
-        callableFactory.createPagedCallable(
-            listDatabasesTransportSettings, settings.listDatabasesSettings(), clientContext);
-    this.getDatabaseCallable =
-        callableFactory.createUnaryCallable(
-            getDatabaseTransportSettings, settings.getDatabaseSettings(), clientContext);
+            operationsStub);
     this.dropDatabaseCallable =
         callableFactory.createUnaryCallable(
             dropDatabaseTransportSettings, settings.dropDatabaseSettings(), clientContext);
@@ -600,6 +595,15 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             testIamPermissionsTransportSettings,
             settings.testIamPermissionsSettings(),
             clientContext);
+    this.createBackupCallable =
+        callableFactory.createUnaryCallable(
+            createBackupTransportSettings, settings.createBackupSettings(), clientContext);
+    this.createBackupOperationCallable =
+        callableFactory.createOperationCallable(
+            createBackupTransportSettings,
+            settings.createBackupOperationSettings(),
+            clientContext,
+            operationsStub);
     this.getBackupCallable =
         callableFactory.createUnaryCallable(
             getBackupTransportSettings, settings.getBackupSettings(), clientContext);
@@ -615,6 +619,15 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     this.listBackupsPagedCallable =
         callableFactory.createPagedCallable(
             listBackupsTransportSettings, settings.listBackupsSettings(), clientContext);
+    this.restoreDatabaseCallable =
+        callableFactory.createUnaryCallable(
+            restoreDatabaseTransportSettings, settings.restoreDatabaseSettings(), clientContext);
+    this.restoreDatabaseOperationCallable =
+        callableFactory.createOperationCallable(
+            restoreDatabaseTransportSettings,
+            settings.restoreDatabaseOperationSettings(),
+            clientContext,
+            operationsStub);
     this.listDatabaseOperationsCallable =
         callableFactory.createUnaryCallable(
             listDatabaseOperationsTransportSettings,
@@ -636,52 +649,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             settings.listBackupOperationsSettings(),
             clientContext);
 
-    backgroundResources = new BackgroundResourceAggregation(clientContext.getBackgroundResources());
+    this.backgroundResources =
+        new BackgroundResourceAggregation(clientContext.getBackgroundResources());
   }
 
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
   public GrpcOperationsStub getOperationsStub() {
     return operationsStub;
   }
 
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
-      createDatabaseOperationCallable() {
-    return createDatabaseOperationCallable;
-  }
-
-  public UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
-    return createDatabaseCallable;
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
-      updateDatabaseDdlOperationCallable() {
-    return updateDatabaseDdlOperationCallable;
-  }
-
-  public UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
-    return updateDatabaseDdlCallable;
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationCallable() {
-    return createBackupOperationCallable;
-  }
-
-  public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
-    return createBackupCallable;
-  }
-
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationCallable() {
-    return restoreDatabaseOperationCallable;
-  }
-
-  public UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
-    return restoreDatabaseCallable;
+  public UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
+    return listDatabasesCallable;
   }
 
   public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
@@ -689,12 +666,26 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     return listDatabasesPagedCallable;
   }
 
-  public UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
-    return listDatabasesCallable;
+  public UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
+    return createDatabaseCallable;
+  }
+
+  public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
+      createDatabaseOperationCallable() {
+    return createDatabaseOperationCallable;
   }
 
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return getDatabaseCallable;
+  }
+
+  public UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
+    return updateDatabaseDdlCallable;
+  }
+
+  public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
+      updateDatabaseDdlOperationCallable() {
+    return updateDatabaseDdlOperationCallable;
   }
 
   public UnaryCallable<DropDatabaseRequest, Empty> dropDatabaseCallable() {
@@ -718,6 +709,15 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     return testIamPermissionsCallable;
   }
 
+  public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
+    return createBackupCallable;
+  }
+
+  public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationCallable() {
+    return createBackupOperationCallable;
+  }
+
   public UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {
     return getBackupCallable;
   }
@@ -730,17 +730,21 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     return deleteBackupCallable;
   }
 
-  public UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse> listBackupsPagedCallable() {
-    return listBackupsPagedCallable;
-  }
-
   public UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable() {
     return listBackupsCallable;
   }
 
-  public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
-      listDatabaseOperationsPagedCallable() {
-    return listDatabaseOperationsPagedCallable;
+  public UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse> listBackupsPagedCallable() {
+    return listBackupsPagedCallable;
+  }
+
+  public UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
+    return restoreDatabaseCallable;
+  }
+
+  public OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationCallable() {
+    return restoreDatabaseOperationCallable;
   }
 
   public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
@@ -748,14 +752,19 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     return listDatabaseOperationsCallable;
   }
 
-  public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
-      listBackupOperationsPagedCallable() {
-    return listBackupOperationsPagedCallable;
+  public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
+      listDatabaseOperationsPagedCallable() {
+    return listDatabaseOperationsPagedCallable;
   }
 
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {
     return listBackupOperationsCallable;
+  }
+
+  public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
+      listBackupOperationsPagedCallable() {
+    return listBackupOperationsPagedCallable;
   }
 
   @Override

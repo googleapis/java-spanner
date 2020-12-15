@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.v1;
 
 import com.google.api.core.BetaApi;
@@ -46,9 +47,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import javax.annotation.Generated;
 
-@javax.annotation.Generated("by GAPIC")
 @BetaApi
+@Generated("by gapic-generator-java")
 public class MockSpannerImpl extends SpannerImplBase {
   private List<AbstractMessage> requests;
   private Queue<Object> responses;
@@ -85,10 +87,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof Session) {
       requests.add(request);
-      responseObserver.onNext((Session) response);
+      responseObserver.onNext(((Session) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -101,10 +103,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof BatchCreateSessionsResponse) {
       requests.add(request);
-      responseObserver.onNext((BatchCreateSessionsResponse) response);
+      responseObserver.onNext(((BatchCreateSessionsResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -115,10 +117,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof Session) {
       requests.add(request);
-      responseObserver.onNext((Session) response);
+      responseObserver.onNext(((Session) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -130,10 +132,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof ListSessionsResponse) {
       requests.add(request);
-      responseObserver.onNext((ListSessionsResponse) response);
+      responseObserver.onNext(((ListSessionsResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -144,10 +146,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof Empty) {
       requests.add(request);
-      responseObserver.onNext((Empty) response);
+      responseObserver.onNext(((Empty) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -158,10 +160,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof ResultSet) {
       requests.add(request);
-      responseObserver.onNext((ResultSet) response);
+      responseObserver.onNext(((ResultSet) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -173,10 +175,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof PartialResultSet) {
       requests.add(request);
-      responseObserver.onNext((PartialResultSet) response);
+      responseObserver.onNext(((PartialResultSet) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -188,10 +190,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof ExecuteBatchDmlResponse) {
       requests.add(request);
-      responseObserver.onNext((ExecuteBatchDmlResponse) response);
+      responseObserver.onNext(((ExecuteBatchDmlResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -202,10 +204,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof ResultSet) {
       requests.add(request);
-      responseObserver.onNext((ResultSet) response);
+      responseObserver.onNext(((ResultSet) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -217,10 +219,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof PartialResultSet) {
       requests.add(request);
-      responseObserver.onNext((PartialResultSet) response);
+      responseObserver.onNext(((PartialResultSet) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -232,10 +234,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof Transaction) {
       requests.add(request);
-      responseObserver.onNext((Transaction) response);
+      responseObserver.onNext(((Transaction) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -246,10 +248,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof CommitResponse) {
       requests.add(request);
-      responseObserver.onNext((CommitResponse) response);
+      responseObserver.onNext(((CommitResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -260,10 +262,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof Empty) {
       requests.add(request);
-      responseObserver.onNext((Empty) response);
+      responseObserver.onNext(((Empty) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -275,10 +277,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof PartitionResponse) {
       requests.add(request);
-      responseObserver.onNext((PartitionResponse) response);
+      responseObserver.onNext(((PartitionResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }
@@ -290,10 +292,10 @@ public class MockSpannerImpl extends SpannerImplBase {
     Object response = responses.remove();
     if (response instanceof PartitionResponse) {
       requests.add(request);
-      responseObserver.onNext((PartitionResponse) response);
+      responseObserver.onNext(((PartitionResponse) response));
       responseObserver.onCompleted();
     } else if (response instanceof Exception) {
-      responseObserver.onError((Exception) response);
+      responseObserver.onError(((Exception) response));
     } else {
       responseObserver.onError(new IllegalArgumentException("Unrecognized response type"));
     }

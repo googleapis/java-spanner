@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.v1.stub;
 
 import static com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.core.BackgroundResourceAggregation;
 import com.google.api.gax.grpc.GrpcCallSettings;
@@ -27,6 +27,7 @@ import com.google.api.gax.rpc.RequestParamsExtractor;
 import com.google.api.gax.rpc.ServerStreamingCallable;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.common.collect.ImmutableMap;
+import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
@@ -57,16 +58,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Generated;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
- * gRPC stub implementation for Cloud Spanner API.
+ * gRPC stub implementation for the Spanner service API.
  *
  * <p>This class is for advanced usage and reflects the underlying API directly.
  */
-@Generated("by gapic-generator")
-@BetaApi("A restructuring of stub classes is planned, so this may break in the future")
+@Generated("by gapic-generator-java")
 public class GrpcSpannerStub extends SpannerStub {
-
   private static final MethodDescriptor<CreateSessionRequest, Session>
       createSessionMethodDescriptor =
           MethodDescriptor.<CreateSessionRequest, Session>newBuilder()
@@ -76,6 +75,7 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(CreateSessionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Session.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsMethodDescriptor =
           MethodDescriptor.<BatchCreateSessionsRequest, BatchCreateSessionsResponse>newBuilder()
@@ -86,6 +86,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(BatchCreateSessionsResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<GetSessionRequest, Session> getSessionMethodDescriptor =
       MethodDescriptor.<GetSessionRequest, Session>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -93,6 +94,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetSessionRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Session.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<ListSessionsRequest, ListSessionsResponse>
       listSessionsMethodDescriptor =
           MethodDescriptor.<ListSessionsRequest, ListSessionsResponse>newBuilder()
@@ -102,6 +104,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ListSessionsResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<DeleteSessionRequest, Empty> deleteSessionMethodDescriptor =
       MethodDescriptor.<DeleteSessionRequest, Empty>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -109,6 +112,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(DeleteSessionRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<ExecuteSqlRequest, ResultSet> executeSqlMethodDescriptor =
       MethodDescriptor.<ExecuteSqlRequest, ResultSet>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -116,6 +120,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(ExecuteSqlRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(ResultSet.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<ExecuteSqlRequest, PartialResultSet>
       executeStreamingSqlMethodDescriptor =
           MethodDescriptor.<ExecuteSqlRequest, PartialResultSet>newBuilder()
@@ -124,6 +129,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(ProtoUtils.marshaller(ExecuteSqlRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartialResultSet.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
       executeBatchDmlMethodDescriptor =
           MethodDescriptor.<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>newBuilder()
@@ -134,6 +140,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(
                   ProtoUtils.marshaller(ExecuteBatchDmlResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<ReadRequest, ResultSet> readMethodDescriptor =
       MethodDescriptor.<ReadRequest, ResultSet>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -141,6 +148,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(ReadRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(ResultSet.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<ReadRequest, PartialResultSet>
       streamingReadMethodDescriptor =
           MethodDescriptor.<ReadRequest, PartialResultSet>newBuilder()
@@ -149,6 +157,7 @@ public class GrpcSpannerStub extends SpannerStub {
               .setRequestMarshaller(ProtoUtils.marshaller(ReadRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartialResultSet.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<BeginTransactionRequest, Transaction>
       beginTransactionMethodDescriptor =
           MethodDescriptor.<BeginTransactionRequest, Transaction>newBuilder()
@@ -158,6 +167,7 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(BeginTransactionRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(Transaction.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<CommitRequest, CommitResponse> commitMethodDescriptor =
       MethodDescriptor.<CommitRequest, CommitResponse>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -165,6 +175,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(CommitRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(CommitResponse.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<RollbackRequest, Empty> rollbackMethodDescriptor =
       MethodDescriptor.<RollbackRequest, Empty>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -172,6 +183,7 @@ public class GrpcSpannerStub extends SpannerStub {
           .setRequestMarshaller(ProtoUtils.marshaller(RollbackRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
           .build();
+
   private static final MethodDescriptor<PartitionQueryRequest, PartitionResponse>
       partitionQueryMethodDescriptor =
           MethodDescriptor.<PartitionQueryRequest, PartitionResponse>newBuilder()
@@ -181,6 +193,7 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(PartitionQueryRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
               .build();
+
   private static final MethodDescriptor<PartitionReadRequest, PartitionResponse>
       partitionReadMethodDescriptor =
           MethodDescriptor.<PartitionReadRequest, PartitionResponse>newBuilder()
@@ -190,8 +203,6 @@ public class GrpcSpannerStub extends SpannerStub {
                   ProtoUtils.marshaller(PartitionReadRequest.getDefaultInstance()))
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
               .build();
-
-  private final BackgroundResource backgroundResources;
 
   private final UnaryCallable<CreateSessionRequest, Session> createSessionCallable;
   private final UnaryCallable<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
@@ -214,6 +225,8 @@ public class GrpcSpannerStub extends SpannerStub {
   private final UnaryCallable<PartitionQueryRequest, PartitionResponse> partitionQueryCallable;
   private final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable;
 
+  private final BackgroundResource backgroundResources;
+  private final GrpcOperationsStub operationsStub;
   private final GrpcStubCallableFactory callableFactory;
 
   public static final GrpcSpannerStub create(SpannerStubSettings settings) throws IOException {
@@ -249,6 +262,7 @@ public class GrpcSpannerStub extends SpannerStub {
       GrpcStubCallableFactory callableFactory)
       throws IOException {
     this.callableFactory = callableFactory;
+    this.operationsStub = GrpcOperationsStub.create(clientContext, callableFactory);
 
     GrpcCallSettings<CreateSessionRequest, Session> createSessionTransportSettings =
         GrpcCallSettings.<CreateSessionRequest, Session>newBuilder()
@@ -501,7 +515,12 @@ public class GrpcSpannerStub extends SpannerStub {
         callableFactory.createUnaryCallable(
             partitionReadTransportSettings, settings.partitionReadSettings(), clientContext);
 
-    backgroundResources = new BackgroundResourceAggregation(clientContext.getBackgroundResources());
+    this.backgroundResources =
+        new BackgroundResourceAggregation(clientContext.getBackgroundResources());
+  }
+
+  public GrpcOperationsStub getOperationsStub() {
+    return operationsStub;
   }
 
   public UnaryCallable<CreateSessionRequest, Session> createSessionCallable() {
@@ -517,12 +536,12 @@ public class GrpcSpannerStub extends SpannerStub {
     return getSessionCallable;
   }
 
-  public UnaryCallable<ListSessionsRequest, ListSessionsPagedResponse> listSessionsPagedCallable() {
-    return listSessionsPagedCallable;
-  }
-
   public UnaryCallable<ListSessionsRequest, ListSessionsResponse> listSessionsCallable() {
     return listSessionsCallable;
+  }
+
+  public UnaryCallable<ListSessionsRequest, ListSessionsPagedResponse> listSessionsPagedCallable() {
+    return listSessionsPagedCallable;
   }
 
   public UnaryCallable<DeleteSessionRequest, Empty> deleteSessionCallable() {
