@@ -22,6 +22,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
@@ -40,14 +41,16 @@ final class AsyncTransactionManagerImpl
 
   private final SessionImpl session;
   private Span span;
+  private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
   private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
 
-  AsyncTransactionManagerImpl(SessionImpl session, Span span) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.options = Options.fromTransactionOptions(options);
   }
 
   @Override
@@ -82,7 +85,7 @@ final class AsyncTransactionManagerImpl
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {
     txnState = TransactionState.STARTED;
-    txn = session.newTransaction();
+    txn = session.newTransaction(options);
     if (firstAttempt) {
       session.setActive(this);
     }

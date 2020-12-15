@@ -101,7 +101,7 @@ public class TransactionRunnerImplTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
-    when(session.newTransaction()).thenReturn(txn);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
         .thenAnswer(
             new Answer<ResultSet>() {
@@ -347,9 +347,10 @@ public class TransactionRunnerImplTest {
         TransactionContextImpl.newBuilder()
             .setSession(session)
             .setTransactionId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+            .setOptions(Options.fromTransactionOptions())
             .setRpc(rpc)
             .build();
-    when(session.newTransaction()).thenReturn(transaction);
+    when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
     when(session.beginTransactionAsync())
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));

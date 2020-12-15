@@ -554,7 +554,8 @@ abstract class AbstractReadContext
     return builder.build();
   }
 
-  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(Statement statement, QueryMode queryMode) {
+  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
+      Statement statement, QueryMode queryMode, Options options) {
     ExecuteSqlRequest.Builder builder =
         ExecuteSqlRequest.newBuilder()
             .setSql(statement.getSql())
@@ -577,7 +578,8 @@ abstract class AbstractReadContext
     return builder;
   }
 
-  ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(Iterable<Statement> statements) {
+  ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(
+      Iterable<Statement> statements, Options options) {
     ExecuteBatchDmlRequest.Builder builder =
         ExecuteBatchDmlRequest.newBuilder().setSession(session.getName());
     int idx = 0;
@@ -609,7 +611,7 @@ abstract class AbstractReadContext
   ResultSet executeQueryInternalWithOptions(
       final Statement statement,
       final com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
-      Options options,
+      final Options options,
       final ByteString partitionToken) {
     beforeReadOrQuery();
     final int prefetchChunks =
@@ -620,7 +622,7 @@ abstract class AbstractReadContext
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
             final ExecuteSqlRequest.Builder request =
-                getExecuteSqlRequestBuilder(statement, queryMode);
+                getExecuteSqlRequestBuilder(statement, queryMode, options);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }
@@ -707,7 +709,7 @@ abstract class AbstractReadContext
       @Nullable String index,
       KeySet keys,
       Iterable<String> columns,
-      Options readOptions,
+      final Options readOptions,
       ByteString partitionToken) {
     beforeReadOrQuery();
     final ReadRequest.Builder builder =
