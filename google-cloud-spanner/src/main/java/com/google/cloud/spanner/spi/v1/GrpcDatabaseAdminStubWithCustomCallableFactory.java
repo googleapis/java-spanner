@@ -18,13 +18,16 @@ package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import java.io.IOException;
 
 /**
  * Wrapper around {@link GrpcDatabaseAdminStub} to make the constructor available inside this
- * package.
+ * package. This makes it possible to create a {@link GrpcDatabaseAdminStub} with a custom {@link
+ * GrpcStubCallableFactory} and custom settings. This is used by integration tests to automatically
+ * retry {@link StatusCode.Code#RESOURCE_EXHAUSTED} errors for certain administrative requests.
  */
 class GrpcDatabaseAdminStubWithCustomCallableFactory extends GrpcDatabaseAdminStub {
   GrpcDatabaseAdminStubWithCustomCallableFactory(

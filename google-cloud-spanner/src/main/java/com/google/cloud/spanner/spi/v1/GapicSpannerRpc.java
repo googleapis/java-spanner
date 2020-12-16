@@ -65,6 +65,7 @@ import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
+import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
@@ -76,8 +77,8 @@ import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -450,33 +451,45 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setCredentialsProvider(credentialsProvider)
               .setStreamWatchdogProvider(watchdogProvider)
               .build();
-      GrpcStubCallableFactory factory =
-          new GrpcDatabaseAdminCallableFactory() {
-            @Override
-            public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
-                GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
-                UnaryCallSettings<RequestT, ResponseT> callSettings,
-                ClientContext clientContext) {
-              // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations from
-              // failing with an Administrative requests limit exceeded error.
-              if (grpcCallSettings
-                  .getMethodDescriptor()
-                  .getFullMethodName()
-                  .equals("google.longrunning.Operations/GetOperation")) {
-                Set<StatusCode.Code> codes =
-                    ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
-                            callSettings.getRetryableCodes().size() + 1)
-                        .addAll(callSettings.getRetryableCodes())
-                        .add(StatusCode.Code.RESOURCE_EXHAUSTED)
-                        .build();
-                callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+
+      // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
+      // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
+      // while polling long-running operations for their progress and can also cause these errors.
+      // The default behavior is not to retry these errors, and this option should normally only be
+      // enabled for (integration) testing.
+      if (options.isAutoThrottleAdministrativeRequests()) {
+        GrpcStubCallableFactory factory =
+            new GrpcDatabaseAdminCallableFactory() {
+              @Override
+              public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
+                  GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
+                  UnaryCallSettings<RequestT, ResponseT> callSettings,
+                  ClientContext clientContext) {
+                // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations from
+                // failing with an Administrative requests limit exceeded error.
+                if (grpcCallSettings
+                    .getMethodDescriptor()
+                    .getFullMethodName()
+                    .equals("google.longrunning.Operations/GetOperation")) {
+                  Set<StatusCode.Code> codes =
+                      ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
+                              callSettings.getRetryableCodes().size() + 1)
+                          .addAll(callSettings.getRetryableCodes())
+                          .add(StatusCode.Code.RESOURCE_EXHAUSTED)
+                          .build();
+                  callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+                }
+                return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
               }
-              return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
-            }
-          };
-      this.databaseAdminStub =
-          new GrpcDatabaseAdminStubWithCustomCallableFactory(
-              databaseAdminStubSettings, ClientContext.create(databaseAdminStubSettings), factory);
+            };
+        this.databaseAdminStub =
+            new GrpcDatabaseAdminStubWithCustomCallableFactory(
+                databaseAdminStubSettings,
+                ClientContext.create(databaseAdminStubSettings),
+                factory);
+      } else {
+        this.databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
+      }
 
       // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
       // actually running.
