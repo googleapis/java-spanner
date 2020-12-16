@@ -23,6 +23,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionNotFoundHandler;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
@@ -42,12 +43,15 @@ class SessionPoolAsyncTransactionManager
   private AbortedException abortedException;
 
   private final SessionPool pool;
+  private final TransactionOption[] options;
   private volatile PooledSessionFuture session;
   private volatile SettableApiFuture<AsyncTransactionManagerImpl> delegate;
   private boolean restartedAfterSessionNotFound;
 
-  SessionPoolAsyncTransactionManager(SessionPool pool, PooledSessionFuture session) {
+  SessionPoolAsyncTransactionManager(
+      SessionPool pool, PooledSessionFuture session, TransactionOption... options) {
     this.pool = Preconditions.checkNotNull(pool);
+    this.options = options;
     createTransaction(session);
   }
 
@@ -60,7 +64,10 @@ class SessionPoolAsyncTransactionManager
           public void run() {
             try {
               delegate.set(
-                  SessionPoolAsyncTransactionManager.this.session.get().transactionManagerAsync());
+                  SessionPoolAsyncTransactionManager.this
+                      .session
+                      .get()
+                      .transactionManagerAsync(options));
             } catch (Throwable t) {
               delegate.setException(t);
             }

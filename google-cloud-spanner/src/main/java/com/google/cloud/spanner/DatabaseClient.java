@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -308,7 +309,7 @@ public interface DatabaseClient {
    *     });
    * </code></pre>
    */
-  TransactionRunner readWriteTransaction();
+  TransactionRunner readWriteTransaction(TransactionOption... options);
 
   /**
    * Returns a transaction manager which allows manual management of transaction lifecycle. This API
@@ -338,7 +339,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  TransactionManager transactionManager();
+  TransactionManager transactionManager(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction runner for executing a single logical transaction with
@@ -371,7 +372,7 @@ public interface DatabaseClient {
    *         executor);
    * </code></pre>
    */
-  AsyncRunner runAsync();
+  AsyncRunner runAsync(TransactionOption... options);
 
   /**
    * Returns an asynchronous transaction manager which allows manual management of transaction
@@ -459,7 +460,7 @@ public interface DatabaseClient {
    * }
    * }</pre>
    */
-  AsyncTransactionManager transactionManagerAsync();
+  AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
 
   /**
    * Returns the lower bound of rows modified by this DML statement.
@@ -508,5 +509,5 @@ public interface DatabaseClient {
    * <p>Given the above, Partitioned DML is good fit for large, database-wide, operations that are
    * idempotent, such as deleting old rows from a very large table.
    */
-  long executePartitionedUpdate(Statement stmt);
+  long executePartitionedUpdate(Statement stmt, UpdateOption... options);
 }

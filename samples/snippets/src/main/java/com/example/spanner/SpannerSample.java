@@ -1622,6 +1622,7 @@ public class SpannerSample {
   }
   // [END spanner_create_backup]
 
+  // [START spanner_cancel_backup_create]
   // [START spanner_cancel_create_backup]
   static void cancelCreateBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
@@ -1666,6 +1667,7 @@ public class SpannerSample {
     }
   }
   // [END spanner_cancel_create_backup]
+  // [END spanner_cancel_backup_create]
 
   // [START spanner_list_backup_operations]
   static void listBackupOperations(InstanceAdminClient instanceAdminClient, DatabaseId databaseId) {

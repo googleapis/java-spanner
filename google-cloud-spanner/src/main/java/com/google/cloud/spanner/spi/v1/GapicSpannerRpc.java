@@ -38,6 +38,7 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.FixedHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
@@ -76,6 +77,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -239,6 +241,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final int DEFAULT_TIMEOUT_SECONDS = 30 * 60;
   private static final int DEFAULT_PERIOD_SECONDS = 10;
   private static final int GRPC_KEEPALIVE_SECONDS = 2 * 60;
+  private static final String USER_AGENT_KEY = "user-agent";
+  private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
 
   // TODO(weiranf): Remove this temporary endpoint once DirectPath goes to public beta.
   private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
@@ -304,9 +308,20 @@ public class GapicSpannerRpc implements SpannerRpc {
             .build();
 
     HeaderProvider mergedHeaderProvider = options.getMergedHeaderProvider(internalHeaderProvider);
+    Map<String, String> headersWithUserAgent =
+        ImmutableMap.<String, String>builder()
+            .put(
+                USER_AGENT_KEY,
+                CLIENT_LIBRARY_LANGUAGE
+                    + "/"
+                    + GaxProperties.getLibraryVersion(GapicSpannerRpc.class))
+            .putAll(mergedHeaderProvider.getHeaders())
+            .build();
+    final HeaderProvider headerProviderWithUserAgent =
+        FixedHeaderProvider.create(headersWithUserAgent);
     this.metadataProvider =
         SpannerMetadataProvider.create(
-            mergedHeaderProvider.getHeaders(),
+            headerProviderWithUserAgent.getHeaders(),
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
@@ -345,7 +360,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                             options.getInterceptorProvider(),
                             SpannerInterceptorProvider.createDefault()))
                     .withEncoding(compressorName))
-            .setHeaderProvider(mergedHeaderProvider);
+            .setHeaderProvider(headerProviderWithUserAgent);
 
     // TODO(weiranf): Set to true by default once DirectPath goes to public beta.
     if (shouldAttemptDirectPath()) {
@@ -511,8 +526,10 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.UNAVAILABLE,
             String.format(
-                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running emulator could be found at that address.\n"
-                    + "Did you forget to start the emulator, or to unset the environment variable?",
+                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running"
+                    + " emulator could be found at that address.\n"
+                    + "Did you forget to start the emulator, or to unset the environment"
+                    + " variable?",
                 emulatorHost));
       }
     }

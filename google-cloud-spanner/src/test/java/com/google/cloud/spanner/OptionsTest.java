@@ -219,4 +219,42 @@ public class OptionsTest {
     o3 = Options.fromReadOptions(Options.prefetchChunks(2));
     assertThat(o2.equals(o3)).isFalse();
   }
+
+  @Test
+  public void testFromTransactionOptions() {
+    Options opts = Options.fromTransactionOptions();
+    assertThat(opts.toString()).isEqualTo("");
+  }
+
+  @Test
+  public void testTransactionOptionsEquality() {
+    Options o1;
+    Options o2;
+
+    o1 = Options.fromTransactionOptions();
+    o2 = Options.fromTransactionOptions();
+    assertThat(o1.equals(o2)).isTrue();
+
+    o2 = Options.fromReadOptions(Options.prefetchChunks(1));
+    assertThat(o1.equals(o2)).isFalse();
+  }
+
+  @Test
+  public void testFromUpdateOptions() {
+    Options opts = Options.fromUpdateOptions();
+    assertThat(opts.toString()).isEqualTo("");
+  }
+
+  @Test
+  public void testUpdateOptionsEquality() {
+    Options o1;
+    Options o2;
+
+    o1 = Options.fromUpdateOptions();
+    o2 = Options.fromUpdateOptions();
+    assertThat(o1.equals(o2)).isTrue();
+
+    o2 = Options.fromReadOptions(Options.prefetchChunks(1));
+    assertThat(o1.equals(o2)).isFalse();
+  }
 }
