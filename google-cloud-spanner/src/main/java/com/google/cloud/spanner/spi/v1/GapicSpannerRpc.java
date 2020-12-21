@@ -1068,15 +1068,12 @@ public class GapicSpannerRpc implements SpannerRpc {
             } catch (ExecutionException e) {
               Throwable t = e.getCause();
               SpannerException se = SpannerExceptionFactory.asSpannerException(t);
+              if (t instanceof AlreadyExistsException) {
+                throw se;
+              }
               if (se instanceof AdminRequestsPerMinuteExceededException) {
                 // Propagate this to trigger a retry.
                 throw se;
-              }
-              if (t instanceof AlreadyExistsException) {
-                String operationName =
-                    OPERATION_NAME_TEMPLATE.instantiate(
-                        "database", databaseName, "operation", updateId);
-                return callable.resumeFutureCall(operationName, context);
               }
             }
             return operationFuture;

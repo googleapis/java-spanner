@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -54,6 +55,7 @@ import com.google.protobuf.ListValue;
 import com.google.rpc.ErrorInfo;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
@@ -76,15 +78,18 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.junit.After;
@@ -500,6 +505,23 @@ public class GapicSpannerRpcTest {
     assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
 
     assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
+  }
+
+  @Test
+  public void testAlreadyExistsIsThrown() throws ExecutionException, InterruptedException {
+    final SpannerOptions options = createSpannerOptions();
+
+    try (final Spanner spanner = options.getService()) {
+      final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
+      mockDatabaseAdmin.addException(new StatusRuntimeException(Status.ALREADY_EXISTS));
+      final OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
+          databaseAdminClient.updateDatabaseDdl(
+              "[INSTANCE]", "[DATABASE]", Collections.<String>emptyList(), "op1");
+      op.get();
+      fail("should have thrown already exists exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+    }
   }
 
   @SuppressWarnings("rawtypes")
