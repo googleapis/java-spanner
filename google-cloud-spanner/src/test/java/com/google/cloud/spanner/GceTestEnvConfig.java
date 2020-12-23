@@ -64,7 +64,9 @@ public class GceTestEnvConfig implements TestEnvConfig {
     boolean attemptDirectPath = Boolean.getBoolean(ATTEMPT_DIRECT_PATH);
     String directPathTestScenario = System.getProperty(DIRECT_PATH_TEST_SCENARIO, "");
     SpannerOptions.Builder builder =
-        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
+        SpannerOptions.newBuilder()
+            .setAutoThrottleAdministrativeRequests()
+            .setTrackTransactionStarter();
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }

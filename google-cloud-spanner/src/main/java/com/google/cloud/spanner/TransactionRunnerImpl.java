@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +78,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
       private ByteString transactionId;
       private Options options;
+      private boolean trackTransactionStarter;
 
       private Builder() {}
 
@@ -86,6 +89,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       Builder setOptions(Options options) {
         this.options = Preconditions.checkNotNull(options);
+        return self();
+      }
+
+      Builder setTrackTransactionStarter(boolean trackTransactionStarter) {
+        this.trackTransactionStarter = trackTransactionStarter;
         return self();
       }
 
@@ -170,6 +178,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      */
     private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
+    @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
+    private final boolean trackTransactionStarter;
+    private Exception transactionStarter;
+
     volatile ByteString transactionId;
 
     private Timestamp commitTimestamp;
@@ -177,6 +189,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
+      this.trackTransactionStarter = builder.trackTransactionStarter;
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
     }
@@ -432,6 +445,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // transactionIdFuture until an actual transactionId is available.
             if (transactionIdFuture == null) {
               transactionIdFuture = SettableApiFuture.create();
+              if (trackTransactionStarter) {
+                transactionStarter = new Exception("Requesting new transaction");
+              }
             } else {
               tx = transactionIdFuture;
             }
@@ -447,7 +463,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Aborted error if the call that included the BeginTransaction option fails. The
             // Aborted error will cause the entire transaction to be retried, and the retry will use
             // a separate BeginTransaction RPC.
-            TransactionSelector.newBuilder().setId(tx.get()).build();
+            if (trackTransactionStarter) {
+              TransactionSelector.newBuilder()
+                  .setId(tx.get(waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS))
+                  .build();
+            } else {
+              TransactionSelector.newBuilder().setId(tx.get()).build();
+            }
           }
         } catch (ExecutionException e) {
           if (e.getCause() instanceof AbortedException) {
@@ -456,6 +478,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
           }
           throw SpannerExceptionFactory.newSpannerException(e.getCause());
+        } catch (TimeoutException e) {
+          SpannerException se =
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.DEADLINE_EXCEEDED,
+                  "Timeout while waiting for a transaction to be returned by another statement. "
+                      + "See the suppressed exception for the stacktrace of the caller that should return a transaction",
+                  e);
+          if (transactionStarter != null) {
+            se.addSuppressed(transactionStarter);
+          }
+          throw se;
         } catch (InterruptedException e) {
           throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
         }

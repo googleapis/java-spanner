@@ -311,6 +311,7 @@ public class TransactionRunnerImplTest {
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
+    when(spanner.getOptions()).thenReturn(mock(SpannerOptions.class));
     SessionImpl session =
         new SessionImpl(
             spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {
