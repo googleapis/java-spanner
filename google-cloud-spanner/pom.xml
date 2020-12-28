@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>3.1.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>3.2.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>3.1.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>3.2.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -144,16 +144,6 @@
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
-      <artifactId>grpc-alts</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <!--
-      grpc-stub is needed directly by our tests and transitively by grpc-alts at runtime.
-      So it has to be declared as a direct dependency and to avoid overriding grpc-alts'
-      runtime requirement it has to be promoted to the runtime scope.
-    -->
-    <dependency>
-      <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
     </dependency>
     <dependency>
@@ -261,6 +251,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Test dependency for DirectPath -->
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-alts</artifactId>
       <scope>test</scope>
     </dependency>
 

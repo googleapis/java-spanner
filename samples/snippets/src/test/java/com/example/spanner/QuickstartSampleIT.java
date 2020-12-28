@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,12 +50,12 @@ public class QuickstartSampleIT {
   private PrintStream out;
 
   @BeforeClass
-  public static void createDatabase() {
+  public static void createDatabase() throws InterruptedException, ExecutionException {
     final SpannerOptions options =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
-    dbClient.createDatabase(instanceId, dbId, Collections.emptyList());
+    dbClient.createDatabase(instanceId, dbId, Collections.emptyList()).get();
   }
 
   @AfterClass
