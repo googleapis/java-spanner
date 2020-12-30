@@ -402,13 +402,13 @@ public final class Options implements Serializable {
   }
 
   static Options fromQueryOptions(QueryOption... options) {
-    Options queryOptions = new Options();
+    Options readOptions = new Options();
     for (QueryOption option : options) {
       if (option instanceof InternalOption) {
-        ((InternalOption) option).appendToOptions(queryOptions);
+        ((InternalOption) option).appendToOptions(readOptions);
       }
     }
-    return queryOptions;
+    return readOptions;
   }
 
   static Options fromUpdateOptions(UpdateOption... options) {

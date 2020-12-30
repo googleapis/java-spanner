@@ -140,7 +140,6 @@ class SessionImpl implements Session {
         mutations instanceof java.util.Collection<?>
             ? (Collection<Mutation>) mutations
             : Lists.newArrayList(mutations);
-    final Options opt = Options.fromTransactionOptions(options);
     runner.run(
         new TransactionRunner.TransactionCallable<Void>() {
           @Override
