@@ -44,12 +44,12 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to both Read and Query operations */
   public interface ReadAndQueryOption extends ReadOption, QueryOption {}
 
+  /** Marker interface to mark options applicable to read operation */
+  public interface ReadOption {}
+
   /** Marker interface to mark options applicable to Read, Query, Update and Write operations */
   public interface ReadQueryUpdateTransactionOption
       extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
-
-  /** Marker interface to mark options applicable to read operation */
-  public interface ReadOption {}
 
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
