@@ -348,6 +348,7 @@ class SessionImpl implements Session {
         .setSession(this)
         .setTransactionId(readyTransactionId)
         .setOptions(options)
+        .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())

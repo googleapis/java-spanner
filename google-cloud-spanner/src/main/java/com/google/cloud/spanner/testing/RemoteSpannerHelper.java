@@ -146,6 +146,7 @@ public class RemoteSpannerHelper {
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
             .setAutoThrottleAdministrativeRequests()
+            .setTrackTransactionStarter()
             .build();
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);

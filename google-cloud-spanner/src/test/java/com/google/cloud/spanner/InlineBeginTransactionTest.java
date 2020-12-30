@@ -36,6 +36,8 @@ import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
@@ -193,6 +195,7 @@ public class InlineBeginTransactionTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
+            .setTrackTransactionStarter()
             .build()
             .getService();
   }
@@ -1311,6 +1314,38 @@ public class InlineBeginTransactionTest {
     assertThat(request2.getTransaction().hasBegin()).isFalse();
     assertThat(request2.getTransaction().getId()).isNotEqualTo(ByteString.EMPTY);
     assertThat(request2.getResumeToken()).isNotEqualTo(ByteString.EMPTY);
+  }
+
+  @Test
+  public void testWaitForTransactionTimeout() {
+    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Void>() {
+                @Override
+                public Void run(TransactionContext transaction) throws Exception {
+                  TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                  impl.waitForTransactionTimeoutMillis = 1L;
+                  transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                  try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                    while (rs.next()) {}
+                  }
+                  return null;
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+      assertThat(e.getSuppressed()).hasLength(1);
+      assertThat(Throwables.getStackTraceAsString(e.getSuppressed()[0]))
+          .contains("TransactionContextImpl.executeUpdateAsync");
+    }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
   }
 
   private int countRequests(Class<? extends AbstractMessage> requestType) {
