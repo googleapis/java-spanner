@@ -534,6 +534,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    @Nullable
+    String getTransactionTag() {
+      if (this.options.hasTag()) return this.options.tag();
+      return null;
+    }
+
     @Override
     public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
       // If the statement that caused an error was the statement that included a BeginTransaction

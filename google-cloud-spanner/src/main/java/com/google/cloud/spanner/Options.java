@@ -103,7 +103,7 @@ public final class Options implements Serializable {
 
   /**
    * Specifying this will cause the reads, queries, updates and writes operations statistics
-   * collection grouped by tag.
+   * collection to be grouped by tag.
    */
   public static ReadQueryUpdateTransactionOption tag(String name) {
     return new TagOption(name);

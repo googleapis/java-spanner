@@ -600,7 +600,7 @@ abstract class AbstractReadContext
   }
 
   ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(
-      Iterable<Statement> statements, Options options, String txnTag) {
+      Iterable<Statement> statements, Options options) {
     ExecuteBatchDmlRequest.Builder builder =
         ExecuteBatchDmlRequest.newBuilder().setSession(session.getName());
     int idx = 0;
@@ -769,8 +769,7 @@ abstract class AbstractReadContext
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
     }
-    // TODO: set transaction tag when executed within a RW transaction
-    builder.setRequestOptions(buildRequestOptions(readOptions, null));
+    builder.setRequestOptions(buildRequestOptions(readOptions));
 
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
