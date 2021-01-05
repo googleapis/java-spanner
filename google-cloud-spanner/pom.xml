@@ -246,18 +246,16 @@
       <groupId>com.google.auth</groupId>
       <artifactId>google-auth-library-credentials</artifactId>
     </dependency>
+    <!-- Dependency for DirectPath -->
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-alts</artifactId>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Test dependency for DirectPath -->
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-alts</artifactId>
       <scope>test</scope>
     </dependency>
 
