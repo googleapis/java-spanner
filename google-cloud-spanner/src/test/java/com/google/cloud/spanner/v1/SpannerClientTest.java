@@ -547,6 +547,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -589,6 +590,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setSeqno(109325920)
+              .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -619,6 +621,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -647,6 +650,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
