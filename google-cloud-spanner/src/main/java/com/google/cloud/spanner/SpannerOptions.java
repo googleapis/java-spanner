@@ -102,6 +102,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
   private final boolean autoThrottleAdministrativeRequests;
+  private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -555,6 +556,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -632,6 +634,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
     private boolean autoThrottleAdministrativeRequests = false;
+    private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
@@ -678,6 +681,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
@@ -890,6 +894,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Instructs the client library to track the first request of each read/write transaction. This
+     * statement will include a BeginTransaction option and will return a transaction id as part of
+     * its result. All other statements in the same transaction must wait for this first statement
+     * to finish before they can proceed. By setting this option the client library will throw a
+     * {@link SpannerException} with {@link ErrorCode#DEADLINE_EXCEEDED} for any subsequent
+     * statement that has waited for at least 60 seconds for the first statement to return a
+     * transaction id, including the stacktrace of the initial statement that should have returned a
+     * transaction id.
+     */
+    public Builder setTrackTransactionStarter() {
+      this.trackTransactionStarter = true;
+      return this;
+    }
+
+    /**
      * Sets the default {@link QueryOptions} that will be used for all queries on the specified
      * database. Query options can also be specified on a per-query basis and as environment
      * variables. The precedence of these settings are:
@@ -1079,6 +1098,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public boolean isTrackTransactionStarter() {
+    return trackTransactionStarter;
   }
 
   public CallCredentialsProvider getCallCredentialsProvider() {

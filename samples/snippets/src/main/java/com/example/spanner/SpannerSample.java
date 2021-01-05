@@ -1622,7 +1622,7 @@ public class SpannerSample {
   }
   // [END spanner_create_backup]
 
-  // [START spanner_cancel_create_backup]
+  // [START spanner_cancel_backup_create]
   static void cancelCreateBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
     // Set expire time to 14 days from now.
@@ -1665,7 +1665,7 @@ public class SpannerSample {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
-  // [END spanner_cancel_create_backup]
+  // [END spanner_cancel_backup_create]
 
   // [START spanner_list_backup_operations]
   static void listBackupOperations(InstanceAdminClient instanceAdminClient, DatabaseId databaseId) {

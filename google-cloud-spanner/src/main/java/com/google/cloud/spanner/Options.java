@@ -30,11 +30,18 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to read operation */
   public interface ReadOption {}
 
+  /** Marker interface to mark options applicable to Read, Query, Update and Write operations */
+  public interface ReadQueryUpdateTransactionOption
+      extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
+
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
 
   /** Marker interface to mark options applicable to write operations */
   public interface TransactionOption {}
+
+  /** Marker interface to mark options applicable to update operation. */
+  public interface UpdateOption {}
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
@@ -285,6 +292,26 @@ public final class Options implements Serializable {
       }
     }
     return readOptions;
+  }
+
+  static Options fromUpdateOptions(UpdateOption... options) {
+    Options updateOptions = new Options();
+    for (UpdateOption option : options) {
+      if (option instanceof InternalOption) {
+        ((InternalOption) option).appendToOptions(updateOptions);
+      }
+    }
+    return updateOptions;
+  }
+
+  static Options fromTransactionOptions(TransactionOption... options) {
+    Options transactionOptions = new Options();
+    for (TransactionOption option : options) {
+      if (option instanceof InternalOption) {
+        ((InternalOption) option).appendToOptions(transactionOptions);
+      }
+    }
+    return transactionOptions;
   }
 
   static Options fromListOptions(ListOption... options) {
