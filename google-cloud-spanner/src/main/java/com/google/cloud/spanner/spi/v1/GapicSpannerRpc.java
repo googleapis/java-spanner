@@ -1037,6 +1037,17 @@ public class GapicSpannerRpc implements SpannerRpc {
         NanoClock.getDefaultClock());
   }
 
+  /**
+   * If the update database ddl operation returns an ALREADY_EXISTS error, meaning the operation id
+   * used is already in flight, this method will simply resume the original operation. The returned
+   * future will be completed when the original operation finishes.
+   *
+   * <p>This mechanism is necessary, because the update database ddl can be retried. If a retryable
+   * failure occurs, the backend has already started processing the update database ddl operation
+   * with the given id and the library issues a retry, an ALREADY_EXISTS error will be returned. If
+   * we were to bubble this error up, it would be confusing for the caller, who used originally
+   * called the method with a new operation id.
+   */
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       final String databaseName,
