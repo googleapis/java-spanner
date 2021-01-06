@@ -1,5 +1,25 @@
 # Changelog
 
+### [3.2.1](https://www.github.com/googleapis/java-spanner/compare/v3.2.0...v3.2.1) (2021-01-06)
+
+
+### Bug Fixes
+
+* grpc-alts is used not only in tests ([#761](https://www.github.com/googleapis/java-spanner/issues/761)) ([72d93d5](https://www.github.com/googleapis/java-spanner/commit/72d93d5aa9a301c64c9d572d10211882a359e414))
+
+
+### Dependencies
+
+* grpc-alts is only used for tests ([#757](https://www.github.com/googleapis/java-spanner/issues/757)) ([c8ef46f](https://www.github.com/googleapis/java-spanner/commit/c8ef46f2637b58cc71d023764cdc11a7414d855f))
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.11 ([#754](https://www.github.com/googleapis/java-spanner/issues/754)) ([ee2de33](https://www.github.com/googleapis/java-spanner/commit/ee2de3356038cef429eb4d3fa67656e68994bc46))
+
+
+### Documentation
+
+* add sample for timeout for one RPC ([#707](https://www.github.com/googleapis/java-spanner/issues/707)) ([056f54f](https://www.github.com/googleapis/java-spanner/commit/056f54f3cc10d103151fccba569d46796a103591))
+* cleanup inner region tags ([#764](https://www.github.com/googleapis/java-spanner/issues/764)) ([90ad9d6](https://www.github.com/googleapis/java-spanner/commit/90ad9d614bc1950f46d148930e06bde93aeb2098))
+* documents resume on update database ddl ([#767](https://www.github.com/googleapis/java-spanner/issues/767)) ([aeb255d](https://www.github.com/googleapis/java-spanner/commit/aeb255d2e5998ebb6f3eb7f655f63c957d5d92bd))
+
 ## [3.2.0](https://www.github.com/googleapis/java-spanner/compare/v3.1.3...v3.2.0) (2020-12-17)
 
 
