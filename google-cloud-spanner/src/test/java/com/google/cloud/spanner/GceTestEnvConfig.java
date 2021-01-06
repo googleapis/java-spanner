@@ -73,7 +73,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
     InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
         InstantiatingGrpcChannelProvider.newBuilder();
     if (attemptDirectPath) {
-      builder.setChannelProvider(defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).build());
+      builder.setChannelProvider(
+          defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).build());
     }
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
