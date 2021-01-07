@@ -245,9 +245,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final String USER_AGENT_KEY = "user-agent";
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
 
-  // TODO(weiranf): Remove this temporary endpoint once DirectPath goes to public beta.
-  private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
-
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
@@ -361,12 +358,10 @@ public class GapicSpannerRpc implements SpannerRpc {
                             options.getInterceptorProvider(),
                             SpannerInterceptorProvider.createDefault()))
                     .withEncoding(compressorName))
-            .setHeaderProvider(headerProviderWithUserAgent);
-
-    // TODO(weiranf): Set to true by default once DirectPath goes to public beta.
-    if (shouldAttemptDirectPath()) {
-      defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).setAttemptDirectPath(true);
-    }
+            .setHeaderProvider(headerProviderWithUserAgent)
+            // Attempts direct access to spanner service over gRPC to improve throughput,
+            // whether the attempt is allowed is totally controlled by service owner.
+            .setAttemptDirectPath(true);
 
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(
@@ -497,11 +492,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (Exception e) {
       throw newSpannerException(e);
     }
-  }
-
-  // TODO(weiranf): Remove this once DirectPath goes to public beta.
-  private static boolean shouldAttemptDirectPath() {
-    return Boolean.getBoolean("spanner.attempt_directpath");
   }
 
   private static void checkEmulatorConnection(
@@ -1037,6 +1027,17 @@ public class GapicSpannerRpc implements SpannerRpc {
         NanoClock.getDefaultClock());
   }
 
+  /**
+   * If the update database ddl operation returns an ALREADY_EXISTS error, meaning the operation id
+   * used is already in flight, this method will simply resume the original operation. The returned
+   * future will be completed when the original operation finishes.
+   *
+   * <p>This mechanism is necessary, because the update database ddl can be retried. If a retryable
+   * failure occurs, the backend has already started processing the update database ddl operation
+   * with the given id and the library issues a retry, an ALREADY_EXISTS error will be returned. If
+   * we were to bubble this error up, it would be confusing for the caller, who used originally
+   * called the method with a new operation id.
+   */
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       final String databaseName,
