@@ -38,25 +38,25 @@ If you are using Maven without BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>3.1.2</version>
+  <version>3.2.1</version>
 </dependency>
 
 ```
 
 If you are using Gradle 5.x or later, add this to your dependencies
 ```Groovy
-implementation platform('com.google.cloud:libraries-bom:16.2.0')
+implementation platform('com.google.cloud:libraries-bom:16.2.1')
 
 compile 'com.google.cloud:google-cloud-spanner'
 ```
 If you are using Gradle without BOM, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:3.2.0'
+compile 'com.google.cloud:google-cloud-spanner:3.2.1'
 ```
 
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "3.2.0"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "3.2.1"
 ```
 
 ## Authentication
