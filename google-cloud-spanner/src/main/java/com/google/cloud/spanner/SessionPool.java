@@ -2121,6 +2121,7 @@ class SessionPool {
       }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
+        poolMaintainer.close();
       }
     }
   }
