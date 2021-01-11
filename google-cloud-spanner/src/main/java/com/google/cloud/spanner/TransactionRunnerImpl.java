@@ -540,6 +540,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    public void onDone(boolean withBeginTransaction) {
+      if (withBeginTransaction
+          && transactionIdFuture != null
+          && !this.transactionIdFuture.isDone()) {
+        // Context was done (closed) before a transaction id was returned.
+        this.transactionIdFuture.setException(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "ResultSet was closed before a transaction id was returned"));
+      }
+    }
+
+    @Override
     public void buffer(Mutation mutation) {
       synchronized (lock) {
         checkNotNull(mutations, "Context is closed");

@@ -50,7 +50,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     public void onError(SpannerException e, boolean withBeginTransaction) {}
 
     @Override
-    public void onDone() {}
+    public void onDone(boolean withBeginTransaction) {}
   }
 
   public ReadFormatTestRunner(Class<?> clazz) throws InitializationError {

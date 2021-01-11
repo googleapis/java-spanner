@@ -84,7 +84,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void onError(SpannerException e, boolean withBeginTransaction);
 
     /** Called when the read finishes normally. */
-    void onDone();
+    void onDone(boolean withBeginTransaction);
   }
 
   @VisibleForTesting
@@ -118,6 +118,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           ResultSetMetadata metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
             listener.onTransactionMetadata(metadata.getTransaction());
+          } else if (iterator.isWithBeginTransaction()) {
+            // The query should have returned a transaction.
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "Query requested a transaction to be started, but no transaction was returned");
           }
           currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
         }
@@ -126,8 +131,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           statistics = iterator.getStats();
         }
         return hasNext;
-      } catch (SpannerException e) {
-        throw yieldError(e, iterator.isWithBeginTransaction() && currRow == null);
+      } catch (Throwable t) {
+        throw yieldError(
+            SpannerExceptionFactory.asSpannerException(t),
+            iterator.isWithBeginTransaction() && currRow == null);
       }
     }
 
@@ -139,6 +146,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     public void close() {
+      listener.onDone(iterator.isWithBeginTransaction());
       iterator.close("ResultSet closed");
       closed = true;
     }
@@ -150,8 +158,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
-      close();
       listener.onError(e, beginTransaction);
+      close();
       throw e;
     }
   }

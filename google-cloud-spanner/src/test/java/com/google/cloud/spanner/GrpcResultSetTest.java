@@ -62,7 +62,7 @@ public class GrpcResultSetTest {
     public void onError(SpannerException e, boolean withBeginTransaction) {}
 
     @Override
-    public void onDone() {}
+    public void onDone(boolean withBeginTransaction) {}
   }
 
   @Before
