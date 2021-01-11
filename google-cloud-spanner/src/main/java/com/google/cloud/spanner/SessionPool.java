@@ -2129,6 +2129,7 @@ class SessionPool {
       }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
+        pendingClosure += 1;
         poolMaintainer.close();
       }
     }
@@ -2169,7 +2170,7 @@ class SessionPool {
       pendingClosure = totalSessions() + numSessionsBeingCreated;
 
       if (!poolMaintainer.isClosed()) {
-        pendingClosure += 1 /* For pool maintenance thread */;
+        pendingClosure += 1; // For pool maintenance thread
         poolMaintainer.close();
       }
 
@@ -2189,6 +2190,12 @@ class SessionPool {
         }
       }
     }
+
+    // Nothing to be closed, mark as complete
+    if (pendingClosure == 0) {
+      closureFuture.set(null);
+    }
+
     retFuture.addListener(
         new Runnable() {
           @Override
