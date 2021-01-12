@@ -691,7 +691,7 @@ abstract class AbstractReadContext
   public void onError(SpannerException e, boolean withBeginTransaction) {}
 
   @Override
-  public void onDone() {}
+  public void onDone(boolean withBeginTransaction) {}
 
   private ResultSet readInternal(
       String table,

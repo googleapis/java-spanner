@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -37,6 +36,7 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -204,6 +204,7 @@ public class InlineBeginTransactionTest {
   public void tearDown() throws Exception {
     spanner.close();
     mockSpanner.reset();
+    mockSpanner.clearRequests();
   }
 
   @Test
@@ -1343,6 +1344,69 @@ public class InlineBeginTransactionTest {
       assertThat(Throwables.getStackTraceAsString(e.getSuppressed()[0]))
           .contains("TransactionContextImpl.executeUpdateAsync");
     }
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+  }
+
+  @Test
+  public void testCloseResultSetWhileRequestInFlight() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    final ExecutorService service = Executors.newSingleThreadExecutor();
+    try {
+      client
+          .readWriteTransaction()
+          .run(
+              new TransactionCallable<Void>() {
+                @Override
+                public Void run(TransactionContext transaction) throws Exception {
+                  final ResultSet rs = transaction.executeQuery(SELECT1);
+                  // Prevent the server from executing the query.
+                  mockSpanner.freeze();
+                  service.submit(
+                      new Runnable() {
+                        @Override
+                        public void run() {
+                          // This call will be stuck on the server until the mock server is
+                          // unfrozen.
+                          rs.next();
+                        }
+                      });
+
+                  // Close the result set while the request is in flight.
+                  mockSpanner.waitForRequestsToContain(
+                      new Predicate<AbstractMessage>() {
+                        @Override
+                        public boolean apply(AbstractMessage input) {
+                          return input instanceof ExecuteSqlRequest
+                              && ((ExecuteSqlRequest) input).getTransaction().hasBegin();
+                        }
+                      },
+                      100L);
+                  rs.close();
+                  // The next statement should now fail before it is sent to the server because the
+                  // first statement failed to return a transaction while the result set was still
+                  // open.
+                  mockSpanner.unfreeze();
+                  try {
+                    transaction.executeUpdate(UPDATE_STATEMENT);
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+                    assertThat(e.getMessage())
+                        .contains("ResultSet was closed before a transaction id was returned");
+                  }
+                  return null;
+                }
+              });
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      // The commit request will also fail, which means that the entire transaction will fail.
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      assertThat(e.getMessage())
+          .contains("ResultSet was closed before a transaction id was returned");
+    }
+    service.shutdown();
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
     assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
     assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
