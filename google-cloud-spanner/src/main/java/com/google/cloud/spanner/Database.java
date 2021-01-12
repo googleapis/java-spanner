@@ -118,8 +118,17 @@ public class Database extends DatabaseInfo {
     Preconditions.checkArgument(
         backup.getInstanceId().equals(getId().getInstanceId()),
         "The instance of the backup must be equal to the instance of this database.");
-    return dbClient.createBackup(
-        instance(), backup.getId().getBackup(), database(), backup.getExpireTime());
+
+    final BackupInfo.Builder backupBuilder =
+        dbClient
+            .newBackupBuilder(backup.getId())
+            .setDatabase(getId())
+            .setExpireTime(backup.getExpireTime());
+    if (backup.getVersionTime() != null) {
+      backupBuilder.setVersionTime(backup.getVersionTime());
+    }
+
+    return dbClient.createBackup(backupBuilder.build());
   }
 
   /**

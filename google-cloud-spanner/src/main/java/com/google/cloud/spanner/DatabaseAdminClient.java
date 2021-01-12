@@ -102,6 +102,32 @@ public interface DatabaseAdminClient {
       throws SpannerException;
 
   /**
+   * Creates a new backup from a database in a Cloud Spanner instance.
+   *
+   * <p>Example to create a backup.
+   *
+   * <pre>{@code
+   * BackupId backupId     = BackupId.of("project", "instance", "backup-id");
+   * DatabaseId databaseId = DatabaseId.of("project", "instance", "database-id");
+   * Timestamp expireTime  = Timestamp.ofTimeMicroseconds(expireTimeMicros);
+   * Timestamp versionTime = Timestamp.ofTimeMicroseconds(versionTimeMicros);
+   *
+   * Backup backupToCreate = dbAdminClient
+   *     .newBackupBuilder(backupId)
+   *     .setDatabase(databaseId)
+   *     .setExpireTime(expireTime)
+   *     .setVersionTime(versionTime)
+   *     .build();
+   *
+   * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackup(backupToCreate);
+   * Backup createdBackup = op.get();
+   * }</pre>
+   *
+   * @param backup the backup to be created
+   */
+  OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backup) throws SpannerException;
+
+  /**
    * Restore a database from a backup. The database that is restored will be created and may not
    * already exist.
    *

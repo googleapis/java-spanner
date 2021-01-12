@@ -46,6 +46,7 @@ public class BackupTest {
       "projects/test-project/instances/test-instance/backups/backup-1";
   private static final String DB = "projects/test-project/instances/test-instance/databases/db-1";
   private static final Timestamp EXP_TIME = Timestamp.ofTimeSecondsAndNanos(1000L, 1000);
+  private static final Timestamp VERSION_TIME = Timestamp.ofTimeSecondsAndNanos(2000L, 2000);
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -65,11 +66,13 @@ public class BackupTest {
   @Test
   public void build() {
     Timestamp expireTime = Timestamp.now();
+    Timestamp versionTime = Timestamp.ofTimeMicroseconds(10L);
     Backup backup =
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
             .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .setSize(100L)
             .setState(State.CREATING)
             .build();
@@ -77,6 +80,7 @@ public class BackupTest {
     assertThat(copy.getId()).isEqualTo(backup.getId());
     assertThat(copy.getDatabase()).isEqualTo(backup.getDatabase());
     assertThat(copy.getExpireTime()).isEqualTo(backup.getExpireTime());
+    assertThat(copy.getVersionTime()).isEqualTo(backup.getVersionTime());
     assertThat(copy.getSize()).isEqualTo(backup.getSize());
     assertThat(copy.getState()).isEqualTo(backup.getState());
   }
@@ -84,14 +88,16 @@ public class BackupTest {
   @Test
   public void create() {
     Timestamp expireTime = Timestamp.now();
+    Timestamp versionTime = Timestamp.ofTimeMicroseconds(10L);
     Backup backup =
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
             .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .build();
     backup.create();
-    verify(dbClient).createBackup("instance-id", "backup-id", "src-database", expireTime);
+    verify(dbClient).createBackup(backup);
   }
 
   @Test
@@ -123,6 +129,19 @@ public class BackupTest {
     } catch (IllegalStateException e) {
       assertNotNull(e.getMessage());
     }
+  }
+
+  @Test
+  public void createWithoutVersionTimeShouldSucceed() {
+    final Timestamp expireTime = Timestamp.now();
+    Backup backup =
+        dbClient
+            .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
+            .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
+            .setExpireTime(expireTime)
+            .build();
+    backup.create();
+    verify(dbClient).createBackup(backup);
   }
 
   @Test
@@ -298,6 +317,7 @@ public class BackupTest {
     assertThat(backup.getId().getName()).isEqualTo(NAME);
     assertThat(backup.getState()).isEqualTo(BackupInfo.State.CREATING);
     assertThat(backup.getExpireTime()).isEqualTo(EXP_TIME);
+    assertThat(backup.getVersionTime()).isEqualTo(VERSION_TIME);
   }
 
   private Backup createBackup() {
@@ -307,6 +327,8 @@ public class BackupTest {
             .setDatabase(DB)
             .setExpireTime(
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
+            .setVersionTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
             .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
             .build();
     return Backup.fromProto(proto, dbClient);

@@ -241,8 +241,28 @@ public class DatabaseAdminClientTest {
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .setExpireTime(after7Days())
+            .setVersionTime(sevenDaysAgo())
             .build();
     OperationFuture<Backup, CreateBackupMetadata> op = backup.create();
+    backup = op.get();
+    assertThat(backup.getId().getName())
+        .isEqualTo(
+            String.format(
+                "projects/%s/instances/%s/backups/%s", PROJECT_ID, INSTANCE_ID, backupId));
+    assertThat(client.getBackup(INSTANCE_ID, backupId)).isEqualTo(backup);
+  }
+
+  @Test
+  public void databaseAdminBackupCreate() throws ExecutionException, InterruptedException {
+    final String backupId = "other-backup-id";
+    Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(after7Days())
+            .setVersionTime(sevenDaysAgo())
+            .build();
+    final OperationFuture<Backup, CreateBackupMetadata> op = client.createBackup(backup);
     backup = op.get();
     assertThat(backup.getId().getName())
         .isEqualTo(
@@ -789,6 +809,12 @@ public class DatabaseAdminClientTest {
         client.testDatabaseIAMPermissions(
             INSTANCE_ID, DB_ID, Arrays.asList("spanner.databases.select"));
     assertThat(permissions).containsExactly("spanner.databases.select");
+  }
+
+  private Timestamp sevenDaysAgo() {
+    return Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            - TimeUnit.MICROSECONDS.convert(7, TimeUnit.DAYS));
   }
 
   private Timestamp after7Days() {

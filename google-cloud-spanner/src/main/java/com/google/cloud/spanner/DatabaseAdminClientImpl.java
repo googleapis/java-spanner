@@ -114,16 +114,31 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
       String instanceId, String backupId, String databaseId, Timestamp expireTime)
       throws SpannerException {
-    com.google.spanner.admin.database.v1.Backup backup =
+    final Backup backup =
+        newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
+            .setExpireTime(expireTime)
+            .build();
+    return createBackup(backup);
+  }
+
+  @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(final Backup backup) {
+    final String instanceId = backup.getInstanceId().getInstance();
+    final String databaseId = backup.getDatabase().getDatabase();
+    final String backupId = backup.getId().getBackup();
+    final com.google.spanner.admin.database.v1.Backup.Builder backupBuilder =
         com.google.spanner.admin.database.v1.Backup.newBuilder()
             .setDatabase(getDatabaseName(instanceId, databaseId))
-            .setExpireTime(expireTime.toProto())
-            .build();
-    String instanceName = getInstanceName(instanceId);
-    OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
-        rawOperationFuture = rpc.createBackup(instanceName, backupId, backup);
+            .setExpireTime(backup.getExpireTime().toProto());
+    if (backup.getVersionTime() != null) {
+      backupBuilder.setVersionTime(backup.getVersionTime().toProto());
+    }
+    final String instanceName = getInstanceName(instanceId);
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
+        rawOperationFuture = rpc.createBackup(instanceName, backupId, backupBuilder.build());
 
-    return new OperationFutureImpl<Backup, CreateBackupMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Backup>() {
@@ -137,6 +152,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
                 com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
                     .setName(proto.getName())
                     .setExpireTime(proto.getExpireTime())
+                    .setVersionTime(proto.getVersionTime())
                     .setState(proto.getState())
                     .build(),
                 DatabaseAdminClientImpl.this);
