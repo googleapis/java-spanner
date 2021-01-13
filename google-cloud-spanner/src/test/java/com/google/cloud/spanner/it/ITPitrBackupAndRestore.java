@@ -64,8 +64,8 @@ public class ITPitrBackupAndRestore {
   private static RemoteSpannerHelper testHelper;
   private static DatabaseAdminClient dbAdminClient;
   private static Database testDatabase;
-  private static List<Backup> backupsToDrop;
-  private static List<Database> databasesToDrop;
+  private static final List<Backup> backupsToDrop = new ArrayList<>();
+  private static final List<Database> databasesToDrop = new ArrayList<>();
 
   @BeforeClass
   public static void doNotRunOnEmulator() {
@@ -74,8 +74,6 @@ public class ITPitrBackupAndRestore {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    backupsToDrop = new ArrayList<>();
-    databasesToDrop = new ArrayList<>();
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     testDatabase = createTestDatabase();
