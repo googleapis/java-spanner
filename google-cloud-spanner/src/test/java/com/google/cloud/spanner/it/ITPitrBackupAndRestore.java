@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.paging.Page;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -31,9 +32,11 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +66,7 @@ public class ITPitrBackupAndRestore {
   private static DatabaseAdminClient dbAdminClient;
   private static Database testDatabase;
   private static List<Backup> backupsToDrop;
+  private static List<Database> databasesToDrop;
 
   @BeforeClass
   public static void doNotRunOnEmulator() {
@@ -75,40 +79,63 @@ public class ITPitrBackupAndRestore {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     testDatabase = createTestDatabase();
     backupsToDrop = new ArrayList<>();
+    databasesToDrop = new ArrayList<>();
   }
 
   @AfterClass
   public static void tearDown() {
-    int droppedBackups = 0;
+    int numDropped = 0;
     for (Backup backup : backupsToDrop) {
       try {
         backup.delete();
-        droppedBackups++;
+        numDropped++;
       } catch (SpannerException e) {
         logger.log(Level.SEVERE, "Failed to drop test backup " + backup.getId(), e);
       }
     }
-    logger.log(Level.INFO, "Dropped {0} test backup(s)", droppedBackups);
+    logger.log(Level.INFO, "Dropped {0} test backup(s)", numDropped);
+
+    numDropped = 0;
+    for (Database database : databasesToDrop) {
+      try {
+        database.drop();
+        numDropped++;
+      } catch (SpannerException e) {
+        logger.log(Level.SEVERE, "Failed to drop test database " + database.getId(), e);
+      }
+    }
+    logger.log(Level.INFO, "Dropped {0} test databases(s)", numDropped);
   }
 
   @Test
   public void backupCreationWithVersionTimeWithinVersionRetentionPeriodSucceeds() throws Exception {
-    final DatabaseId databaseId = testDatabase.getId();
-    final InstanceId instanceId = databaseId.getInstanceId();
+    final DatabaseId backupDatabaseId = testDatabase.getId();
+    final String restoreDatabaseId = testHelper.getUniqueDatabaseId();
+    final String projectId = backupDatabaseId.getInstanceId().getProject();
+    final String instanceId = backupDatabaseId.getInstanceId().getInstance();
     final String backupId = testHelper.getUniqueBackupId();
     final Timestamp expireTime = afterDays(7);
     final Timestamp versionTime = daysAgo(3);
     final Backup backupToCreate =
         dbAdminClient
-            .newBackupBuilder(BackupId.of(instanceId, backupId))
-            .setDatabase(databaseId)
+            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            .setDatabase(backupDatabaseId)
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
             .build();
 
     final Backup createdBackup = createBackup(backupToCreate);
+    final RestoreDatabaseMetadata restoreDatabaseMetadata =
+        restoreDatabase(instanceId, backupId, restoreDatabaseId);
+    final Database retrievedDatabase = dbAdminClient.getDatabase(instanceId, restoreDatabaseId);
+    final Database listedDatabase = listDatabase(instanceId, restoreDatabaseId);
 
-    assertThat(createdBackup.getVersionTime()).isEqualTo(backupToCreate.getVersionTime());
+    assertThat(createdBackup.getVersionTime()).isEqualTo(versionTime);
+    assertThat(restoreDatabaseMetadata.getBackupInfo().getVersionTime()).isEqualTo(versionTime);
+    assertThat(retrievedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
+        .isEqualTo(versionTime);
+    assertThat(listedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
+        .isEqualTo(versionTime);
   }
 
   @Test(expected = SpannerException.class)
@@ -147,10 +174,28 @@ public class ITPitrBackupAndRestore {
     createBackup(backupToCreate);
   }
 
-  private Backup createBackup(Backup backup)
+  private Backup createBackup(Backup backupToCreate)
       throws InterruptedException, ExecutionException, TimeoutException {
-    backupsToDrop.add(backup);
-    return dbAdminClient.createBackup(backup).get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    final Backup createdBackup =
+        dbAdminClient.createBackup(backupToCreate).get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    backupsToDrop.add(createdBackup);
+    return createdBackup;
+  }
+
+  private RestoreDatabaseMetadata restoreDatabase(
+      String instanceId, String backupId, String databaseId)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    final OperationFuture<Database, RestoreDatabaseMetadata> op =
+        dbAdminClient.restoreDatabase(instanceId, backupId, instanceId, databaseId);
+    final Database database = op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    databasesToDrop.add(database);
+    return op.getMetadata().get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+  }
+
+  private Database listDatabase(String instanceId, String databaseId) {
+    final Page<Database> page =
+        dbAdminClient.listDatabases(instanceId, Options.filter("name:" + databaseId));
+    return page.getValues().iterator().next();
   }
 
   private static Database createTestDatabase()
