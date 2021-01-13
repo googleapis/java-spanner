@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.testing.TimestampHelper.afterDays;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -224,7 +225,7 @@ public class DatabaseAdminClientTest {
   public void dbAdminCreateBackup() throws InterruptedException, ExecutionException {
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, backupId, DB_ID, after7Days());
+        client.createBackup(INSTANCE_ID, backupId, DB_ID, afterDays(7));
     Backup backup = op.get();
     assertThat(backup.getId().getName())
         .isEqualTo(
@@ -240,7 +241,7 @@ public class DatabaseAdminClientTest {
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
-            .setExpireTime(after7Days())
+            .setExpireTime(afterDays(7))
             .setVersionTime(sevenDaysAgo())
             .build();
     OperationFuture<Backup, CreateBackupMetadata> op = backup.create();
@@ -259,7 +260,7 @@ public class DatabaseAdminClientTest {
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
-            .setExpireTime(after7Days())
+            .setExpireTime(afterDays(7))
             .setVersionTime(sevenDaysAgo())
             .build();
     final OperationFuture<Backup, CreateBackupMetadata> op = client.createBackup(backup);
@@ -319,7 +320,7 @@ public class DatabaseAdminClientTest {
         db.backup(
                 client
                     .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
-                    .setExpireTime(after7Days())
+                    .setExpireTime(afterDays(7))
                     .build())
             .get();
     assertThat(backup.getId().getName())
@@ -332,7 +333,7 @@ public class DatabaseAdminClientTest {
   @Test
   public void dbAdminCreateBackupAlreadyExists() throws InterruptedException {
     OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, after7Days());
+        client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, afterDays(7));
     try {
       op.get();
       fail("missing expected exception");
@@ -349,7 +350,7 @@ public class DatabaseAdminClientTest {
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
-            .setExpireTime(after7Days())
+            .setExpireTime(afterDays(7))
             .build();
     try {
       backup.create().get();
@@ -368,7 +369,7 @@ public class DatabaseAdminClientTest {
         db.backup(
             client
                 .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID))
-                .setExpireTime(after7Days())
+                .setExpireTime(afterDays(7))
                 .build());
     try {
       op.get();
@@ -384,7 +385,7 @@ public class DatabaseAdminClientTest {
   public void dbAdminCreateBackupDbNotFound() throws InterruptedException {
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, backupId, "does-not-exist", after7Days());
+        client.createBackup(INSTANCE_ID, backupId, "does-not-exist", afterDays(7));
     try {
       op.get();
       fail("missing expected exception");
@@ -401,7 +402,7 @@ public class DatabaseAdminClientTest {
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, "does-not-exist"))
-            .setExpireTime(after7Days())
+            .setExpireTime(afterDays(7))
             .build();
     try {
       backup.create().get();
@@ -422,7 +423,7 @@ public class DatabaseAdminClientTest {
         db.backup(
             client
                 .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, backupId))
-                .setExpireTime(after7Days())
+                .setExpireTime(afterDays(7))
                 .build());
     try {
       op.get();
@@ -519,7 +520,7 @@ public class DatabaseAdminClientTest {
       throws SpannerException, InterruptedException, ExecutionException {
     Backup backup = client.getBackup(INSTANCE_ID, BCK_ID);
     assertThat(client.listBackups(INSTANCE_ID).iterateAll()).containsExactly(backup);
-    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, after7Days()).get();
+    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, afterDays(7)).get();
     assertThat(client.listBackups(INSTANCE_ID).iterateAll()).containsExactly(backup, backup2);
     backup2.delete();
     assertThat(client.listBackups(INSTANCE_ID).iterateAll()).containsExactly(backup);
@@ -535,7 +536,7 @@ public class DatabaseAdminClientTest {
             .build();
     Backup backup = client.getBackup(INSTANCE_ID, BCK_ID);
     assertThat(instance.listBackups().iterateAll()).containsExactly(backup);
-    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, after7Days()).get();
+    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, afterDays(7)).get();
     assertThat(instance.listBackups().iterateAll()).containsExactly(backup, backup2);
     backup2.delete();
     assertThat(instance.listBackups().iterateAll()).containsExactly(backup);
@@ -552,7 +553,7 @@ public class DatabaseAdminClientTest {
 
     Backup backup = client.getBackup(INSTANCE_ID, BCK_ID);
     assertThat(instance.listBackups().iterateAll()).containsExactly(backup);
-    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, after7Days()).get();
+    Backup backup2 = client.createBackup(INSTANCE_ID, "backup2", DB_ID, afterDays(7)).get();
 
     // All backups.
     assertThat(instance.listBackups().iterateAll()).containsExactly(backup, backup2);
@@ -569,7 +570,7 @@ public class DatabaseAdminClientTest {
         .containsExactly(backup, backup2);
 
     // All backups that expire before a certain time.
-    String ts = after14Days().toString();
+    String ts = afterDays(14).toString();
     filter = String.format("expire_time < \"%s\"", ts);
     mockDatabaseAdmin.addFilterMatches(filter, backup.getId().getName(), backup2.getId().getName());
     assertThat(instance.listBackups(Options.filter(filter)).iterateAll())
@@ -721,7 +722,7 @@ public class DatabaseAdminClientTest {
   public void dbClientListBackupOperations()
       throws SpannerException, InterruptedException, ExecutionException {
     assertThat(client.listBackupOperations(INSTANCE_ID).iterateAll()).hasSize(1);
-    client.createBackup(INSTANCE_ID, "other-backup", DB_ID, after7Days()).get();
+    client.createBackup(INSTANCE_ID, "other-backup", DB_ID, afterDays(7)).get();
     assertThat(client.listBackupOperations(INSTANCE_ID).iterateAll()).hasSize(2);
     // Restore a backup. This creates 2 DATABASE operations: One to restore the database and
     // one to optimize it.
@@ -743,7 +744,7 @@ public class DatabaseAdminClientTest {
         .backup(
             client
                 .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, "other-backup"))
-                .setExpireTime(after7Days())
+                .setExpireTime(afterDays(7))
                 .build())
         .get();
     assertThat(instance.listBackupOperations().iterateAll()).hasSize(2);
@@ -788,7 +789,7 @@ public class DatabaseAdminClientTest {
     Backup backup = client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID)).build();
     mockDatabaseAdmin.addFilterMatches("name:backups/" + BCK_ID, createBackupOperation.getName());
     assertThat(backup.listBackupOperations().iterateAll()).hasSize(1);
-    client.createBackup(INSTANCE_ID, "other-backup", DB_ID, after7Days()).get();
+    client.createBackup(INSTANCE_ID, "other-backup", DB_ID, afterDays(7)).get();
     assertThat(backup.listBackupOperations().iterateAll()).hasSize(1);
   }
 
@@ -817,18 +818,6 @@ public class DatabaseAdminClientTest {
             - TimeUnit.MICROSECONDS.convert(7, TimeUnit.DAYS));
   }
 
-  private Timestamp after7Days() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            + TimeUnit.MICROSECONDS.convert(7, TimeUnit.DAYS));
-  }
-
-  private Timestamp after14Days() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            + TimeUnit.MICROSECONDS.convert(14, TimeUnit.DAYS));
-  }
-
   private void createTestDatabase() {
     try {
       createDatabaseOperation = client.createDatabase(INSTANCE_ID, DB_ID, INITIAL_STATEMENTS);
@@ -840,7 +829,7 @@ public class DatabaseAdminClientTest {
 
   private void createTestBackup() {
     try {
-      createBackupOperation = client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, after7Days());
+      createBackupOperation = client.createBackup(INSTANCE_ID, BCK_ID, DB_ID, afterDays(7));
       createBackupOperation.get();
     } catch (InterruptedException | ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
@@ -865,7 +854,7 @@ public class DatabaseAdminClientTest {
         SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, backupId, DB_ID, after7Days());
+        client.createBackup(INSTANCE_ID, backupId, DB_ID, afterDays(7));
     Backup backup = op.get();
     assertThat(backup.getId().getName())
         .isEqualTo(
@@ -883,7 +872,7 @@ public class DatabaseAdminClientTest {
         SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     final String backupId = "other-backup-id";
     OperationFuture<Backup, CreateBackupMetadata> op =
-        client.createBackup(INSTANCE_ID, backupId, DB_ID, after7Days());
+        client.createBackup(INSTANCE_ID, backupId, DB_ID, afterDays(7));
     Backup backup = op.get();
     assertThat(backup.getId().getName())
         .isEqualTo(
