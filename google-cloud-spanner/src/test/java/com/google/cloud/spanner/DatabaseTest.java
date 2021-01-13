@@ -64,12 +64,13 @@ public class DatabaseTest {
   public void backup() {
     Timestamp expireTime = Timestamp.now();
     Database db = createDatabase();
-    db.backup(
+    Backup backup =
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .setExpireTime(expireTime)
-            .build());
-    verify(dbClient).createBackup("test-instance", "test-backup", "database-1", expireTime);
+            .build();
+    db.backup(backup);
+    verify(dbClient).createBackup(backup.toBuilder().setDatabase(db.getId()).build());
   }
 
   @Test
