@@ -32,12 +32,11 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,11 +74,11 @@ public class ITPitrBackupAndRestore {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    backupsToDrop = new ArrayList<>();
+    databasesToDrop = new ArrayList<>();
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     testDatabase = createTestDatabase();
-    backupsToDrop = new ArrayList<>();
-    databasesToDrop = new ArrayList<>();
   }
 
   @AfterClass
@@ -115,7 +114,7 @@ public class ITPitrBackupAndRestore {
     final String instanceId = backupDatabaseId.getInstanceId().getInstance();
     final String backupId = testHelper.getUniqueBackupId();
     final Timestamp expireTime = afterDays(7);
-    final Timestamp versionTime = daysAgo(3);
+    final Timestamp versionTime = testDatabase.getEarliestVersionTime();
     final Backup backupToCreate =
         dbAdminClient
             .newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
@@ -125,15 +124,19 @@ public class ITPitrBackupAndRestore {
             .build();
 
     final Backup createdBackup = createBackup(backupToCreate);
+    assertThat(createdBackup.getVersionTime()).isEqualTo(versionTime);
+
     final RestoreDatabaseMetadata restoreDatabaseMetadata =
         restoreDatabase(instanceId, backupId, restoreDatabaseId);
-    final Database retrievedDatabase = dbAdminClient.getDatabase(instanceId, restoreDatabaseId);
-    final Database listedDatabase = listDatabase(instanceId, restoreDatabaseId);
-
-    assertThat(createdBackup.getVersionTime()).isEqualTo(versionTime);
     assertThat(restoreDatabaseMetadata.getBackupInfo().getVersionTime()).isEqualTo(versionTime);
+
+    final Database retrievedDatabase = dbAdminClient.getDatabase(instanceId, restoreDatabaseId);
+    assertThat(retrievedDatabase).isNotNull();
     assertThat(retrievedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
         .isEqualTo(versionTime);
+
+    final Database listedDatabase = listDatabase(instanceId, restoreDatabaseId);
+    assertThat(listedDatabase).isNotNull();
     assertThat(listedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
         .isEqualTo(versionTime);
   }
@@ -193,22 +196,30 @@ public class ITPitrBackupAndRestore {
   }
 
   private Database listDatabase(String instanceId, String databaseId) {
-    final Page<Database> page =
-        dbAdminClient.listDatabases(instanceId, Options.filter("name:" + databaseId));
-    return page.getValues().iterator().next();
+    Page<Database> page = dbAdminClient.listDatabases(instanceId);
+    while (page != null) {
+      for (Database database : page.getValues()) {
+        if (database.getId().getDatabase().equals(databaseId)) {
+          return database;
+        }
+      }
+      page = page.getNextPage();
+    }
+    return null;
   }
 
   private static Database createTestDatabase()
       throws InterruptedException, ExecutionException, TimeoutException {
-    final Database database = testHelper.createTestDatabase();
-    final String instanceId = database.getId().getInstanceId().getInstance();
-    final String databaseId = database.getId().getDatabase();
-    final String statement =
-        "ALTER DATABASE " + databaseId + " SET OPTIONS (version_retention_period = '7d')";
-    final OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        dbAdminClient.updateDatabaseDdl(
-            instanceId, databaseId, Collections.singletonList(statement), "op_" + databaseId);
-    op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    final String instanceId = testHelper.getInstanceId().getInstance();
+    final String databaseId = testHelper.getUniqueDatabaseId();
+    final OperationFuture<Database, CreateDatabaseMetadata> op =
+        dbAdminClient.createDatabase(
+            instanceId,
+            databaseId,
+            Collections.singletonList(
+                "ALTER DATABASE " + databaseId + " SET OPTIONS (version_retention_period = '7d')"));
+    final Database database = op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    databasesToDrop.add(database);
     return database;
   }
 }
