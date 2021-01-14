@@ -213,7 +213,7 @@ abstract class AbstractReadContext
     }
 
     @Override
-    public void onTransactionMetadata(Transaction transaction) {
+    public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {
       synchronized (lock) {
         if (!transaction.hasReadTimestamp()) {
           throw newSpannerException(
@@ -393,6 +393,9 @@ abstract class AbstractReadContext
   // Allow up to 512MB to be buffered (assuming 1MB chunks). In practice, restart tokens are sent
   // much more frequently.
   private static final int MAX_BUFFERED_CHUNKS = 512;
+
+  protected static final String NO_TRANSACTION_RETURNED_MSG =
+      "The statement did not return a transaction even though one was requested";
 
   AbstractReadContext(Builder<?, ?> builder) {
     this.session = builder.session;
@@ -632,7 +635,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call, request.hasTransaction() && request.getTransaction().hasBegin());
+            stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
         };
@@ -685,7 +688,7 @@ abstract class AbstractReadContext
 
   /** This method is called when a statement returned a new transaction as part of its results. */
   @Override
-  public void onTransactionMetadata(Transaction transaction) {}
+  public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
 
   @Override
   public void onError(SpannerException e, boolean withBeginTransaction) {}

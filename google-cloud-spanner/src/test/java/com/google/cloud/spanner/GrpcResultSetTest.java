@@ -56,7 +56,8 @@ public class GrpcResultSetTest {
 
   private static class NoOpListener implements AbstractResultSet.Listener {
     @Override
-    public void onTransactionMetadata(Transaction transaction) throws SpannerException {}
+    public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
+        throws SpannerException {}
 
     @Override
     public void onError(SpannerException e, boolean withBeginTransaction) {}

@@ -78,7 +78,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      * Called when transaction metadata is seen. This method may be invoked at most once. If the
      * method is invoked, it will precede {@link #onError(SpannerException)} or {@link #onDone()}.
      */
-    void onTransactionMetadata(Transaction transaction) throws SpannerException;
+    void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
+        throws SpannerException;
 
     /** Called when the read finishes with an error. */
     void onError(SpannerException e, boolean withBeginTransaction);
@@ -117,12 +118,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         if (currRow == null) {
           ResultSetMetadata metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
-            listener.onTransactionMetadata(metadata.getTransaction());
+            listener.onTransactionMetadata(
+                metadata.getTransaction(), iterator.isWithBeginTransaction());
           } else if (iterator.isWithBeginTransaction()) {
             // The query should have returned a transaction.
             throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.FAILED_PRECONDITION,
-                "Query requested a transaction to be started, but no transaction was returned");
+                ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
           }
           currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
         }
