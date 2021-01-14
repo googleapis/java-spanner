@@ -77,6 +77,7 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
@@ -1472,11 +1473,15 @@ class SessionPool {
 
     private void keepAlive() {
       markUsed();
+      final Span previousSpan = delegate.getCurrentSpan();
+      delegate.setCurrentSpan(BlankSpan.INSTANCE);
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+      } finally {
+        delegate.setCurrentSpan(previousSpan);
       }
     }
 
