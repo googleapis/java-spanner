@@ -92,7 +92,7 @@ public class DatabaseClientImplTest {
   private static final long UPDATE_COUNT = 1L;
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
-  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private ExecutorService executor;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -121,7 +121,6 @@ public class DatabaseClientImplTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
-    executor.shutdown();
   }
 
   @Before
@@ -142,6 +141,7 @@ public class DatabaseClientImplTest {
                 SessionPoolOptions.newBuilder().setMinSessions(0).setFailOnSessionLeak().build())
             .build()
             .getService();
+    executor = Executors.newSingleThreadExecutor();
   }
 
   @After
@@ -151,6 +151,7 @@ public class DatabaseClientImplTest {
     spannerWithEmptySessionPool.close();
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
+    executor.shutdown();
   }
 
   @Test
