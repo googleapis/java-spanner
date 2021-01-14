@@ -1617,10 +1617,12 @@ class SessionPool {
 
     void close() {
       synchronized (lock) {
-        closed = true;
-        scheduledFuture.cancel(false);
-        if (!running) {
-          decrementPendingClosures(1);
+        if (!closed) {
+          closed = true;
+          scheduledFuture.cancel(false);
+          if (!running) {
+            decrementPendingClosures(1);
+          }
         }
       }
     }
@@ -2188,11 +2190,11 @@ class SessionPool {
           closeSessionAsync(session);
         }
       }
-    }
 
-    // Nothing to be closed, mark as complete
-    if (pendingClosure == 0) {
-      closureFuture.set(null);
+      // Nothing to be closed, mark as complete
+      if (pendingClosure == 0) {
+        closureFuture.set(null);
+      }
     }
 
     retFuture.addListener(
