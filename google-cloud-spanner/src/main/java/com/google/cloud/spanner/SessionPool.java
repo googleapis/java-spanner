@@ -2370,6 +2370,7 @@ class SessionPool {
 
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    maxInUseSessionsMetric.removeTimeSeries(labelValues);
     maxInUseSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2382,6 +2383,7 @@ class SessionPool {
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
+    maxAllowedSessionsMetric.removeTimeSeries(labelValues);
     maxAllowedSessionsMetric.createTimeSeries(
         labelValues,
         options,
@@ -2394,6 +2396,7 @@ class SessionPool {
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    sessionsTimeouts.removeTimeSeries(labelValues);
     sessionsTimeouts.createTimeSeries(
         labelValues,
         this,
@@ -2404,6 +2407,7 @@ class SessionPool {
           }
         });
 
+    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2414,6 +2418,7 @@ class SessionPool {
           }
         });
 
+    numReleasedSessionsMetric.removeTimeSeries(labelValues);
     numReleasedSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2426,6 +2431,7 @@ class SessionPool {
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithBeingPreparedType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
@@ -2439,6 +2445,7 @@ class SessionPool {
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithInUseType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithInUseType,
         this,
@@ -2451,6 +2458,7 @@ class SessionPool {
 
     List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
     labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithReadType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithReadType,
         this,
@@ -2463,6 +2471,7 @@ class SessionPool {
 
     List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
     labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithWriteType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,
