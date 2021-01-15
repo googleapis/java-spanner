@@ -100,7 +100,7 @@ public class BackupInfo {
 
     @Override
     public Builder setVersionTime(Timestamp versionTime) {
-      this.versionTime = Preconditions.checkNotNull(versionTime);
+      this.versionTime = versionTime;
       return this;
     }
 
