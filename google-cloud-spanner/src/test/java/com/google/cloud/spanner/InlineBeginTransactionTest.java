@@ -256,6 +256,130 @@ public class InlineBeginTransactionTest {
   }
 
   @Test
+  public void testInlinedBeginFirstUpdateAborts() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  boolean firstAttempt = true;
+
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    if (firstAttempt) {
+                      firstAttempt = false;
+                      mockSpanner.putStatementResult(
+                          StatementResult.exception(
+                              UPDATE_STATEMENT,
+                              mockSpanner.createAbortedException(
+                                  ByteString.copyFromUtf8("some-tx"))));
+                    } else {
+                      mockSpanner.putStatementResult(
+                          StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                    }
+                    return transaction.executeUpdate(UPDATE_STATEMENT);
+                  }
+                });
+    assertThat(updateCount).isEqualTo(UPDATE_COUNT);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginFirstQueryAborts() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  boolean firstAttempt = true;
+
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    if (firstAttempt) {
+                      firstAttempt = false;
+                      mockSpanner.putStatementResult(
+                          StatementResult.exception(
+                              SELECT1,
+                              mockSpanner.createAbortedException(
+                                  ByteString.copyFromUtf8("some-tx"))));
+                    } else {
+                      mockSpanner.putStatementResult(
+                          StatementResult.query(SELECT1, SELECT1_RESULTSET));
+                    }
+                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
+                      }
+                    }
+                    return 0L;
+                  }
+                });
+    assertThat(updateCount).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginFirstQueryReturnsUnavailable() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofStreamException(Status.UNAVAILABLE.asRuntimeException(), 0));
+    long value =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    // The first attempt will return UNAVAILABLE and retry internally.
+                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
+                      }
+                    }
+                    return 0L;
+                  }
+                });
+    assertThat(value).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+  }
+
+  @Test
+  public void testInlinedBeginFirstReadReturnsUnavailable() {
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    mockSpanner.setStreamingReadExecutionTime(
+        SimulatedExecutionTime.ofStreamException(Status.UNAVAILABLE.asRuntimeException(), 0));
+    long value =
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    // The first attempt will return UNAVAILABLE and retry internally.
+                    try (ResultSet rs =
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
+                      }
+                    }
+                    return 0L;
+                  }
+                });
+    assertThat(value).isEqualTo(1L);
+    assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+    assertThat(countRequests(ReadRequest.class)).isEqualTo(2);
+    assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+  }
+
+  @Test
   public void testInlinedBeginTxWithQuery() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -283,8 +407,7 @@ public class InlineBeginTransactionTest {
 
   @Test
   public void testInlinedBeginTxWithRead() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     long updateCount =
         client
             .readWriteTransaction()
