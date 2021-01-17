@@ -535,8 +535,6 @@ abstract class AbstractReadContext
    *   <li>Specific {@link QueryOptions} passed in for this query.
    *   <li>Any value specified in a valid environment variable when the {@link SpannerOptions}
    *       instance was created.
-   *   <li>The default {@link SpannerOptions#getDefaultQueryOptions()} specified for the database
-   *       where the query is executed.
    * </ol>
    */
   @VisibleForTesting
@@ -554,7 +552,8 @@ abstract class AbstractReadContext
     return builder.build();
   }
 
-  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(Statement statement, QueryMode queryMode) {
+  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
+      Statement statement, QueryMode queryMode, boolean withTransactionSelector) {
     ExecuteSqlRequest.Builder builder =
         ExecuteSqlRequest.newBuilder()
             .setSql(statement.getSql())
@@ -568,9 +567,11 @@ abstract class AbstractReadContext
         builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
       }
     }
-    TransactionSelector selector = getTransactionSelector();
-    if (selector != null) {
-      builder.setTransaction(selector);
+    if (withTransactionSelector) {
+      TransactionSelector selector = getTransactionSelector();
+      if (selector != null) {
+        builder.setTransaction(selector);
+      }
     }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
@@ -614,18 +615,26 @@ abstract class AbstractReadContext
     beforeReadOrQuery();
     final int prefetchChunks =
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
+    final ExecuteSqlRequest.Builder request =
+        getExecuteSqlRequestBuilder(
+            statement, queryMode, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
         new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
-            final ExecuteSqlRequest.Builder request =
-                getExecuteSqlRequestBuilder(statement, queryMode);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }
+            TransactionSelector selector = null;
             if (resumeToken != null) {
               request.setResumeToken(resumeToken);
+              selector = getTransactionSelector();
+            } else if (!request.hasTransaction()) {
+              selector = getTransactionSelector();
+            }
+            if (selector != null) {
+              request.setTransaction(selector);
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
@@ -733,10 +742,13 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
+            TransactionSelector selector = null;
             if (resumeToken != null) {
               builder.setResumeToken(resumeToken);
+              selector = getTransactionSelector();
+            } else if (!builder.hasTransaction()) {
+              selector = getTransactionSelector();
             }
-            TransactionSelector selector = getTransactionSelector();
             if (selector != null) {
               builder.setTransaction(selector);
             }
