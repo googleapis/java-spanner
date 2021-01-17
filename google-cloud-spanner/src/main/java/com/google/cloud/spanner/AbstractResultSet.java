@@ -1071,6 +1071,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 backoffSleep(context, backOff);
               }
             }
+
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
