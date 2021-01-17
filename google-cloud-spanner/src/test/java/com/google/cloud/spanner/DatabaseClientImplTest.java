@@ -92,7 +92,7 @@ public class DatabaseClientImplTest {
   private static final long UPDATE_COUNT = 1L;
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
-  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private static ExecutorService executor;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -106,6 +106,7 @@ public class DatabaseClientImplTest {
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
 
+    executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
