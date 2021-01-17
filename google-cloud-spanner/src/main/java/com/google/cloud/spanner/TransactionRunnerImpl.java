@@ -583,7 +583,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
-              statement, QueryMode.NORMAL, Options.fromUpdateOptions(options));
+              statement,
+              QueryMode.NORMAL,
+              Options.fromUpdateOptions(options),
+              /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
@@ -608,7 +611,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
-              statement, QueryMode.NORMAL, Options.fromUpdateOptions(options));
+              statement,
+              QueryMode.NORMAL,
+              Options.fromUpdateOptions(options),
+              /* withTransactionSelector = */ true);
       final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may

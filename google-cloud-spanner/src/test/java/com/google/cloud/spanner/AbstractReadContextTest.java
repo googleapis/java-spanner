@@ -90,7 +90,10 @@ public class AbstractReadContextTest {
     ExecuteSqlRequest request =
         context
             .getExecuteSqlRequestBuilder(
-                Statement.of("SELECT FOO FROM BAR"), QueryMode.NORMAL, Options.fromQueryOptions())
+                Statement.of("SELECT FOO FROM BAR"),
+                QueryMode.NORMAL,
+                Options.fromQueryOptions(),
+                true)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions()).isEqualTo(defaultQueryOptions);
@@ -105,7 +108,8 @@ public class AbstractReadContextTest {
                     .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2.0").build())
                     .build(),
                 QueryMode.NORMAL,
-                Options.fromQueryOptions())
+                Options.fromQueryOptions(),
+                true)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("2.0");
