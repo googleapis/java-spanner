@@ -1595,6 +1595,7 @@ class SessionPool {
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
     int sessionsToClosePerLoop = 0;
+    boolean closed = false;
 
     @GuardedBy("lock")
     ScheduledFuture<?> scheduledFuture;
@@ -1621,17 +1622,26 @@ class SessionPool {
 
     void close() {
       synchronized (lock) {
-        scheduledFuture.cancel(false);
-        if (!running) {
-          decrementPendingClosures(1);
+        if (!closed) {
+          closed = true;
+          scheduledFuture.cancel(false);
+          if (!running) {
+            decrementPendingClosures(1);
+          }
         }
+      }
+    }
+
+    boolean isClosed() {
+      synchronized (lock) {
+        return closed;
       }
     }
 
     // Does various pool maintenance activities.
     void maintainPool() {
       synchronized (lock) {
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           return;
         }
         running = true;
@@ -1643,7 +1653,7 @@ class SessionPool {
       replenishPool();
       synchronized (lock) {
         running = false;
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           decrementPendingClosures(1);
         }
       }
@@ -2126,6 +2136,7 @@ class SessionPool {
       }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
+        poolMaintainer.close();
       }
     }
   }
@@ -2161,10 +2172,14 @@ class SessionPool {
       }
       closureFuture = SettableFuture.create();
       retFuture = closureFuture;
-      pendingClosure =
-          totalSessions() + numSessionsBeingCreated + 1 /* For pool maintenance thread */;
 
-      poolMaintainer.close();
+      pendingClosure = totalSessions() + numSessionsBeingCreated;
+
+      if (!poolMaintainer.isClosed()) {
+        pendingClosure += 1; // For pool maintenance thread
+        poolMaintainer.close();
+      }
+
       sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
@@ -2180,7 +2195,13 @@ class SessionPool {
           closeSessionAsync(session);
         }
       }
+
+      // Nothing to be closed, mark as complete
+      if (pendingClosure == 0) {
+        closureFuture.set(null);
+      }
     }
+
     retFuture.addListener(
         new Runnable() {
           @Override
