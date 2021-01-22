@@ -83,6 +83,22 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
               break;
             }
+          case 18:
+            {
+              com.google.spanner.v1.CommitResponse.CommitStats.Builder subBuilder = null;
+              if (commitStats_ != null) {
+                subBuilder = commitStats_.toBuilder();
+              }
+              commitStats_ =
+                  input.readMessage(
+                      com.google.spanner.v1.CommitResponse.CommitStats.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(commitStats_);
+                commitStats_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -115,6 +131,586 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         .ensureFieldAccessorsInitialized(
             com.google.spanner.v1.CommitResponse.class,
             com.google.spanner.v1.CommitResponse.Builder.class);
+  }
+
+  public interface CommitStatsOrBuilder
+      extends
+      // @@protoc_insertion_point(interface_extends:google.spanner.v1.CommitResponse.CommitStats)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * The total number of mutations for the transaction. Knowing the
+     * `mutation_count` value can help you maximize the number of mutations
+     * in a transaction and minimize the number of API round trips. You can
+     * also monitor this value to prevent transactions from exceeding the system
+     * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+     * If the number of mutations exceeds the limit, the server returns
+     * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
+     * </pre>
+     *
+     * <code>int64 mutation_count = 1;</code>
+     *
+     * @return The mutationCount.
+     */
+    long getMutationCount();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Additional statistics about a commit.
+   * </pre>
+   *
+   * Protobuf type {@code google.spanner.v1.CommitResponse.CommitStats}
+   */
+  public static final class CommitStats extends com.google.protobuf.GeneratedMessageV3
+      implements
+      // @@protoc_insertion_point(message_implements:google.spanner.v1.CommitResponse.CommitStats)
+      CommitStatsOrBuilder {
+    private static final long serialVersionUID = 0L;
+    // Use CommitStats.newBuilder() to construct.
+    private CommitStats(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+
+    private CommitStats() {}
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new CommitStats();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
+    }
+
+    private CommitStats(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8:
+              {
+                mutationCount_ = input.readInt64();
+                break;
+              }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_CommitResponse_CommitStats_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_CommitResponse_CommitStats_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.CommitResponse.CommitStats.class,
+              com.google.spanner.v1.CommitResponse.CommitStats.Builder.class);
+    }
+
+    public static final int MUTATION_COUNT_FIELD_NUMBER = 1;
+    private long mutationCount_;
+    /**
+     *
+     *
+     * <pre>
+     * The total number of mutations for the transaction. Knowing the
+     * `mutation_count` value can help you maximize the number of mutations
+     * in a transaction and minimize the number of API round trips. You can
+     * also monitor this value to prevent transactions from exceeding the system
+     * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+     * If the number of mutations exceeds the limit, the server returns
+     * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
+     * </pre>
+     *
+     * <code>int64 mutation_count = 1;</code>
+     *
+     * @return The mutationCount.
+     */
+    @java.lang.Override
+    public long getMutationCount() {
+      return mutationCount_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      if (mutationCount_ != 0L) {
+        output.writeInt64(1, mutationCount_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (mutationCount_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream.computeInt64Size(1, mutationCount_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof com.google.spanner.v1.CommitResponse.CommitStats)) {
+        return super.equals(obj);
+      }
+      com.google.spanner.v1.CommitResponse.CommitStats other =
+          (com.google.spanner.v1.CommitResponse.CommitStats) obj;
+
+      if (getMutationCount() != other.getMutationCount()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MUTATION_COUNT_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getMutationCount());
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseDelimitedFrom(
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(com.google.spanner.v1.CommitResponse.CommitStats prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Additional statistics about a commit.
+     * </pre>
+     *
+     * Protobuf type {@code google.spanner.v1.CommitResponse.CommitStats}
+     */
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements
+        // @@protoc_insertion_point(builder_implements:google.spanner.v1.CommitResponse.CommitStats)
+        com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_CommitResponse_CommitStats_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_CommitResponse_CommitStats_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.CommitResponse.CommitStats.class,
+                com.google.spanner.v1.CommitResponse.CommitStats.Builder.class);
+      }
+
+      // Construct using com.google.spanner.v1.CommitResponse.CommitStats.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
+      }
+
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        mutationCount_ = 0L;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.spanner.v1.SpannerProto
+            .internal_static_google_spanner_v1_CommitResponse_CommitStats_descriptor;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.CommitResponse.CommitStats getDefaultInstanceForType() {
+        return com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.CommitResponse.CommitStats build() {
+        com.google.spanner.v1.CommitResponse.CommitStats result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.google.spanner.v1.CommitResponse.CommitStats buildPartial() {
+        com.google.spanner.v1.CommitResponse.CommitStats result =
+            new com.google.spanner.v1.CommitResponse.CommitStats(this);
+        result.mutationCount_ = mutationCount_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.google.spanner.v1.CommitResponse.CommitStats) {
+          return mergeFrom((com.google.spanner.v1.CommitResponse.CommitStats) other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.google.spanner.v1.CommitResponse.CommitStats other) {
+        if (other == com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance())
+          return this;
+        if (other.getMutationCount() != 0L) {
+          setMutationCount(other.getMutationCount());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.spanner.v1.CommitResponse.CommitStats parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage =
+              (com.google.spanner.v1.CommitResponse.CommitStats) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private long mutationCount_;
+      /**
+       *
+       *
+       * <pre>
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
+       * </pre>
+       *
+       * <code>int64 mutation_count = 1;</code>
+       *
+       * @return The mutationCount.
+       */
+      @java.lang.Override
+      public long getMutationCount() {
+        return mutationCount_;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
+       * </pre>
+       *
+       * <code>int64 mutation_count = 1;</code>
+       *
+       * @param value The mutationCount to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMutationCount(long value) {
+
+        mutationCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
+       * </pre>
+       *
+       * <code>int64 mutation_count = 1;</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearMutationCount() {
+
+        mutationCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+      // @@protoc_insertion_point(builder_scope:google.spanner.v1.CommitResponse.CommitStats)
+    }
+
+    // @@protoc_insertion_point(class_scope:google.spanner.v1.CommitResponse.CommitStats)
+    private static final com.google.spanner.v1.CommitResponse.CommitStats DEFAULT_INSTANCE;
+
+    static {
+      DEFAULT_INSTANCE = new com.google.spanner.v1.CommitResponse.CommitStats();
+    }
+
+    public static com.google.spanner.v1.CommitResponse.CommitStats getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<CommitStats> PARSER =
+        new com.google.protobuf.AbstractParser<CommitStats>() {
+          @java.lang.Override
+          public CommitStats parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            return new CommitStats(input, extensionRegistry);
+          }
+        };
+
+    public static com.google.protobuf.Parser<CommitStats> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CommitStats> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.spanner.v1.CommitResponse.CommitStats getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
   }
 
   public static final int COMMIT_TIMESTAMP_FIELD_NUMBER = 1;
@@ -165,6 +761,60 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     return getCommitTimestamp();
   }
 
+  public static final int COMMIT_STATS_FIELD_NUMBER = 2;
+  private com.google.spanner.v1.CommitResponse.CommitStats commitStats_;
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   *
+   * @return Whether the commitStats field is set.
+   */
+  @java.lang.Override
+  public boolean hasCommitStats() {
+    return commitStats_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   *
+   * @return The commitStats.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CommitResponse.CommitStats getCommitStats() {
+    return commitStats_ == null
+        ? com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()
+        : commitStats_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The statistics about this Commit. Not returned by default.
+   * For more information, see
+   * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+   * </pre>
+   *
+   * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder getCommitStatsOrBuilder() {
+    return getCommitStats();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -182,6 +832,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     if (commitTimestamp_ != null) {
       output.writeMessage(1, getCommitTimestamp());
     }
+    if (commitStats_ != null) {
+      output.writeMessage(2, getCommitStats());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -193,6 +846,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     size = 0;
     if (commitTimestamp_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, getCommitTimestamp());
+    }
+    if (commitStats_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getCommitStats());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -213,6 +869,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     if (hasCommitTimestamp()) {
       if (!getCommitTimestamp().equals(other.getCommitTimestamp())) return false;
     }
+    if (hasCommitStats() != other.hasCommitStats()) return false;
+    if (hasCommitStats()) {
+      if (!getCommitStats().equals(other.getCommitStats())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -227,6 +887,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     if (hasCommitTimestamp()) {
       hash = (37 * hash) + COMMIT_TIMESTAMP_FIELD_NUMBER;
       hash = (53 * hash) + getCommitTimestamp().hashCode();
+    }
+    if (hasCommitStats()) {
+      hash = (37 * hash) + COMMIT_STATS_FIELD_NUMBER;
+      hash = (53 * hash) + getCommitStats().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -378,6 +1042,12 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         commitTimestamp_ = null;
         commitTimestampBuilder_ = null;
       }
+      if (commitStatsBuilder_ == null) {
+        commitStats_ = null;
+      } else {
+        commitStats_ = null;
+        commitStatsBuilder_ = null;
+      }
       return this;
     }
 
@@ -408,6 +1078,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         result.commitTimestamp_ = commitTimestamp_;
       } else {
         result.commitTimestamp_ = commitTimestampBuilder_.build();
+      }
+      if (commitStatsBuilder_ == null) {
+        result.commitStats_ = commitStats_;
+      } else {
+        result.commitStats_ = commitStatsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -460,6 +1135,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.v1.CommitResponse.getDefaultInstance()) return this;
       if (other.hasCommitTimestamp()) {
         mergeCommitTimestamp(other.getCommitTimestamp());
+      }
+      if (other.hasCommitStats()) {
+        mergeCommitStats(other.getCommitStats());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -673,6 +1351,210 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         commitTimestamp_ = null;
       }
       return commitTimestampBuilder_;
+    }
+
+    private com.google.spanner.v1.CommitResponse.CommitStats commitStats_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.CommitResponse.CommitStats,
+            com.google.spanner.v1.CommitResponse.CommitStats.Builder,
+            com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
+        commitStatsBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     *
+     * @return Whether the commitStats field is set.
+     */
+    public boolean hasCommitStats() {
+      return commitStatsBuilder_ != null || commitStats_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     *
+     * @return The commitStats.
+     */
+    public com.google.spanner.v1.CommitResponse.CommitStats getCommitStats() {
+      if (commitStatsBuilder_ == null) {
+        return commitStats_ == null
+            ? com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()
+            : commitStats_;
+      } else {
+        return commitStatsBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public Builder setCommitStats(com.google.spanner.v1.CommitResponse.CommitStats value) {
+      if (commitStatsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        commitStats_ = value;
+        onChanged();
+      } else {
+        commitStatsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public Builder setCommitStats(
+        com.google.spanner.v1.CommitResponse.CommitStats.Builder builderForValue) {
+      if (commitStatsBuilder_ == null) {
+        commitStats_ = builderForValue.build();
+        onChanged();
+      } else {
+        commitStatsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public Builder mergeCommitStats(com.google.spanner.v1.CommitResponse.CommitStats value) {
+      if (commitStatsBuilder_ == null) {
+        if (commitStats_ != null) {
+          commitStats_ =
+              com.google.spanner.v1.CommitResponse.CommitStats.newBuilder(commitStats_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          commitStats_ = value;
+        }
+        onChanged();
+      } else {
+        commitStatsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public Builder clearCommitStats() {
+      if (commitStatsBuilder_ == null) {
+        commitStats_ = null;
+        onChanged();
+      } else {
+        commitStats_ = null;
+        commitStatsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public com.google.spanner.v1.CommitResponse.CommitStats.Builder getCommitStatsBuilder() {
+
+      onChanged();
+      return getCommitStatsFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    public com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder getCommitStatsOrBuilder() {
+      if (commitStatsBuilder_ != null) {
+        return commitStatsBuilder_.getMessageOrBuilder();
+      } else {
+        return commitStats_ == null
+            ? com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()
+            : commitStats_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The statistics about this Commit. Not returned by default.
+     * For more information, see
+     * [CommitRequest.return_commit_stats][google.spanner.v1.CommitRequest.return_commit_stats].
+     * </pre>
+     *
+     * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.CommitResponse.CommitStats,
+            com.google.spanner.v1.CommitResponse.CommitStats.Builder,
+            com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
+        getCommitStatsFieldBuilder() {
+      if (commitStatsBuilder_ == null) {
+        commitStatsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.CommitResponse.CommitStats,
+                com.google.spanner.v1.CommitResponse.CommitStats.Builder,
+                com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>(
+                getCommitStats(), getParentForChildren(), isClean());
+        commitStats_ = null;
+      }
+      return commitStatsBuilder_;
     }
 
     @java.lang.Override

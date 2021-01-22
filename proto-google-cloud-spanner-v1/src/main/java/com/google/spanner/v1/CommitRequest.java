@@ -111,6 +111,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
                   input.readMessage(com.google.spanner.v1.Mutation.parser(), extensionRegistry));
               break;
             }
+          case 40:
+            {
+              returnCommitStats_ = input.readBool();
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -422,6 +427,26 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return mutations_.get(index);
   }
 
+  public static final int RETURN_COMMIT_STATS_FIELD_NUMBER = 5;
+  private boolean returnCommitStats_;
+  /**
+   *
+   *
+   * <pre>
+   * If `true`, then statistics related to the transaction will be included in
+   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+   * `false`.
+   * </pre>
+   *
+   * <code>bool return_commit_stats = 5;</code>
+   *
+   * @return The returnCommitStats.
+   */
+  @java.lang.Override
+  public boolean getReturnCommitStats() {
+    return returnCommitStats_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -448,6 +473,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < mutations_.size(); i++) {
       output.writeMessage(4, mutations_.get(i));
     }
+    if (returnCommitStats_ != false) {
+      output.writeBool(5, returnCommitStats_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -473,6 +501,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < mutations_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, mutations_.get(i));
     }
+    if (returnCommitStats_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(5, returnCommitStats_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -490,6 +521,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
     if (!getSession().equals(other.getSession())) return false;
     if (!getMutationsList().equals(other.getMutationsList())) return false;
+    if (getReturnCommitStats() != other.getReturnCommitStats()) return false;
     if (!getTransactionCase().equals(other.getTransactionCase())) return false;
     switch (transactionCase_) {
       case 2:
@@ -518,6 +550,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + MUTATIONS_FIELD_NUMBER;
       hash = (53 * hash) + getMutationsList().hashCode();
     }
+    hash = (37 * hash) + RETURN_COMMIT_STATS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getReturnCommitStats());
     switch (transactionCase_) {
       case 2:
         hash = (37 * hash) + TRANSACTION_ID_FIELD_NUMBER;
@@ -684,6 +718,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         mutationsBuilder_.clear();
       }
+      returnCommitStats_ = false;
+
       transactionCase_ = 0;
       transaction_ = null;
       return this;
@@ -733,6 +769,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.mutations_ = mutationsBuilder_.build();
       }
+      result.returnCommitStats_ = returnCommitStats_;
       result.transactionCase_ = transactionCase_;
       onBuilt();
       return result;
@@ -813,6 +850,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             mutationsBuilder_.addAllMessages(other.mutations_);
           }
         }
+      }
+      if (other.getReturnCommitStats() != false) {
+        setReturnCommitStats(other.getReturnCommitStats());
       }
       switch (other.getTransactionCase()) {
         case TRANSACTION_ID:
@@ -1710,6 +1750,64 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         mutations_ = null;
       }
       return mutationsBuilder_;
+    }
+
+    private boolean returnCommitStats_;
+    /**
+     *
+     *
+     * <pre>
+     * If `true`, then statistics related to the transaction will be included in
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+     * `false`.
+     * </pre>
+     *
+     * <code>bool return_commit_stats = 5;</code>
+     *
+     * @return The returnCommitStats.
+     */
+    @java.lang.Override
+    public boolean getReturnCommitStats() {
+      return returnCommitStats_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If `true`, then statistics related to the transaction will be included in
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+     * `false`.
+     * </pre>
+     *
+     * <code>bool return_commit_stats = 5;</code>
+     *
+     * @param value The returnCommitStats to set.
+     * @return This builder for chaining.
+     */
+    public Builder setReturnCommitStats(boolean value) {
+
+      returnCommitStats_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If `true`, then statistics related to the transaction will be included in
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+     * `false`.
+     * </pre>
+     *
+     * <code>bool return_commit_stats = 5;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearReturnCommitStats() {
+
+      returnCommitStats_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

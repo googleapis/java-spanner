@@ -185,5 +185,20 @@ public interface CommitRequestOrBuilder
    */
   com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index);
 
+  /**
+   *
+   *
+   * <pre>
+   * If `true`, then statistics related to the transaction will be included in
+   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
+   * `false`.
+   * </pre>
+   *
+   * <code>bool return_commit_stats = 5;</code>
+   *
+   * @return The returnCommitStats.
+   */
+  boolean getReturnCommitStats();
+
   public com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
 }

@@ -724,6 +724,11 @@ public class SpannerClient implements BackgroundResource {
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
    *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
+   *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param transactionId Commit a previously-started transaction.
    * @param mutations The mutations to be executed when this transaction commits. All mutations are
@@ -750,6 +755,11 @@ public class SpannerClient implements BackgroundResource {
    * conflicts with concurrent transactions. However, it can also happen for a variety of other
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
+   *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
    *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param singleUseTransaction Execute mutations in a temporary transaction. Note that unlike
@@ -784,6 +794,11 @@ public class SpannerClient implements BackgroundResource {
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
    *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
+   *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param transactionId Commit a previously-started transaction.
    * @param mutations The mutations to be executed when this transaction commits. All mutations are
@@ -810,6 +825,11 @@ public class SpannerClient implements BackgroundResource {
    * conflicts with concurrent transactions. However, it can also happen for a variety of other
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
+   *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
    *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param singleUseTransaction Execute mutations in a temporary transaction. Note that unlike
@@ -844,6 +864,11 @@ public class SpannerClient implements BackgroundResource {
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
    *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -860,6 +885,11 @@ public class SpannerClient implements BackgroundResource {
    * conflicts with concurrent transactions. However, it can also happen for a variety of other
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the
    * beginning, re-using the same session.
+   *
+   * <p>On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if
+   * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
+   * track of the transaction outcome and we recommend that you perform another read from the
+   * database to see the state of things as they are now.
    *
    * <p>Sample code:
    */
