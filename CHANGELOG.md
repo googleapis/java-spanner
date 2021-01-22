@@ -17,7 +17,7 @@
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -42,7 +42,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -63,7 +63,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -92,7 +92,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -125,7 +125,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -141,7 +141,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -157,7 +157,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -173,7 +173,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -204,7 +204,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -227,7 +227,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -243,7 +243,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -259,7 +259,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -291,7 +291,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
@@ -315,7 +315,7 @@ Apologies for the inconvenience.
 
 ### ⚠ IMPORTANT: Known issue with this version of the client
 
-Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), users might experience transaction getting stuck in a very rare occasion, where the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
 
 A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
 
