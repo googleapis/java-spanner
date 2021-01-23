@@ -52,14 +52,14 @@ public interface AsyncRunner {
   <R> ApiFuture<R> runAsync(AsyncWork<R> work, Executor executor);
 
   /**
-   * Returns the timestamp at which the transaction committed. The {@link ApiFuture#get()} will
-   * throw an {@link ExecutionException} if the transaction did not commit.
+   * Returns the timestamp at which the transaction committed. {@link ApiFuture#get()} will throw an
+   * {@link ExecutionException} if the transaction did not commit.
    */
   ApiFuture<Timestamp> getCommitTimestamp();
 
   /**
-   * Returns the {@link CommitResponse} of this transaction. The {@link ApiFuture#get()} will throw
-   * an {@link ExecutionException} if the transaction did not commit.
+   * Returns the {@link CommitResponse} of this transaction. {@link ApiFuture#get()} will throw an
+   * {@link ExecutionException} if the transaction did not commit.
    */
   ApiFuture<CommitResponse> getCommitResponse();
 }
