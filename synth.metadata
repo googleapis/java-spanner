@@ -4,15 +4,15 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "15052653993a3924037b2c4ba27e04f553493885"
+        "sha": "4aa770ce669404ad0eca542ae5bd32a421748c18"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "91e206bcfeaf8948ea03fe3cb1b7616108496cd3",
-        "internalRef": "350949863"
+        "sha": "8fa381b7138f1d72966ff20563efae1b2194d359",
+        "internalRef": "353145174"
       }
     },
     {

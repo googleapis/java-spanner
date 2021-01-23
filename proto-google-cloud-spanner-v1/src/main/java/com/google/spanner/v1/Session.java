@@ -170,11 +170,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The name of the session. This is always system-assigned; values provided
-   * when creating a session are ignored.
+   * Output only. The name of the session. This is always system-assigned.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
    *
    * @return The name.
    */
@@ -194,11 +193,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The name of the session. This is always system-assigned; values provided
-   * when creating a session are ignored.
+   * Output only. The name of the session. This is always system-assigned.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
    *
    * @return The bytes for name.
    */
@@ -346,7 +344,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return Whether the createTime field is set.
    */
@@ -361,7 +360,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The createTime.
    */
@@ -376,7 +376,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
@@ -393,7 +394,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return Whether the approximateLastUseTime field is set.
    */
@@ -409,7 +412,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The approximateLastUseTime.
    */
@@ -427,7 +432,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder() {
@@ -852,11 +859,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The name of the session. This is always system-assigned; values provided
-     * when creating a session are ignored.
+     * Output only. The name of the session. This is always system-assigned.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
      *
      * @return The name.
      */
@@ -875,11 +881,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The name of the session. This is always system-assigned; values provided
-     * when creating a session are ignored.
+     * Output only. The name of the session. This is always system-assigned.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
      *
      * @return The bytes for name.
      */
@@ -898,11 +903,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The name of the session. This is always system-assigned; values provided
-     * when creating a session are ignored.
+     * Output only. The name of the session. This is always system-assigned.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -920,11 +924,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The name of the session. This is always system-assigned; values provided
-     * when creating a session are ignored.
+     * Output only. The name of the session. This is always system-assigned.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
      *
      * @return This builder for chaining.
      */
@@ -938,11 +941,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The name of the session. This is always system-assigned; values provided
-     * when creating a session are ignored.
+     * Output only. The name of the session. This is always system-assigned.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.
@@ -1170,7 +1172,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return Whether the createTime field is set.
      */
@@ -1184,7 +1188,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The createTime.
      */
@@ -1204,7 +1210,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder setCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
@@ -1226,7 +1234,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (createTimeBuilder_ == null) {
@@ -1245,7 +1255,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
@@ -1269,7 +1281,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder clearCreateTime() {
       if (createTimeBuilder_ == null) {
@@ -1289,7 +1303,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
 
@@ -1303,7 +1319,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
       if (createTimeBuilder_ != null) {
@@ -1321,7 +1339,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * Output only. The timestamp when the session is created.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp create_time = 3;</code>
+     * <code>
+     * .google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Timestamp,
@@ -1354,7 +1374,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return Whether the approximateLastUseTime field is set.
      */
@@ -1369,7 +1391,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The approximateLastUseTime.
      */
@@ -1390,7 +1414,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder setApproximateLastUseTime(com.google.protobuf.Timestamp value) {
       if (approximateLastUseTimeBuilder_ == null) {
@@ -1413,7 +1439,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder setApproximateLastUseTime(
         com.google.protobuf.Timestamp.Builder builderForValue) {
@@ -1434,7 +1462,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder mergeApproximateLastUseTime(com.google.protobuf.Timestamp value) {
       if (approximateLastUseTimeBuilder_ == null) {
@@ -1461,7 +1491,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public Builder clearApproximateLastUseTime() {
       if (approximateLastUseTimeBuilder_ == null) {
@@ -1482,7 +1514,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public com.google.protobuf.Timestamp.Builder getApproximateLastUseTimeBuilder() {
 
@@ -1497,7 +1531,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     public com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder() {
       if (approximateLastUseTimeBuilder_ != null) {
@@ -1516,7 +1552,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * typically earlier than the actual last use time.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+     * <code>
+     * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Timestamp,
