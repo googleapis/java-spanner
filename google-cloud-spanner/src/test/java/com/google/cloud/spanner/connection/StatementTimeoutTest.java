@@ -81,7 +81,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    * still high enough that it would normally not be exceeded for a statement that is executed
    * directly.
    */
-  private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 20;
+  private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
   ITConnection createConnection() {
     StringBuilder url = new StringBuilder(getBaseUrl());

@@ -142,7 +142,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The total number of the mutations for the transaction.
+     * The total number of mutations for the transaction. Knowing the
+     * `mutation_count` value can help you maximize the number of mutations
+     * in a transaction and minimize the number of API round trips. You can
+     * also monitor this value to prevent transactions from exceeding the system
+     * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+     * If the number of mutations exceeds the limit, the server returns
+     * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
      * </pre>
      *
      * <code>int64 mutation_count = 1;</code>
@@ -150,41 +156,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * @return The mutationCount.
      */
     long getMutationCount();
-
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     *
-     * @return Whether the overloadDelay field is set.
-     */
-    boolean hasOverloadDelay();
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     *
-     * @return The overloadDelay.
-     */
-    com.google.protobuf.Duration getOverloadDelay();
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     */
-    com.google.protobuf.DurationOrBuilder getOverloadDelayOrBuilder();
   }
   /**
    *
@@ -241,21 +212,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
                 mutationCount_ = input.readInt64();
                 break;
               }
-            case 18:
-              {
-                com.google.protobuf.Duration.Builder subBuilder = null;
-                if (overloadDelay_ != null) {
-                  subBuilder = overloadDelay_.toBuilder();
-                }
-                overloadDelay_ =
-                    input.readMessage(com.google.protobuf.Duration.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(overloadDelay_);
-                  overloadDelay_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
             default:
               {
                 if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -296,7 +252,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The total number of the mutations for the transaction.
+     * The total number of mutations for the transaction. Knowing the
+     * `mutation_count` value can help you maximize the number of mutations
+     * in a transaction and minimize the number of API round trips. You can
+     * also monitor this value to prevent transactions from exceeding the system
+     * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+     * If the number of mutations exceeds the limit, the server returns
+     * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
      * </pre>
      *
      * <code>int64 mutation_count = 1;</code>
@@ -306,54 +268,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public long getMutationCount() {
       return mutationCount_;
-    }
-
-    public static final int OVERLOAD_DELAY_FIELD_NUMBER = 2;
-    private com.google.protobuf.Duration overloadDelay_;
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     *
-     * @return Whether the overloadDelay field is set.
-     */
-    @java.lang.Override
-    public boolean hasOverloadDelay() {
-      return overloadDelay_ != null;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     *
-     * @return The overloadDelay.
-     */
-    @java.lang.Override
-    public com.google.protobuf.Duration getOverloadDelay() {
-      return overloadDelay_ == null
-          ? com.google.protobuf.Duration.getDefaultInstance()
-          : overloadDelay_;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Length of time the commit was delayed due to overloaded servers.
-     * </pre>
-     *
-     * <code>.google.protobuf.Duration overload_delay = 2;</code>
-     */
-    @java.lang.Override
-    public com.google.protobuf.DurationOrBuilder getOverloadDelayOrBuilder() {
-      return getOverloadDelay();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -373,9 +287,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       if (mutationCount_ != 0L) {
         output.writeInt64(1, mutationCount_);
       }
-      if (overloadDelay_ != null) {
-        output.writeMessage(2, getOverloadDelay());
-      }
       unknownFields.writeTo(output);
     }
 
@@ -387,9 +298,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       size = 0;
       if (mutationCount_ != 0L) {
         size += com.google.protobuf.CodedOutputStream.computeInt64Size(1, mutationCount_);
-      }
-      if (overloadDelay_ != null) {
-        size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getOverloadDelay());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -408,10 +316,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
           (com.google.spanner.v1.CommitResponse.CommitStats) obj;
 
       if (getMutationCount() != other.getMutationCount()) return false;
-      if (hasOverloadDelay() != other.hasOverloadDelay()) return false;
-      if (hasOverloadDelay()) {
-        if (!getOverloadDelay().equals(other.getOverloadDelay())) return false;
-      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -425,10 +329,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + MUTATION_COUNT_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getMutationCount());
-      if (hasOverloadDelay()) {
-        hash = (37 * hash) + OVERLOAD_DELAY_FIELD_NUMBER;
-        hash = (53 * hash) + getOverloadDelay().hashCode();
-      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -578,12 +478,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         super.clear();
         mutationCount_ = 0L;
 
-        if (overloadDelayBuilder_ == null) {
-          overloadDelay_ = null;
-        } else {
-          overloadDelay_ = null;
-          overloadDelayBuilder_ = null;
-        }
         return this;
       }
 
@@ -612,11 +506,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.v1.CommitResponse.CommitStats result =
             new com.google.spanner.v1.CommitResponse.CommitStats(this);
         result.mutationCount_ = mutationCount_;
-        if (overloadDelayBuilder_ == null) {
-          result.overloadDelay_ = overloadDelay_;
-        } else {
-          result.overloadDelay_ = overloadDelayBuilder_.build();
-        }
         onBuilt();
         return result;
       }
@@ -672,9 +561,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         if (other.getMutationCount() != 0L) {
           setMutationCount(other.getMutationCount());
         }
-        if (other.hasOverloadDelay()) {
-          mergeOverloadDelay(other.getOverloadDelay());
-        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -710,7 +596,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
        *
        *
        * <pre>
-       * The total number of the mutations for the transaction.
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
        * </pre>
        *
        * <code>int64 mutation_count = 1;</code>
@@ -725,7 +617,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
        *
        *
        * <pre>
-       * The total number of the mutations for the transaction.
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
        * </pre>
        *
        * <code>int64 mutation_count = 1;</code>
@@ -743,7 +641,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
        *
        *
        * <pre>
-       * The total number of the mutations for the transaction.
+       * The total number of mutations for the transaction. Knowing the
+       * `mutation_count` value can help you maximize the number of mutations
+       * in a transaction and minimize the number of API round trips. You can
+       * also monitor this value to prevent transactions from exceeding the system
+       * [limit](http://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data).
+       * If the number of mutations exceeds the limit, the server returns
+       * [INVALID_ARGUMENT](http://cloud.google.com/spanner/docs/reference/rest/v1/Code#ENUM_VALUES.INVALID_ARGUMENT).
        * </pre>
        *
        * <code>int64 mutation_count = 1;</code>
@@ -755,191 +659,6 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         mutationCount_ = 0L;
         onChanged();
         return this;
-      }
-
-      private com.google.protobuf.Duration overloadDelay_;
-      private com.google.protobuf.SingleFieldBuilderV3<
-              com.google.protobuf.Duration,
-              com.google.protobuf.Duration.Builder,
-              com.google.protobuf.DurationOrBuilder>
-          overloadDelayBuilder_;
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       *
-       * @return Whether the overloadDelay field is set.
-       */
-      public boolean hasOverloadDelay() {
-        return overloadDelayBuilder_ != null || overloadDelay_ != null;
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       *
-       * @return The overloadDelay.
-       */
-      public com.google.protobuf.Duration getOverloadDelay() {
-        if (overloadDelayBuilder_ == null) {
-          return overloadDelay_ == null
-              ? com.google.protobuf.Duration.getDefaultInstance()
-              : overloadDelay_;
-        } else {
-          return overloadDelayBuilder_.getMessage();
-        }
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public Builder setOverloadDelay(com.google.protobuf.Duration value) {
-        if (overloadDelayBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          overloadDelay_ = value;
-          onChanged();
-        } else {
-          overloadDelayBuilder_.setMessage(value);
-        }
-
-        return this;
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public Builder setOverloadDelay(com.google.protobuf.Duration.Builder builderForValue) {
-        if (overloadDelayBuilder_ == null) {
-          overloadDelay_ = builderForValue.build();
-          onChanged();
-        } else {
-          overloadDelayBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public Builder mergeOverloadDelay(com.google.protobuf.Duration value) {
-        if (overloadDelayBuilder_ == null) {
-          if (overloadDelay_ != null) {
-            overloadDelay_ =
-                com.google.protobuf.Duration.newBuilder(overloadDelay_)
-                    .mergeFrom(value)
-                    .buildPartial();
-          } else {
-            overloadDelay_ = value;
-          }
-          onChanged();
-        } else {
-          overloadDelayBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public Builder clearOverloadDelay() {
-        if (overloadDelayBuilder_ == null) {
-          overloadDelay_ = null;
-          onChanged();
-        } else {
-          overloadDelay_ = null;
-          overloadDelayBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public com.google.protobuf.Duration.Builder getOverloadDelayBuilder() {
-
-        onChanged();
-        return getOverloadDelayFieldBuilder().getBuilder();
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      public com.google.protobuf.DurationOrBuilder getOverloadDelayOrBuilder() {
-        if (overloadDelayBuilder_ != null) {
-          return overloadDelayBuilder_.getMessageOrBuilder();
-        } else {
-          return overloadDelay_ == null
-              ? com.google.protobuf.Duration.getDefaultInstance()
-              : overloadDelay_;
-        }
-      }
-      /**
-       *
-       *
-       * <pre>
-       * Length of time the commit was delayed due to overloaded servers.
-       * </pre>
-       *
-       * <code>.google.protobuf.Duration overload_delay = 2;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-              com.google.protobuf.Duration,
-              com.google.protobuf.Duration.Builder,
-              com.google.protobuf.DurationOrBuilder>
-          getOverloadDelayFieldBuilder() {
-        if (overloadDelayBuilder_ == null) {
-          overloadDelayBuilder_ =
-              new com.google.protobuf.SingleFieldBuilderV3<
-                  com.google.protobuf.Duration,
-                  com.google.protobuf.Duration.Builder,
-                  com.google.protobuf.DurationOrBuilder>(
-                  getOverloadDelay(), getParentForChildren(), isClean());
-          overloadDelay_ = null;
-        }
-        return overloadDelayBuilder_;
       }
 
       @java.lang.Override

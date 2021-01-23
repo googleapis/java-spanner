@@ -97,6 +97,7 @@ public class TransactionContextImplTest {
             .setSession(session)
             .setRpc(rpc)
             .setTransactionId(ByteString.copyFromUtf8("test"))
+            .setOptions(Options.fromTransactionOptions())
             .build()) {
       impl.batchUpdate(Arrays.asList(statement));
     }

@@ -27,11 +27,10 @@ public interface SessionOrBuilder
    *
    *
    * <pre>
-   * The name of the session. This is always system-assigned; values provided
-   * when creating a session are ignored.
+   * Output only. The name of the session. This is always system-assigned.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
    *
    * @return The name.
    */
@@ -40,11 +39,10 @@ public interface SessionOrBuilder
    *
    *
    * <pre>
-   * The name of the session. This is always system-assigned; values provided
-   * when creating a session are ignored.
+   * Output only. The name of the session. This is always system-assigned.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
    *
    * @return The bytes for name.
    */
@@ -141,7 +139,8 @@ public interface SessionOrBuilder
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return Whether the createTime field is set.
    */
@@ -153,7 +152,8 @@ public interface SessionOrBuilder
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The createTime.
    */
@@ -165,7 +165,8 @@ public interface SessionOrBuilder
    * Output only. The timestamp when the session is created.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp create_time = 3;</code>
+   * <code>.google.protobuf.Timestamp create_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    */
   com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder();
 
@@ -177,7 +178,9 @@ public interface SessionOrBuilder
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return Whether the approximateLastUseTime field is set.
    */
@@ -190,7 +193,9 @@ public interface SessionOrBuilder
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The approximateLastUseTime.
    */
@@ -203,7 +208,9 @@ public interface SessionOrBuilder
    * typically earlier than the actual last use time.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp approximate_last_use_time = 4;</code>
+   * <code>
+   * .google.protobuf.Timestamp approximate_last_use_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    */
   com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder();
 }

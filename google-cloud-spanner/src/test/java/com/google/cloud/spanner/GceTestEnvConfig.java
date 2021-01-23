@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.spanner.spi.v1.SpannerInterceptorProvider;
 import io.grpc.CallOptions;
@@ -52,6 +53,8 @@ public class GceTestEnvConfig implements TestEnvConfig {
   public static final String DP_IPV6_PREFIX = "2001:4860:8040";
   public static final String DP_IPV4_PREFIX = "34.126";
 
+  private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
+
   private final SpannerOptions options;
 
   public GceTestEnvConfig() {
@@ -64,7 +67,9 @@ public class GceTestEnvConfig implements TestEnvConfig {
     boolean attemptDirectPath = Boolean.getBoolean(ATTEMPT_DIRECT_PATH);
     String directPathTestScenario = System.getProperty(DIRECT_PATH_TEST_SCENARIO, "");
     SpannerOptions.Builder builder =
-        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
+        SpannerOptions.newBuilder()
+            .setAutoThrottleAdministrativeRequests()
+            .setTrackTransactionStarter();
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }
@@ -85,6 +90,16 @@ public class GceTestEnvConfig implements TestEnvConfig {
           interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
     }
     builder.setInterceptorProvider(interceptorProvider);
+    // DirectPath tests need to set a custom endpoint to the ChannelProvider
+    InstantiatingGrpcChannelProvider.Builder customChannelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder();
+    if (attemptDirectPath) {
+      customChannelProviderBuilder
+          .setEndpoint(DIRECT_PATH_ENDPOINT)
+          .setAttemptDirectPath(true)
+          .setInterceptorProvider(interceptorProvider);
+      builder.setChannelProvider(customChannelProviderBuilder.build());
+    }
     options = builder.build();
   }
 

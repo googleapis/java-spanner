@@ -172,6 +172,11 @@ public interface DatabaseAdminClient {
    * problem like a `NULL` value in a column to which `NOT NULL` would be added). If a statement
    * fails, all subsequent statements in the batch are automatically cancelled.
    *
+   * <p>If an operation already exists with the given operation id, the operation will be resumed
+   * and the returned future will complete when the original operation finishes. See more
+   * information in {@link com.google.cloud.spanner.spi.v1.GapicSpannerRpc#updateDatabaseDdl(String,
+   * Iterable, String)}
+   *
    * <p>Example to update the database DDL.
    *
    * <pre>{@code

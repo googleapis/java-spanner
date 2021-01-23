@@ -131,8 +131,7 @@ import javax.annotation.Generated;
  *
  * <p>Please refer to the GitHub repository's samples for more quickstart code snippets.
  */
-@BetaApi
-@Generated("by gapic-generator")
+@Generated("by gapic-generator-java")
 public class DatabaseAdminClient implements BackgroundResource {
   private final DatabaseAdminSettings settings;
   private final DatabaseAdminStub stub;
@@ -269,7 +268,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the instance that will serve the new database. Values are
    *     of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param create_statement Required. A `CREATE DATABASE` statement, which specifies the ID of the
+   * @param createStatement Required. A `CREATE DATABASE` statement, which specifies the ID of the
    *     new database. The database ID must conform to the regular expression
    *     `[a-z][a-z0-9_\\-]&#42;[a-z0-9]` and be between 2 and 30 characters in length. If the
    *     database ID is a reserved word or if it contains a hyphen, the database ID must be enclosed
@@ -298,7 +297,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the instance that will serve the new database. Values are
    *     of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param create_statement Required. A `CREATE DATABASE` statement, which specifies the ID of the
+   * @param createStatement Required. A `CREATE DATABASE` statement, which specifies the ID of the
    *     new database. The database ID must conform to the regular expression
    *     `[a-z][a-z0-9_\\-]&#42;[a-z0-9]` and be between 2 and 30 characters in length. If the
    *     database ID is a reserved word or if it contains a hyphen, the database ID must be enclosed
@@ -881,7 +880,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     will be stored in the location(s) specified in the instance configuration of this instance.
    *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @param backup Required. The backup to create.
-   * @param backup_id Required. The id of the backup to be created. The `backup_id` appended to
+   * @param backupId Required. The id of the backup to be created. The `backup_id` appended to
    *     `parent` forms the full backup name of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup_id&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -915,7 +914,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     will be stored in the location(s) specified in the instance configuration of this instance.
    *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @param backup Required. The backup to create.
-   * @param backup_id Required. The id of the backup to be created. The `backup_id` appended to
+   * @param backupId Required. The id of the backup to be created. The `backup_id` appended to
    *     `parent` forms the full backup name of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup_id&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1046,7 +1045,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * @param backup Required. The backup to update. `backup.name`, and the fields to be updated as
    *     specified by `update_mask` are required. Other fields are ignored. Update is only supported
    *     for the following fields: &#42; `backup.expire_time`.
-   * @param update_mask Required. A mask specifying which fields (e.g. `expire_time`) in the Backup
+   * @param updateMask Required. A mask specifying which fields (e.g. `expire_time`) in the Backup
    *     resource should be updated. This mask is relative to the Backup resource, not to the
    *     request message. The field mask must always be specified; this prevents any future fields
    *     from being erased accidentally by clients that do not know about them.
@@ -1214,9 +1213,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param database_id Required. The id of the database to create and restore to. This database
-   *     must not already exist. The `database_id` appended to `parent` forms the full database name
-   *     of the form
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
    * @param backup Name of the backup from which to restore. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
@@ -1254,9 +1253,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param database_id Required. The id of the database to create and restore to. This database
-   *     must not already exist. The `database_id` appended to `parent` forms the full database name
-   *     of the form
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
    * @param backup Name of the backup from which to restore. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
@@ -1294,9 +1293,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param database_id Required. The id of the database to create and restore to. This database
-   *     must not already exist. The `database_id` appended to `parent` forms the full database name
-   *     of the form
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
    * @param backup Name of the backup from which to restore. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
@@ -1334,9 +1333,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
-   * @param database_id Required. The id of the database to create and restore to. This database
-   *     must not already exist. The `database_id` appended to `parent` forms the full database name
-   *     of the form
+   * @param databaseId Required. The id of the database to create and restore to. This database must
+   *     not already exist. The `database_id` appended to `parent` forms the full database name of
+   *     the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database_id&gt;`.
    * @param backup Name of the backup from which to restore. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.

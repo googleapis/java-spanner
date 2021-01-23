@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
 import io.opencensus.common.Scope;
@@ -35,10 +36,10 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span, Options options) {
+  TransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
     this.session = session;
     this.span = span;
-    this.options = options;
+    this.options = Options.fromTransactionOptions(options);
   }
 
   Span getSpan() {

@@ -26,6 +26,7 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -112,13 +113,17 @@ class SessionImpl implements Session {
     currentSpan = span;
   }
 
+  Span getCurrentSpan() {
+    return currentSpan;
+  }
+
   @Override
-  public long executePartitionedUpdate(Statement stmt) {
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     setActive(null);
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeout());
+        stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
   }
 
   @Override
@@ -142,7 +147,11 @@ class SessionImpl implements Session {
             return null;
           }
         });
+<<<<<<< HEAD
     return runner.getCommitResponse();
+=======
+    return new CommitResponse(runner.getCommitTimestamp());
+>>>>>>> master
   }
 
   @Override
@@ -152,7 +161,11 @@ class SessionImpl implements Session {
 
   @Override
   public CommitResponse writeAtLeastOnceWithOptions(
+<<<<<<< HEAD
       final Iterable<Mutation> mutations, final TransactionOption... options)
+=======
+      Iterable<Mutation> mutations, TransactionOption... transactionOptions)
+>>>>>>> master
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
@@ -170,7 +183,12 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(request, this.options);
+<<<<<<< HEAD
       return new CommitResponse(response);
+=======
+      Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
+      return new CommitResponse(t);
+>>>>>>> master
     } catch (IllegalArgumentException e) {
       TraceUtil.setWithFailure(span, e);
       throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit response", e);
@@ -241,24 +259,44 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
+<<<<<<< HEAD
     return setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options)));
+=======
+    return setActive(
+        new TransactionRunnerImpl(
+            this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options));
+>>>>>>> master
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
     return new AsyncRunnerImpl(
+<<<<<<< HEAD
         setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options))));
+=======
+        setActive(
+            new TransactionRunnerImpl(
+                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options)));
+>>>>>>> master
   }
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
+<<<<<<< HEAD
     return new TransactionManagerImpl(this, currentSpan, Options.fromTransactionOptions(options));
+=======
+    return new TransactionManagerImpl(this, currentSpan, options);
+>>>>>>> master
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
+<<<<<<< HEAD
     return new AsyncTransactionManagerImpl(
         this, currentSpan, Options.fromTransactionOptions(options));
+=======
+    return new AsyncTransactionManagerImpl(this, currentSpan, options);
+>>>>>>> master
   }
 
   @Override
@@ -344,6 +382,8 @@ class SessionImpl implements Session {
         .setSession(this)
         .setOptions(options)
         .setTransactionId(readyTransactionId)
+        .setOptions(options)
+        .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())

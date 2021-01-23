@@ -131,8 +131,7 @@ import javax.annotation.Generated;
  *
  * <p>Please refer to the GitHub repository's samples for more quickstart code snippets.
  */
-@BetaApi
-@Generated("by gapic-generator")
+@Generated("by gapic-generator-java")
 public class InstanceAdminClient implements BackgroundResource {
   private final InstanceAdminSettings settings;
   private final InstanceAdminStub stub;
@@ -453,8 +452,8 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the project in which to create the instance. Values are of
    *     the form `projects/&lt;project&gt;`.
-   * @param instance_id Required. The ID of the instance to create. Valid identifiers are of the
-   *     form `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
+   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
+   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
    * @param instance Required. The instance to create. The name may be omitted, but if specified
    *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -504,8 +503,8 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * @param parent Required. The name of the project in which to create the instance. Values are of
    *     the form `projects/&lt;project&gt;`.
-   * @param instance_id Required. The ID of the instance to create. Valid identifiers are of the
-   *     form `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
+   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
+   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
    * @param instance Required. The instance to create. The name may be omitted, but if specified
    *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -678,7 +677,7 @@ public class InstanceAdminClient implements BackgroundResource {
    *     Otherwise, only fields mentioned in
    *     [field_mask][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be
    *     included.
-   * @param field_mask Required. A mask specifying which fields in
+   * @param fieldMask Required. A mask specifying which fields in
    *     [Instance][google.spanner.admin.instance.v1.Instance] should be updated. The field mask
    *     must always be specified; this prevents any future fields in
    *     [Instance][google.spanner.admin.instance.v1.Instance] from being erased accidentally by

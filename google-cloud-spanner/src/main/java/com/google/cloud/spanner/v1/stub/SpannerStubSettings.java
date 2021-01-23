@@ -104,7 +104,6 @@ import org.threeten.bp.Duration;
  * SpannerStubSettings spannerSettings = spannerSettingsBuilder.build();
  * }</pre>
  */
-@BetaApi
 @Generated("by gapic-generator-java")
 public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   /** The default scopes of the service. */

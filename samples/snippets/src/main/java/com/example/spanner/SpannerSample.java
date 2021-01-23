@@ -1622,7 +1622,7 @@ public class SpannerSample {
   }
   // [END spanner_create_backup]
 
-  // [START spanner_cancel_create_backup]
+  // [START spanner_cancel_backup_create]
   static void cancelCreateBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
     // Set expire time to 14 days from now.
@@ -1665,18 +1665,22 @@ public class SpannerSample {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
-  // [END spanner_cancel_create_backup]
+  // [END spanner_cancel_backup_create]
 
   // [START spanner_list_backup_operations]
   static void listBackupOperations(InstanceAdminClient instanceAdminClient, DatabaseId databaseId) {
     Instance instance = instanceAdminClient.getInstance(databaseId.getInstanceId().getInstance());
     // Get create backup operations for the sample database.
+    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
+        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
+        TimeUnit.HOURS), 0);
     String filter =
         String.format(
             "(metadata.database:%s) AND "
                 + "(metadata.@type:type.googleapis.com/"
-                + "google.spanner.admin.database.v1.CreateBackupMetadata)",
-            databaseId.getName());
+                + "google.spanner.admin.database.v1.CreateBackupMetadata) AND "
+                + "(metadata.progress.start_time > \"%s\")",
+            databaseId.getName(), last24Hours);
     Page<Operation> operations = instance.listBackupOperations(Options.filter(filter));
     for (Operation op : operations.iterateAll()) {
       try {
@@ -1702,8 +1706,12 @@ public class SpannerSample {
       InstanceId instanceId) {
     Instance instance = instanceAdminClient.getInstance(instanceId.getInstance());
     // Get optimize restored database operations.
-    String filter = "(metadata.@type:type.googleapis.com/"
-                    + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)";
+    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
+        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
+        TimeUnit.HOURS), 0);
+    String filter = String.format("(metadata.@type:type.googleapis.com/"
+                    + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
+                    + "(metadata.progress.start_time > \"%s\")", last24Hours);
     for (Operation op : instance.listDatabaseOperations(Options.filter(filter)).iterateAll()) {
       try {
         OptimizeRestoredDatabaseMetadata metadata =

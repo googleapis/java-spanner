@@ -20,6 +20,9 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -32,7 +35,9 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
@@ -88,7 +93,7 @@ public class DatabaseClientImplTest {
   private static final long UPDATE_COUNT = 1L;
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
-  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private static ExecutorService executor;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -102,6 +107,7 @@ public class DatabaseClientImplTest {
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
 
+    executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
     server =
         InProcessServerBuilder.forName(uniqueName)
@@ -1575,5 +1581,57 @@ public class DatabaseClientImplTest {
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
     }
+  }
+
+  @Test
+  public void testReadWriteTransaction_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.readWriteTransaction(option);
+
+    verify(session).readWriteTransaction(option);
+  }
+
+  @Test
+  public void testTransactionManager_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.transactionManager(option);
+
+    verify(session).transactionManager(option);
+  }
+
+  @Test
+  public void testRunAsync_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.runAsync(option);
+
+    verify(session).runAsync(option);
+  }
+
+  @Test
+  public void testTransactionManagerAsync_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.transactionManagerAsync(option);
+
+    verify(session).transactionManagerAsync(option);
   }
 }

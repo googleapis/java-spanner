@@ -120,7 +120,6 @@ import org.threeten.bp.Duration;
  * DatabaseAdminStubSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();
  * }</pre>
  */
-@BetaApi
 @Generated("by gapic-generator-java")
 public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSettings> {
   /** The default scopes of the service. */
