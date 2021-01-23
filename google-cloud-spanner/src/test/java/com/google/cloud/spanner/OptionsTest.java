@@ -224,6 +224,9 @@ public class OptionsTest {
   public void testFromTransactionOptions() {
     Options opts = Options.fromTransactionOptions();
     assertThat(opts.toString()).isEqualTo("");
+
+    opts = Options.fromTransactionOptions(Options.commitStats());
+    assertThat(opts.toString()).contains("withCommitStats: true");
   }
 
   @Test
@@ -237,6 +240,15 @@ public class OptionsTest {
 
     o2 = Options.fromReadOptions(Options.prefetchChunks(1));
     assertThat(o1.equals(o2)).isFalse();
+
+    o1 = Options.fromTransactionOptions(Options.commitStats());
+    o2 = Options.fromTransactionOptions(Options.commitStats());
+    assertThat(o1.equals(o2)).isTrue();
+    assertThat(o1.hashCode()).isEqualTo(o2.hashCode());
+
+    o2 = Options.fromTransactionOptions();
+    assertThat(o1.equals(o2)).isFalse();
+    assertThat(o1.hashCode()).isNotEqualTo(o2.hashCode());
   }
 
   @Test

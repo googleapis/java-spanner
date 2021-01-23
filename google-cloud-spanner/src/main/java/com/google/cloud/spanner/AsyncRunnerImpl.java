@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -29,7 +31,7 @@ import java.util.concurrent.Executor;
 
 class AsyncRunnerImpl implements AsyncRunner {
   private final TransactionRunnerImpl delegate;
-  private final SettableApiFuture<CommitResponse> commitResponse = SettableApiFuture.create();
+  private SettableApiFuture<CommitResponse> commitResponse;
 
   AsyncRunnerImpl(TransactionRunnerImpl delegate) {
     this.delegate = Preconditions.checkNotNull(delegate);
@@ -37,6 +39,8 @@ class AsyncRunnerImpl implements AsyncRunner {
 
   @Override
   public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+    Preconditions.checkState(commitResponse == null, "runAsync() can only be called once");
+    commitResponse = SettableApiFuture.create();
     final SettableApiFuture<R> res = SettableApiFuture.create();
     executor.execute(
         new Runnable() {
@@ -80,6 +84,7 @@ class AsyncRunnerImpl implements AsyncRunner {
 
   @Override
   public ApiFuture<Timestamp> getCommitTimestamp() {
+    checkState(commitResponse != null, "runAsync() has not yet been called");
     return ApiFutures.transform(
         commitResponse,
         new ApiFunction<CommitResponse, Timestamp>() {
@@ -92,6 +97,7 @@ class AsyncRunnerImpl implements AsyncRunner {
   }
 
   public ApiFuture<CommitResponse> getCommitResponse() {
+    checkState(commitResponse != null, "runAsync() has not yet been called");
     return commitResponse;
   }
 }
