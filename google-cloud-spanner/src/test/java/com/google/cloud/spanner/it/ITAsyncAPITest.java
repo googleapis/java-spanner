@@ -343,6 +343,7 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
       TransactionContextFuture ctx = mgr.beginAsync();
       while (true) {
