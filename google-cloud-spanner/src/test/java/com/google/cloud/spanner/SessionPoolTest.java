@@ -900,8 +900,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
-      TransactionRunnerImpl closedTransactionRunner =
-          new TransactionRunnerImpl(closedSession, Options.fromTransactionOptions());
+      TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(mock(Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -915,8 +914,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync())
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
-      TransactionRunnerImpl openTransactionRunner =
-          new TransactionRunnerImpl(openSession, Options.fromTransactionOptions());
+      TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(mock(Span.class));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 

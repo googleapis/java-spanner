@@ -301,16 +301,6 @@ public final class Options implements Serializable {
     return result;
   }
 
-  static Options fromTransactionOptions(TransactionOption... options) {
-    Options transactionOptions = new Options();
-    for (TransactionOption option : options) {
-      if (option instanceof InternalOption) {
-        ((InternalOption) option).appendToOptions(transactionOptions);
-      }
-    }
-    return transactionOptions;
-  }
-
   static Options fromReadOptions(ReadOption... options) {
     Options readOptions = new Options();
     for (ReadOption option : options) {

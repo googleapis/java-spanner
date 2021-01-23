@@ -123,7 +123,7 @@ public class TransactionRunnerImplTest {
                 return builder.build();
               }
             });
-    transactionRunner = new TransactionRunnerImpl(session, Options.fromTransactionOptions());
+    transactionRunner = new TransactionRunnerImpl(session);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
@@ -323,8 +323,7 @@ public class TransactionRunnerImplTest {
           }
         };
     session.setCurrentSpan(mock(Span.class));
-    TransactionRunnerImpl runner =
-        new TransactionRunnerImpl(session, Options.fromTransactionOptions());
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
@@ -357,8 +356,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner =
-        new TransactionRunnerImpl(session, Options.fromTransactionOptions());
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()

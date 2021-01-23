@@ -147,11 +147,7 @@ class SessionImpl implements Session {
             return null;
           }
         });
-<<<<<<< HEAD
     return runner.getCommitResponse();
-=======
-    return new CommitResponse(runner.getCommitTimestamp());
->>>>>>> master
   }
 
   @Override
@@ -161,11 +157,7 @@ class SessionImpl implements Session {
 
   @Override
   public CommitResponse writeAtLeastOnceWithOptions(
-<<<<<<< HEAD
-      final Iterable<Mutation> mutations, final TransactionOption... options)
-=======
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
->>>>>>> master
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
@@ -173,7 +165,8 @@ class SessionImpl implements Session {
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(Options.fromTransactionOptions(options).withCommitStats())
+            .setReturnCommitStats(
+                Options.fromTransactionOptions(transactionOptions).withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -183,12 +176,7 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(request, this.options);
-<<<<<<< HEAD
       return new CommitResponse(response);
-=======
-      Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      return new CommitResponse(t);
->>>>>>> master
     } catch (IllegalArgumentException e) {
       TraceUtil.setWithFailure(span, e);
       throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit response", e);
@@ -259,44 +247,22 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-<<<<<<< HEAD
-    return setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options)));
-=======
-    return setActive(
-        new TransactionRunnerImpl(
-            this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options));
->>>>>>> master
+    return setActive(new TransactionRunnerImpl(this, options));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    return new AsyncRunnerImpl(
-<<<<<<< HEAD
-        setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options))));
-=======
-        setActive(
-            new TransactionRunnerImpl(
-                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options)));
->>>>>>> master
+    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, options)));
   }
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-<<<<<<< HEAD
-    return new TransactionManagerImpl(this, currentSpan, Options.fromTransactionOptions(options));
-=======
     return new TransactionManagerImpl(this, currentSpan, options);
->>>>>>> master
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
-<<<<<<< HEAD
-    return new AsyncTransactionManagerImpl(
-        this, currentSpan, Options.fromTransactionOptions(options));
-=======
     return new AsyncTransactionManagerImpl(this, currentSpan, options);
->>>>>>> master
   }
 
   @Override
