@@ -217,6 +217,7 @@ public class ITTransactionManagerTest {
   @SuppressWarnings("resource")
   @Test
   public void transactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
       TransactionContext txn = manager.begin();
       while (true) {
