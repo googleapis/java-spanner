@@ -17,8 +17,10 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -317,6 +319,7 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     AsyncRunner runner = client.runAsync(Options.commitStats());
     runner.runAsync(
         new AsyncWork<Void>() {
