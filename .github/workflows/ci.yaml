@@ -56,7 +56,7 @@ jobs:
     - run: java -version
     - name: Install artifacts to local Maven repository
       run: >
-        source .kokoro/common.sh && \
+        source .kokoro/common.sh \
         retry_with_backoff 3 10 \
           mvn install -B -V \
          -DskipTests=true \
