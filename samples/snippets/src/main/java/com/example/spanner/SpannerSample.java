@@ -296,6 +296,44 @@ public class SpannerSample {
   }
   // [END spanner_create_database]
 
+  // [START spanner_create_database_with_version_retention_period]
+  static void createDatabaseWithVersionRetentionPeriod(DatabaseAdminClient dbAdminClient, DatabaseId id) {
+    OperationFuture<Database, CreateDatabaseMetadata> op =
+        dbAdminClient.createDatabase(
+            id.getInstanceId().getInstance(),
+            id.getDatabase(),
+            Arrays.asList(
+                "CREATE TABLE Singers ("
+                    + "  SingerId   INT64 NOT NULL,"
+                    + "  FirstName  STRING(1024),"
+                    + "  LastName   STRING(1024),"
+                    + "  SingerInfo BYTES(MAX)"
+                    + ") PRIMARY KEY (SingerId)",
+                "CREATE TABLE Albums ("
+                    + "  SingerId     INT64 NOT NULL,"
+                    + "  AlbumId      INT64 NOT NULL,"
+                    + "  AlbumTitle   STRING(MAX)"
+                    + ") PRIMARY KEY (SingerId, AlbumId),"
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE",
+                "ALTER DATABASE " + "`" + id.getDatabase() + "`"
+                    + " SET OPTIONS ( version_retention_period = '7d' )"
+            ));
+    try {
+      Database database = op.get();
+      System.out.println("Created database [" + database.getId() + "]");
+      System.out.println("\tVersion retention period: " + database.getVersionRetentionPeriod());
+      System.out.println("\tEarliest version time: " + database.getEarliestVersionTime());
+    } catch (ExecutionException e) {
+      // If the operation failed during execution, expose the cause.
+      throw (SpannerException) e.getCause();
+    } catch (InterruptedException e) {
+      // Throw when a thread is waiting, sleeping, or otherwise occupied,
+      // and the thread is interrupted, either before or during the activity.
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
+  }
+  // [END spanner_create_database_with_version_retention_period]
+
   // [START spanner_create_table_with_timestamp_column]
   static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient, DatabaseId id) {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
@@ -1589,11 +1627,14 @@ public class SpannerSample {
     // Set expire time to 14 days from now.
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
+    // Sets the version time to the current time.
+    Timestamp versionTime = Timestamp.now();
     Backup backup =
         dbAdminClient
             .newBackupBuilder(backupId)
             .setDatabase(databaseId)
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .build();
     // Initiate the request which returns an OperationFuture.
     System.out.println("Creating backup [" + backup.getId() + "]...");
@@ -1820,12 +1861,16 @@ public class SpannerSample {
       Database db = op.get();
       // Refresh database metadata and get the restore info.
       RestoreInfo restore = db.reload().getRestoreInfo();
+      Timestamp versionTime = Timestamp.fromProto(restore
+          .getProto()
+          .getBackupInfo()
+          .getVersionTime());
       System.out.println(
           "Restored database ["
               + restore.getSourceDatabase().getName()
               + "] from ["
               + restore.getBackup().getName()
-              + "]");
+              + "] with version time [" + versionTime + "]");
     } catch (ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
     } catch (InterruptedException e) {
@@ -1886,6 +1931,9 @@ public class SpannerSample {
     switch (command) {
       case "createdatabase":
         createDatabase(dbAdminClient, database);
+        break;
+      case "createdatabasewithversionretentionperiod":
+        createDatabaseWithVersionRetentionPeriod(dbAdminClient, database);
         break;
       case "write":
         writeExampleData(dbClient);
@@ -2085,6 +2133,7 @@ public class SpannerSample {
     System.err.println("");
     System.err.println("Examples:");
     System.err.println("    SpannerExample createdatabase my-instance example-db");
+    System.err.println("    SpannerExample createdatabasewithversionretentionperiod my-instance example-db");
     System.err.println("    SpannerExample write my-instance example-db");
     System.err.println("    SpannerExample delete my-instance example-db");
     System.err.println("    SpannerExample query my-instance example-db");
