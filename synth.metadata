@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "2f1450cb4780590d6660ebae56f96331b78dd973"
+        "sha": "facda8a7d07a9cf08b1847678b24b270f1abdb38"
       }
     },
     {
@@ -60,7 +60,6 @@
     ".github/blunderbuss.yml",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
-    ".github/release-please.yml",
     ".github/snippet-bot.yml",
     ".github/trusted-contribution.yml",
     ".github/workflows/approve-readme.yaml",
