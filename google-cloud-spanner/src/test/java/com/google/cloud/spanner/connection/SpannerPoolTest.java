@@ -421,6 +421,7 @@ public class SpannerPoolTest {
         ConnectionOptions.newBuilder()
             .setUri(
                 "cloudspanner:/projects/p/instances/i/databases/d?minSessions=200;maxSessions=400")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     // options2 equals the default session pool options, and is therefore equal to ConnectionOptions
     // without any session pool configuration.
@@ -428,10 +429,12 @@ public class SpannerPoolTest {
         ConnectionOptions.newBuilder()
             .setUri(
                 "cloudspanner:/projects/p/instances/i/databases/d?minSessions=100;maxSessions=400")
+            .setCredentials(NoCredentials.getInstance())
             .build();
     ConnectionOptions options3 =
         ConnectionOptions.newBuilder()
             .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+            .setCredentials(NoCredentials.getInstance())
             .build();
 
     SpannerPoolKey key1 = SpannerPoolKey.of(options1);
