@@ -278,7 +278,7 @@ public final class Options implements Serializable {
   public int hashCode() {
     int result = 31;
     if (withCommitStats) {
-      result = 31 * result + Boolean.valueOf(withCommitStats).hashCode();
+      result = 31 * result + 1231;
     }
     if (limit != null) {
       result = 31 * result + limit.hashCode();

@@ -345,11 +345,12 @@ public class ITAsyncAPITest {
   public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
-      TransactionContextFuture ctx = mgr.beginAsync();
+      TransactionContextFuture context = mgr.beginAsync();
       while (true) {
         try {
           get(
-              ctx.then(
+              context
+                  .then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
                         public ApiFuture<Void> apply(TransactionContext txn, Void input)
@@ -372,7 +373,7 @@ public class ITAsyncAPITest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);
-          ctx = mgr.resetForRetryAsync();
+          context = mgr.resetForRetryAsync();
         }
       }
     }
