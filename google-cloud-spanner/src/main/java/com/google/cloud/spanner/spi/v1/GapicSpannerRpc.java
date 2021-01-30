@@ -1718,6 +1718,23 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  public void shutdownNow() {
+    this.rpcIsClosed = true;
+    this.spannerStub.close();
+    this.partitionedDmlStub.close();
+    this.instanceAdminStub.close();
+    this.databaseAdminStub.close();
+    this.spannerWatchdog.shutdown();
+    this.executorProvider.shutdown();
+
+    this.spannerStub.shutdownNow();
+    ;
+    this.partitionedDmlStub.shutdownNow();
+    this.instanceAdminStub.shutdownNow();
+    this.databaseAdminStub.shutdownNow();
+    this.spannerWatchdog.shutdownNow();
+  }
+
   @Override
   public boolean isClosed() {
     return rpcIsClosed;
