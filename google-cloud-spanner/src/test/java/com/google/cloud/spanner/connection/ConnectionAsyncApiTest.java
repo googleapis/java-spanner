@@ -28,6 +28,7 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.NonParallelUnitTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerException;
@@ -50,10 +51,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   private static final ExecutorService executor = Executors.newSingleThreadExecutor();
   private static final Function<Connection, Void> AUTOCOMMIT =

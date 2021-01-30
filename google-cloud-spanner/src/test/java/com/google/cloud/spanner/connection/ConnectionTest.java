@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.NonParallelUnitTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
@@ -29,7 +30,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+@RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class ConnectionTest extends AbstractMockServerTest {
   @Test
   public void testDefaultOptimizerVersion() {

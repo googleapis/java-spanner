@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.NonParallelUnitTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -40,10 +41,12 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Arrays;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class AbortedTest extends AbstractMockServerTest {
 
   @Test

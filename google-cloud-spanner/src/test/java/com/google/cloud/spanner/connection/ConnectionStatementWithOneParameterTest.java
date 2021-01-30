@@ -23,13 +23,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.NonParallelUnitTest;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+@RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class ConnectionStatementWithOneParameterTest {
   private final StatementParser parser = StatementParser.INSTANCE;
 

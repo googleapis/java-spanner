@@ -48,10 +48,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerUpdate() throws Exception {

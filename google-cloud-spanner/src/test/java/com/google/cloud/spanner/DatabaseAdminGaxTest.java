@@ -54,6 +54,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -62,6 +63,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
+@Category(NonParallelUnitTest.class)
 public class DatabaseAdminGaxTest {
   public static class DelayedStatusRuntimeException extends RuntimeException {
     private final long millis;

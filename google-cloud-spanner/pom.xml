@@ -50,7 +50,9 @@
           <execution>
             <id>default-test</id>
             <configuration>
-              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest,com.google.cloud.spanner.NonParallelUnitTest</excludedGroups>
+              <parallel>classes</parallel>
+              <threadCount>16</threadCount>
               <skipTests>${skipUTs}</skipTests>
             </configuration>
           </execution>
@@ -61,6 +63,12 @@
             </goals>
             <configuration>
               <groups>com.google.cloud.spanner.TracerTest</groups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>non-parallel-test</id>
+            <configuration>
+              <groups>com.google.cloud.spanner.NonParallelUnitTest</groups>
             </configuration>
           </execution>
         </executions>

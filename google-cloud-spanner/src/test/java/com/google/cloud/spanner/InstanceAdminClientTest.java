@@ -31,10 +31,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class InstanceAdminClientTest {
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";

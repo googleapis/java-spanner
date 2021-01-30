@@ -17,14 +17,17 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.NonParallelUnitTest;
 import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
 import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
 import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@Category(NonParallelUnitTest.class)
 public class SetReadOnlyStalenessSqlScriptTest {
 
   static class TestConnectionProvider implements GenericConnectionProvider {
