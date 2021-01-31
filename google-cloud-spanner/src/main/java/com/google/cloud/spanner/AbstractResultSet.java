@@ -786,7 +786,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
-    private boolean withBeginTransaction;
+    private volatile boolean withBeginTransaction;
     private SpannerException error;
 
     @VisibleForTesting
@@ -888,12 +888,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         }
         error = e;
         addToStream(END_OF_STREAM);
-      }
-
-      // Visible only for testing.
-      @VisibleForTesting
-      void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
-        GrpcStreamIterator.this.setCall(call, withBeginTransaction);
       }
     }
   }
