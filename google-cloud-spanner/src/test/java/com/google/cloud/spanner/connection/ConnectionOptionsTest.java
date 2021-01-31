@@ -421,4 +421,28 @@ public class ConnectionOptionsTest {
       assertThat(e.getMessage()).contains("bar");
     }
   }
+
+  @Test
+  public void testMinSessions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?minSessions=400")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertThat(options.getMinSessions()).isEqualTo(400);
+    assertThat(options.getSessionPoolOptions().getMinSessions()).isEqualTo(400);
+  }
+
+  @Test
+  public void testMaxSessions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxSessions=4000")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertThat(options.getMaxSessions()).isEqualTo(4000);
+    assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
 }
