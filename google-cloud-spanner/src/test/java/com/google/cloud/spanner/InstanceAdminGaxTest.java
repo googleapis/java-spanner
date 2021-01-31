@@ -96,7 +96,7 @@ public class InstanceAdminGaxTest {
   private static Exception createDelayedInternal() {
     return new DelayedStatusRuntimeException(
         io.grpc.Status.INTERNAL.withDescription("Delayed test exception.").asRuntimeException(),
-        500L);
+        1000L);
   }
 
   public static enum ExceptionType {
@@ -224,12 +224,13 @@ public class InstanceAdminGaxTest {
     RetrySettings retrySettingsWithLowTimeout =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1L))
-            .setMaxRetryDelay(Duration.ofMillis(1000L))
+            .setMaxRetryDelay(Duration.ofMillis(10L))
             .setInitialRpcTimeout(Duration.ofMillis(20L))
             .setMaxRpcTimeout(Duration.ofMillis(200L))
-            .setRetryDelayMultiplier(1000.0d)
+            .setRetryDelayMultiplier(1.3d)
             .setMaxAttempts(10)
             .setTotalTimeout(Duration.ofMillis(20000L))
+            .setJittered(false)
             .build();
     RetrySettings retrySettingsWithHighTimeout =
         RetrySettings.newBuilder()
@@ -453,6 +454,19 @@ public class InstanceAdminGaxTest {
 
   @Test
   public void createInstanceTest() throws Exception {
+    boolean methodIsIdempotent =
+        !spanner
+            .getOptions()
+            .getInstanceAdminStubSettings()
+            .createInstanceOperationSettings()
+            .getInitialCallSettings()
+            .getRetryableCodes()
+            .isEmpty();
+    if (!methodIsIdempotent && exceptionType == ExceptionType.DELAYED) {
+      // Skip this test as the method is non-idempotent and won't retry anyways.
+      return;
+    }
+
     Exception exception = setupException();
     InstanceName name = InstanceName.of(PROJECT, "INSTANCE");
     InstanceConfigName config = InstanceConfigName.of(PROJECT, "INSTANCE_CONFIG");
@@ -480,14 +494,6 @@ public class InstanceAdminGaxTest {
     }
     mockInstanceAdmin.addResponse(resultOperation);
 
-    boolean methodIsIdempotent =
-        !spanner
-            .getOptions()
-            .getInstanceAdminStubSettings()
-            .createInstanceOperationSettings()
-            .getInitialCallSettings()
-            .getRetryableCodes()
-            .isEmpty();
     for (int i = 0; i < 2; i++) {
       OperationFuture<Instance, CreateInstanceMetadata> actualResponse =
           client.createInstance(
@@ -518,6 +524,19 @@ public class InstanceAdminGaxTest {
 
   @Test
   public void updateInstanceTest() throws Exception {
+    boolean methodIsIdempotent =
+        !spanner
+            .getOptions()
+            .getInstanceAdminStubSettings()
+            .updateInstanceOperationSettings()
+            .getInitialCallSettings()
+            .getRetryableCodes()
+            .isEmpty();
+    if (!methodIsIdempotent && exceptionType == ExceptionType.DELAYED) {
+      // Skip this test as the method is non-idempotent and won't retry anyways.
+      return;
+    }
+
     Exception exception = setupException();
     InstanceName name = InstanceName.of(PROJECT, "INSTANCE");
     InstanceConfigName config = InstanceConfigName.of(PROJECT, "INSTANCE_CONFIG");
@@ -545,14 +564,6 @@ public class InstanceAdminGaxTest {
     }
     mockInstanceAdmin.addResponse(resultOperation);
 
-    boolean methodIsIdempotent =
-        !spanner
-            .getOptions()
-            .getInstanceAdminStubSettings()
-            .updateInstanceOperationSettings()
-            .getInitialCallSettings()
-            .getRetryableCodes()
-            .isEmpty();
     for (int i = 0; i < 2; i++) {
       OperationFuture<Instance, UpdateInstanceMetadata> actualResponse =
           client.updateInstance(
