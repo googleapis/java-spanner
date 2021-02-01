@@ -62,9 +62,6 @@ import org.mockito.stubbing.Answer;
 public class SessionPoolStressTest extends BaseSessionPoolTest {
 
   @Parameter(0)
-  public double writeSessionsFraction;
-
-  @Parameter(1)
   public boolean shouldBlock;
 
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
@@ -85,13 +82,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   int minSessionsWhenSessionClosed = Integer.MAX_VALUE;
   Exception e;
 
-  @Parameters(name = "write fraction = {0}, should block = {1}")
+  @Parameters(name = "should block = {0}")
   public static Collection<Object[]> data() {
     List<Object[]> params = new ArrayList<>();
-    for (double writeFraction = 0; writeFraction <= 1; writeFraction += 0.5) {
-      params.add(new Object[] {writeFraction, true});
-      params.add(new Object[] {writeFraction, false});
-    }
+    params.add(new Object[] {true});
+    params.add(new Object[] {false});
     return params;
   }
 
@@ -236,12 +231,8 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     setupSpanner(db);
     int minSessions = 2;
     int maxSessions = concurrentThreads / 2;
-    float writeSessionsFraction = 0.5f;
     SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(minSessions)
-            .setMaxSessions(maxSessions)
-            .setWriteSessionsFraction(writeSessionsFraction);
+        SessionPoolOptions.newBuilder().setMinSessions(minSessions).setMaxSessions(maxSessions);
     if (shouldBlock) {
       builder.setBlockIfPoolExhausted();
     } else {
@@ -273,7 +264,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                       PooledSessionFuture session = pool.getSession();
                       session.get();
                       Uninterruptibles.sleepUninterruptibly(
-                          random.nextInt(5), TimeUnit.MILLISECONDS);
+                          random.nextInt(2), TimeUnit.MILLISECONDS);
                       resetTransaction(session.get().delegate);
                       session.close();
                     } catch (SpannerException e) {
