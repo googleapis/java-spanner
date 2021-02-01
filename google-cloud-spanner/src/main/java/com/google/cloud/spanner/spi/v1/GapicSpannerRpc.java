@@ -1728,7 +1728,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.executorProvider.shutdown();
 
     this.spannerStub.shutdownNow();
-    ;
     this.partitionedDmlStub.shutdownNow();
     this.instanceAdminStub.shutdownNow();
     this.databaseAdminStub.shutdownNow();
