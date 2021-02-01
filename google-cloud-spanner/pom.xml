@@ -50,7 +50,7 @@
           <execution>
             <id>default-test</id>
             <configuration>
-              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest,com.google.cloud.spanner.NonParallelUnitTest</excludedGroups>
+              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest,com.google.cloud.spanner.SerialUnitTest</excludedGroups>
               <parallel>classes</parallel>
               <!-- Note, this thread count indicates the number of threads per core, and not the total number of threads. -->
               <threadCount>8</threadCount>
@@ -69,7 +69,7 @@
           <execution>
             <id>non-parallel-test</id>
             <configuration>
-              <groups>com.google.cloud.spanner.NonParallelUnitTest</groups>
+              <groups>com.google.cloud.spanner.SerialUnitTest</groups>
             </configuration>
           </execution>
         </executions>
