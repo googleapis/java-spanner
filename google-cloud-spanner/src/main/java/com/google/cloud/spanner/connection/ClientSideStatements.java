@@ -20,6 +20,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import com.google.gson.Gson;
 import java.io.InputStreamReader;
 import java.util.Set;
+import javax.annotation.concurrent.GuardedBy;
 
 /** This class reads and parses the {@link ClientSideStatement}s from the json file. */
 class ClientSideStatements {
@@ -37,14 +38,19 @@ class ClientSideStatements {
         ClientSideStatements.class);
   }
 
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private Set<ClientSideStatementImpl> statements;
 
   private ClientSideStatements() {}
 
   /** Compiles and returns all statements from the resource file. */
   Set<ClientSideStatementImpl> getCompiledStatements() throws CompileException {
-    for (ClientSideStatementImpl statement : statements) {
-      statement.compile();
+    synchronized (lock) {
+      for (ClientSideStatementImpl statement : statements) {
+        statement.compile();
+      }
     }
     return statements;
   }
