@@ -148,7 +148,8 @@ public class SpannerPool {
     private final boolean usePlainText;
     private final String userAgent;
 
-    private static SpannerPoolKey of(ConnectionOptions options) {
+    @VisibleForTesting
+    static SpannerPoolKey of(ConnectionOptions options) {
       return new SpannerPoolKey(options);
     }
 
@@ -156,7 +157,10 @@ public class SpannerPool {
       this.host = options.getHost();
       this.projectId = options.getProjectId();
       this.credentialsKey = CredentialsKey.create(options);
-      this.sessionPoolOptions = options.getSessionPoolOptions();
+      this.sessionPoolOptions =
+          options.getSessionPoolOptions() == null
+              ? SessionPoolOptions.newBuilder().build()
+              : options.getSessionPoolOptions();
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();

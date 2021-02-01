@@ -17,4 +17,4 @@
 package com.google.cloud.spanner;
 
 /** Category for unit tests that cannot be executed in parallel. */
-public interface NonParallelUnitTest {}
+public interface SerialUnitTest {}

@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class SpannerOptionsThreadTest extends AbstractMockServerTest {
   private static final int NUMBER_OF_TEST_RUNS = 2;
   private static final int DEFAULT_NUM_CHANNELS_PER_GAPIC_CLIENT = 4;

@@ -52,7 +52,8 @@
             <configuration>
               <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest,com.google.cloud.spanner.NonParallelUnitTest</excludedGroups>
               <parallel>classes</parallel>
-              <threadCount>16</threadCount>
+              <!-- Note, this thread count indicates the number of threads per core, and not the total number of threads. -->
+              <threadCount>8</threadCount>
               <skipTests>${skipUTs}</skipTests>
             </configuration>
           </execution>

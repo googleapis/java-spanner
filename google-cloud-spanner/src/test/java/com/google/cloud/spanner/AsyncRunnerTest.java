@@ -53,7 +53,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncRunnerUpdate() throws Exception {

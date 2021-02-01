@@ -25,6 +25,7 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
@@ -269,7 +270,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       sessionClients.clear();
       asyncExecutorProvider.close();
       try {
-        gapicRpc.shutdown();
+        if (timeout == Long.MAX_VALUE || !(gapicRpc instanceof GapicSpannerRpc)) {
+          gapicRpc.shutdown();
+        } else {
+          ((GapicSpannerRpc) gapicRpc).shutdownNow();
+        }
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Failed to close channels", e);
       }

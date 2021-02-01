@@ -71,7 +71,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class RetryOnInvalidatedSessionTest {
   private static final class ToLongTransformer implements Function<StructReader, Long> {
     @Override

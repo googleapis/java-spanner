@@ -60,6 +60,50 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   *
+   * @return Whether the versionTime field is set.
+   */
+  boolean hasVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   *
+   * @return The versionTime.
+   */
+  com.google.protobuf.Timestamp getVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getVersionTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * operation. The expiration time of the backup, with microseconds
    * granularity that must be at least 6 hours and at most 366 days
@@ -155,10 +199,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -171,10 +214,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -187,10 +229,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];

@@ -29,7 +29,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.NonParallelUnitTest;
+import com.google.cloud.spanner.SerialUnitTest;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -60,7 +60,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests retry handling of read/write transactions using the Async Connection API. */
 @RunWith(JUnit4.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   private static final class QueryResult {
     final ApiFuture<Void> finished;

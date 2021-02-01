@@ -71,7 +71,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Parameter public Executor executor;

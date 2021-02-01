@@ -150,6 +150,8 @@ public class ConnectionOptions {
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
+  private static final String DEFAULT_MIN_SESSIONS = null;
+  private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
@@ -172,6 +174,10 @@ public class ConnectionOptions {
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
+  /** Name of the 'minSessions' connection property. */
+  public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
+  /** Name of the 'numChannels' connection property. */
+  public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
   /** Custom user agent string is only for other Google libraries. */
@@ -204,6 +210,12 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OAUTH_TOKEN_PROPERTY_NAME,
                       "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file."),
+                  ConnectionProperty.createStringProperty(
+                      MIN_SESSIONS_PROPERTY_NAME,
+                      "The minimum number of sessions in the backing session pool. The default is 100."),
+                  ConnectionProperty.createStringProperty(
+                      MAX_SESSIONS_PROPERTY_NAME,
+                      "The maximum number of sessions in the backing session pool. The default is 400."),
                   ConnectionProperty.createStringProperty(
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
@@ -327,6 +339,9 @@ public class ConnectionOptions {
      *       true.
      *   <li>readonly (boolean): Sets the initial readonly mode for the connection. Default is
      *       false.
+     *   <li>minSessions (int): Sets the minimum number of sessions in the backing session pool.
+     *   <li>maxSessions (int): Sets the maximum number of sessions in the backing session pool.
+     *   <li>numChannels (int): Sets the number of gRPC channels to use for the connection.
      *   <li>retryAbortsInternally (boolean): Sets the initial retryAbortsInternally mode for the
      *       connection. Default is true.
      *   <li>optimizerVersion (string): Sets the query optimizer version to use for the connection.
@@ -437,6 +452,8 @@ public class ConnectionOptions {
   private final Credentials credentials;
   private final SessionPoolOptions sessionPoolOptions;
   private final Integer numChannels;
+  private final Integer minSessions;
+  private final Integer maxSessions;
   private final String userAgent;
   private final QueryOptions queryOptions;
 
@@ -453,7 +470,6 @@ public class ConnectionOptions {
     this.warnings = checkValidProperties(builder.uri);
 
     this.uri = builder.uri;
-    this.sessionPoolOptions = builder.sessionPoolOptions;
     this.credentialsUrl =
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.oauthToken =
@@ -492,19 +508,12 @@ public class ConnectionOptions {
     } else {
       this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
     }
-    String numChannelsValue = parseNumChannels(builder.uri);
-    if (numChannelsValue != null) {
-      try {
-        this.numChannels = Integer.valueOf(numChannelsValue);
-      } catch (NumberFormatException e) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Invalid numChannels value specified: " + numChannelsValue,
-            e);
-      }
-    } else {
-      this.numChannels = null;
-    }
+    this.minSessions =
+        parseIntegerProperty(MIN_SESSIONS_PROPERTY_NAME, parseMinSessions(builder.uri));
+    this.maxSessions =
+        parseIntegerProperty(MAX_SESSIONS_PROPERTY_NAME, parseMaxSessions(builder.uri));
+    this.numChannels =
+        parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -518,6 +527,36 @@ public class ConnectionOptions {
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
+
+    if (this.minSessions != null || this.maxSessions != null) {
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder =
+          builder.sessionPoolOptions == null
+              ? SessionPoolOptions.newBuilder()
+              : builder.sessionPoolOptions.toBuilder();
+      if (this.minSessions != null) {
+        sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
+      }
+      if (this.maxSessions != null) {
+        sessionPoolOptionsBuilder.setMaxSessions(this.maxSessions);
+      }
+      this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
+    } else {
+      this.sessionPoolOptions = builder.sessionPoolOptions;
+    }
+  }
+
+  private static Integer parseIntegerProperty(String propertyName, String value) {
+    if (value != null) {
+      try {
+        return Integer.valueOf(value);
+      } catch (NumberFormatException e) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            String.format("Invalid %s value specified: %s", propertyName, value),
+            e);
+      }
+    }
+    return null;
   }
 
   SpannerOptionsConfigurator getConfigurator() {
@@ -563,6 +602,18 @@ public class ConnectionOptions {
   static String parseOAuthToken(String uri) {
     String value = parseUriProperty(uri, OAUTH_TOKEN_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OAUTH_TOKEN;
+  }
+
+  @VisibleForTesting
+  static String parseMinSessions(String uri) {
+    String value = parseUriProperty(uri, MIN_SESSIONS_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_MIN_SESSIONS;
+  }
+
+  @VisibleForTesting
+  static String parseMaxSessions(String uri) {
+    String value = parseUriProperty(uri, MAX_SESSIONS_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_MAX_SESSIONS;
   }
 
   @VisibleForTesting
@@ -669,6 +720,24 @@ public class ConnectionOptions {
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */
   public SessionPoolOptions getSessionPoolOptions() {
     return sessionPoolOptions;
+  }
+
+  /**
+   * The minimum number of sessions in the backing session pool of this connection. The session pool
+   * is shared between all connections in the same JVM that connect to the same Cloud Spanner
+   * database using the same connection settings.
+   */
+  public Integer getMinSessions() {
+    return minSessions;
+  }
+
+  /**
+   * The maximum number of sessions in the backing session pool of this connection. The session pool
+   * is shared between all connections in the same JVM that connect to the same Cloud Spanner
+   * database using the same connection settings.
+   */
+  public Integer getMaxSessions() {
+    return maxSessions;
   }
 
   /** The number of channels to use for the connection. */

@@ -63,7 +63,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class DatabaseAdminGaxTest {
   public static class DelayedStatusRuntimeException extends RuntimeException {
     private final long millis;

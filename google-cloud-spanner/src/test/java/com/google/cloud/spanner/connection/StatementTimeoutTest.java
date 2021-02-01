@@ -27,7 +27,7 @@ import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.cloud.spanner.NonParallelUnitTest;
+import com.google.cloud.spanner.SerialUnitTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -61,7 +61,7 @@ import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
-@Category(NonParallelUnitTest.class)
+@Category(SerialUnitTest.class)
 public class StatementTimeoutTest extends AbstractMockServerTest {
 
   private static final String SLOW_SELECT = "SELECT foo FROM bar";
