@@ -570,7 +570,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * method does not show pending schema updates, those may be queried using the
    * [Operations][google.longrunning.Operations] API.
    *
-   * @param database Required. The database whose schema we wish to get.
+   * @param database Required. The database whose schema we wish to get. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final GetDatabaseDdlResponse getDatabaseDdl(DatabaseName database) {
@@ -587,7 +588,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * method does not show pending schema updates, those may be queried using the
    * [Operations][google.longrunning.Operations] API.
    *
-   * @param database Required. The database whose schema we wish to get.
+   * @param database Required. The database whose schema we wish to get. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final GetDatabaseDdlResponse getDatabaseDdl(String database) {
