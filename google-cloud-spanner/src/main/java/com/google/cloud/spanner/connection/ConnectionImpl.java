@@ -262,14 +262,14 @@ class ConnectionImpl implements Connection {
         // Try to wait for the current statement to finish (if any) before we actually close the
         // connection.
         statementExecutor.shutdown();
+        this.closed = true;
+        leakedException = null;
+        spannerPool.removeConnection(options, this);
         statementExecutor.awaitTermination(10L, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
         // ignore and continue to close the connection.
       } finally {
         statementExecutor.shutdownNow();
-        spannerPool.removeConnection(options, this);
-        leakedException = null;
-        this.closed = true;
       }
     }
   }

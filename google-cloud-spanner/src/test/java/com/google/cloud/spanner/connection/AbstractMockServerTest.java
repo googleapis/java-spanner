@@ -158,9 +158,6 @@ public abstract class AbstractMockServerTest {
   @AfterClass
   public static void stopServer() throws Exception {
     server.shutdown();
-    if (!server.awaitTermination(50L, TimeUnit.MILLISECONDS)) {
-      server.shutdownNow();
-    }
   }
 
   @Before
@@ -190,7 +187,7 @@ public abstract class AbstractMockServerTest {
     try {
       SpannerPool.INSTANCE.checkAndCloseSpanners(
           CheckAndCloseSpannersMode.ERROR,
-          new ForceCloseSpannerFunction(10L, TimeUnit.MILLISECONDS));
+          new ForceCloseSpannerFunction(100L, TimeUnit.MILLISECONDS));
     } finally {
       Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
       Logger.getLogger(LogExceptionRunnable.class.getName())
