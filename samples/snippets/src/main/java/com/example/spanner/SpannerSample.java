@@ -1589,11 +1589,14 @@ public class SpannerSample {
     // Set expire time to 14 days from now.
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
+    // Sets the version time to the current time.
+    Timestamp versionTime = Timestamp.now();
     Backup backup =
         dbAdminClient
             .newBackupBuilder(backupId)
             .setDatabase(databaseId)
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .build();
     // Initiate the request which returns an OperationFuture.
     System.out.println("Creating backup [" + backup.getId() + "]...");
@@ -1820,12 +1823,16 @@ public class SpannerSample {
       Database db = op.get();
       // Refresh database metadata and get the restore info.
       RestoreInfo restore = db.reload().getRestoreInfo();
+      Timestamp versionTime = Timestamp.fromProto(restore
+          .getProto()
+          .getBackupInfo()
+          .getVersionTime());
       System.out.println(
           "Restored database ["
               + restore.getSourceDatabase().getName()
               + "] from ["
               + restore.getBackup().getName()
-              + "]");
+              + "] with version time [" + versionTime + "]");
     } catch (ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
     } catch (InterruptedException e) {
