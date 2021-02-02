@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 // [START spanner_create_database_with_version_retention_period]
+
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -35,16 +36,18 @@ public class CreateDatabaseWithVersionRetentionPeriodSample {
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
+    String versionRetentionPeriod = "7d";
 
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      createDatabaseWithVersionRetentionPeriod(adminClient, instanceId, databaseId);
+      createDatabaseWithVersionRetentionPeriod(adminClient, instanceId, databaseId,
+          versionRetentionPeriod);
     }
   }
 
   static void createDatabaseWithVersionRetentionPeriod(DatabaseAdminClient adminClient,
-      String instanceId, String databaseId) {
+      String instanceId, String databaseId, String versionRetentionPeriod) {
     OperationFuture<Database, CreateDatabaseMetadata> op =
         adminClient.createDatabase(
             instanceId,
@@ -63,7 +66,7 @@ public class CreateDatabaseWithVersionRetentionPeriodSample {
                     + ") PRIMARY KEY (SingerId, AlbumId),"
                     + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE",
                 "ALTER DATABASE " + "`" + databaseId + "`"
-                    + " SET OPTIONS ( version_retention_period = '7d' )"
+                    + " SET OPTIONS ( version_retention_period = '" + versionRetentionPeriod + "' )"
             ));
     try {
       Database database = op.get();
