@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
@@ -143,10 +144,12 @@ class ClientSideStatementImpl implements ClientSideStatement {
   ClientSideStatementImpl compile() throws CompileException {
     try {
       this.pattern = Pattern.compile(regex);
-      this.executor =
-          (ClientSideStatementExecutor)
-              Class.forName(getClass().getPackage().getName() + "." + executorName).newInstance();
-      this.executor.compile(this);
+      @SuppressWarnings("unchecked")
+      Constructor<ClientSideStatementExecutor> constructor =
+          (Constructor<ClientSideStatementExecutor>)
+              Class.forName(getClass().getPackage().getName() + "." + executorName)
+                  .getDeclaredConstructor(ClientSideStatementImpl.class);
+      this.executor = constructor.newInstance(this);
       return this;
     } catch (Exception e) {
       throw new CompileException(e, this);
