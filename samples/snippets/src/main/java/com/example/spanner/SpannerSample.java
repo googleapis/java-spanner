@@ -1615,13 +1615,18 @@ public class SpannerSample {
     backup = backup.reload();
     System.out.println(
         String.format(
-            "Backup %s of size %d bytes was created at %s",
+            "Backup %s of size %d bytes was created at %s for version of database at %s",
             backup.getId().getName(),
             backup.getSize(),
             LocalDateTime.ofEpochSecond(
                 backup.getProto().getCreateTime().getSeconds(),
                 backup.getProto().getCreateTime().getNanos(),
-                OffsetDateTime.now().getOffset())).toString());
+                OffsetDateTime.now().getOffset()),
+            LocalDateTime.ofEpochSecond(
+                backup.getProto().getVersionTime().getSeconds(),
+                backup.getProto().getVersionTime().getNanos(),
+                OffsetDateTime.now().getOffset())
+            ));
   }
   // [END spanner_create_backup]
 
