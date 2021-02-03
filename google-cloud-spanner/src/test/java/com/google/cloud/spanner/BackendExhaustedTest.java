@@ -136,7 +136,6 @@ public class BackendExhaustedTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(executor.getCorePoolSize())
                     .setMaxSessions(executor.getCorePoolSize() * 3)
-                    .setWriteSessionsFraction(0.0f)
                     .build())
             .build();
     executorFactory.release(executor);
@@ -159,7 +158,7 @@ public class BackendExhaustedTest {
     // This test case force-closes the Spanner instance as it would otherwise wait
     // forever on the BatchCreateSessions requests that are 'stuck'.
     try {
-      ((SpannerImpl) spanner).close(100L, TimeUnit.MILLISECONDS);
+      ((SpannerImpl) spanner).close(10L, TimeUnit.MILLISECONDS);
     } catch (SpannerException e) {
       // ignore any errors during close as they are expected.
     }

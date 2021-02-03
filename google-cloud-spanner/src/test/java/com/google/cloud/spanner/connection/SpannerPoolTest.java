@@ -169,6 +169,7 @@ public class SpannerPoolTest {
   private static Logger log = Logger.getLogger(SpannerPool.class.getName());
   private static OutputStream logCapturingStream;
   private static StreamHandler customLogHandler;
+  private static boolean useParentHandlers;
 
   private void attachLogCapturer() {
     logCapturingStream = new ByteArrayOutputStream();
@@ -182,12 +183,21 @@ public class SpannerPoolTest {
       throw new IllegalStateException("no handlers found for logger");
     }
     customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
+    useParentHandlers = log.getUseParentHandlers();
+    log.setUseParentHandlers(false);
     log.addHandler(customLogHandler);
   }
 
-  public String getTestCapturedLog() {
+  private String getTestCapturedLog() {
     customLogHandler.flush();
     return logCapturingStream.toString();
+  }
+
+  @AfterClass
+  public static void resetUseParentHandlers() {
+    if (useParentHandlers) {
+      log.setUseParentHandlers(true);
+    }
   }
 
   @Test
