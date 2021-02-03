@@ -547,6 +547,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -589,6 +590,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setSeqno(109325920)
+              .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -619,6 +621,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -647,6 +650,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
+            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -950,7 +954,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -992,7 +999,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest2() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -1034,7 +1044,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest3() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     String session = "session1984987798";
@@ -1076,7 +1089,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest4() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     String session = "session1984987798";

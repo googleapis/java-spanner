@@ -17,7 +17,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>16.1.0</version>
+      <version>16.3.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -38,18 +38,25 @@ If you are using Maven without BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>3.1.1</version>
+  <version>3.3.2</version>
 </dependency>
 
 ```
 
-If you are using Gradle, add this to your dependencies
+If you are using Gradle 5.x or later, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:3.1.1'
+implementation platform('com.google.cloud:libraries-bom:16.3.0')
+
+compile 'com.google.cloud:google-cloud-spanner'
 ```
+If you are using Gradle without BOM, add this to your dependencies
+```Groovy
+compile 'com.google.cloud:google-cloud-spanner:3.3.2'
+```
+
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "3.1.1"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "3.3.2"
 ```
 
 ## Authentication
@@ -233,6 +240,7 @@ has instructions for running the samples.
 | Query With Numeric Parameter Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/QueryWithNumericParameterSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/QueryWithNumericParameterSample.java) |
 | Quickstart Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/QuickstartSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/QuickstartSample.java) |
 | Spanner Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/SpannerSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/SpannerSample.java) |
+| Statement Timeout Example | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/StatementTimeoutExample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/StatementTimeoutExample.java) |
 | Tracing Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/TracingSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/TracingSample.java) |
 | Update Numeric Data Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/UpdateNumericDataSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/UpdateNumericDataSample.java) |
 

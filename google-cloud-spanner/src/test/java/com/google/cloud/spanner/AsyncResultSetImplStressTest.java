@@ -55,7 +55,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class AsyncResultSetImplStressTest {
-  private static final int TEST_RUNS = 1000;
+  private static final int TEST_RUNS = 25;
 
   /** Timeout is applied to each test case individually. */
   @Rule public Timeout timeout = new Timeout(120, TimeUnit.SECONDS);

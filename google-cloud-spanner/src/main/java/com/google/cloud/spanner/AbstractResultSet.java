@@ -78,13 +78,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      * Called when transaction metadata is seen. This method may be invoked at most once. If the
      * method is invoked, it will precede {@link #onError(SpannerException)} or {@link #onDone()}.
      */
-    void onTransactionMetadata(Transaction transaction) throws SpannerException;
+    void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
+        throws SpannerException;
 
     /** Called when the read finishes with an error. */
     void onError(SpannerException e, boolean withBeginTransaction);
 
     /** Called when the read finishes normally. */
-    void onDone();
+    void onDone(boolean withBeginTransaction);
   }
 
   @VisibleForTesting
@@ -117,7 +118,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         if (currRow == null) {
           ResultSetMetadata metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
-            listener.onTransactionMetadata(metadata.getTransaction());
+            listener.onTransactionMetadata(
+                metadata.getTransaction(), iterator.isWithBeginTransaction());
+          } else if (iterator.isWithBeginTransaction()) {
+            // The query should have returned a transaction.
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
           }
           currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
         }
@@ -126,8 +132,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           statistics = iterator.getStats();
         }
         return hasNext;
-      } catch (SpannerException e) {
-        throw yieldError(e, iterator.isWithBeginTransaction() && currRow == null);
+      } catch (Throwable t) {
+        throw yieldError(
+            SpannerExceptionFactory.asSpannerException(t),
+            iterator.isWithBeginTransaction() && currRow == null);
       }
     }
 
@@ -139,6 +147,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     public void close() {
+      listener.onDone(iterator.isWithBeginTransaction());
       iterator.close("ResultSet closed");
       closed = true;
     }
@@ -150,8 +159,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
-      close();
       listener.onError(e, beginTransaction);
+      close();
       throw e;
     }
   }
@@ -777,7 +786,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
-    private boolean withBeginTransaction;
+    private volatile boolean withBeginTransaction;
     private SpannerException error;
 
     @VisibleForTesting
@@ -879,12 +888,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         }
         error = e;
         addToStream(END_OF_STREAM);
-      }
-
-      // Visible only for testing.
-      @VisibleForTesting
-      void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
-        GrpcStreamIterator.this.setCall(call, withBeginTransaction);
       }
     }
   }
@@ -1071,6 +1074,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 backoffSleep(context, backOff);
               }
             }
+
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");

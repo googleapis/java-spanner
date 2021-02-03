@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.util.Objects;
 import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
@@ -61,6 +62,48 @@ public class SessionPoolOptions {
     this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof SessionPoolOptions)) {
+      return false;
+    }
+    SessionPoolOptions other = (SessionPoolOptions) o;
+    return Objects.equals(this.minSessions, other.minSessions)
+        && Objects.equals(this.maxSessions, other.maxSessions)
+        && Objects.equals(this.incStep, other.incStep)
+        && Objects.equals(this.maxIdleSessions, other.maxIdleSessions)
+        && Objects.equals(this.writeSessionsFraction, other.writeSessionsFraction)
+        && Objects.equals(this.actionOnExhaustion, other.actionOnExhaustion)
+        && Objects.equals(this.actionOnSessionNotFound, other.actionOnSessionNotFound)
+        && Objects.equals(this.actionOnSessionLeak, other.actionOnSessionLeak)
+        && Objects.equals(
+            this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
+        && Objects.equals(this.loopFrequency, other.loopFrequency)
+        && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
+        && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        this.minSessions,
+        this.maxSessions,
+        this.incStep,
+        this.maxIdleSessions,
+        this.writeSessionsFraction,
+        this.actionOnExhaustion,
+        this.actionOnSessionNotFound,
+        this.actionOnSessionLeak,
+        this.initialWaitForSessionTimeoutMillis,
+        this.loopFrequency,
+        this.keepAliveIntervalMinutes,
+        this.removeInactiveSessionAfter);
+  }
+
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 
   public int getMinSessions() {
@@ -164,6 +207,24 @@ public class SessionPoolOptions {
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
+
+    public Builder() {}
+
+    private Builder(SessionPoolOptions options) {
+      this.minSessionsSet = true;
+      this.minSessions = options.minSessions;
+      this.maxSessions = options.maxSessions;
+      this.incStep = options.incStep;
+      this.maxIdleSessions = options.maxIdleSessions;
+      this.writeSessionsFraction = options.writeSessionsFraction;
+      this.actionOnExhaustion = options.actionOnExhaustion;
+      this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
+      this.actionOnSessionNotFound = options.actionOnSessionNotFound;
+      this.actionOnSessionLeak = options.actionOnSessionLeak;
+      this.loopFrequency = options.loopFrequency;
+      this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
+      this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
+    }
 
     /**
      * Minimum number of sessions that this pool will always maintain. These will be created eagerly

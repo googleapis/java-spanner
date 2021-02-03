@@ -49,6 +49,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
@@ -76,6 +77,7 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
@@ -109,7 +111,7 @@ import org.threeten.bp.Instant;
  * Maintains a pool of sessions. This class itself is thread safe and is meant to be used
  * concurrently across multiple threads.
  */
-final class SessionPool {
+class SessionPool {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
@@ -715,18 +717,18 @@ final class SessionPool {
     }
 
     @Override
-    public long executeUpdate(Statement statement) {
+    public long executeUpdate(Statement statement, UpdateOption... options) {
       try {
-        return delegate.executeUpdate(statement);
+        return delegate.executeUpdate(statement, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
       }
     }
 
     @Override
-    public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+    public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
       return ApiFutures.catching(
-          delegate.executeUpdateAsync(statement),
+          delegate.executeUpdateAsync(statement, options),
           SessionNotFoundException.class,
           new ApiFunction<SessionNotFoundException, Long>() {
             @Override
@@ -738,18 +740,19 @@ final class SessionPool {
     }
 
     @Override
-    public long[] batchUpdate(Iterable<Statement> statements) {
+    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
       try {
-        return delegate.batchUpdate(statements);
+        return delegate.batchUpdate(statements, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
       }
     }
 
     @Override
-    public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+    public ApiFuture<long[]> batchUpdateAsync(
+        Iterable<Statement> statements, UpdateOption... options) {
       return ApiFutures.catching(
-          delegate.batchUpdateAsync(statements),
+          delegate.batchUpdateAsync(statements, options),
           SessionNotFoundException.class,
           new ApiFunction<SessionNotFoundException, long[]>() {
             @Override
@@ -1076,14 +1079,15 @@ final class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
-  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
+  class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements Session {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final Span span;
 
-    private PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+    @VisibleForTesting
+    PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
       super(delegate);
       this.span = span;
     }
@@ -1252,9 +1256,9 @@ final class SessionPool {
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt) {
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
-        return get().executePartitionedUpdate(stmt);
+        return get().executePartitionedUpdate(stmt, options);
       } finally {
         close();
       }
@@ -1391,10 +1395,11 @@ final class SessionPool {
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt) throws SpannerException {
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options)
+        throws SpannerException {
       try {
         markUsed();
-        return delegate.executePartitionedUpdate(stmt);
+        return delegate.executePartitionedUpdate(stmt, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1491,11 +1496,15 @@ final class SessionPool {
 
     private void keepAlive() {
       markUsed();
+      final Span previousSpan = delegate.getCurrentSpan();
+      delegate.setCurrentSpan(BlankSpan.INSTANCE);
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+      } finally {
+        delegate.setCurrentSpan(previousSpan);
       }
     }
 
@@ -1609,6 +1618,7 @@ final class SessionPool {
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
     int sessionsToClosePerLoop = 0;
+    boolean closed = false;
 
     @GuardedBy("lock")
     ScheduledFuture<?> scheduledFuture;
@@ -1635,17 +1645,26 @@ final class SessionPool {
 
     void close() {
       synchronized (lock) {
-        scheduledFuture.cancel(false);
-        if (!running) {
-          decrementPendingClosures(1);
+        if (!closed) {
+          closed = true;
+          scheduledFuture.cancel(false);
+          if (!running) {
+            decrementPendingClosures(1);
+          }
         }
+      }
+    }
+
+    boolean isClosed() {
+      synchronized (lock) {
+        return closed;
       }
     }
 
     // Does various pool maintenance activities.
     void maintainPool() {
       synchronized (lock) {
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           return;
         }
         running = true;
@@ -1657,7 +1676,7 @@ final class SessionPool {
       replenishPool();
       synchronized (lock) {
         running = false;
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           decrementPendingClosures(1);
         }
       }
@@ -2140,6 +2159,7 @@ final class SessionPool {
       }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
+        poolMaintainer.close();
       }
     }
   }
@@ -2175,10 +2195,14 @@ final class SessionPool {
       }
       closureFuture = SettableFuture.create();
       retFuture = closureFuture;
-      pendingClosure =
-          totalSessions() + numSessionsBeingCreated + 1 /* For pool maintenance thread */;
 
-      poolMaintainer.close();
+      pendingClosure = totalSessions() + numSessionsBeingCreated;
+
+      if (!poolMaintainer.isClosed()) {
+        pendingClosure += 1; // For pool maintenance thread
+        poolMaintainer.close();
+      }
+
       sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
@@ -2194,7 +2218,13 @@ final class SessionPool {
           closeSessionAsync(session);
         }
       }
+
+      // Nothing to be closed, mark as complete
+      if (pendingClosure == 0) {
+        closureFuture.set(null);
+      }
     }
+
     retFuture.addListener(
         new Runnable() {
           @Override
@@ -2389,6 +2419,7 @@ final class SessionPool {
 
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    maxInUseSessionsMetric.removeTimeSeries(labelValues);
     maxInUseSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2401,6 +2432,7 @@ final class SessionPool {
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
+    maxAllowedSessionsMetric.removeTimeSeries(labelValues);
     maxAllowedSessionsMetric.createTimeSeries(
         labelValues,
         options,
@@ -2413,6 +2445,7 @@ final class SessionPool {
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    sessionsTimeouts.removeTimeSeries(labelValues);
     sessionsTimeouts.createTimeSeries(
         labelValues,
         this,
@@ -2423,6 +2456,7 @@ final class SessionPool {
           }
         });
 
+    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2433,6 +2467,7 @@ final class SessionPool {
           }
         });
 
+    numReleasedSessionsMetric.removeTimeSeries(labelValues);
     numReleasedSessionsMetric.createTimeSeries(
         labelValues,
         this,
@@ -2445,6 +2480,7 @@ final class SessionPool {
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithBeingPreparedType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
@@ -2458,6 +2494,7 @@ final class SessionPool {
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithInUseType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithInUseType,
         this,
@@ -2470,6 +2507,7 @@ final class SessionPool {
 
     List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
     labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithReadType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithReadType,
         this,
@@ -2482,6 +2520,7 @@ final class SessionPool {
 
     List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
     labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithWriteType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,

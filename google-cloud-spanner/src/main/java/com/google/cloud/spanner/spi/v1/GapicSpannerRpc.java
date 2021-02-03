@@ -26,6 +26,8 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.grpc.GrpcCallSettings;
+import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
@@ -35,6 +37,8 @@ import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.FixedHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.InstantiatingWatchdogProvider;
 import com.google.api.gax.rpc.OperationCallable;
@@ -43,6 +47,8 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnaryCallSettings;
+import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
@@ -58,6 +64,7 @@ import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
@@ -70,6 +77,8 @@ import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -155,6 +164,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -232,9 +242,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final int DEFAULT_TIMEOUT_SECONDS = 30 * 60;
   private static final int DEFAULT_PERIOD_SECONDS = 10;
   private static final int GRPC_KEEPALIVE_SECONDS = 2 * 60;
-
-  // TODO(weiranf): Remove this temporary endpoint once DirectPath goes to public beta.
-  private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
+  private static final String USER_AGENT_KEY = "user-agent";
+  private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
 
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
@@ -297,9 +306,20 @@ public class GapicSpannerRpc implements SpannerRpc {
             .build();
 
     HeaderProvider mergedHeaderProvider = options.getMergedHeaderProvider(internalHeaderProvider);
+    Map<String, String> headersWithUserAgent =
+        ImmutableMap.<String, String>builder()
+            .put(
+                USER_AGENT_KEY,
+                CLIENT_LIBRARY_LANGUAGE
+                    + "/"
+                    + GaxProperties.getLibraryVersion(GapicSpannerRpc.class))
+            .putAll(mergedHeaderProvider.getHeaders())
+            .build();
+    final HeaderProvider headerProviderWithUserAgent =
+        FixedHeaderProvider.create(headersWithUserAgent);
     this.metadataProvider =
         SpannerMetadataProvider.create(
-            mergedHeaderProvider.getHeaders(),
+            headerProviderWithUserAgent.getHeaders(),
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
@@ -338,12 +358,10 @@ public class GapicSpannerRpc implements SpannerRpc {
                             options.getInterceptorProvider(),
                             SpannerInterceptorProvider.createDefault()))
                     .withEncoding(compressorName))
-            .setHeaderProvider(mergedHeaderProvider);
-
-    // TODO(weiranf): Set to true by default once DirectPath goes to public beta.
-    if (shouldAttemptDirectPath()) {
-      defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).setAttemptDirectPath(true);
-    }
+            .setHeaderProvider(headerProviderWithUserAgent)
+            // Attempts direct access to spanner service over gRPC to improve throughput,
+            // whether the attempt is allowed is totally controlled by service owner.
+            .setAttemptDirectPath(true);
 
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(
@@ -428,7 +446,45 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setCredentialsProvider(credentialsProvider)
               .setStreamWatchdogProvider(watchdogProvider)
               .build();
-      this.databaseAdminStub = GrpcDatabaseAdminStub.create(this.databaseAdminStubSettings);
+
+      // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
+      // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
+      // while polling long-running operations for their progress and can also cause these errors.
+      // The default behavior is not to retry these errors, and this option should normally only be
+      // enabled for (integration) testing.
+      if (options.isAutoThrottleAdministrativeRequests()) {
+        GrpcStubCallableFactory factory =
+            new GrpcDatabaseAdminCallableFactory() {
+              @Override
+              public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
+                  GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
+                  UnaryCallSettings<RequestT, ResponseT> callSettings,
+                  ClientContext clientContext) {
+                // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations from
+                // failing with an Administrative requests limit exceeded error.
+                if (grpcCallSettings
+                    .getMethodDescriptor()
+                    .getFullMethodName()
+                    .equals("google.longrunning.Operations/GetOperation")) {
+                  Set<StatusCode.Code> codes =
+                      ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
+                              callSettings.getRetryableCodes().size() + 1)
+                          .addAll(callSettings.getRetryableCodes())
+                          .add(StatusCode.Code.RESOURCE_EXHAUSTED)
+                          .build();
+                  callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+                }
+                return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
+              }
+            };
+        this.databaseAdminStub =
+            new GrpcDatabaseAdminStubWithCustomCallableFactory(
+                databaseAdminStubSettings,
+                ClientContext.create(databaseAdminStubSettings),
+                factory);
+      } else {
+        this.databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
+      }
 
       // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
       // actually running.
@@ -436,11 +492,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (Exception e) {
       throw newSpannerException(e);
     }
-  }
-
-  // TODO(weiranf): Remove this once DirectPath goes to public beta.
-  private static boolean shouldAttemptDirectPath() {
-    return Boolean.getBoolean("spanner.attempt_directpath");
   }
 
   private static void checkEmulatorConnection(
@@ -478,8 +529,10 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.UNAVAILABLE,
             String.format(
-                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running emulator could be found at that address.\n"
-                    + "Did you forget to start the emulator, or to unset the environment variable?",
+                "The environment variable SPANNER_EMULATOR_HOST has been set to %s, but no running"
+                    + " emulator could be found at that address.\n"
+                    + "Did you forget to start the emulator, or to unset the environment"
+                    + " variable?",
                 emulatorHost));
       }
     }
@@ -487,9 +540,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static final RetrySettings ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
       RetrySettings.newBuilder()
-          .setInitialRetryDelay(Duration.ofSeconds(2L))
-          .setRetryDelayMultiplier(1.5)
-          .setMaxRetryDelay(Duration.ofSeconds(15L))
+          .setInitialRetryDelay(Duration.ofSeconds(5L))
+          .setRetryDelayMultiplier(2.0)
+          .setMaxRetryDelay(Duration.ofSeconds(60L))
           .setMaxAttempts(10)
           .build();
 
@@ -974,6 +1027,17 @@ public class GapicSpannerRpc implements SpannerRpc {
         NanoClock.getDefaultClock());
   }
 
+  /**
+   * If the update database ddl operation returns an ALREADY_EXISTS error, meaning the operation id
+   * used is already in flight, this method will simply resume the original operation. The returned
+   * future will be completed when the original operation finishes.
+   *
+   * <p>This mechanism is necessary, because the update database ddl can be retried. If a retryable
+   * failure occurs, the backend has already started processing the update database ddl operation
+   * with the given id and the library issues a retry, an ALREADY_EXISTS error will be returned. If
+   * we were to bubble this error up, it would be confusing for the caller, who used originally
+   * called the method with a new operation id.
+   */
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       final String databaseName,
@@ -1004,6 +1068,11 @@ public class GapicSpannerRpc implements SpannerRpc {
               throw newSpannerException(e);
             } catch (ExecutionException e) {
               Throwable t = e.getCause();
+              SpannerException se = SpannerExceptionFactory.asSpannerException(t);
+              if (se instanceof AdminRequestsPerMinuteExceededException) {
+                // Propagate this to trigger a retry.
+                throw se;
+              }
               if (t instanceof AlreadyExistsException) {
                 String operationName =
                     OPERATION_NAME_TEMPLATE.instantiate(
@@ -1647,6 +1716,22 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
+  }
+
+  public void shutdownNow() {
+    this.rpcIsClosed = true;
+    this.spannerStub.close();
+    this.partitionedDmlStub.close();
+    this.instanceAdminStub.close();
+    this.databaseAdminStub.close();
+    this.spannerWatchdog.shutdown();
+    this.executorProvider.shutdown();
+
+    this.spannerStub.shutdownNow();
+    this.partitionedDmlStub.shutdownNow();
+    this.instanceAdminStub.shutdownNow();
+    this.databaseAdminStub.shutdownNow();
+    this.spannerWatchdog.shutdownNow();
   }
 
   @Override

@@ -44,13 +44,14 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
 
   private static class NoOpListener implements AbstractResultSet.Listener {
     @Override
-    public void onTransactionMetadata(Transaction transaction) throws SpannerException {}
+    public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
+        throws SpannerException {}
 
     @Override
     public void onError(SpannerException e, boolean withBeginTransaction) {}
 
     @Override
-    public void onDone() {}
+    public void onDone(boolean withBeginTransaction) {}
   }
 
   public ReadFormatTestRunner(Class<?> clazz) throws InitializationError {

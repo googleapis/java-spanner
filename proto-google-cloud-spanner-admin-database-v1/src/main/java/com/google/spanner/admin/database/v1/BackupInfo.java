@@ -100,6 +100,21 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
               sourceDatabase_ = s;
               break;
             }
+          case 34:
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (versionTime_ != null) {
+                subBuilder = versionTime_.toBuilder();
+              }
+              versionTime_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(versionTime_);
+                versionTime_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -143,7 +158,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    * Name of the backup.
    * </pre>
    *
-   * <code>string backup = 1;</code>
+   * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The backup.
    */
@@ -166,7 +181,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    * Name of the backup.
    * </pre>
    *
-   * <code>string backup = 1;</code>
+   * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for backup.
    */
@@ -183,14 +198,72 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
     }
   }
 
+  public static final int VERSION_TIME_FIELD_NUMBER = 4;
+  private com.google.protobuf.Timestamp versionTime_;
+  /**
+   *
+   *
+   * <pre>
+   * The backup contains an externally consistent copy of `source_database` at
+   * the timestamp specified by `version_time`. If the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+   * `version_time`, the `version_time` of the backup is equivalent to the
+   * `create_time`.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 4;</code>
+   *
+   * @return Whether the versionTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasVersionTime() {
+    return versionTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The backup contains an externally consistent copy of `source_database` at
+   * the timestamp specified by `version_time`. If the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+   * `version_time`, the `version_time` of the backup is equivalent to the
+   * `create_time`.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 4;</code>
+   *
+   * @return The versionTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getVersionTime() {
+    return versionTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : versionTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The backup contains an externally consistent copy of `source_database` at
+   * the timestamp specified by `version_time`. If the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+   * `version_time`, the `version_time` of the backup is equivalent to the
+   * `create_time`.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 4;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getVersionTimeOrBuilder() {
+    return getVersionTime();
+  }
+
   public static final int CREATE_TIME_FIELD_NUMBER = 2;
   private com.google.protobuf.Timestamp createTime_;
   /**
    *
    *
    * <pre>
-   * The backup contains an externally consistent copy of `source_database` at
-   * the timestamp specified by `create_time`.
+   * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+   * received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -205,8 +278,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The backup contains an externally consistent copy of `source_database` at
-   * the timestamp specified by `create_time`.
+   * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+   * received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -221,8 +294,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * The backup contains an externally consistent copy of `source_database` at
-   * the timestamp specified by `create_time`.
+   * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+   * received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -241,7 +314,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    * Name of the database the backup was created from.
    * </pre>
    *
-   * <code>string source_database = 3;</code>
+   * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The sourceDatabase.
    */
@@ -264,7 +337,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
    * Name of the database the backup was created from.
    * </pre>
    *
-   * <code>string source_database = 3;</code>
+   * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for sourceDatabase.
    */
@@ -304,6 +377,9 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
     if (!getSourceDatabaseBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, sourceDatabase_);
     }
+    if (versionTime_ != null) {
+      output.writeMessage(4, getVersionTime());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -322,6 +398,9 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
     if (!getSourceDatabaseBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, sourceDatabase_);
     }
+    if (versionTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getVersionTime());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -339,6 +418,10 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
         (com.google.spanner.admin.database.v1.BackupInfo) obj;
 
     if (!getBackup().equals(other.getBackup())) return false;
+    if (hasVersionTime() != other.hasVersionTime()) return false;
+    if (hasVersionTime()) {
+      if (!getVersionTime().equals(other.getVersionTime())) return false;
+    }
     if (hasCreateTime() != other.hasCreateTime()) return false;
     if (hasCreateTime()) {
       if (!getCreateTime().equals(other.getCreateTime())) return false;
@@ -357,6 +440,10 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + BACKUP_FIELD_NUMBER;
     hash = (53 * hash) + getBackup().hashCode();
+    if (hasVersionTime()) {
+      hash = (37 * hash) + VERSION_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getVersionTime().hashCode();
+    }
     if (hasCreateTime()) {
       hash = (37 * hash) + CREATE_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getCreateTime().hashCode();
@@ -510,6 +597,12 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
       super.clear();
       backup_ = "";
 
+      if (versionTimeBuilder_ == null) {
+        versionTime_ = null;
+      } else {
+        versionTime_ = null;
+        versionTimeBuilder_ = null;
+      }
       if (createTimeBuilder_ == null) {
         createTime_ = null;
       } else {
@@ -546,6 +639,11 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
       com.google.spanner.admin.database.v1.BackupInfo result =
           new com.google.spanner.admin.database.v1.BackupInfo(this);
       result.backup_ = backup_;
+      if (versionTimeBuilder_ == null) {
+        result.versionTime_ = versionTime_;
+      } else {
+        result.versionTime_ = versionTimeBuilder_.build();
+      }
       if (createTimeBuilder_ == null) {
         result.createTime_ = createTime_;
       } else {
@@ -606,6 +704,9 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
         backup_ = other.backup_;
         onChanged();
       }
+      if (other.hasVersionTime()) {
+        mergeVersionTime(other.getVersionTime());
+      }
       if (other.hasCreateTime()) {
         mergeCreateTime(other.getCreateTime());
       }
@@ -650,7 +751,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the backup.
      * </pre>
      *
-     * <code>string backup = 1;</code>
+     * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The backup.
      */
@@ -672,7 +773,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the backup.
      * </pre>
      *
-     * <code>string backup = 1;</code>
+     * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for backup.
      */
@@ -694,7 +795,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the backup.
      * </pre>
      *
-     * <code>string backup = 1;</code>
+     * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The backup to set.
      * @return This builder for chaining.
@@ -715,7 +816,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the backup.
      * </pre>
      *
-     * <code>string backup = 1;</code>
+     * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -732,7 +833,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the backup.
      * </pre>
      *
-     * <code>string backup = 1;</code>
+     * <code>string backup = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for backup to set.
      * @return This builder for chaining.
@@ -748,6 +849,227 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private com.google.protobuf.Timestamp versionTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        versionTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     *
+     * @return Whether the versionTime field is set.
+     */
+    public boolean hasVersionTime() {
+      return versionTimeBuilder_ != null || versionTime_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     *
+     * @return The versionTime.
+     */
+    public com.google.protobuf.Timestamp getVersionTime() {
+      if (versionTimeBuilder_ == null) {
+        return versionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : versionTime_;
+      } else {
+        return versionTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public Builder setVersionTime(com.google.protobuf.Timestamp value) {
+      if (versionTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        versionTime_ = value;
+        onChanged();
+      } else {
+        versionTimeBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public Builder setVersionTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (versionTimeBuilder_ == null) {
+        versionTime_ = builderForValue.build();
+        onChanged();
+      } else {
+        versionTimeBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public Builder mergeVersionTime(com.google.protobuf.Timestamp value) {
+      if (versionTimeBuilder_ == null) {
+        if (versionTime_ != null) {
+          versionTime_ =
+              com.google.protobuf.Timestamp.newBuilder(versionTime_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          versionTime_ = value;
+        }
+        onChanged();
+      } else {
+        versionTimeBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public Builder clearVersionTime() {
+      if (versionTimeBuilder_ == null) {
+        versionTime_ = null;
+        onChanged();
+      } else {
+        versionTime_ = null;
+        versionTimeBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public com.google.protobuf.Timestamp.Builder getVersionTimeBuilder() {
+
+      onChanged();
+      return getVersionTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getVersionTimeOrBuilder() {
+      if (versionTimeBuilder_ != null) {
+        return versionTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return versionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : versionTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The backup contains an externally consistent copy of `source_database` at
+     * the timestamp specified by `version_time`. If the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request did not specify
+     * `version_time`, the `version_time` of the backup is equivalent to the
+     * `create_time`.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp version_time = 4;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getVersionTimeFieldBuilder() {
+      if (versionTimeBuilder_ == null) {
+        versionTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getVersionTime(), getParentForChildren(), isClean());
+        versionTime_ = null;
+      }
+      return versionTimeBuilder_;
+    }
+
     private com.google.protobuf.Timestamp createTime_;
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Timestamp,
@@ -758,8 +1080,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -773,8 +1095,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -794,8 +1116,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -817,8 +1139,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -837,8 +1159,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -862,8 +1184,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -883,8 +1205,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -898,8 +1220,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -917,8 +1239,8 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * The backup contains an externally consistent copy of `source_database` at
-     * the timestamp specified by `create_time`.
+     * The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request was
+     * received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp create_time = 2;</code>
@@ -948,7 +1270,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the database the backup was created from.
      * </pre>
      *
-     * <code>string source_database = 3;</code>
+     * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The sourceDatabase.
      */
@@ -970,7 +1292,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the database the backup was created from.
      * </pre>
      *
-     * <code>string source_database = 3;</code>
+     * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for sourceDatabase.
      */
@@ -992,7 +1314,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the database the backup was created from.
      * </pre>
      *
-     * <code>string source_database = 3;</code>
+     * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The sourceDatabase to set.
      * @return This builder for chaining.
@@ -1013,7 +1335,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the database the backup was created from.
      * </pre>
      *
-     * <code>string source_database = 3;</code>
+     * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -1030,7 +1352,7 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
      * Name of the database the backup was created from.
      * </pre>
      *
-     * <code>string source_database = 3;</code>
+     * <code>string source_database = 3 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for sourceDatabase to set.
      * @return This builder for chaining.

@@ -311,6 +311,7 @@ public class TransactionRunnerImplTest {
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
+    when(spanner.getOptions()).thenReturn(mock(SpannerOptions.class));
     SessionImpl session =
         new SessionImpl(
             spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {
@@ -348,6 +349,7 @@ public class TransactionRunnerImplTest {
         TransactionContextImpl.newBuilder()
             .setSession(session)
             .setTransactionId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+            .setOptions(Options.fromTransactionOptions())
             .setRpc(rpc)
             .build();
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);

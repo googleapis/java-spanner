@@ -28,6 +28,8 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -56,6 +58,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,7 +75,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
       private ByteString transactionId;
-      private Options options = Options.fromTransactionOptions();
+      private Options options;
+      private boolean trackTransactionStarter;
 
       private Builder() {}
 
@@ -81,12 +86,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
 
       Builder setOptions(Options options) {
-        this.options = options;
+        this.options = Preconditions.checkNotNull(options);
+        return self();
+      }
+
+      Builder setTrackTransactionStarter(boolean trackTransactionStarter) {
+        this.trackTransactionStarter = trackTransactionStarter;
         return self();
       }
 
       @Override
       TransactionContextImpl build() {
+        Preconditions.checkState(this.options != null, "Options must be set");
         return new TransactionContextImpl(this);
       }
     }
@@ -152,6 +163,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private boolean aborted;
 
+    private final Options options;
+
     /** Default to -1 to indicate not available. */
     @GuardedBy("lock")
     private long retryDelayInMillis = -1L;
@@ -163,15 +176,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      */
     private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
+    @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
+    private final boolean trackTransactionStarter;
+    private Exception transactionStarter;
+
     volatile ByteString transactionId;
 
-    private final Options options;
     private CommitResponse commitResponse;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
-      this.options = Preconditions.checkNotNull(builder.options);
+      this.trackTransactionStarter = builder.trackTransactionStarter;
+      this.options = builder.options;
       this.finishedAsyncOperations.set(null);
     }
 
@@ -428,6 +445,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // transactionIdFuture until an actual transactionId is available.
             if (transactionIdFuture == null) {
               transactionIdFuture = SettableApiFuture.create();
+              if (trackTransactionStarter) {
+                transactionStarter = new Exception("Requesting new transaction");
+              }
             } else {
               tx = transactionIdFuture;
             }
@@ -443,7 +463,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Aborted error if the call that included the BeginTransaction option fails. The
             // Aborted error will cause the entire transaction to be retried, and the retry will use
             // a separate BeginTransaction RPC.
-            TransactionSelector.newBuilder().setId(tx.get()).build();
+            // If tx.get() returns successfully, this.transactionId will also have been set to a
+            // valid value as the latter is always set when a transaction id is returned by a
+            // statement.
+            return TransactionSelector.newBuilder()
+                .setId(tx.get(waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS))
+                .build();
           }
         } catch (ExecutionException e) {
           if (e.getCause() instanceof AbortedException) {
@@ -452,6 +477,21 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             }
           }
           throw SpannerExceptionFactory.newSpannerException(e.getCause());
+        } catch (TimeoutException e) {
+          // Throw an ABORTED exception to force a retry of the transaction if no transaction
+          // has been returned by the first statement.
+          SpannerException se =
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED,
+                  "Timeout while waiting for a transaction to be returned by another statement."
+                      + (trackTransactionStarter
+                          ? " See the suppressed exception for the stacktrace of the caller that should return a transaction"
+                          : ""),
+                  e);
+          if (transactionStarter != null) {
+            se.addSuppressed(transactionStarter);
+          }
+          throw se;
         } catch (InterruptedException e) {
           throw SpannerExceptionFactory.newSpannerExceptionForCancellation(null, e);
         }
@@ -461,12 +501,20 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public void onTransactionMetadata(Transaction transaction) {
-      // A transaction has been returned by a statement that was executed. Set the id of the
-      // transaction on this instance and release the lock to allow other statements to proceed.
-      if (this.transactionId == null && transaction != null && transaction.getId() != null) {
-        this.transactionId = transaction.getId();
-        this.transactionIdFuture.set(transaction.getId());
+    public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {
+      Preconditions.checkNotNull(transaction);
+      if (transaction.getId() != ByteString.EMPTY) {
+        // A transaction has been returned by a statement that was executed. Set the id of the
+        // transaction on this instance and release the lock to allow other statements to proceed.
+        if ((transactionIdFuture == null || !this.transactionIdFuture.isDone())
+            && this.transactionId == null) {
+          this.transactionId = transaction.getId();
+          this.transactionIdFuture.set(transaction.getId());
+        }
+      } else if (shouldIncludeId) {
+        // The statement should have returned a transaction.
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       }
     }
 
@@ -503,6 +551,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    public void onDone(boolean withBeginTransaction) {
+      if (withBeginTransaction
+          && transactionIdFuture != null
+          && !this.transactionIdFuture.isDone()) {
+        // Context was done (closed) before a transaction id was returned.
+        this.transactionIdFuture.setException(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "ResultSet was closed before a transaction id was returned"));
+      }
+    }
+
+    @Override
     public void buffer(Mutation mutation) {
       synchronized (lock) {
         checkNotNull(mutations, "Context is closed");
@@ -521,15 +582,20 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public long executeUpdate(Statement statement) {
+    public long executeUpdate(Statement statement, UpdateOption... options) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
-          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
+          getExecuteSqlRequestBuilder(
+              statement,
+              QueryMode.NORMAL,
+              Options.fromUpdateOptions(options),
+              /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
         if (resultSet.getMetadata().hasTransaction()) {
-          onTransactionMetadata(resultSet.getMetadata().getTransaction());
+          onTransactionMetadata(
+              resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
         }
         if (!resultSet.hasStats()) {
           throw new IllegalArgumentException(
@@ -537,17 +603,21 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
-      } catch (SpannerException e) {
-        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
-        throw e;
+      } catch (Throwable t) {
+        onError(SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
+        throw t;
       }
     }
 
     @Override
-    public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+    public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
-          getExecuteSqlRequestBuilder(statement, QueryMode.NORMAL);
+          getExecuteSqlRequestBuilder(
+              statement,
+              QueryMode.NORMAL,
+              Options.fromUpdateOptions(options),
+              /* withTransactionSelector = */ true);
       final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may
@@ -569,6 +639,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         ErrorCode.INVALID_ARGUMENT,
                         "DML response missing stats possibly due to non-DML statement as input");
                   }
+                  if (builder.getTransaction().hasBegin()
+                      && !(input.getMetadata().hasTransaction()
+                          && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
+                  }
                   // For standard DML, using the exact row count.
                   return input.getStats().getRowCountExact();
                 }
@@ -581,8 +657,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               new ApiFunction<Throwable, Long>() {
                 @Override
                 public Long apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
-                  onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
+                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                  onError(e, builder.getTransaction().hasBegin());
                   throw e;
                 }
               },
@@ -593,9 +669,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             public void run() {
               try {
                 if (resultSet.get().getMetadata().hasTransaction()) {
-                  onTransactionMetadata(resultSet.get().getMetadata().getTransaction());
+                  onTransactionMetadata(
+                      resultSet.get().getMetadata().getTransaction(),
+                      builder.getTransaction().hasBegin());
                 }
-              } catch (ExecutionException | InterruptedException e) {
+              } catch (Throwable e) {
                 // Ignore this error here as it is handled by the future that is returned by the
                 // executeUpdateAsync method.
               }
@@ -607,9 +685,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public long[] batchUpdate(Iterable<Statement> statements) {
+    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
       beforeReadOrQuery();
-      final ExecuteBatchDmlRequest.Builder builder = getExecuteBatchDmlRequestBuilder(statements);
+      final ExecuteBatchDmlRequest.Builder builder =
+          getExecuteBatchDmlRequestBuilder(statements, Options.fromUpdateOptions(options));
       try {
         com.google.spanner.v1.ExecuteBatchDmlResponse response =
             rpc.executeBatchDml(builder.build(), session.getOptions());
@@ -617,7 +696,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         for (int i = 0; i < response.getResultSetsCount(); ++i) {
           results[i] = response.getResultSets(i).getStats().getRowCountExact();
           if (response.getResultSets(i).getMetadata().hasTransaction()) {
-            onTransactionMetadata(response.getResultSets(i).getMetadata().getTransaction());
+            onTransactionMetadata(
+                response.getResultSets(i).getMetadata().getTransaction(),
+                builder.getTransaction().hasBegin());
           }
         }
 
@@ -633,16 +714,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               results);
         }
         return results;
-      } catch (SpannerException e) {
-        onError(e, builder.hasTransaction() && builder.getTransaction().hasBegin());
+      } catch (Throwable e) {
+        onError(SpannerExceptionFactory.asSpannerException(e), builder.getTransaction().hasBegin());
         throw e;
       }
     }
 
     @Override
-    public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
+    public ApiFuture<long[]> batchUpdateAsync(
+        Iterable<Statement> statements, UpdateOption... options) {
       beforeReadOrQuery();
-      final ExecuteBatchDmlRequest.Builder builder = getExecuteBatchDmlRequestBuilder(statements);
+      final ExecuteBatchDmlRequest.Builder builder =
+          getExecuteBatchDmlRequestBuilder(statements, Options.fromUpdateOptions(options));
       ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
       try {
         // Register the update as an async operation that must finish before the transaction may
@@ -663,7 +746,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   for (int i = 0; i < input.getResultSetsCount(); ++i) {
                     results[i] = input.getResultSets(i).getStats().getRowCountExact();
                     if (input.getResultSets(i).getMetadata().hasTransaction()) {
-                      onTransactionMetadata(input.getResultSets(i).getMetadata().getTransaction());
+                      onTransactionMetadata(
+                          input.getResultSets(i).getMetadata().getTransaction(),
+                          builder.getTransaction().hasBegin());
                     }
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
@@ -688,10 +773,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               new ApiFunction<Throwable, long[]>() {
                 @Override
                 public long[] apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.newSpannerException(input);
-                  onError(
-                      SpannerExceptionFactory.newSpannerException(e.getCause()),
-                      builder.hasTransaction() && builder.getTransaction().hasBegin());
+                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                  onError(e, builder.getTransaction().hasBegin());
                   throw e;
                 }
               },
@@ -732,8 +815,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
-  private Span span;
   private final Options options;
+  private Span span;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -743,10 +826,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  TransactionRunnerImpl(SessionImpl session, Options options) {
+  TransactionRunnerImpl(
+      SessionImpl session,
+      SpannerRpc rpc,
+      int defaultPrefetchChunks,
+      TransactionOption... options) {
     this.session = session;
-    this.options = options;
-    this.txn = session.newTransaction(options);
+    this.options = Options.fromTransactionOptions(options);
+    this.txn = session.newTransaction(this.options);
   }
 
   @Override

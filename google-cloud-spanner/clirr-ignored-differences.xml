@@ -407,61 +407,51 @@
     <method>java.lang.Object initialize()</method>
   </difference>
   
-  <!-- Support for CommitStats added -->
+  <!-- TransactionOptions and UpdateOptions -->
   <difference>
-    <differenceType>7005</differenceType>
-    <className>com/google/cloud/spanner/CommitResponse</className>
-    <method>CommitResponse(com.google.cloud.Timestamp)</method>
-    <to>CommitResponse(com.google.spanner.v1.CommitResponse)</to>
-  </difference>
-  <difference>
-    <differenceType>7009</differenceType>
-    <className>com/google/cloud/spanner/CommitResponse</className>
-    <method>CommitResponse(com.google.cloud.Timestamp)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
-    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/AsyncRunner</className>
-    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/TransactionManager</className>
-    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/TransactionRunner</className>
-    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>long executePartitionedUpdate(com.google.cloud.spanner.Statement)</method>
   </difference>
   <difference>
     <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.TransactionRunner readWriteTransaction()</method>
-    <to>com.google.cloud.spanner.TransactionRunner readWriteTransaction(com.google.cloud.spanner.TransactionOption[])</to>
-  </difference>
-  <difference>
-    <differenceType>7004</differenceType>
-    <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>com.google.cloud.spanner.TransactionManager transactionManager()</method>
-    <to>com.google.cloud.spanner.TransactionManager transactionManager(com.google.cloud.spanner.TransactionOption[])</to>
   </difference>
   <difference>
     <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.AsyncRunner runAsync()</method>
-    <to>com.google.cloud.spanner.AsyncRunner runAsync(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.TransactionManager transactionManager()</method>
   </difference>
   <difference>
     <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync()</method>
-    <to>com.google.cloud.spanner.AsyncTransactionManager transactionManagerAsync(com.google.cloud.spanner.TransactionOption[])</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>long[] batchUpdate(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture batchUpdateAsync(java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>long executeUpdate(com.google.cloud.spanner.Statement)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
   </difference>
   
   <!-- Support for Commit Stats in Connection API -->
@@ -479,6 +469,5 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setReturnCommitStats(boolean)</method>
-  </difference>
-  
+  </difference>  
 </differences>

@@ -26,6 +26,7 @@ import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -112,13 +113,17 @@ class SessionImpl implements Session {
     currentSpan = span;
   }
 
+  Span getCurrentSpan() {
+    return currentSpan;
+  }
+
   @Override
-  public long executePartitionedUpdate(Statement stmt) {
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
     setActive(null);
     PartitionedDmlTransaction txn =
         new PartitionedDmlTransaction(this, spanner.getRpc(), Ticker.systemTicker());
     return txn.executeStreamingPartitionedUpdate(
-        stmt, spanner.getOptions().getPartitionedDmlTimeout());
+        stmt, spanner.getOptions().getPartitionedDmlTimeout(), options);
   }
 
   @Override
@@ -152,7 +157,7 @@ class SessionImpl implements Session {
 
   @Override
   public CommitResponse writeAtLeastOnceWithOptions(
-      final Iterable<Mutation> mutations, final TransactionOption... options)
+      Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
@@ -160,7 +165,7 @@ class SessionImpl implements Session {
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(Options.fromTransactionOptions(options).withCommitStats())
+            .setReturnCommitStats(Options.fromTransactionOptions(transactionOptions).withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -241,24 +246,27 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    return setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options)));
+    return setActive(
+        new TransactionRunnerImpl(
+            this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
     return new AsyncRunnerImpl(
-        setActive(new TransactionRunnerImpl(this, Options.fromTransactionOptions(options))));
+        setActive(
+            new TransactionRunnerImpl(
+                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options)));
   }
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, Options.fromTransactionOptions(options));
+    return new TransactionManagerImpl(this, currentSpan, options);
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
-    return new AsyncTransactionManagerImpl(
-        this, currentSpan, Options.fromTransactionOptions(options));
+    return new AsyncTransactionManagerImpl(this, currentSpan, options);
   }
 
   @Override
@@ -344,6 +352,8 @@ class SessionImpl implements Session {
         .setSession(this)
         .setOptions(options)
         .setTransactionId(readyTransactionId)
+        .setOptions(options)
+        .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())

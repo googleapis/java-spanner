@@ -49,7 +49,7 @@ class SessionPoolAsyncTransactionManager
   private boolean restartedAfterSessionNotFound;
 
   SessionPoolAsyncTransactionManager(
-      SessionPool pool, PooledSessionFuture session, final TransactionOption... options) {
+      SessionPool pool, PooledSessionFuture session, TransactionOption... options) {
     this.pool = Preconditions.checkNotNull(pool);
     this.options = options;
     createTransaction(session);

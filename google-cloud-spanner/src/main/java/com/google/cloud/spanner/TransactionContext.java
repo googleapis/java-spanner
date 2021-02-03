@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.spanner.Options.UpdateOption;
 
 /**
  * Context for a single attempt of a locking read-write transaction. This type of transaction is the
@@ -102,7 +103,7 @@ public interface TransactionContext extends ReadContext {
    * it will result in an {@code IllegalArgumentException}. The effects of the DML statement will be
    * visible to subsequent operations in the transaction.
    */
-  long executeUpdate(Statement statement);
+  long executeUpdate(Statement statement, UpdateOption... options);
 
   /**
    * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking. If multiple
@@ -113,7 +114,7 @@ public interface TransactionContext extends ReadContext {
    * parallel. If you rely on the results of a previous statement, you should block until the result
    * of that statement is known and has been returned to the client.
    */
-  ApiFuture<Long> executeUpdateAsync(Statement statement);
+  ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options);
 
   /**
    * Executes a list of DML statements in a single request. The statements will be executed in order
@@ -130,7 +131,7 @@ public interface TransactionContext extends ReadContext {
    * 2nd statement, and an array of length 1 that contains the number of rows modified by the 1st
    * statement. The 3rd statement will not run.
    */
-  long[] batchUpdate(Iterable<Statement> statements);
+  long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options);
 
   /**
    * Same as {@link #batchUpdate(Iterable)}, but is guaranteed to be non-blocking. If multiple
@@ -141,5 +142,5 @@ public interface TransactionContext extends ReadContext {
    * parallel. If you rely on the results of a previous statement, you should block until the result
    * of that statement is known and has been returned to the client.
    */
-  ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements);
+  ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements, UpdateOption... options);
 }

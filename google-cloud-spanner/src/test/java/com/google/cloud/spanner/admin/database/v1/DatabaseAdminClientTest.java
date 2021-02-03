@@ -217,6 +217,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -268,6 +270,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -319,6 +323,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -359,6 +365,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -871,6 +879,7 @@ public class DatabaseAdminClientTest {
     Backup expectedResponse =
         Backup.newBuilder()
             .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
             .setExpireTime(Timestamp.newBuilder().build())
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -928,6 +937,7 @@ public class DatabaseAdminClientTest {
     Backup expectedResponse =
         Backup.newBuilder()
             .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
             .setExpireTime(Timestamp.newBuilder().build())
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -985,6 +995,7 @@ public class DatabaseAdminClientTest {
     Backup expectedResponse =
         Backup.newBuilder()
             .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
             .setExpireTime(Timestamp.newBuilder().build())
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -1028,6 +1039,7 @@ public class DatabaseAdminClientTest {
     Backup expectedResponse =
         Backup.newBuilder()
             .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
             .setExpireTime(Timestamp.newBuilder().build())
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -1071,6 +1083,7 @@ public class DatabaseAdminClientTest {
     Backup expectedResponse =
         Backup.newBuilder()
             .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
             .setExpireTime(Timestamp.newBuilder().build())
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -1275,6 +1288,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1329,6 +1344,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1383,6 +1400,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1437,6 +1456,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()

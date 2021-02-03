@@ -23,6 +23,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
@@ -47,10 +48,10 @@ final class AsyncTransactionManagerImpl
   private TransactionState txnState;
   private final SettableApiFuture<CommitResponse> commitResponse = SettableApiFuture.create();
 
-  AsyncTransactionManagerImpl(SessionImpl session, Span span, Options options) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
     this.session = session;
     this.span = span;
-    this.options = options;
+    this.options = Options.fromTransactionOptions(options);
   }
 
   @Override

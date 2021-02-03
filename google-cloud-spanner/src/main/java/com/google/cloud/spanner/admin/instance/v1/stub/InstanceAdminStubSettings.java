@@ -106,7 +106,6 @@ import org.threeten.bp.Duration;
  * InstanceAdminStubSettings instanceAdminSettings = instanceAdminSettingsBuilder.build();
  * }</pre>
  */
-@BetaApi
 @Generated("by gapic-generator-java")
 public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSettings> {
   /** The default scopes of the service. */
