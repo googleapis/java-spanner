@@ -1819,8 +1819,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             com.google.spanner.v1.CommitResponse.CommitStats.newBuilder()
                 // This is not really always equal, but at least it returns a value.
                 .setMutationCount(request.getMutationsCount())
-                .setOverloadDelay(
-                    Duration.newBuilder().setSeconds(0L).setNanos(RANDOM.nextInt(1_000_000_000)))
                 .build());
       }
       responseObserver.onNext(responseBuilder.build());

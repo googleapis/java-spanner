@@ -826,11 +826,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  TransactionRunnerImpl(
-      SessionImpl session,
-      SpannerRpc rpc,
-      int defaultPrefetchChunks,
-      TransactionOption... options) {
+  TransactionRunnerImpl(SessionImpl session, TransactionOption... options) {
     this.session = session;
     this.options = Options.fromTransactionOptions(options);
     this.txn = session.newTransaction(this.options);

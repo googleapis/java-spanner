@@ -44,8 +44,7 @@ public class AsyncTransactionManagerImplTest {
   @Test
   public void commitReturnsCommitStats() {
     try (AsyncTransactionManagerImpl manager =
-        new AsyncTransactionManagerImpl(
-            session, mock(Span.class), Options.fromTransactionOptions(Options.commitStats()))) {
+        new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
           .thenReturn(txn);
       when(txn.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));

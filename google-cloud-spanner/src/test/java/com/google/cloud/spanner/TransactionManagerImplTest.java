@@ -81,8 +81,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager =
-        new TransactionManagerImpl(session, mock(Span.class), Options.fromTransactionOptions());
+    manager = new TransactionManagerImpl(session, mock(Span.class));
   }
 
   @Test

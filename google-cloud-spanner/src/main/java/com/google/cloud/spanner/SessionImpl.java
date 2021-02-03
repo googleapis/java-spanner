@@ -165,7 +165,8 @@ class SessionImpl implements Session {
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(Options.fromTransactionOptions(transactionOptions).withCommitStats())
+            .setReturnCommitStats(
+                Options.fromTransactionOptions(transactionOptions).withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -246,17 +247,12 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    return setActive(
-        new TransactionRunnerImpl(
-            this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options));
+    return setActive(new TransactionRunnerImpl(this, options));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    return new AsyncRunnerImpl(
-        setActive(
-            new TransactionRunnerImpl(
-                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options)));
+    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, options)));
   }
 
   @Override

@@ -67,9 +67,17 @@ abstract class BaseSessionPoolTest {
             "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);
     when(session.asyncClose()).thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(session.writeWithOptions(any(Iterable.class)))
-        .thenReturn(new CommitResponse(Timestamp.now()));
+        .thenReturn(
+            new CommitResponse(
+                com.google.spanner.v1.CommitResponse.newBuilder()
+                    .setCommitTimestamp(Timestamp.now().toProto())
+                    .build()));
     when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
-        .thenReturn(new CommitResponse(Timestamp.now()));
+        .thenReturn(
+            new CommitResponse(
+                com.google.spanner.v1.CommitResponse.newBuilder()
+                    .setCommitTimestamp(Timestamp.now().toProto())
+                    .build()));
     sessionIndex++;
     return session;
   }
