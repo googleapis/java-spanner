@@ -184,9 +184,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowCommitResponse() {
     CommitResponse response = getConnection().getCommitResponseOrNull();
-    CommitStats stats =
-        response == null || !response.hasCommitStats() ? null : response.getCommitStats();
-    ResultSet rs =
+    CommitStats stats = null;
+    if (response != null && response.hasCommitStats()) {
+      stats = response.getCommitStats();
+    }
+    ResultSet resultSet =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("COMMIT_TIMESTAMP", Type.timestamp()),
@@ -198,7 +200,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
                     .set("MUTATION_COUNT")
                     .to(stats == null ? null : stats.getMutationCount())
                     .build()));
-    return StatementResultImpl.of(rs, SHOW_COMMIT_RESPONSE);
+    return StatementResultImpl.of(resultSet, SHOW_COMMIT_RESPONSE);
   }
 
   @Override

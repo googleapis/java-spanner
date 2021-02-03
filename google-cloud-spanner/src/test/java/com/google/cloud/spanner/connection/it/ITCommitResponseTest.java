@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 package com.google.cloud.spanner.connection.it;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -57,9 +60,9 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.bufferedWrite(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
       connection.commit();
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isFalse();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertFalse(connection.getCommitResponse().hasCommitStats());
     }
   }
 
@@ -70,9 +73,9 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.bufferedWrite(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
       connection.commit();
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isTrue();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertTrue(connection.getCommitResponse().hasCommitStats());
       assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
     }
   }
@@ -84,17 +87,17 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.bufferedWrite(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
       connection.commit();
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isTrue();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertTrue(connection.getCommitResponse().hasCommitStats());
       assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
-      try (ResultSet rs =
+      try (ResultSet resultSet =
           connection.execute(Statement.of("SHOW VARIABLE COMMIT_RESPONSE")).getResultSet()) {
-        assertThat(rs.next()).isTrue();
-        assertThat(rs.getTimestamp("COMMIT_TIMESTAMP")).isNotNull();
-        assertThat(rs.getLong("MUTATION_COUNT")).isEqualTo(2L);
-        assertThat(rs.getString("OVERLOAD_DELAY")).isNotNull();
-        assertThat(rs.next()).isFalse();
+        assertTrue(resultSet.next());
+        assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
+        assertThat(resultSet.getLong("MUTATION_COUNT")).isEqualTo(2L);
+        assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
+        assertFalse(resultSet.next());
       }
     }
   }
@@ -105,9 +108,9 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.setAutocommit(true);
       connection.write(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isFalse();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertFalse(connection.getCommitResponse().hasCommitStats());
     }
   }
 
@@ -118,9 +121,9 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.setReturnCommitStats(true);
       connection.write(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isTrue();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertTrue(connection.getCommitResponse().hasCommitStats());
       assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
     }
   }
@@ -132,17 +135,17 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       connection.execute(Statement.of("SET RETURN_COMMIT_STATS=TRUE"));
       connection.write(
           Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST").build());
-      assertThat(connection.getCommitResponse()).isNotNull();
-      assertThat(connection.getCommitResponse().getCommitTimestamp()).isNotNull();
-      assertThat(connection.getCommitResponse().hasCommitStats()).isTrue();
+      assertNotNull(connection.getCommitResponse());
+      assertNotNull(connection.getCommitResponse().getCommitTimestamp());
+      assertTrue(connection.getCommitResponse().hasCommitStats());
       assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
-      try (ResultSet rs =
+      try (ResultSet resultSet =
           connection.execute(Statement.of("SHOW VARIABLE COMMIT_RESPONSE")).getResultSet()) {
-        assertThat(rs.next()).isTrue();
-        assertThat(rs.getTimestamp("COMMIT_TIMESTAMP")).isNotNull();
-        assertThat(rs.getLong("MUTATION_COUNT")).isEqualTo(2L);
-        assertThat(rs.getString("OVERLOAD_DELAY")).isNotNull();
-        assertThat(rs.next()).isFalse();
+        assertTrue(resultSet.next());
+        assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
+        assertThat(resultSet.getLong("MUTATION_COUNT")).isEqualTo(2L);
+        assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
+        assertFalse(resultSet.next());
       }
     }
   }
