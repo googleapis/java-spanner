@@ -37,8 +37,12 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
+
   private static final String instanceId = System.getProperty("spanner.test.instance");
-  private static final String baseDatabaseId = System.getProperty("spanner.sample.database", "pitrsample");
+  private static final String baseDatabaseId = System.getProperty(
+      "spanner.sample.database",
+      "pitrsample"
+  );
   private static DatabaseAdminClient databaseAdminClient;
   private static List<String> databasesToDrop;
   private static Spanner spanner;
@@ -96,7 +100,8 @@ public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
   }
 
   static String generateDatabaseId() {
-    final String databaseId = (baseDatabaseId + "-" + UUID.randomUUID().toString()).substring(0, 30);
+    final String databaseId = (baseDatabaseId + "-"
+        + UUID.randomUUID().toString()).substring(0, 30);
     databasesToDrop.add(databaseId);
     return databaseId;
   }
