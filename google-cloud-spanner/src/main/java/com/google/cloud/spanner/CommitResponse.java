@@ -25,6 +25,13 @@ public class CommitResponse {
 
   private final com.google.spanner.v1.CommitResponse proto;
 
+  public CommitResponse(Timestamp commitTimestamp) {
+    this.proto =
+        com.google.spanner.v1.CommitResponse.newBuilder()
+            .setCommitTimestamp(commitTimestamp.toProto())
+            .build();
+  }
+
   CommitResponse(com.google.spanner.v1.CommitResponse proto) {
     this.proto = proto;
   }

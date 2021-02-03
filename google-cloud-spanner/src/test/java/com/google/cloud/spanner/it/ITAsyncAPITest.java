@@ -17,8 +17,10 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -317,6 +319,7 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     AsyncRunner runner = client.runAsync(Options.commitStats());
     runner.runAsync(
         new AsyncWork<Void>() {
@@ -340,12 +343,14 @@ public class ITAsyncAPITest {
 
   @Test
   public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
-      TransactionContextFuture ctx = mgr.beginAsync();
+      TransactionContextFuture context = mgr.beginAsync();
       while (true) {
         try {
           get(
-              ctx.then(
+              context
+                  .then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
                         public ApiFuture<Void> apply(TransactionContext txn, Void input)
@@ -368,7 +373,7 @@ public class ITAsyncAPITest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);
-          ctx = mgr.resetForRetryAsync();
+          context = mgr.resetForRetryAsync();
         }
       }
     }

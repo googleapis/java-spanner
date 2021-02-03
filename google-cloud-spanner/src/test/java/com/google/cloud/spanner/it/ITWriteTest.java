@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -161,6 +162,7 @@ public class ITWriteTest {
 
   @Test
   public void writeReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     CommitResponse response =
         client.writeWithOptions(
             Arrays.asList(
@@ -179,6 +181,7 @@ public class ITWriteTest {
 
   @Test
   public void writeAtLeastOnceReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(
             Arrays.asList(

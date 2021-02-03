@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -634,6 +635,7 @@ public class ITTransactionTest {
 
   @Test
   public void transactionRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     final String key = uniqueKey();
     TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
     runner.run(
@@ -645,7 +647,7 @@ public class ITTransactionTest {
             return null;
           }
         });
-    assertThat(runner.getCommitResponse().getCommitStats()).isNotNull();
+    assertNotNull(runner.getCommitResponse().getCommitStats());
     // MutationCount = 2 (2 columns).
     assertThat(runner.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
   }

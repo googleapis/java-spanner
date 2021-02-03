@@ -1473,13 +1473,12 @@ public class InlineBeginTransactionTest {
                   if (attempt == 1) {
                     impl.waitForTransactionTimeoutMillis = 1L;
                     // Freeze the mock server to prevent the first (async) statement from returning
-                    // a
-                    // transaction.
+                    // a transaction.
                     mockSpanner.freeze();
                   } else {
                     impl.waitForTransactionTimeoutMillis = 60_000L;
                   }
-                  transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                  ApiFuture<Long> updateCount = transaction.executeUpdateAsync(UPDATE_STATEMENT);
 
                   // Try to execute a query. This will timeout during the first attempt while
                   // waiting
@@ -1489,6 +1488,9 @@ public class InlineBeginTransactionTest {
                     while (rs.next()) {}
                   } catch (Throwable t) {
                     mockSpanner.unfreeze();
+                    // Wait until the update actually finishes so it has returned a transaction.
+                    // That should ensure that the retry does not issue a BeginTransaction RPC.
+                    SpannerApiFutures.get(updateCount);
                     throw t;
                   }
                   return null;
