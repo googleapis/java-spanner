@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -157,7 +158,7 @@ public class InstanceAdminClientImplTest {
                 .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
                 .setProcessingUnits(10)
                 .build());
-    assertThat(op.isDone()).isTrue();
+    assertTrue(op.isDone());
     assertThat(op.get().getId().getName()).isEqualTo(INSTANCE_NAME);
   }
 
@@ -223,7 +224,7 @@ public class InstanceAdminClientImplTest {
             .build();
     OperationFuture<Instance, UpdateInstanceMetadata> opWithFieldMask =
         client.updateInstance(instanceInfo, InstanceInfo.InstanceField.PROCESSING_UNITS);
-    assertThat(opWithFieldMask.isDone()).isTrue();
+    assertTrue(opWithFieldMask.isDone());
     assertThat(opWithFieldMask.get().getId().getName()).isEqualTo(INSTANCE_NAME);
 
     when(rpc.updateInstance(
@@ -233,7 +234,7 @@ public class InstanceAdminClientImplTest {
                 .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<Instance, UpdateInstanceMetadata> op = client.updateInstance(instanceInfo);
-    assertThat(op.isDone()).isTrue();
+    assertTrue(op.isDone());
     assertThat(op.get().getId().getName()).isEqualTo(INSTANCE_NAME);
   }
 
@@ -268,7 +269,7 @@ public class InstanceAdminClientImplTest {
             .build();
     OperationFuture<Instance, UpdateInstanceMetadata> opWithFieldMask =
         client.updateInstance(instanceInfo);
-    assertThat(opWithFieldMask.isDone()).isTrue();
+    assertTrue(opWithFieldMask.isDone());
     assertThat(opWithFieldMask.get().getId().getName()).isEqualTo(INSTANCE_NAME);
   }
 
