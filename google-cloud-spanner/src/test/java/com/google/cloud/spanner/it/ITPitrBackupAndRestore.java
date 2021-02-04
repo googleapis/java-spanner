@@ -177,8 +177,7 @@ public class ITPitrBackupAndRestore {
 
   private Backup createBackup(Backup backupToCreate)
       throws InterruptedException, ExecutionException, TimeoutException {
-    final Backup createdBackup =
-        dbAdminClient.createBackup(backupToCreate).get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    final Backup createdBackup = getOrThrow(dbAdminClient.createBackup(backupToCreate));
     backupsToDrop.add(createdBackup);
     return createdBackup;
   }
@@ -188,7 +187,7 @@ public class ITPitrBackupAndRestore {
       throws InterruptedException, ExecutionException, TimeoutException {
     final OperationFuture<Database, RestoreDatabaseMetadata> op =
         dbAdminClient.restoreDatabase(instanceId, backupId, instanceId, databaseId);
-    final Database database = op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    final Database database = getOrThrow(op);
     databasesToDrop.add(database);
     return op.getMetadata().get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
   }
@@ -216,8 +215,21 @@ public class ITPitrBackupAndRestore {
             databaseId,
             Collections.singletonList(
                 "ALTER DATABASE " + databaseId + " SET OPTIONS (version_retention_period = '7d')"));
-    final Database database = op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    final Database database = getOrThrow(op);
     databasesToDrop.add(database);
     return database;
+  }
+
+  private static <T> T getOrThrow(OperationFuture<T, ?> op)
+      throws TimeoutException, InterruptedException, ExecutionException {
+    try {
+      return op.get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    } catch (ExecutionException e) {
+      if (e.getCause() != null && e.getCause() instanceof SpannerException) {
+        throw (SpannerException) e.getCause();
+      } else {
+        throw e;
+      }
+    }
   }
 }
