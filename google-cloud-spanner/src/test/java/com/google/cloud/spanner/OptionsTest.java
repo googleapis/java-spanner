@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -236,21 +238,21 @@ public class OptionsTest {
   public void testTransactionOptions_noOptionsAreEqual() {
     Options o1 = Options.fromTransactionOptions();
     Options o2 = Options.fromTransactionOptions();
-    assertThat(o1.equals(o2)).isTrue();
+    assertTrue(o1.equals(o2));
   }
 
   @Test
   public void testTransactionOptions_withCommitStatsAreEqual() {
     Options o1 = Options.fromTransactionOptions(Options.commitStats());
     Options o2 = Options.fromTransactionOptions(Options.commitStats());
-    assertThat(o1.equals(o2)).isTrue();
+    assertTrue(o1.equals(o2));
   }
 
   @Test
   public void testTransactionOptions_withCommitStatsAndOtherOptionAreNotEqual() {
     Options o1 = Options.fromTransactionOptions(Options.commitStats());
     Options o2 = Options.fromQueryOptions(Options.prefetchChunks(10));
-    assertThat(o1.equals(o2)).isFalse();
+    assertFalse(o1.equals(o2));
   }
 
   @Test

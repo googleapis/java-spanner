@@ -173,9 +173,9 @@ public class ITWriteTest {
                     .to("v1")
                     .build()),
             Options.commitStats());
-    assertThat(response).isNotNull();
-    assertThat(response.getCommitTimestamp()).isNotNull();
-    assertThat(response.getCommitStats()).isNotNull();
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
     assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
   }
 
@@ -192,9 +192,9 @@ public class ITWriteTest {
                     .to("v1")
                     .build()),
             Options.commitStats());
-    assertThat(response).isNotNull();
-    assertThat(response.getCommitTimestamp()).isNotNull();
-    assertThat(response.getCommitStats()).isNotNull();
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
     assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
   }
 

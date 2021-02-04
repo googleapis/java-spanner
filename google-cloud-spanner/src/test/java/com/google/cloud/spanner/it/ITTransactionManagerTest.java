@@ -230,7 +230,7 @@ public class ITTransactionManagerTest {
                 .build());
         try {
           manager.commit();
-          assertThat(manager.getCommitResponse().getCommitStats()).isNotNull();
+          assertNotNull(manager.getCommitResponse().getCommitStats());
           assertThat(manager.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
           break;
         } catch (AbortedException e) {
