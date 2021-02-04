@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -641,15 +642,15 @@ public class ConnectionImplTest {
                 .setCredentials(NoCredentials.getInstance())
                 .setUri(URI)
                 .build())) {
-      assertThat(subject.isReturnCommitStats(), is(equalTo(false)));
+      assertFalse(subject.isReturnCommitStats());
 
-      StatementResult res = subject.execute(Statement.of("set return_commit_stats=true"));
-      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
-      assertThat(subject.isReturnCommitStats(), is(equalTo(true)));
+      StatementResult result = subject.execute(Statement.of("set return_commit_stats=true"));
+      assertThat(result.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertTrue(subject.isReturnCommitStats());
 
-      res = subject.execute(Statement.of("set return_commit_stats=false"));
-      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
-      assertThat(subject.isReturnCommitStats(), is(equalTo(false)));
+      result = subject.execute(Statement.of("set return_commit_stats=false"));
+      assertThat(result.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertFalse(subject.isReturnCommitStats());
     }
   }
 
@@ -661,13 +662,13 @@ public class ConnectionImplTest {
                 .setCredentials(NoCredentials.getInstance())
                 .setUri(URI)
                 .build())) {
-      assertThat(subject.isReturnCommitStats(), is(equalTo(false)));
+      assertFalse(subject.isReturnCommitStats());
 
       try {
         subject.execute(Statement.of("set return_commit_stats=yes"));
         fail("Missing expected exception");
       } catch (SpannerException e) {
-        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.INVALID_ARGUMENT)));
+        assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
       }
     }
   }

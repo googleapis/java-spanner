@@ -185,7 +185,7 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
-  /** Query optimizer version to use for a connection. */
+  /** Return commit stats for read/write transactions. */
   private static final String RETURN_COMMIT_STATS_PROPERTY_NAME = "returnCommitStats";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";

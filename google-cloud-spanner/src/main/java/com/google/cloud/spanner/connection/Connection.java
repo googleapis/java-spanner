@@ -445,7 +445,7 @@ public interface Connection extends AutoCloseable {
    */
   void setReturnCommitStats(boolean returnCommitStats);
 
-  /** @return true if this connection requests commit statistics from Cloud Spanner. */
+  /** @return true if this connection requests commit statistics from Cloud Spanner */
   boolean isReturnCommitStats();
 
   /**
@@ -633,23 +633,23 @@ public interface Connection extends AutoCloseable {
 
   /**
    * @return the commit timestamp of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction. This method will throw a {@link SpannerException} if there is no last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction (i.e. the last transaction was a {@link
-   *     TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It will also throw a
-   *     {@link SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction was empty when committed.
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
    */
   Timestamp getCommitTimestamp();
 
   /**
    * @return the {@link CommitResponse} of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction. This method will throw a {@link SpannerException} if there is no last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction (i.e. the last transaction was a {@link
-   *     TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It will also throw a
-   *     {@link SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction was empty when committed.
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
    */
   CommitResponse getCommitResponse();
 
