@@ -82,17 +82,6 @@ public class ITPitrBackupAndRestore {
   @AfterClass
   public static void tearDown() {
     int numDropped = 0;
-    for (Backup backup : backupsToDrop) {
-      try {
-        backup.delete();
-        numDropped++;
-      } catch (SpannerException e) {
-        logger.log(Level.SEVERE, "Failed to drop test backup " + backup.getId(), e);
-      }
-    }
-    logger.log(Level.INFO, "Dropped {0} test backup(s)", numDropped);
-
-    numDropped = 0;
     for (Database database : databasesToDrop) {
       try {
         database.drop();
@@ -102,6 +91,17 @@ public class ITPitrBackupAndRestore {
       }
     }
     logger.log(Level.INFO, "Dropped {0} test databases(s)", numDropped);
+
+    numDropped = 0;
+    for (Backup backup : backupsToDrop) {
+      try {
+        backup.delete();
+        numDropped++;
+      } catch (SpannerException e) {
+        logger.log(Level.SEVERE, "Failed to drop test backup " + backup.getId(), e);
+      }
+    }
+    logger.log(Level.INFO, "Dropped {0} test backup(s)", numDropped);
   }
 
   @Test
@@ -126,16 +126,21 @@ public class ITPitrBackupAndRestore {
 
     final RestoreDatabaseMetadata restoreDatabaseMetadata =
         restoreDatabase(instanceId, backupId, restoreDatabaseId);
-    assertThat(restoreDatabaseMetadata.getBackupInfo().getVersionTime()).isEqualTo(versionTime);
+    assertThat(Timestamp.fromProto(restoreDatabaseMetadata.getBackupInfo().getVersionTime()))
+        .isEqualTo(versionTime);
 
     final Database retrievedDatabase = dbAdminClient.getDatabase(instanceId, restoreDatabaseId);
     assertThat(retrievedDatabase).isNotNull();
-    assertThat(retrievedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
+    assertThat(
+            Timestamp.fromProto(
+                retrievedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime()))
         .isEqualTo(versionTime);
 
     final Database listedDatabase = listDatabase(instanceId, restoreDatabaseId);
     assertThat(listedDatabase).isNotNull();
-    assertThat(listedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime())
+    assertThat(
+            Timestamp.fromProto(
+                listedDatabase.getRestoreInfo().getProto().getBackupInfo().getVersionTime()))
         .isEqualTo(versionTime);
   }
 
