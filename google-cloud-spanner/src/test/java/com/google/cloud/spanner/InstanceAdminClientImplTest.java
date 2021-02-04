@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -160,6 +161,22 @@ public class InstanceAdminClientImplTest {
                 .build());
     assertTrue(op.isDone());
     assertThat(op.get().getId().getName()).isEqualTo(INSTANCE_NAME);
+  }
+
+  @Test
+  public void createInstanceWithBothNodeCountAndProcessingUnits() throws Exception {
+    try {
+      client.createInstance(
+          InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
+              .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
+              .setNodeCount(1)
+              .setProcessingUnits(100)
+              .build());
+      fail("missing expected exception");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage())
+          .contains(InstanceAdminClientImpl.NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS);
+    }
   }
 
   @Test

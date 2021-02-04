@@ -49,6 +49,8 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
     }
   }
 
+  static final String NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS =
+      "Only one of nodeCount and processingUnits can be set when creating a new instance";
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
   private final DatabaseAdminClient dbClient;
@@ -100,7 +102,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
       throws SpannerException {
     Preconditions.checkArgument(
         instance.getNodeCount() == 0 || instance.getProcessingUnits() == 0,
-        "Only one of nodeCount and processingUnits can be set when creating a new instance");
+        NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS);
     String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
