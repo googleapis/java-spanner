@@ -23,6 +23,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -226,9 +227,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           Mutation.delete("FOO", Key.of("foo"))),
                       executor)
                   .commitAsync();
-          assertThat(commitTimestamp.get()).isNotNull();
-          assertThat(manager.getCommitResponse().get()).isNotNull();
-          assertThat(manager.getCommitResponse().get().getCommitStats()).isNotNull();
+          assertNotNull(commitTimestamp.get());
+          assertNotNull(manager.getCommitResponse().get());
+          assertNotNull(manager.getCommitResponse().get().getCommitStats());
           assertThat(manager.getCommitResponse().get().getCommitStats().getMutationCount())
               .isEqualTo(1);
           break;

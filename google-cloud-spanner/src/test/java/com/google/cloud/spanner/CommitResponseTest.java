@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
 
 import com.google.cloud.Timestamp;
 import org.junit.Test;
@@ -68,8 +69,8 @@ public class CommitResponseTest {
     assertThat(response1).isEqualTo(response3);
     assertThat(response1).isNotEqualTo(response2);
     assertThat(response2).isNotEqualTo(response3);
-    assertThat(response1.equals(null)).isFalse();
-    assertThat(response1.equals(new Object())).isFalse();
+    assertFalse(response1.equals(null));
+    assertFalse(response1.equals(new Object()));
 
     assertThat(response1.hashCode()).isEqualTo(response3.hashCode());
     assertThat(response1.hashCode()).isNotEqualTo(response2.hashCode());

@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -173,9 +175,9 @@ public class DatabaseClientImplTest {
             Arrays.asList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
-    assertThat(response).isNotNull();
-    assertThat(response.getCommitTimestamp()).isNotNull();
-    assertThat(response.getCommitStats()).isNotNull();
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
   }
 
   @Test
@@ -196,9 +198,9 @@ public class DatabaseClientImplTest {
             Arrays.asList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
-    assertThat(response).isNotNull();
-    assertThat(response.getCommitTimestamp()).isNotNull();
-    assertThat(response.getCommitStats()).isNotNull();
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
   }
 
   @Test
@@ -482,8 +484,8 @@ public class DatabaseClientImplTest {
             return null;
           }
         });
-    assertThat(runner.getCommitResponse()).isNotNull();
-    assertThat(runner.getCommitResponse().getCommitStats()).isNotNull();
+    assertNotNull(runner.getCommitResponse());
+    assertNotNull(runner.getCommitResponse().getCommitStats());
     assertThat(runner.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(1);
   }
 
@@ -542,9 +544,9 @@ public class DatabaseClientImplTest {
               }
             },
             executor);
-    assertThat(get(fut)).isNull();
-    assertThat(get(runner.getCommitResponse())).isNotNull();
-    assertThat(get(runner.getCommitResponse()).getCommitStats()).isNotNull();
+    assertNull(get(fut));
+    assertNotNull(get(runner.getCommitResponse()));
+    assertNotNull(get(runner.getCommitResponse()).getCommitStats());
     assertThat(get(runner.getCommitResponse()).getCommitStats().getMutationCount()).isEqualTo(1);
     executor.shutdown();
   }
@@ -626,8 +628,8 @@ public class DatabaseClientImplTest {
         try {
           tx.buffer(Mutation.delete("FOO", Key.of("foo")));
           txManager.commit();
-          assertThat(txManager.getCommitResponse()).isNotNull();
-          assertThat(txManager.getCommitResponse().getCommitStats()).isNotNull();
+          assertNotNull(txManager.getCommitResponse());
+          assertNotNull(txManager.getCommitResponse().getCommitStats());
           assertThat(txManager.getCommitResponse().getCommitStats().getMutationCount())
               .isEqualTo(1);
           break;
