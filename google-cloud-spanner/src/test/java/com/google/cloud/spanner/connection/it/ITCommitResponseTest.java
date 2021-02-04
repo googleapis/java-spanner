@@ -16,10 +16,12 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -68,6 +70,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
 
   @Test
   public void testReturnCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.setReturnCommitStats(true);
       connection.bufferedWrite(
@@ -82,6 +85,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
 
   @Test
   public void testReturnCommitStatsUsingSql() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.execute(Statement.of("SET RETURN_COMMIT_STATS=TRUE"));
       connection.bufferedWrite(
@@ -116,6 +120,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAutocommitReturnCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setReturnCommitStats(true);
@@ -130,6 +135,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
 
   @Test
   public void testAutocommitReturnCommitStatsUsingSql() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.execute(Statement.of("SET AUTOCOMMIT=TRUE"));
       connection.execute(Statement.of("SET RETURN_COMMIT_STATS=TRUE"));
