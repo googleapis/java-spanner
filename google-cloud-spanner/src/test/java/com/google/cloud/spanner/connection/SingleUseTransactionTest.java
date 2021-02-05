@@ -765,7 +765,7 @@ public class SingleUseTransactionTest {
       transaction.getCommitResponse();
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
     assertNull(transaction.getCommitResponseOrNull());
   }
@@ -779,7 +779,7 @@ public class SingleUseTransactionTest {
       transaction.getCommitResponse();
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
     assertNull(transaction.getCommitResponseOrNull());
   }
