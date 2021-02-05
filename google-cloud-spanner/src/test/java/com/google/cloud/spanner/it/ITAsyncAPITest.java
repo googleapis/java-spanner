@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -339,7 +340,7 @@ public class ITAsyncAPITest {
         executor);
     assertNotNull(get(runner.getCommitResponse()).getCommitStats());
     // MutationCount = 2 columns + 2 secondary indexes.
-    assertThat(get(runner.getCommitResponse()).getCommitStats().getMutationCount()).isEqualTo(4L);
+    assertEquals(4L, get(runner.getCommitResponse()).getCommitStats().getMutationCount());
   }
 
   @Test
@@ -369,8 +370,7 @@ public class ITAsyncAPITest {
                       executor)
                   .commitAsync());
           assertNotNull(get(mgr.getCommitResponse()).getCommitStats());
-          assertThat(get(mgr.getCommitResponse()).getCommitStats().getMutationCount())
-              .isEqualTo(4L);
+          assertEquals(4L, get(mgr.getCommitResponse()).getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);

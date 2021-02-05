@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -486,7 +487,7 @@ public class DatabaseClientImplTest {
         });
     assertNotNull(runner.getCommitResponse());
     assertNotNull(runner.getCommitResponse().getCommitStats());
-    assertThat(runner.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(1);
+    assertEquals(1L, runner.getCommitResponse().getCommitStats().getMutationCount());
   }
 
   @Test
@@ -547,7 +548,7 @@ public class DatabaseClientImplTest {
     assertNull(get(fut));
     assertNotNull(get(runner.getCommitResponse()));
     assertNotNull(get(runner.getCommitResponse()).getCommitStats());
-    assertThat(get(runner.getCommitResponse()).getCommitStats().getMutationCount()).isEqualTo(1);
+    assertEquals(1L, get(runner.getCommitResponse()).getCommitStats().getMutationCount());
     executor.shutdown();
   }
 
@@ -630,8 +631,7 @@ public class DatabaseClientImplTest {
           txManager.commit();
           assertNotNull(txManager.getCommitResponse());
           assertNotNull(txManager.getCommitResponse().getCommitStats());
-          assertThat(txManager.getCommitResponse().getCommitStats().getMutationCount())
-              .isEqualTo(1);
+          assertEquals(1L, txManager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);
