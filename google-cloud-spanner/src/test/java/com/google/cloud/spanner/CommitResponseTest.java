@@ -16,8 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import com.google.cloud.Timestamp;
 import org.junit.Test;
@@ -43,8 +44,8 @@ public class CommitResponseTest {
 
     CommitResponse response = new CommitResponse(proto);
 
-    assertThat(response.getCommitTimestamp()).isEqualTo(Timestamp.ofTimeSecondsAndNanos(123L, 456));
-    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(mutationCount);
+    assertEquals(Timestamp.ofTimeSecondsAndNanos(123L, 456), response.getCommitTimestamp());
+    assertEquals(mutationCount, response.getCommitStats().getMutationCount());
   }
 
   @Test
@@ -66,14 +67,14 @@ public class CommitResponseTest {
     CommitResponse response2 = new CommitResponse(proto2);
     CommitResponse response3 = new CommitResponse(proto3);
 
-    assertThat(response1).isEqualTo(response3);
-    assertThat(response1).isNotEqualTo(response2);
-    assertThat(response2).isNotEqualTo(response3);
+    assertEquals(response3, response1);
+    assertNotEquals(response2, response1);
+    assertNotEquals(response3, response2);
     assertFalse(response1.equals(null));
     assertFalse(response1.equals(new Object()));
 
-    assertThat(response1.hashCode()).isEqualTo(response3.hashCode());
-    assertThat(response1.hashCode()).isNotEqualTo(response2.hashCode());
-    assertThat(response2.hashCode()).isNotEqualTo(response3.hashCode());
+    assertEquals(response3.hashCode(), response1.hashCode());
+    assertNotEquals(response2.hashCode(), response1.hashCode());
+    assertNotEquals(response3.hashCode(), response2.hashCode());
   }
 }

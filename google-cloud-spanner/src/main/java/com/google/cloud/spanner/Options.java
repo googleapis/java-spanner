@@ -46,7 +46,7 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
 
-  /** Specifying this will cause the transaction to request {@link CommitStats} from the backend. */
+  /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
   public static TransactionOption commitStats() {
     return COMMIT_STATS_OPTION;
   }

@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -231,7 +232,7 @@ public class ITTransactionManagerTest {
         try {
           manager.commit();
           assertNotNull(manager.getCommitResponse().getCommitStats());
-          assertThat(manager.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+          assertEquals(2L, manager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);

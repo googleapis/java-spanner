@@ -23,6 +23,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -230,8 +231,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           assertNotNull(commitTimestamp.get());
           assertNotNull(manager.getCommitResponse().get());
           assertNotNull(manager.getCommitResponse().get().getCommitStats());
-          assertThat(manager.getCommitResponse().get().getCommitStats().getMutationCount())
-              .isEqualTo(1);
+          assertEquals(1L, manager.getCommitResponse().get().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
           txn = manager.resetForRetryAsync();

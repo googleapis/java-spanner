@@ -121,6 +121,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     return txn.getCommitResponse().getCommitTimestamp();
   }
 
+  @Override
   public CommitResponse getCommitResponse() {
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,

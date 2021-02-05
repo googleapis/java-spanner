@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -176,7 +177,7 @@ public class ITWriteTest {
     assertNotNull(response);
     assertNotNull(response.getCommitTimestamp());
     assertNotNull(response.getCommitStats());
-    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
+    assertEquals(2L, response.getCommitStats().getMutationCount());
   }
 
   @Test
@@ -195,7 +196,7 @@ public class ITWriteTest {
     assertNotNull(response);
     assertNotNull(response.getCommitTimestamp());
     assertNotNull(response.getCommitStats());
-    assertThat(response.getCommitStats().getMutationCount()).isEqualTo(2L);
+    assertEquals(2L, response.getCommitStats().getMutationCount());
   }
 
   @Test

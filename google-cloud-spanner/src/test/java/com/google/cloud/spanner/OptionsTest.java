@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -259,21 +261,21 @@ public class OptionsTest {
   public void testTransactionOptions_noOptionsHashCode() {
     Options o1 = Options.fromTransactionOptions();
     Options o2 = Options.fromTransactionOptions();
-    assertThat(o1.hashCode()).isEqualTo(o2.hashCode());
+    assertEquals(o2.hashCode(), o1.hashCode());
   }
 
   @Test
   public void testTransactionOptions_withCommitStatsHashCode() {
     Options o1 = Options.fromTransactionOptions(Options.commitStats());
     Options o2 = Options.fromTransactionOptions(Options.commitStats());
-    assertThat(o1.hashCode()).isEqualTo(o2.hashCode());
+    assertEquals(o2.hashCode(), o1.hashCode());
   }
 
   @Test
   public void testTransactionOptions_withCommitStatsAndOtherOptionHashCode() {
     Options o1 = Options.fromTransactionOptions(Options.commitStats());
     Options o2 = Options.fromQueryOptions(Options.prefetchChunks(10));
-    assertThat(o1.hashCode()).isNotEqualTo(o2.hashCode());
+    assertNotEquals(o2.hashCode(), o1.hashCode());
   }
 
   @Test
