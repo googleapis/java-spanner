@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.connection.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -79,7 +79,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       assertNotNull(connection.getCommitResponse());
       assertNotNull(connection.getCommitResponse().getCommitTimestamp());
       assertTrue(connection.getCommitResponse().hasCommitStats());
-      assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+      assertEquals(2L, connection.getCommitResponse().getCommitStats().getMutationCount());
     }
   }
 
@@ -94,12 +94,12 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       assertNotNull(connection.getCommitResponse());
       assertNotNull(connection.getCommitResponse().getCommitTimestamp());
       assertTrue(connection.getCommitResponse().hasCommitStats());
-      assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+      assertEquals(2L, connection.getCommitResponse().getCommitStats().getMutationCount());
       try (ResultSet resultSet =
           connection.execute(Statement.of("SHOW VARIABLE COMMIT_RESPONSE")).getResultSet()) {
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
-        assertThat(resultSet.getLong("MUTATION_COUNT")).isEqualTo(2L);
+        assertEquals(2L, resultSet.getLong("MUTATION_COUNT"));
         assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
         assertFalse(resultSet.next());
       }
@@ -129,7 +129,7 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       assertNotNull(connection.getCommitResponse());
       assertNotNull(connection.getCommitResponse().getCommitTimestamp());
       assertTrue(connection.getCommitResponse().hasCommitStats());
-      assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+      assertEquals(2L, connection.getCommitResponse().getCommitStats().getMutationCount());
     }
   }
 
@@ -144,12 +144,12 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
       assertNotNull(connection.getCommitResponse());
       assertNotNull(connection.getCommitResponse().getCommitTimestamp());
       assertTrue(connection.getCommitResponse().hasCommitStats());
-      assertThat(connection.getCommitResponse().getCommitStats().getMutationCount()).isEqualTo(2L);
+      assertEquals(2L, connection.getCommitResponse().getCommitStats().getMutationCount());
       try (ResultSet resultSet =
           connection.execute(Statement.of("SHOW VARIABLE COMMIT_RESPONSE")).getResultSet()) {
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
-        assertThat(resultSet.getLong("MUTATION_COUNT")).isEqualTo(2L);
+        assertEquals(2L, resultSet.getLong("MUTATION_COUNT"));
         assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
         assertFalse(resultSet.next());
       }

@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -764,7 +765,7 @@ public class SingleUseTransactionTest {
       transaction.getCommitResponse();
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
     }
     assertNull(transaction.getCommitResponseOrNull());
   }
@@ -778,7 +779,7 @@ public class SingleUseTransactionTest {
       transaction.getCommitResponse();
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
     }
     assertNull(transaction.getCommitResponseOrNull());
   }

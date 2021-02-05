@@ -144,8 +144,8 @@ interface UnitOfWork {
   Timestamp getCommitTimestampOrNull();
 
   /**
-   * @return the {@link CommitResponse} of this transaction. Throws a {@link SpannerException} if
-   *     there is no {@link CommitResponse}
+   * @return the {@link CommitResponse} of this transaction
+   * @throws {@link SpannerException} if there is no {@link CommitResponse}
    */
   CommitResponse getCommitResponse();
 

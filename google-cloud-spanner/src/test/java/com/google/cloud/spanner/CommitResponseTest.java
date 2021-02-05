@@ -18,8 +18,8 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.Timestamp;
 import com.google.spanner.v1.CommitResponse.CommitStats;
