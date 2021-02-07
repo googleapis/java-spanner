@@ -26,6 +26,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -185,8 +186,8 @@ public class DatabaseClientImplTest {
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
-    assertThat(commit.getRequestOptions()).isNotNull();
-    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_UNSPECIFIED);
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -201,8 +202,8 @@ public class DatabaseClientImplTest {
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
-    assertThat(commit.getRequestOptions()).isNotNull();
-    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -246,10 +247,10 @@ public class DatabaseClientImplTest {
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
-    assertThat(commit.getSingleUseTransaction()).isNotNull();
-    assertThat(commit.getSingleUseTransaction().hasReadWrite()).isTrue();
-    assertThat(commit.getRequestOptions()).isNotNull();
-    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_UNSPECIFIED);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -264,10 +265,10 @@ public class DatabaseClientImplTest {
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
-    assertThat(commit.getSingleUseTransaction()).isNotNull();
-    assertThat(commit.getSingleUseTransaction().hasReadWrite()).isTrue();
-    assertThat(commit.getRequestOptions()).isNotNull();
-    assertThat(commit.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_LOW);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_LOW, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1716,8 +1717,8 @@ public class DatabaseClientImplTest {
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1738,8 +1739,8 @@ public class DatabaseClientImplTest {
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1762,8 +1763,8 @@ public class DatabaseClientImplTest {
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1790,8 +1791,8 @@ public class DatabaseClientImplTest {
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1810,8 +1811,8 @@ public class DatabaseClientImplTest {
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1832,8 +1833,8 @@ public class DatabaseClientImplTest {
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
     assertThat(requests).hasSize(1);
     ExecuteBatchDmlRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1845,8 +1846,8 @@ public class DatabaseClientImplTest {
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1866,24 +1867,24 @@ public class DatabaseClientImplTest {
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
   public void testTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionManager mgr = client.transactionManager(Options.priority(RpcPriority.HIGH));
-    TransactionContext transaction = mgr.begin();
+    TransactionManager manager = client.transactionManager(Options.priority(RpcPriority.HIGH));
+    TransactionContext transaction = manager.begin();
     transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-    mgr.commit();
+    manager.commit();
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1905,17 +1906,17 @@ public class DatabaseClientImplTest {
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
   }
 
   @Test
   public void testAsyncTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (AsyncTransactionManager mgr =
+    try (AsyncTransactionManager manager =
         client.transactionManagerAsync(Options.priority(RpcPriority.HIGH))) {
-      TransactionContextFuture transaction = mgr.beginAsync();
+      TransactionContextFuture transaction = manager.beginAsync();
       get(
           transaction
               .then(
@@ -1934,7 +1935,59 @@ public class DatabaseClientImplTest {
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
-    assertThat(request.getRequestOptions()).isNotNull();
-    assertThat(request.getRequestOptions().getPriority()).isEqualTo(Priority.PRIORITY_HIGH);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testReadWriteTransaction_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.readWriteTransaction(option);
+
+    verify(session).readWriteTransaction(option);
+  }
+
+  @Test
+  public void testTransactionManager_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.transactionManager(option);
+
+    verify(session).transactionManager(option);
+  }
+
+  @Test
+  public void testRunAsync_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.runAsync(option);
+
+    verify(session).runAsync(option);
+  }
+
+  @Test
+  public void testTransactionManagerAsync_usesOptions() {
+    SessionPool pool = mock(SessionPool.class);
+    PooledSessionFuture session = mock(PooledSessionFuture.class);
+    when(pool.getSession()).thenReturn(session);
+    TransactionOption option = mock(TransactionOption.class);
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    client.transactionManagerAsync(option);
+
+    verify(session).transactionManagerAsync(option);
   }
 }

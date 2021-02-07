@@ -560,7 +560,9 @@ abstract class AbstractReadContext
 
   RequestOptions buildRequestOptions(Options options) {
     RequestOptions.Builder builder = RequestOptions.newBuilder();
-    if (options.hasPriority()) builder.setPriority(options.priority());
+    if (options.hasPriority()) {
+      builder.setPriority(options.priority());
+    }
     return builder.build();
   }
 

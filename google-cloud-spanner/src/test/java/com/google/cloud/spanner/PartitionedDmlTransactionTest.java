@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
@@ -27,12 +28,14 @@ import com.google.api.gax.rpc.AbortedException;
 import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.*;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.RequestOptions.Priority;
 import io.grpc.Status.Code;
 import java.util.Collections;
 import java.util.Iterator;
@@ -334,5 +337,22 @@ public class PartitionedDmlTransactionTest {
           .executeStreamingPartitionedDml(
               Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
     }
+  }
+
+  @Test
+  public void testRequestWithoutPriority() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"), Options.fromUpdateOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testRequestWithPriority() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
+            Options.fromUpdateOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
   }
 }

@@ -17,17 +17,23 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,5 +119,47 @@ public class AbstractReadContextTest {
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("2.0");
+  }
+
+  @Test
+  public void testBuildRequestionOptions() {
+    RequestOptions requestOptions = context.buildRequestOptions(Options.fromQueryOptions());
+    assertEquals(RequestOptions.Priority.PRIORITY_UNSPECIFIED, requestOptions.getPriority());
+  }
+
+  @Test
+  public void testBuildRequestOptionsWithPriority() {
+    RequestOptions requestOptionsHighPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.HIGH)));
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptionsHighPriority.getPriority());
+
+    RequestOptions requestOptionsMediumPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM)));
+    assertEquals(
+        RequestOptions.Priority.PRIORITY_MEDIUM, requestOptionsMediumPriority.getPriority());
+
+    RequestOptions requestOptionsLowPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(RequestOptions.Priority.PRIORITY_LOW, requestOptionsLowPriority.getPriority());
+  }
+
+  @Test
+  public void testGetExecuteSqlRequestBuilderWithPriority() {
+    ExecuteSqlRequest.Builder request =
+        context.getExecuteSqlRequestBuilder(
+            Statement.of("SELECT * FROM FOO"),
+            QueryMode.NORMAL,
+            Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM)),
+            false);
+    assertEquals(Priority.PRIORITY_MEDIUM, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testGetExecuteBatchDmlRequestBuilderWithPriority() {
+    ExecuteBatchDmlRequest.Builder request =
+        context.getExecuteBatchDmlRequestBuilder(
+            Collections.singleton(Statement.of("SELECT * FROM FOO")),
+            Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
   }
 }

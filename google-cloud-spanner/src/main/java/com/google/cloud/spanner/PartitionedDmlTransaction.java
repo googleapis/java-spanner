@@ -26,6 +26,7 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
 import com.google.protobuf.ByteString;
@@ -163,8 +164,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     }
   }
 
-  private ExecuteSqlRequest newTransactionRequestFrom(
-      final Statement statement, final Options options) {
+  @VisibleForTesting
+  ExecuteSqlRequest newTransactionRequestFrom(final Statement statement, final Options options) {
     ByteString transactionId = initTransaction();
 
     final TransactionSelector transactionSelector =

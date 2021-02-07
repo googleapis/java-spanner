@@ -193,10 +193,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
-<<<<<<< HEAD
       this.trackTransactionStarter = builder.trackTransactionStarter;
-=======
->>>>>>> 046aac8e... feat: add support for RPC priority
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
     }

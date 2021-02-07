@@ -34,20 +34,7 @@ public final class Options implements Serializable {
     private final Priority proto;
 
     private RpcPriority(Priority proto) {
-      this.proto = proto;
-    }
-
-    Priority toProto() {
-      return proto;
-    }
-
-    static RpcPriority fromProto(Priority proto) {
-      for (RpcPriority prio : RpcPriority.values()) {
-        if (prio.proto == proto) {
-          return prio;
-        }
-      }
-      throw new IllegalArgumentException("Unknown priority: " + proto);
+      this.proto = Preconditions.checkNotNull(proto);
     }
   }
 

@@ -18,8 +18,10 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Options.RpcPriority;
@@ -277,24 +279,213 @@ public class OptionsTest {
     Options option2 = Options.fromQueryOptions(Options.prefetchChunks(10));
     assertNotEquals(option2.hashCode(), option1.hashCode());
   }
+  
+  @Test
+  public void testTransactionOptionsPriority() {
+    RpcPriority prio = RpcPriority.HIGH;
+    Options opts = Options.fromTransactionOptions(Options.priority(prio));
+    assertTrue(opts.hasPriority());
+    assertEquals("priority: " + prio + " ", opts.toString());
+  }
+
+  @Test
+  public void testQueryOptionsPriority() {
+    RpcPriority prio = RpcPriority.MEDIUM;
+    Options opts = Options.fromQueryOptions(Options.priority(prio));
+    assertTrue(opts.hasPriority());
+    assertEquals("priority: " + prio + " ", opts.toString());
+  }
+
+  @Test
+  public void testReadOptionsPriority() {
+    RpcPriority prio = RpcPriority.LOW;
+    Options opts = Options.fromReadOptions(Options.priority(prio));
+    assertTrue(opts.hasPriority());
+    assertEquals("priority: " + prio + " ", opts.toString());
+  }
+
+  @Test
+  public void testUpdateOptionsPriority() {
+    RpcPriority prio = RpcPriority.LOW;
+    Options opts = Options.fromUpdateOptions(Options.priority(prio));
+    assertTrue(opts.hasPriority());
+    assertEquals("priority: " + prio + " ", opts.toString());
+  }
+
+  @Test
+  public void testTransactionOptionsEquality() {
+    Options o1 = Options.fromTransactionOptions();
+    Options o2 = Options.fromTransactionOptions();
+    assertTrue(o1.equals(o2));
+  }
+
+  @Test
+  public void testTransactionOptionsHashCode() {
+    Options o1 = Options.fromTransactionOptions();
+    Options o2 = Options.fromTransactionOptions();
+    assertEquals(o1.hashCode(), o2.hashCode());
+  }
+
+  @Test
+  public void testTransactionOptionsWithPriorityEquality() {
+    Options optionsWithHighPriority1 =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+
+    Options optionsWithMediumPriority =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.MEDIUM));
+    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+  }
+
+  @Test
+  public void testTransactionOptionsWithPriorityHashCode() {
+    Options optionsWithHighPriority1 =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    assertEquals(optionsWithHighPriority1.hashCode(), optionsWithHighPriority2.hashCode());
+
+    Options optionsWithMediumPriority =
+        Options.fromTransactionOptions(Options.priority(RpcPriority.MEDIUM));
+    assertNotEquals(optionsWithHighPriority1.hashCode(), optionsWithMediumPriority.hashCode());
+  }
+
+  @Test
+  public void testUpdateOptionsEquality() {
+    Options o1 = Options.fromUpdateOptions();
+    Options o2 = Options.fromUpdateOptions();
+    assertTrue(o1.equals(o2));
+  }
+
+  @Test
+  public void testUpdateOptionsHashCode() {
+    Options o1 = Options.fromUpdateOptions();
+    Options o2 = Options.fromUpdateOptions();
+    assertEquals(o1.hashCode(), o2.hashCode());
+  }
+
+  @Test
+  public void testUpdateOptionsWithPriorityEquality() {
+    Options optionsWithHighPriority1 =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
+    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+
+    Options optionsWithMediumPriority =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.MEDIUM));
+    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+  }
+
+  @Test
+  public void testUpdateOptionsWithPriorityHashCode() {
+    Options optionsWithHighPriority1 =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
+    assertEquals(optionsWithHighPriority1.hashCode(), optionsWithHighPriority2.hashCode());
+
+    Options optionsWithMediumPriority =
+        Options.fromUpdateOptions(Options.priority(RpcPriority.MEDIUM));
+    assertNotEquals(optionsWithHighPriority1.hashCode(), optionsWithMediumPriority.hashCode());
+  }
+
+  @Test
+  public void testQueryOptionsEquality() {
+    Options o1 = Options.fromQueryOptions();
+    Options o2 = Options.fromQueryOptions();
+    assertTrue(o1.equals(o2));
+  }
+
+  @Test
+  public void testQueryOptionsHashCode() {
+    Options o1 = Options.fromQueryOptions();
+    Options o2 = Options.fromQueryOptions();
+    assertEquals(o1.hashCode(), o2.hashCode());
+  }
+
+  @Test
+  public void testQueryOptionsWithPriorityEquality() {
+    Options optionsWithHighPriority1 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
+    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+
+    Options optionsWithMediumPriority =
+        Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM));
+    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+
+    Options optionsWithHighPriorityAndBufferRows =
+        Options.fromQueryOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
+    assertFalse(optionsWithHighPriorityAndBufferRows.equals(optionsWithHighPriority1));
+  }
+
+  @Test
+  public void testQueryOptionsWithPriorityHashCode() {
+    Options optionsWithHighPriority1 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
+    assertEquals(optionsWithHighPriority1.hashCode(), optionsWithHighPriority2.hashCode());
+
+    Options optionsWithMediumPriority =
+        Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM));
+    assertNotEquals(optionsWithHighPriority1.hashCode(), optionsWithMediumPriority.hashCode());
+
+    Options optionsWithHighPriorityAndBufferRows =
+        Options.fromQueryOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
+    assertNotEquals(
+        optionsWithHighPriorityAndBufferRows.hashCode(), optionsWithHighPriority1.hashCode());
+  }
+
+  @Test
+  public void testReadOptionsEquality() {
+    Options o1 = Options.fromReadOptions();
+    Options o2 = Options.fromReadOptions();
+    assertTrue(o1.equals(o2));
+  }
+
+  @Test
+  public void testReadOptionsHashCode() {
+    Options o1 = Options.fromReadOptions();
+    Options o2 = Options.fromReadOptions();
+    assertEquals(o1.hashCode(), o2.hashCode());
+  }
+
+  @Test
+  public void testReadOptionsWithPriorityEquality() {
+    Options optionsWithHighPriority1 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
+    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+
+    Options optionsWithMediumPriority =
+        Options.fromReadOptions(Options.priority(RpcPriority.MEDIUM));
+    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+
+    Options optionsWithHighPriorityAndBufferRows =
+        Options.fromReadOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
+    assertFalse(optionsWithHighPriorityAndBufferRows.equals(optionsWithHighPriority1));
+  }
+
+  @Test
+  public void testReadOptionsWithPriorityHashCode() {
+    Options optionsWithHighPriority1 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
+    Options optionsWithHighPriority2 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
+    assertEquals(optionsWithHighPriority1.hashCode(), optionsWithHighPriority2.hashCode());
+
+    Options optionsWithMediumPriority =
+        Options.fromReadOptions(Options.priority(RpcPriority.MEDIUM));
+    assertNotEquals(optionsWithHighPriority1.hashCode(), optionsWithMediumPriority.hashCode());
+
+    Options optionsWithHighPriorityAndBufferRows =
+        Options.fromReadOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
+    assertNotEquals(
+        optionsWithHighPriorityAndBufferRows.hashCode(), optionsWithHighPriority1.hashCode());
+  }
 
   @Test
   public void testFromUpdateOptions() {
     Options opts = Options.fromUpdateOptions();
     assertThat(opts.toString()).isEqualTo("");
-  }
-
-  @Test
-  public void testUpdateOptionsEquality() {
-    Options o1;
-    Options o2;
-
-    o1 = Options.fromUpdateOptions();
-    o2 = Options.fromUpdateOptions();
-    assertThat(o1.equals(o2)).isTrue();
-
-    o2 = Options.fromReadOptions(Options.prefetchChunks(1));
-    assertThat(o1.equals(o2)).isFalse();
   }
   
   @Test
