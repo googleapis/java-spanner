@@ -183,15 +183,15 @@ public class DatabaseClientImplTest {
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
-    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
-    assertThat(commits).hasSize(1);
-    CommitRequest commit = commits.get(0);
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
 
   @Test
-  public void writewithoptions() {
+  public void testWriteWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeWithOptions(
@@ -244,9 +244,9 @@ public class DatabaseClientImplTest {
     assertNotNull(response.getCommitTimestamp());
     assertNotNull(response.getCommitStats());
 
-    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
-    assertThat(commits).hasSize(1);
-    CommitRequest commit = commits.get(0);
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
     assertNotNull(commit.getRequestOptions());
@@ -254,7 +254,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void writeAtLeastOnceWithOptions() {
+  public void testWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
@@ -262,9 +262,9 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.LOW));
 
-    List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
-    assertThat(commits).hasSize(1);
-    CommitRequest commit = commits.get(0);
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
     assertNotNull(commit.getRequestOptions());

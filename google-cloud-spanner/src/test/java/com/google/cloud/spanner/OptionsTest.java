@@ -282,48 +282,48 @@ public class OptionsTest {
   
   @Test
   public void testTransactionOptionsPriority() {
-    RpcPriority prio = RpcPriority.HIGH;
-    Options opts = Options.fromTransactionOptions(Options.priority(prio));
-    assertTrue(opts.hasPriority());
-    assertEquals("priority: " + prio + " ", opts.toString());
+    RpcPriority priority = RpcPriority.HIGH;
+    Options options = Options.fromTransactionOptions(Options.priority(priority));
+    assertTrue(options.hasPriority());
+    assertEquals("priority: " + priority + " ", options.toString());
   }
 
   @Test
   public void testQueryOptionsPriority() {
-    RpcPriority prio = RpcPriority.MEDIUM;
-    Options opts = Options.fromQueryOptions(Options.priority(prio));
-    assertTrue(opts.hasPriority());
-    assertEquals("priority: " + prio + " ", opts.toString());
+    RpcPriority priority = RpcPriority.MEDIUM;
+    Options options = Options.fromQueryOptions(Options.priority(priority));
+    assertTrue(options.hasPriority());
+    assertEquals("priority: " + priority + " ", options.toString());
   }
 
   @Test
   public void testReadOptionsPriority() {
-    RpcPriority prio = RpcPriority.LOW;
-    Options opts = Options.fromReadOptions(Options.priority(prio));
-    assertTrue(opts.hasPriority());
-    assertEquals("priority: " + prio + " ", opts.toString());
+    RpcPriority priority = RpcPriority.LOW;
+    Options options = Options.fromReadOptions(Options.priority(priority));
+    assertTrue(options.hasPriority());
+    assertEquals("priority: " + priority + " ", options.toString());
   }
 
   @Test
   public void testUpdateOptionsPriority() {
-    RpcPriority prio = RpcPriority.LOW;
-    Options opts = Options.fromUpdateOptions(Options.priority(prio));
-    assertTrue(opts.hasPriority());
-    assertEquals("priority: " + prio + " ", opts.toString());
+    RpcPriority priority = RpcPriority.LOW;
+    Options options = Options.fromUpdateOptions(Options.priority(priority));
+    assertTrue(options.hasPriority());
+    assertEquals("priority: " + priority + " ", options.toString());
   }
 
   @Test
   public void testTransactionOptionsEquality() {
-    Options o1 = Options.fromTransactionOptions();
-    Options o2 = Options.fromTransactionOptions();
-    assertTrue(o1.equals(o2));
+    Options option1 = Options.fromTransactionOptions();
+    Options option2 = Options.fromTransactionOptions();
+    assertTrue(option1.equals(option2));
   }
 
   @Test
   public void testTransactionOptionsHashCode() {
-    Options o1 = Options.fromTransactionOptions();
-    Options o2 = Options.fromTransactionOptions();
-    assertEquals(o1.hashCode(), o2.hashCode());
+    Options option1 = Options.fromTransactionOptions();
+    Options option2 = Options.fromTransactionOptions();
+    assertEquals(option1.hashCode(), option2.hashCode());
   }
 
   @Test
@@ -354,16 +354,16 @@ public class OptionsTest {
 
   @Test
   public void testUpdateOptionsEquality() {
-    Options o1 = Options.fromUpdateOptions();
-    Options o2 = Options.fromUpdateOptions();
-    assertTrue(o1.equals(o2));
+    Options option1 = Options.fromUpdateOptions();
+    Options option2 = Options.fromUpdateOptions();
+    assertTrue(option1.equals(option2));
   }
 
   @Test
   public void testUpdateOptionsHashCode() {
-    Options o1 = Options.fromUpdateOptions();
-    Options o2 = Options.fromUpdateOptions();
-    assertEquals(o1.hashCode(), o2.hashCode());
+    Options option1 = Options.fromUpdateOptions();
+    Options option2 = Options.fromUpdateOptions();
+    assertEquals(option1.hashCode(), option2.hashCode());
   }
 
   @Test
@@ -394,16 +394,16 @@ public class OptionsTest {
 
   @Test
   public void testQueryOptionsEquality() {
-    Options o1 = Options.fromQueryOptions();
-    Options o2 = Options.fromQueryOptions();
-    assertTrue(o1.equals(o2));
+    Options option1 = Options.fromQueryOptions();
+    Options option2 = Options.fromQueryOptions();
+    assertTrue(option1.equals(option2));
   }
 
   @Test
   public void testQueryOptionsHashCode() {
-    Options o1 = Options.fromQueryOptions();
-    Options o2 = Options.fromQueryOptions();
-    assertEquals(o1.hashCode(), o2.hashCode());
+    Options option1 = Options.fromQueryOptions();
+    Options option2 = Options.fromQueryOptions();
+    assertEquals(option1.hashCode(), option2.hashCode());
   }
 
   @Test
@@ -439,16 +439,16 @@ public class OptionsTest {
 
   @Test
   public void testReadOptionsEquality() {
-    Options o1 = Options.fromReadOptions();
-    Options o2 = Options.fromReadOptions();
-    assertTrue(o1.equals(o2));
+    Options option1 = Options.fromReadOptions();
+    Options option2 = Options.fromReadOptions();
+    assertTrue(option1.equals(option2));
   }
 
   @Test
   public void testReadOptionsHashCode() {
-    Options o1 = Options.fromReadOptions();
-    Options o2 = Options.fromReadOptions();
-    assertEquals(o1.hashCode(), o2.hashCode());
+    Options option1 = Options.fromReadOptions();
+    Options option2 = Options.fromReadOptions();
+    assertEquals(option1.hashCode(), option2.hashCode());
   }
 
   @Test
@@ -484,8 +484,8 @@ public class OptionsTest {
 
   @Test
   public void testFromUpdateOptions() {
-    Options opts = Options.fromUpdateOptions();
-    assertThat(opts.toString()).isEqualTo("");
+    Options options = Options.fromUpdateOptions();
+    assertThat(options.toString()).isEqualTo("");
   }
   
   @Test

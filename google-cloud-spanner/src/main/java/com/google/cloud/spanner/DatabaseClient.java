@@ -318,8 +318,8 @@ public interface DatabaseClient {
    *
    * <ul>
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
-   *       RpcPriority} to use for the commit request of the transaction. The priority will not
-   *       automatically be applied to any other requests on the transaction.
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
    * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
@@ -356,8 +356,8 @@ public interface DatabaseClient {
    *
    * <ul>
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
-   *       RpcPriority} to use for the commit request of the transaction. The priority will not
-   *       automatically be applied to any other requests on the transaction.
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
    * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
@@ -397,8 +397,8 @@ public interface DatabaseClient {
    *
    * <ul>
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
-   *       RpcPriority} to use for the commit request of the transaction. The priority will not
-   *       automatically be applied to any other requests on the transaction.
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
    * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
@@ -493,8 +493,8 @@ public interface DatabaseClient {
    *
    * <ul>
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
-   *       RpcPriority} to use for the commit request of the transaction. The priority will not
-   *       automatically be applied to any other requests on the transaction.
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
    * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);

@@ -161,7 +161,7 @@ class SessionImpl implements Session {
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
-    Options opts = Options.fromTransactionOptions(transactionOptions);
+    Options commitRequestOptions = Options.fromTransactionOptions(transactionOptions);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
     final CommitRequest.Builder requestBuilder =
@@ -173,9 +173,9 @@ class SessionImpl implements Session {
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    if (opts.hasPriority()) {
+    if (commitRequestOptions.hasPriority()) {
       requestBuilder.setRequestOptions(
-          RequestOptions.newBuilder().setPriority(opts.priority()).build());
+          RequestOptions.newBuilder().setPriority(commitRequestOptions.priority()).build());
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
