@@ -25,6 +25,13 @@
  * in Cloud Spanner databases.
  *
  * <p>Sample for SpannerClient:
+ *
+ * <pre>{@code
+ * try (SpannerClient spannerClient = SpannerClient.create()) {
+ *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Session response = spannerClient.createSession(database);
+ * }
+ * }</pre>
  */
 @Generated("by gapic-generator-java")
 package com.google.cloud.spanner.v1;

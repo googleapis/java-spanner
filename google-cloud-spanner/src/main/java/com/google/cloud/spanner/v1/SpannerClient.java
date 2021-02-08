@@ -73,6 +73,13 @@ import javax.annotation.Generated;
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
  *
+ * <pre>{@code
+ * try (SpannerClient spannerClient = SpannerClient.create()) {
+ *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Session response = spannerClient.createSession(database);
+ * }
+ * }</pre>
+ *
  * <p>Note: close() needs to be called on the SpannerClient object to clean up resources such as
  * threads. In the example above, try-with-resources is used, which automatically calls close().
  *
@@ -187,6 +194,15 @@ public class SpannerClient implements BackgroundResource {
    * <p>Idle sessions can be kept alive by sending a trivial SQL query periodically, e.g., `"SELECT
    * 1"`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   Session response = spannerClient.createSession(database);
+   * }
+   * }</pre>
+   *
    * @param database Required. The database in which the new session is created.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -216,6 +232,15 @@ public class SpannerClient implements BackgroundResource {
    * <p>Idle sessions can be kept alive by sending a trivial SQL query periodically, e.g., `"SELECT
    * 1"`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   Session response = spannerClient.createSession(database);
+   * }
+   * }</pre>
+   *
    * @param database Required. The database in which the new session is created.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -241,6 +266,19 @@ public class SpannerClient implements BackgroundResource {
    *
    * <p>Idle sessions can be kept alive by sending a trivial SQL query periodically, e.g., `"SELECT
    * 1"`.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   CreateSessionRequest request =
+   *       CreateSessionRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setSession(Session.newBuilder().build())
+   *           .build();
+   *   Session response = spannerClient.createSession(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -268,6 +306,19 @@ public class SpannerClient implements BackgroundResource {
    * 1"`.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   CreateSessionRequest request =
+   *       CreateSessionRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setSession(Session.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Session> future = spannerClient.createSessionCallable().futureCall(request);
+   *   // Do something.
+   *   Session response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<CreateSessionRequest, Session> createSessionCallable() {
     return stub.createSessionCallable();
@@ -279,6 +330,17 @@ public class SpannerClient implements BackgroundResource {
    *
    * <p>This API can be used to initialize a session cache on the clients. See https://goo.gl/TgSFN2
    * for best practices on session cache management.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   int sessionCount = 185691686;
+   *   BatchCreateSessionsResponse response =
+   *       spannerClient.batchCreateSessions(database, sessionCount);
+   * }
+   * }</pre>
    *
    * @param database Required. The database in which the new sessions are created.
    * @param sessionCount Required. The number of sessions to be created in this batch call. The API
@@ -304,6 +366,17 @@ public class SpannerClient implements BackgroundResource {
    * <p>This API can be used to initialize a session cache on the clients. See https://goo.gl/TgSFN2
    * for best practices on session cache management.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   int sessionCount = 185691686;
+   *   BatchCreateSessionsResponse response =
+   *       spannerClient.batchCreateSessions(database, sessionCount);
+   * }
+   * }</pre>
+   *
    * @param database Required. The database in which the new sessions are created.
    * @param sessionCount Required. The number of sessions to be created in this batch call. The API
    *     may return fewer than the requested number of sessions. If a specific number of sessions
@@ -327,6 +400,20 @@ public class SpannerClient implements BackgroundResource {
    * <p>This API can be used to initialize a session cache on the clients. See https://goo.gl/TgSFN2
    * for best practices on session cache management.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BatchCreateSessionsRequest request =
+   *       BatchCreateSessionsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setSessionTemplate(Session.newBuilder().build())
+   *           .setSessionCount(185691686)
+   *           .build();
+   *   BatchCreateSessionsResponse response = spannerClient.batchCreateSessions(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -342,6 +429,21 @@ public class SpannerClient implements BackgroundResource {
    * for best practices on session cache management.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BatchCreateSessionsRequest request =
+   *       BatchCreateSessionsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setSessionTemplate(Session.newBuilder().build())
+   *           .setSessionCount(185691686)
+   *           .build();
+   *   ApiFuture<BatchCreateSessionsResponse> future =
+   *       spannerClient.batchCreateSessionsCallable().futureCall(request);
+   *   // Do something.
+   *   BatchCreateSessionsResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsCallable() {
@@ -352,6 +454,15 @@ public class SpannerClient implements BackgroundResource {
   /**
    * Gets a session. Returns `NOT_FOUND` if the session does not exist. This is mainly useful for
    * determining whether a session is still alive.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   Session response = spannerClient.getSession(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the session to retrieve.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -367,6 +478,15 @@ public class SpannerClient implements BackgroundResource {
    * Gets a session. Returns `NOT_FOUND` if the session does not exist. This is mainly useful for
    * determining whether a session is still alive.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   Session response = spannerClient.getSession(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the session to retrieve.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -379,6 +499,19 @@ public class SpannerClient implements BackgroundResource {
   /**
    * Gets a session. Returns `NOT_FOUND` if the session does not exist. This is mainly useful for
    * determining whether a session is still alive.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   GetSessionRequest request =
+   *       GetSessionRequest.newBuilder()
+   *           .setName(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .build();
+   *   Session response = spannerClient.getSession(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -393,6 +526,19 @@ public class SpannerClient implements BackgroundResource {
    * determining whether a session is still alive.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   GetSessionRequest request =
+   *       GetSessionRequest.newBuilder()
+   *           .setName(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .build();
+   *   ApiFuture<Session> future = spannerClient.getSessionCallable().futureCall(request);
+   *   // Do something.
+   *   Session response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetSessionRequest, Session> getSessionCallable() {
     return stub.getSessionCallable();
@@ -401,6 +547,17 @@ public class SpannerClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all sessions in a given database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   for (Session element : spannerClient.listSessions(database).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param database Required. The database in which to list sessions.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -417,6 +574,17 @@ public class SpannerClient implements BackgroundResource {
   /**
    * Lists all sessions in a given database.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   for (Session element : spannerClient.listSessions(database).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param database Required. The database in which to list sessions.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -428,6 +596,23 @@ public class SpannerClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all sessions in a given database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ListSessionsRequest request =
+   *       ListSessionsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   for (Session element : spannerClient.listSessions(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -441,6 +626,23 @@ public class SpannerClient implements BackgroundResource {
    * Lists all sessions in a given database.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ListSessionsRequest request =
+   *       ListSessionsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   ApiFuture<Session> future = spannerClient.listSessionsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Session element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListSessionsRequest, ListSessionsPagedResponse>
       listSessionsPagedCallable() {
@@ -452,6 +654,23 @@ public class SpannerClient implements BackgroundResource {
    * Lists all sessions in a given database.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   while (true) {
+   *     ListSessionsResponse response = spannerClient.listSessionsCallable().call(request);
+   *     for (Session element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListSessionsRequest, ListSessionsResponse> listSessionsCallable() {
     return stub.listSessionsCallable();
@@ -461,6 +680,15 @@ public class SpannerClient implements BackgroundResource {
   /**
    * Ends a session, releasing server resources associated with it. This will asynchronously trigger
    * cancellation of any operations that are running with this session.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   spannerClient.deleteSession(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the session to delete.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -476,6 +704,15 @@ public class SpannerClient implements BackgroundResource {
    * Ends a session, releasing server resources associated with it. This will asynchronously trigger
    * cancellation of any operations that are running with this session.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   spannerClient.deleteSession(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the session to delete.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -488,6 +725,19 @@ public class SpannerClient implements BackgroundResource {
   /**
    * Ends a session, releasing server resources associated with it. This will asynchronously trigger
    * cancellation of any operations that are running with this session.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   DeleteSessionRequest request =
+   *       DeleteSessionRequest.newBuilder()
+   *           .setName(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .build();
+   *   spannerClient.deleteSession(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -502,6 +752,19 @@ public class SpannerClient implements BackgroundResource {
    * cancellation of any operations that are running with this session.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   DeleteSessionRequest request =
+   *       DeleteSessionRequest.newBuilder()
+   *           .setName(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .build();
+   *   ApiFuture<Empty> future = spannerClient.deleteSessionCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<DeleteSessionRequest, Empty> deleteSessionCallable() {
     return stub.deleteSessionCallable();
@@ -519,6 +782,27 @@ public class SpannerClient implements BackgroundResource {
    *
    * <p>Larger result sets can be fetched in streaming fashion by calling
    * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ExecuteSqlRequest request =
+   *       ExecuteSqlRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setSql("sql114126")
+   *           .setParams(Struct.newBuilder().build())
+   *           .putAllParamTypes(new HashMap<String, Type>())
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .setSeqno(109325920)
+   *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .build();
+   *   ResultSet response = spannerClient.executeSql(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -541,6 +825,27 @@ public class SpannerClient implements BackgroundResource {
    * [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ExecuteSqlRequest request =
+   *       ExecuteSqlRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setSql("sql114126")
+   *           .setParams(Struct.newBuilder().build())
+   *           .putAllParamTypes(new HashMap<String, Type>())
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .setSeqno(109325920)
+   *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
+   *   // Do something.
+   *   ResultSet response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ExecuteSqlRequest, ResultSet> executeSqlCallable() {
     return stub.executeSqlCallable();
@@ -554,6 +859,29 @@ public class SpannerClient implements BackgroundResource {
    * MiB, and no column value can exceed 10 MiB.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ExecuteSqlRequest request =
+   *       ExecuteSqlRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setSql("sql114126")
+   *           .setParams(Struct.newBuilder().build())
+   *           .putAllParamTypes(new HashMap<String, Type>())
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .setSeqno(109325920)
+   *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .build();
+   *   ServerStream<PartialResultSet> stream =
+   *       spannerClient.executeStreamingSqlCallable().call(request);
+   *   for (PartialResultSet response : stream) {
+   *     // Do something when a response is received.
+   *   }
+   * }
+   * }</pre>
    */
   public final ServerStreamingCallable<ExecuteSqlRequest, PartialResultSet>
       executeStreamingSqlCallable() {
@@ -572,6 +900,22 @@ public class SpannerClient implements BackgroundResource {
    * inspect this field to determine whether an error occurred.
    *
    * <p>Execution stops after the first failed statement; the remaining statements are not executed.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ExecuteBatchDmlRequest request =
+   *       ExecuteBatchDmlRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
+   *           .setSeqno(109325920)
+   *           .build();
+   *   ExecuteBatchDmlResponse response = spannerClient.executeBatchDml(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -594,6 +938,23 @@ public class SpannerClient implements BackgroundResource {
    * <p>Execution stops after the first failed statement; the remaining statements are not executed.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ExecuteBatchDmlRequest request =
+   *       ExecuteBatchDmlRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
+   *           .setSeqno(109325920)
+   *           .build();
+   *   ApiFuture<ExecuteBatchDmlResponse> future =
+   *       spannerClient.executeBatchDmlCallable().futureCall(request);
+   *   // Do something.
+   *   ExecuteBatchDmlResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
       executeBatchDmlCallable() {
@@ -613,6 +974,27 @@ public class SpannerClient implements BackgroundResource {
    *
    * <p>Larger result sets can be yielded in streaming fashion by calling
    * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ReadRequest request =
+   *       ReadRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setTable("table110115790")
+   *           .setIndex("index100346066")
+   *           .addAllColumns(new ArrayList<String>())
+   *           .setKeySet(KeySet.newBuilder().build())
+   *           .setLimit(102976443)
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .build();
+   *   ResultSet response = spannerClient.read(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -636,6 +1018,27 @@ public class SpannerClient implements BackgroundResource {
    * [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ReadRequest request =
+   *       ReadRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setTable("table110115790")
+   *           .setIndex("index100346066")
+   *           .addAllColumns(new ArrayList<String>())
+   *           .setKeySet(KeySet.newBuilder().build())
+   *           .setLimit(102976443)
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .build();
+   *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
+   *   // Do something.
+   *   ResultSet response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ReadRequest, ResultSet> readCallable() {
     return stub.readCallable();
@@ -649,6 +1052,28 @@ public class SpannerClient implements BackgroundResource {
    * exceed 10 MiB.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ReadRequest request =
+   *       ReadRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setTable("table110115790")
+   *           .setIndex("index100346066")
+   *           .addAllColumns(new ArrayList<String>())
+   *           .setKeySet(KeySet.newBuilder().build())
+   *           .setLimit(102976443)
+   *           .setResumeToken(ByteString.EMPTY)
+   *           .setPartitionToken(ByteString.EMPTY)
+   *           .build();
+   *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
+   *   for (PartialResultSet response : stream) {
+   *     // Do something when a response is received.
+   *   }
+   * }
+   * }</pre>
    */
   public final ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     return stub.streamingReadCallable();
@@ -659,6 +1084,16 @@ public class SpannerClient implements BackgroundResource {
    * Begins a new transaction. This step can often be skipped:
    * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
    * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a side-effect.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   TransactionOptions options = TransactionOptions.newBuilder().build();
+   *   Transaction response = spannerClient.beginTransaction(session, options);
+   * }
+   * }</pre>
    *
    * @param session Required. The session in which the transaction runs.
    * @param options Required. Options for the new transaction.
@@ -679,6 +1114,17 @@ public class SpannerClient implements BackgroundResource {
    * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
    * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a side-effect.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String session =
+   *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   TransactionOptions options = TransactionOptions.newBuilder().build();
+   *   Transaction response = spannerClient.beginTransaction(session, options);
+   * }
+   * }</pre>
+   *
    * @param session Required. The session in which the transaction runs.
    * @param options Required. Options for the new transaction.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -695,6 +1141,20 @@ public class SpannerClient implements BackgroundResource {
    * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
    * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a side-effect.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BeginTransactionRequest request =
+   *       BeginTransactionRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setOptions(TransactionOptions.newBuilder().build())
+   *           .build();
+   *   Transaction response = spannerClient.beginTransaction(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -709,6 +1169,20 @@ public class SpannerClient implements BackgroundResource {
    * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a side-effect.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BeginTransactionRequest request =
+   *       BeginTransactionRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setOptions(TransactionOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Transaction> future = spannerClient.beginTransactionCallable().futureCall(request);
+   *   // Do something.
+   *   Transaction response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<BeginTransactionRequest, Transaction> beginTransactionCallable() {
     return stub.beginTransactionCallable();
@@ -728,6 +1202,17 @@ public class SpannerClient implements BackgroundResource {
    * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
    * track of the transaction outcome and we recommend that you perform another read from the
    * database to see the state of things as they are now.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   ByteString transactionId = ByteString.EMPTY;
+   *   List<Mutation> mutations = new ArrayList<>();
+   *   CommitResponse response = spannerClient.commit(session, transactionId, mutations);
+   * }
+   * }</pre>
    *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param transactionId Commit a previously-started transaction.
@@ -760,6 +1245,17 @@ public class SpannerClient implements BackgroundResource {
    * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
    * track of the transaction outcome and we recommend that you perform another read from the
    * database to see the state of things as they are now.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
+   *   List<Mutation> mutations = new ArrayList<>();
+   *   CommitResponse response = spannerClient.commit(session, singleUseTransaction, mutations);
+   * }
+   * }</pre>
    *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param singleUseTransaction Execute mutations in a temporary transaction. Note that unlike
@@ -799,6 +1295,18 @@ public class SpannerClient implements BackgroundResource {
    * track of the transaction outcome and we recommend that you perform another read from the
    * database to see the state of things as they are now.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String session =
+   *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   ByteString transactionId = ByteString.EMPTY;
+   *   List<Mutation> mutations = new ArrayList<>();
+   *   CommitResponse response = spannerClient.commit(session, transactionId, mutations);
+   * }
+   * }</pre>
+   *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param transactionId Commit a previously-started transaction.
    * @param mutations The mutations to be executed when this transaction commits. All mutations are
@@ -830,6 +1338,18 @@ public class SpannerClient implements BackgroundResource {
    * the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost
    * track of the transaction outcome and we recommend that you perform another read from the
    * database to see the state of things as they are now.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String session =
+   *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
+   *   List<Mutation> mutations = new ArrayList<>();
+   *   CommitResponse response = spannerClient.commit(session, singleUseTransaction, mutations);
+   * }
+   * }</pre>
    *
    * @param session Required. The session in which the transaction to be committed is running.
    * @param singleUseTransaction Execute mutations in a temporary transaction. Note that unlike
@@ -869,6 +1389,21 @@ public class SpannerClient implements BackgroundResource {
    * track of the transaction outcome and we recommend that you perform another read from the
    * database to see the state of things as they are now.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   CommitRequest request =
+   *       CommitRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .addAllMutations(new ArrayList<Mutation>())
+   *           .setReturnCommitStats(true)
+   *           .build();
+   *   CommitResponse response = spannerClient.commit(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -892,6 +1427,21 @@ public class SpannerClient implements BackgroundResource {
    * database to see the state of things as they are now.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   CommitRequest request =
+   *       CommitRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .addAllMutations(new ArrayList<Mutation>())
+   *           .setReturnCommitStats(true)
+   *           .build();
+   *   ApiFuture<CommitResponse> future = spannerClient.commitCallable().futureCall(request);
+   *   // Do something.
+   *   CommitResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<CommitRequest, CommitResponse> commitCallable() {
     return stub.commitCallable();
@@ -906,6 +1456,16 @@ public class SpannerClient implements BackgroundResource {
    *
    * <p>`Rollback` returns `OK` if it successfully aborts the transaction, the transaction was
    * already aborted, or the transaction is not found. `Rollback` never returns `ABORTED`.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
+   *   ByteString transactionId = ByteString.EMPTY;
+   *   spannerClient.rollback(session, transactionId);
+   * }
+   * }</pre>
    *
    * @param session Required. The session in which the transaction to roll back is running.
    * @param transactionId Required. The transaction to roll back.
@@ -930,6 +1490,17 @@ public class SpannerClient implements BackgroundResource {
    * <p>`Rollback` returns `OK` if it successfully aborts the transaction, the transaction was
    * already aborted, or the transaction is not found. `Rollback` never returns `ABORTED`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   String session =
+   *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
+   *   ByteString transactionId = ByteString.EMPTY;
+   *   spannerClient.rollback(session, transactionId);
+   * }
+   * }</pre>
+   *
    * @param session Required. The session in which the transaction to roll back is running.
    * @param transactionId Required. The transaction to roll back.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -950,6 +1521,20 @@ public class SpannerClient implements BackgroundResource {
    * <p>`Rollback` returns `OK` if it successfully aborts the transaction, the transaction was
    * already aborted, or the transaction is not found. `Rollback` never returns `ABORTED`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   RollbackRequest request =
+   *       RollbackRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransactionId(ByteString.EMPTY)
+   *           .build();
+   *   spannerClient.rollback(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -968,6 +1553,20 @@ public class SpannerClient implements BackgroundResource {
    * already aborted, or the transaction is not found. `Rollback` never returns `ABORTED`.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   RollbackRequest request =
+   *       RollbackRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransactionId(ByteString.EMPTY)
+   *           .build();
+   *   ApiFuture<Empty> future = spannerClient.rollbackCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<RollbackRequest, Empty> rollbackCallable() {
     return stub.rollbackCallable();
@@ -985,6 +1584,24 @@ public class SpannerClient implements BackgroundResource {
    * <p>Partition tokens become invalid when the session used to create them is deleted, is idle for
    * too long, begins a new transaction, or becomes too old. When any of these happen, it is not
    * possible to resume the query, and the whole operation must be restarted from the beginning.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   PartitionQueryRequest request =
+   *       PartitionQueryRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setSql("sql114126")
+   *           .setParams(Struct.newBuilder().build())
+   *           .putAllParamTypes(new HashMap<String, Type>())
+   *           .setPartitionOptions(PartitionOptions.newBuilder().build())
+   *           .build();
+   *   PartitionResponse response = spannerClient.partitionQuery(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1007,6 +1624,25 @@ public class SpannerClient implements BackgroundResource {
    * possible to resume the query, and the whole operation must be restarted from the beginning.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   PartitionQueryRequest request =
+   *       PartitionQueryRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setSql("sql114126")
+   *           .setParams(Struct.newBuilder().build())
+   *           .putAllParamTypes(new HashMap<String, Type>())
+   *           .setPartitionOptions(PartitionOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<PartitionResponse> future =
+   *       spannerClient.partitionQueryCallable().futureCall(request);
+   *   // Do something.
+   *   PartitionResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<PartitionQueryRequest, PartitionResponse> partitionQueryCallable() {
     return stub.partitionQueryCallable();
@@ -1025,6 +1661,25 @@ public class SpannerClient implements BackgroundResource {
    * <p>Partition tokens become invalid when the session used to create them is deleted, is idle for
    * too long, begins a new transaction, or becomes too old. When any of these happen, it is not
    * possible to resume the read, and the whole operation must be restarted from the beginning.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   PartitionReadRequest request =
+   *       PartitionReadRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setTable("table110115790")
+   *           .setIndex("index100346066")
+   *           .addAllColumns(new ArrayList<String>())
+   *           .setKeySet(KeySet.newBuilder().build())
+   *           .setPartitionOptions(PartitionOptions.newBuilder().build())
+   *           .build();
+   *   PartitionResponse response = spannerClient.partitionRead(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1048,6 +1703,26 @@ public class SpannerClient implements BackgroundResource {
    * possible to resume the read, and the whole operation must be restarted from the beginning.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   PartitionReadRequest request =
+   *       PartitionReadRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setTransaction(TransactionSelector.newBuilder().build())
+   *           .setTable("table110115790")
+   *           .setIndex("index100346066")
+   *           .addAllColumns(new ArrayList<String>())
+   *           .setKeySet(KeySet.newBuilder().build())
+   *           .setPartitionOptions(PartitionOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<PartitionResponse> future =
+   *       spannerClient.partitionReadCallable().futureCall(request);
+   *   // Do something.
+   *   PartitionResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return stub.partitionReadCallable();
