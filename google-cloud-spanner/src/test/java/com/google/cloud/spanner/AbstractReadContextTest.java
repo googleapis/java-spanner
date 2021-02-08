@@ -90,9 +90,7 @@ public class AbstractReadContextTest {
     ExecuteSqlRequest request =
         context
             .getExecuteSqlRequestBuilder(
-                Statement.of("SELECT FOO FROM BAR"),
-                QueryMode.NORMAL,
-                true)
+                Statement.of("SELECT FOO FROM BAR"), QueryMode.NORMAL, true)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions()).isEqualTo(defaultQueryOptions);

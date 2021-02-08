@@ -616,8 +616,7 @@ abstract class AbstractReadContext
     final int prefetchChunks =
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
     final ExecuteSqlRequest.Builder request =
-        getExecuteSqlRequestBuilder(
-            statement, queryMode, /* withTransactionSelector = */ false);
+        getExecuteSqlRequestBuilder(statement, queryMode, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
         new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
           @Override
