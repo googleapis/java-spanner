@@ -31,9 +31,10 @@ public class BackupInfo {
     abstract Builder setSize(long size);
 
     /**
-     * Output only.
+     * Returned when retrieving a backup.
      *
-     * <p>The customer-manager encryption key version used to encrypt the backup.
+     * <p>The encryption information for the backup. If the encryption key protecting this resource
+     * is customer managed, then kms_key_version will be filled.
      */
     abstract Builder setEncryptionInfo(EncryptionInfo encryptionInfo);
 
@@ -210,8 +211,8 @@ public class BackupInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfigInfo} to be used to encrypt the backup during it's creation.
-   * Returns <code>null</code> if no customer-managed encryption key should be used.
+   * Returns the {@link EncryptionConfigInfo} to encrypt the backup during its creation. Returns
+   * <code>null</code> if no customer-managed encryption key should be used.
    */
   public EncryptionConfigInfo getEncryptionConfigInfo() {
     return encryptionConfigInfo;
@@ -220,8 +221,6 @@ public class BackupInfo {
   /**
    * Returns the {@link EncryptionInfo} of the backup if the backup is encrypted, or <code>null
    * </code> if this backup is not encrypted.
-   *
-   * @return
    */
   public EncryptionInfo getEncryptionInfo() {
     return encryptionInfo;
