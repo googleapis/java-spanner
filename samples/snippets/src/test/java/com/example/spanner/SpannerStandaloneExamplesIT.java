@@ -196,13 +196,11 @@ public class SpannerStandaloneExamplesIT {
     String instanceId = SpannerSampleIT.formatForTest("inst-pu");
 
     try {
-      String out =
-          runExample(() -> CreateInstanceWithProcessingUnitsExample.createInstance(projectId, instanceId));
+      String out = runExample(
+          () -> CreateInstanceWithProcessingUnitsExample.createInstance(projectId, instanceId));
       assertThat(out)
-          .contains(
-              String.format(
-                  "Instance %s was successfully created with %d processing units",
-                  InstanceId.of(projectId, instanceId), 200));
+          .contains(String.format("Instance %s was successfully created with %d processing units",
+              InstanceId.of(projectId, instanceId), 200));
     } finally {
       spanner.getInstanceAdminClient().deleteInstance(instanceId);
     }
