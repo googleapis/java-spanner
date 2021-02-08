@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.DatabaseNotFoundException;
@@ -35,6 +36,9 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -137,6 +141,28 @@ public class ITDatabaseTest {
       fail("missing expected exception");
     } catch (InstanceNotFoundException e) {
       assertThat(e.getResourceName()).isEqualTo(nonExistingInstanceId.getName());
+    }
+  }
+
+  @Test
+  public void numericPrimaryKey()
+      throws InterruptedException, ExecutionException, TimeoutException {
+    final String instanceId = env.getTestHelper().getInstanceId().getInstance();
+    final String databaseId = env.getTestHelper().getUniqueDatabaseId();
+    final DatabaseAdminClient databaseAdminClient =
+        env.getTestHelper().getClient().getDatabaseAdminClient();
+
+    try {
+      final OperationFuture<Database, CreateDatabaseMetadata> op =
+          databaseAdminClient.createDatabase(
+              instanceId,
+              databaseId,
+              Collections.singletonList(
+                  "CREATE TABLE NumericTable (" + "Id NUMERIC NOT NULL" + ") PRIMARY KEY (Id)"));
+      final Database database = op.get(1, TimeUnit.MINUTES);
+      assertThat(database).isNotNull();
+    } finally {
+      databaseAdminClient.dropDatabase(instanceId, databaseId);
     }
   }
 }
