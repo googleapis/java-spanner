@@ -507,11 +507,4 @@ public class SpannerPool {
       }
     }
   }
-
-  @VisibleForTesting
-  int getCurrentSpannerCount() {
-    synchronized (this) {
-      return spanners.size();
-    }
-  }
 }
