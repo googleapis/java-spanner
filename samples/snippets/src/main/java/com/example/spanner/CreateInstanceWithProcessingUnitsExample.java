@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,8 @@ class CreateInstanceWithProcessingUnitsExample {
     try {
       // Wait for the createInstance operation to finish.
       Instance instance = operation.get();
-      System.out.printf("Instance %s was successfully created with %d processing units%n", instance.getId(), instance.getProcessingUnits());
+      System.out.printf("Instance %s was successfully created with %d processing units%n",
+          instance.getId(), instance.getProcessingUnits());
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",

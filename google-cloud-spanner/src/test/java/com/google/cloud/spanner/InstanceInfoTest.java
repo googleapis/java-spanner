@@ -17,6 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
@@ -25,6 +28,19 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class InstanceInfoTest {
+
+  @Test
+  public void testEmptyBuilder() {
+    InstanceInfo.Builder builder = new InstanceInfo.Builder();
+    InstanceInfo info = builder.build();
+    assertNull(info.getDisplayName());
+    assertNull(info.getId());
+    assertNull(info.getInstanceConfigId());
+    assertNull(info.getState());
+    assertEquals(0, info.getNodeCount());
+    assertEquals(0, info.getProcessingUnits());
+    assertTrue(info.getLabels().isEmpty());
+  }
 
   @Test
   public void testBuildInstanceInfo() {
@@ -86,11 +102,12 @@ public class InstanceInfoTest {
   @Test
   public void testEquals() {
     InstanceId id = new InstanceId("test-project", "test-instance");
-    InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
+    InstanceConfigId configId1 = new InstanceConfigId("test-project", "test-instance-config");
+    InstanceConfigId configId2 = new InstanceConfigId("test-project", "other-test-instance-config");
 
     InstanceInfo instance =
         new InstanceInfo.Builder(id)
-            .setInstanceConfigId(configId)
+            .setInstanceConfigId(configId1)
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
@@ -100,7 +117,7 @@ public class InstanceInfoTest {
             .build();
     InstanceInfo instance2 =
         new InstanceInfo.Builder(id)
-            .setInstanceConfigId(configId)
+            .setInstanceConfigId(configId1)
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
@@ -110,8 +127,8 @@ public class InstanceInfoTest {
             .build();
     InstanceInfo instance3 =
         new InstanceInfo.Builder(id)
-            .setInstanceConfigId(configId)
-            .setDisplayName("test instance")
+            .setInstanceConfigId(configId2)
+            .setDisplayName("other test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)

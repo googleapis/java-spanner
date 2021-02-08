@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
@@ -143,7 +144,7 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
-  public void createInstanceWithProcessingUnits() throws Exception {
+  public void testCreateInstanceWithProcessingUnits() throws Exception {
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
             OperationFutureUtil.immediateOperationFuture(
@@ -153,18 +154,18 @@ public class InstanceAdminClientImplTest {
     when(rpc.createInstance(
             "projects/" + PROJECT_ID, INSTANCE_ID, getInstanceProtoWithProcessingUnits()))
         .thenReturn(rawOperationFuture);
-    OperationFuture<Instance, CreateInstanceMetadata> op =
+    OperationFuture<Instance, CreateInstanceMetadata> operation =
         client.createInstance(
             InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
                 .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
                 .setProcessingUnits(10)
                 .build());
-    assertTrue(op.isDone());
-    assertThat(op.get().getId().getName()).isEqualTo(INSTANCE_NAME);
+    assertTrue(operation.isDone());
+    assertEquals(INSTANCE_NAME, operation.get().getId().getName());
   }
 
   @Test
-  public void createInstanceWithBothNodeCountAndProcessingUnits() throws Exception {
+  public void testCreateInstanceWithBothNodeCountAndProcessingUnits() throws Exception {
     try {
       client.createInstance(
           InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
@@ -174,17 +175,18 @@ public class InstanceAdminClientImplTest {
               .build());
       fail("missing expected exception");
     } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage())
-          .contains(InstanceAdminClientImpl.NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS);
+      assertTrue(
+          e.getMessage()
+              .contains(InstanceAdminClientImpl.NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS));
     }
   }
 
   @Test
-  public void getInstance() {
+  public void testGetInstance() {
     when(rpc.getInstance(INSTANCE_NAME)).thenReturn(getInstanceProto());
     Instance instance = client.getInstance(INSTANCE_ID);
-    assertThat(instance.getId().getName()).isEqualTo(INSTANCE_NAME);
-    assertThat(instance.getProcessingUnits()).isEqualTo(1000);
+    assertEquals(INSTANCE_NAME, instance.getId().getName());
+    assertEquals(1000, instance.getProcessingUnits());
   }
 
   @Test
@@ -219,7 +221,7 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
-  public void updateInstanceProcessingUnits() throws Exception {
+  public void testUpdateInstanceProcessingUnits() throws Exception {
     com.google.spanner.admin.instance.v1.Instance instance =
         com.google.spanner.admin.instance.v1.Instance.newBuilder()
             .setName(INSTANCE_NAME)
@@ -239,10 +241,10 @@ public class InstanceAdminClientImplTest {
             .setInstanceConfigId(InstanceConfigId.of(CONFIG_NAME))
             .setProcessingUnits(10)
             .build();
-    OperationFuture<Instance, UpdateInstanceMetadata> opWithFieldMask =
+    OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
         client.updateInstance(instanceInfo, InstanceInfo.InstanceField.PROCESSING_UNITS);
-    assertTrue(opWithFieldMask.isDone());
-    assertThat(opWithFieldMask.get().getId().getName()).isEqualTo(INSTANCE_NAME);
+    assertTrue(operationWithFieldMask.isDone());
+    assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
 
     when(rpc.updateInstance(
             instance,
@@ -250,13 +252,14 @@ public class InstanceAdminClientImplTest {
                 .addAllPaths(Arrays.asList("display_name", "processing_units", "labels"))
                 .build()))
         .thenReturn(rawOperationFuture);
-    OperationFuture<Instance, UpdateInstanceMetadata> op = client.updateInstance(instanceInfo);
-    assertTrue(op.isDone());
-    assertThat(op.get().getId().getName()).isEqualTo(INSTANCE_NAME);
+    OperationFuture<Instance, UpdateInstanceMetadata> operation =
+        client.updateInstance(instanceInfo);
+    assertTrue(operation.isDone());
+    assertEquals(INSTANCE_NAME, operation.get().getId().getName());
   }
 
   @Test
-  public void updateInstanceWithNodeCountAndProcessingUnits() throws Exception {
+  public void testUpdateInstanceWithNodeCountAndProcessingUnits() throws Exception {
     com.google.spanner.admin.instance.v1.Instance instance =
         com.google.spanner.admin.instance.v1.Instance.newBuilder()
             .setName(INSTANCE_NAME)
@@ -284,14 +287,14 @@ public class InstanceAdminClientImplTest {
             .setNodeCount(3)
             .setProcessingUnits(3000)
             .build();
-    OperationFuture<Instance, UpdateInstanceMetadata> opWithFieldMask =
+    OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
         client.updateInstance(instanceInfo);
-    assertTrue(opWithFieldMask.isDone());
-    assertThat(opWithFieldMask.get().getId().getName()).isEqualTo(INSTANCE_NAME);
+    assertTrue(operationWithFieldMask.isDone());
+    assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
   }
 
   @Test
-  public void listInstances() {
+  public void testListInstances() {
     String nextToken = "token";
     String filter = "env:dev";
     when(rpc.listInstances(1, null, filter))
@@ -305,11 +308,11 @@ public class InstanceAdminClientImplTest {
     List<Instance> instances =
         Lists.newArrayList(
             client.listInstances(Options.pageSize(1), Options.filter(filter)).iterateAll());
-    assertThat(instances.get(0).getId().getName()).isEqualTo(INSTANCE_NAME);
-    assertThat(instances.get(0).getProcessingUnits()).isEqualTo(1000);
-    assertThat(instances.get(1).getId().getName()).isEqualTo(INSTANCE_NAME2);
-    assertThat(instances.get(1).getProcessingUnits()).isEqualTo(2000);
-    assertThat(instances.size()).isEqualTo(2);
+    assertEquals(INSTANCE_NAME, instances.get(0).getId().getName());
+    assertEquals(1000, instances.get(0).getProcessingUnits());
+    assertEquals(INSTANCE_NAME2, instances.get(1).getId().getName());
+    assertEquals(2000, instances.get(1).getProcessingUnits());
+    assertEquals(2, instances.size());
   }
 
   @Test
