@@ -37,6 +37,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
@@ -970,7 +971,7 @@ class SessionPool {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
     private final TransactionOption[] options;
-    private final SettableApiFuture<CommitResponse> commitResponse = SettableApiFuture.create();
+    private SettableApiFuture<CommitResponse> commitResponse;
 
     private SessionPoolAsyncRunner(
         SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
@@ -981,6 +982,7 @@ class SessionPool {
 
     @Override
     public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
           new Runnable() {
@@ -1041,6 +1043,7 @@ class SessionPool {
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
       return ApiFutures.transform(
           commitResponse,
           new ApiFunction<CommitResponse, Timestamp>() {
@@ -1054,6 +1057,7 @@ class SessionPool {
 
     @Override
     public ApiFuture<CommitResponse> getCommitResponse() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
       return commitResponse;
     }
   }

@@ -162,7 +162,7 @@ public class ITWriteTest {
   }
 
   @Test
-  public void writeReturnsCommitStats() {
+  public void testWriteReturnsCommitStats() {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     CommitResponse response =
         client.writeWithOptions(
@@ -181,7 +181,7 @@ public class ITWriteTest {
   }
 
   @Test
-  public void writeAtLeastOnceReturnsCommitStats() {
+  public void testWriteAtLeastOnceReturnsCommitStats() {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(

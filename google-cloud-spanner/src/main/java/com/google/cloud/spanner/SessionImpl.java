@@ -177,9 +177,6 @@ class SessionImpl implements Session {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(request, this.options);
       return new CommitResponse(response);
-    } catch (IllegalArgumentException e) {
-      TraceUtil.setWithFailure(span, e);
-      throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit response", e);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;

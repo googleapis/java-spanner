@@ -55,25 +55,25 @@ public class TransactionContextImplTest {
   public void testReturnCommitStats() {
     SessionImpl session = mock(SessionImpl.class);
     when(session.getName()).thenReturn("test");
-    ByteString txId = ByteString.copyFromUtf8("test");
+    ByteString transactionId = ByteString.copyFromUtf8("test");
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.commitAsync(any(CommitRequest.class), anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
 
-    try (TransactionContextImpl impl =
+    try (TransactionContextImpl context =
         TransactionContextImpl.newBuilder()
             .setSession(session)
             .setRpc(rpc)
-            .setTransactionId(txId)
+            .setTransactionId(transactionId)
             .setOptions(Options.fromTransactionOptions(Options.commitStats()))
             .build()) {
-      impl.commitAsync();
+      context.commitAsync();
       CommitRequest request =
           CommitRequest.newBuilder()
               .setReturnCommitStats(true)
               .setSession(session.getName())
-              .setTransactionId(txId)
+              .setTransactionId(transactionId)
               .build();
       verify(rpc).commitAsync(Mockito.eq(request), anyMap());
     }

@@ -33,7 +33,7 @@ public class CommitResponse {
   }
 
   CommitResponse(com.google.spanner.v1.CommitResponse proto) {
-    this.proto = proto;
+    this.proto = Preconditions.checkNotNull(proto);
   }
 
   /** Returns a {@link Timestamp} representing the commit time of the transaction. */

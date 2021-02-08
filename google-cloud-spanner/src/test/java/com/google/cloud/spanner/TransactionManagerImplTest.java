@@ -140,8 +140,7 @@ public class TransactionManagerImplTest {
   public void commitSucceeds() {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
-    CommitResponse response = mock(CommitResponse.class);
-    when(response.getCommitTimestamp()).thenReturn(commitTimestamp);
+    CommitResponse response = new CommitResponse(commitTimestamp);
     when(txn.getCommitResponse()).thenReturn(response);
     manager.begin();
     manager.commit();

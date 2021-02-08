@@ -42,7 +42,7 @@ public class AsyncTransactionManagerImplTest {
   }
 
   @Test
-  public void commitReturnsCommitStats() {
+  public void testCommitReturnsCommitStats() {
     try (AsyncTransactionManagerImpl manager =
         new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))

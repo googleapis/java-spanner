@@ -635,7 +635,7 @@ public class ITTransactionTest {
   }
 
   @Test
-  public void transactionRunnerReturnsCommitStats() {
+  public void testTransactionRunnerReturnsCommitStats() {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     final String key = uniqueKey();
     TransactionRunner runner = client.readWriteTransaction(Options.commitStats());

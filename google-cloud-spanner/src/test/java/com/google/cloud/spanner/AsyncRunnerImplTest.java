@@ -16,7 +16,10 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -63,9 +66,10 @@ public class AsyncRunnerImplTest {
             },
             executor);
 
-    assertThat(SpannerApiFutures.get(result)).isSameInstanceAs(expectedResult);
-    assertThat(SpannerApiFutures.get(runner.getCommitResponse()))
-        .isSameInstanceAs(expectedCommitResponse);
+    assertSame(expectedResult, get(result));
+    assertSame(expectedCommitResponse, get(runner.getCommitResponse()));
+    assertEquals(
+        get(runner.getCommitResponse()).getCommitTimestamp(), get(runner.getCommitTimestamp()));
   }
 
   @Test
@@ -76,7 +80,7 @@ public class AsyncRunnerImplTest {
       runner.getCommitTimestamp();
       fail("missing expected exception");
     } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("runAsync() has not yet been called");
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
     }
   }
 
@@ -88,7 +92,7 @@ public class AsyncRunnerImplTest {
       runner.getCommitResponse();
       fail("missing expected exception");
     } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("runAsync() has not yet been called");
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
     }
   }
 
@@ -111,13 +115,14 @@ public class AsyncRunnerImplTest {
         executor);
 
     try {
-      SpannerApiFutures.get(runner.getCommitResponse());
+      get(runner.getCommitResponse());
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertThat(e).isSameInstanceAs(expectedException);
+      assertSame(expectedException, e);
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testRunAyncFailsIfCalledMultipleTimes() {
     final Object result = new Object();
@@ -145,7 +150,7 @@ public class AsyncRunnerImplTest {
           executor);
       fail("missing expected exception");
     } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("runAsync() can only be called once");
+      assertTrue(e.getMessage().contains("runAsync() can only be called once"));
     }
   }
 }

@@ -117,9 +117,7 @@ public class SingleUseTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          Timestamp commitTimestamp = Timestamp.now();
-          commitResponse = mock(CommitResponse.class);
-          when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -406,9 +404,8 @@ public class SingleUseTransactionTest {
                           } catch (Exception e) {
                             throw SpannerExceptionFactory.newSpannerException(e);
                           }
-                          Timestamp commitTimestamp = Timestamp.now();
-                          commitResponse = mock(CommitResponse.class);
-                          when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
+                          commitResponse =
+                              new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
                           return res;
                         } else if (commitBehavior == CommitBehavior.FAIL) {
                           throw SpannerExceptionFactory.newSpannerException(
