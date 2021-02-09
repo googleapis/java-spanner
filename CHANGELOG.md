@@ -1,5 +1,13 @@
 # Changelog
 
+### [3.1.4](https://www.github.com/googleapis/java-spanner/compare/v3.1.3...v3.1.4) (2021-02-09)
+
+
+### Bug Fixes
+
+* **3.1.x:** UNAVAILABLE error on first query could cause transaction to get stuck ([#856](https://www.github.com/googleapis/java-spanner/issues/856)) ([a346eb3](https://www.github.com/googleapis/java-spanner/commit/a346eb34202b2b8f878fe8854eae39b46f7e1bd8))
+* blanks span for session keepAlive traces ([#855](https://www.github.com/googleapis/java-spanner/issues/855)) ([8626a85](https://www.github.com/googleapis/java-spanner/commit/8626a8587a54742afea273e017cc553cee5eb53c))
+
 ### [3.1.3](https://www.github.com/googleapis/java-spanner/compare/v3.1.2...v3.1.3) (2020-12-14)
 
 
