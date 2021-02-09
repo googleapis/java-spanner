@@ -217,12 +217,12 @@ public class ITTransactionManagerTest {
 
   @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReturnsCommitStats() throws InterruptedException {
+  public void testTransactionManagerReturnsCommitStats() throws InterruptedException {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
-      TransactionContext txn = manager.begin();
+      TransactionContext transaction = manager.begin();
       while (true) {
-        txn.buffer(
+        transaction.buffer(
             Mutation.newInsertBuilder("T")
                 .set("K")
                 .to("KeyCommitStats")
@@ -236,7 +236,7 @@ public class ITTransactionManagerTest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis() / 1000);
-          txn = manager.resetForRetry();
+          transaction = manager.resetForRetry();
         }
       }
     }
