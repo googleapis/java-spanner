@@ -112,6 +112,10 @@ class SessionImpl implements Session {
     currentSpan = span;
   }
 
+  Span getCurrentSpan() {
+    return currentSpan;
+  }
+
   @Override
   public long executePartitionedUpdate(Statement stmt) {
     setActive(null);
