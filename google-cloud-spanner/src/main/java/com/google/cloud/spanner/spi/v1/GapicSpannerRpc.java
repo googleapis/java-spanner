@@ -77,7 +77,6 @@ import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -161,6 +160,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -244,6 +244,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final int GRPC_KEEPALIVE_SECONDS = 2 * 60;
   private static final String USER_AGENT_KEY = "user-agent";
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
+  public static final String DEFAULT_USER_AGENT =
+      CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
 
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
@@ -305,18 +307,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                 GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion())
             .build();
 
-    HeaderProvider mergedHeaderProvider = options.getMergedHeaderProvider(internalHeaderProvider);
-    Map<String, String> headersWithUserAgent =
-        ImmutableMap.<String, String>builder()
-            .put(
-                USER_AGENT_KEY,
-                CLIENT_LIBRARY_LANGUAGE
-                    + "/"
-                    + GaxProperties.getLibraryVersion(GapicSpannerRpc.class))
-            .putAll(mergedHeaderProvider.getHeaders())
-            .build();
+    final HeaderProvider mergedHeaderProvider =
+        options.getMergedHeaderProvider(internalHeaderProvider);
     final HeaderProvider headerProviderWithUserAgent =
-        FixedHeaderProvider.create(headersWithUserAgent);
+        headerProviderWithUserAgentFrom(mergedHeaderProvider);
+
     this.metadataProvider =
         SpannerMetadataProvider.create(
             headerProviderWithUserAgent.getHeaders(),
@@ -492,6 +487,16 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (Exception e) {
       throw newSpannerException(e);
     }
+  }
+
+  private static HeaderProvider headerProviderWithUserAgentFrom(HeaderProvider headerProvider) {
+    final Map<String, String> headersWithUserAgent = new HashMap<>(headerProvider.getHeaders());
+    final String userAgent = headersWithUserAgent.get(USER_AGENT_KEY);
+    headersWithUserAgent.put(
+        USER_AGENT_KEY,
+        userAgent == null ? DEFAULT_USER_AGENT : userAgent + " " + DEFAULT_USER_AGENT);
+
+    return FixedHeaderProvider.create(headersWithUserAgent);
   }
 
   private static void checkEmulatorConnection(
