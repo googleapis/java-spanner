@@ -657,111 +657,136 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     return operationsStub;
   }
 
+  @Override
   public UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
     return listDatabasesCallable;
   }
 
+  @Override
   public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable() {
     return listDatabasesPagedCallable;
   }
 
+  @Override
   public UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
     return createDatabaseCallable;
   }
 
+  @Override
   public OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationCallable() {
     return createDatabaseOperationCallable;
   }
 
+  @Override
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return getDatabaseCallable;
   }
 
+  @Override
   public UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
     return updateDatabaseDdlCallable;
   }
 
+  @Override
   public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationCallable() {
     return updateDatabaseDdlOperationCallable;
   }
 
+  @Override
   public UnaryCallable<DropDatabaseRequest, Empty> dropDatabaseCallable() {
     return dropDatabaseCallable;
   }
 
+  @Override
   public UnaryCallable<GetDatabaseDdlRequest, GetDatabaseDdlResponse> getDatabaseDdlCallable() {
     return getDatabaseDdlCallable;
   }
 
+  @Override
   public UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable() {
     return setIamPolicyCallable;
   }
 
+  @Override
   public UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable() {
     return getIamPolicyCallable;
   }
 
+  @Override
   public UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
     return testIamPermissionsCallable;
   }
 
+  @Override
   public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
     return createBackupCallable;
   }
 
+  @Override
   public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationCallable() {
     return createBackupOperationCallable;
   }
 
+  @Override
   public UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {
     return getBackupCallable;
   }
 
+  @Override
   public UnaryCallable<UpdateBackupRequest, Backup> updateBackupCallable() {
     return updateBackupCallable;
   }
 
+  @Override
   public UnaryCallable<DeleteBackupRequest, Empty> deleteBackupCallable() {
     return deleteBackupCallable;
   }
 
+  @Override
   public UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable() {
     return listBackupsCallable;
   }
 
+  @Override
   public UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse> listBackupsPagedCallable() {
     return listBackupsPagedCallable;
   }
 
+  @Override
   public UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
     return restoreDatabaseCallable;
   }
 
+  @Override
   public OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
       restoreDatabaseOperationCallable() {
     return restoreDatabaseOperationCallable;
   }
 
+  @Override
   public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
       listDatabaseOperationsCallable() {
     return listDatabaseOperationsCallable;
   }
 
+  @Override
   public UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
       listDatabaseOperationsPagedCallable() {
     return listDatabaseOperationsPagedCallable;
   }
 
+  @Override
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {
     return listBackupOperationsCallable;
   }
 
+  @Override
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
       listBackupOperationsPagedCallable() {
     return listBackupOperationsPagedCallable;
