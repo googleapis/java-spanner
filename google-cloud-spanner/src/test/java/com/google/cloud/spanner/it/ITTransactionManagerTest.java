@@ -235,7 +235,7 @@ public class ITTransactionManagerTest {
           assertEquals(2L, manager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }

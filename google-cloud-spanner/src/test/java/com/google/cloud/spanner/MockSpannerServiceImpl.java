@@ -187,7 +187,6 @@ import org.threeten.bp.Instant;
  * }</pre>
  */
 public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcService {
-
   private static class PartialResultSetsIterator implements Iterator<PartialResultSet> {
     private static final int MAX_ROWS_IN_CHUNK = 1;
 

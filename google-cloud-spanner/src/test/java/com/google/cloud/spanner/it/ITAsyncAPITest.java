@@ -373,7 +373,7 @@ public class ITAsyncAPITest {
           assertEquals(4L, get(manager.getCommitResponse()).getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           context = manager.resetForRetryAsync();
         }
       }

@@ -133,11 +133,11 @@ final class AsyncTransactionManagerImpl
           SpannerExceptionFactory.newSpannerException(
               ErrorCode.ABORTED, "Transaction already aborted"));
     }
-    ApiFuture<CommitResponse> res = txn.commitAsync();
+    ApiFuture<CommitResponse> commitResponseFuture = txn.commitAsync();
     txnState = TransactionState.COMMITTED;
 
     ApiFutures.addCallback(
-        res,
+        commitResponseFuture,
         new ApiFutureCallback<CommitResponse>() {
           @Override
           public void onFailure(Throwable t) {
@@ -156,7 +156,7 @@ final class AsyncTransactionManagerImpl
         },
         MoreExecutors.directExecutor());
     return ApiFutures.transform(
-        res,
+        commitResponseFuture,
         new ApiFunction<CommitResponse, Timestamp>() {
           @Override
           public Timestamp apply(CommitResponse input) {
