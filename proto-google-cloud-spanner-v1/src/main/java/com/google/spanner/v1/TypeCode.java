@@ -161,6 +161,16 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>NUMERIC = 10;</code>
    */
   NUMERIC(10),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in JSON format.
+   * </pre>
+   *
+   * <code>JSON = 11;</code>
+   */
+  JSON(11),
   UNRECOGNIZED(-1),
   ;
 
@@ -292,6 +302,16 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>NUMERIC = 10;</code>
    */
   public static final int NUMERIC_VALUE = 10;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in JSON format.
+   * </pre>
+   *
+   * <code>JSON = 11;</code>
+   */
+  public static final int JSON_VALUE = 11;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -339,6 +359,8 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return STRUCT;
       case 10:
         return NUMERIC;
+      case 11:
+        return JSON;
       default:
         return null;
     }
