@@ -67,6 +67,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.rpc.RetryInfo;
+import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.common.Scope;
 import io.opencensus.common.ToLongFunction;
 import io.opencensus.metrics.DerivedLongCumulative;
@@ -815,13 +819,28 @@ class SessionPool {
     }
 
     @Override
-    public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
-      session = sessionPool.replaceSession(notFound, session);
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
+      session = sessionPool.replaceSession(notFoundException, session);
       PooledSession pooledSession = session.get();
       delegate = pooledSession.delegate.transactionManager(options);
       restartedAfterSessionNotFound = true;
+      return createAbortedExceptionWithMinimalRetry(notFoundException);
+    }
+    
+    private static SpannerException createAbortedExceptionWithMinimalRetry(SessionNotFoundException notFound) {
+      Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+      Metadata trailers = new Metadata();
+      RetryInfo retryInfo =
+          RetryInfo.newBuilder()
+              .setRetryDelay(
+                  com.google.protobuf.Duration.newBuilder()
+                      .setNanos((int) TimeUnit.MILLISECONDS.toNanos(1L))
+                      .setSeconds(0L))
+              .build();
+      trailers.put(key, retryInfo);
+      StatusRuntimeException statusException = io.grpc.Status.ABORTED.withCause(notFound).asRuntimeException(trailers);
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), notFound);
+          ErrorCode.ABORTED, notFound.getMessage(), statusException);
     }
 
     @Override

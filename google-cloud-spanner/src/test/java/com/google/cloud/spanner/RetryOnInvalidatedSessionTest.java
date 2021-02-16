@@ -1003,7 +1003,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1031,7 +1031,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1059,7 +1059,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1088,7 +1088,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1112,7 +1112,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1136,7 +1136,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1160,7 +1160,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1192,7 +1192,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1219,7 +1219,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1243,7 +1243,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1281,7 +1281,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1319,7 +1319,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1360,7 +1360,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1389,7 +1389,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }
@@ -1419,7 +1419,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           transaction = manager.resetForRetry();
         }
       }

@@ -726,7 +726,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       while (true) {
         // First back off and then restart the transaction.
         try {
-          Thread.sleep(aborted.getRetryDelayInMillis() / 1000);
+          Thread.sleep(aborted.getRetryDelayInMillis());
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           throw SpannerExceptionFactory.newSpannerException(
