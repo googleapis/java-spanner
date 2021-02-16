@@ -892,8 +892,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final TransactionContextImpl closedTransactionContext =
           TransactionContextImpl.newBuilder()
               .setSession(closedSession)
-              .setRpc(rpc)
               .setOptions(Options.fromTransactionOptions())
+              .setRpc(rpc)
               .build();
       when(closedSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));

@@ -31,6 +31,13 @@ import org.junit.runners.JUnit4;
 public class CommitResponseTest {
 
   @Test
+  public void testConstructWithTimestamp() {
+    Timestamp timestamp = Timestamp.ofTimeSecondsAndNanos(100L, 100);
+    CommitResponse response = new CommitResponse(timestamp);
+    assertEquals(timestamp, response.getCommitTimestamp());
+  }
+
+  @Test
   public void testFromProto() {
     long mutationCount = 5L;
     com.google.protobuf.Timestamp timestamp =
@@ -72,8 +79,8 @@ public class CommitResponseTest {
     assertEquals(response3, response1);
     assertNotEquals(response2, response1);
     assertNotEquals(response3, response2);
-    assertFalse(response1.equals(null));
-    assertFalse(response1.equals(new Object()));
+    assertNotEquals(response1, null);
+    assertNotEquals(response1, new Object());
 
     assertEquals(response3.hashCode(), response1.hashCode());
     assertNotEquals(response2.hashCode(), response1.hashCode());

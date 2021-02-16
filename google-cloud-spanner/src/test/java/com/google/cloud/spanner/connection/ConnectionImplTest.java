@@ -343,13 +343,11 @@ public class ConnectionImplTest {
 
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
-                        Timestamp commitTimestamp = Timestamp.now();
-                        commitResponse = mock(CommitResponse.class);
-                        when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
-                        TransactionContext tx = mock(TransactionContext.class);
-                        when(tx.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                        commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+                        TransactionContext transaction = mock(TransactionContext.class);
+                        when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
                         try {
-                          return callable.run(tx);
+                          return callable.run(transaction);
                         } catch (Exception e) {
                           throw SpannerExceptionFactory.newSpannerException(e);
                         }

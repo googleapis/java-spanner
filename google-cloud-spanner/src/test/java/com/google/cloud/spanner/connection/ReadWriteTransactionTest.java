@@ -91,8 +91,7 @@ public class ReadWriteTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitResponse = mock(CommitResponse.class);
-          when(commitResponse.getCommitTimestamp()).thenReturn(Timestamp.now());
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:

@@ -320,14 +320,14 @@ public class ITAsyncAPITest {
   }
 
   @Test
-  public void asyncRunnerReturnsCommitStats() {
+  public void testAsyncRunnerReturnsCommitStats() {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     AsyncRunner runner = client.runAsync(Options.commitStats());
     runner.runAsync(
         new AsyncWork<Void>() {
           @Override
-          public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-            txn.buffer(
+          public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
+            transaction.buffer(
                 Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
                     .set("Key")
                     .to("k_commit_stats")
@@ -344,10 +344,10 @@ public class ITAsyncAPITest {
   }
 
   @Test
-  public void asyncTransactionManagerReturnsCommitStats() throws InterruptedException {
+  public void testAsyncTransactionManagerReturnsCommitStats() throws InterruptedException {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
-    try (AsyncTransactionManager mgr = client.transactionManagerAsync(Options.commitStats())) {
-      TransactionContextFuture context = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client.transactionManagerAsync(Options.commitStats())) {
+      TransactionContextFuture context = manager.beginAsync();
       while (true) {
         try {
           get(
@@ -355,9 +355,9 @@ public class ITAsyncAPITest {
                   .then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        public ApiFuture<Void> apply(TransactionContext transaction, Void input)
                             throws Exception {
-                          txn.buffer(
+                          transaction.buffer(
                               Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
                                   .set("Key")
                                   .to("k_commit_stats")
@@ -369,12 +369,12 @@ public class ITAsyncAPITest {
                       },
                       executor)
                   .commitAsync());
-          assertNotNull(get(mgr.getCommitResponse()).getCommitStats());
-          assertEquals(4L, get(mgr.getCommitResponse()).getCommitStats().getMutationCount());
+          assertNotNull(get(manager.getCommitResponse()).getCommitStats());
+          assertEquals(4L, get(manager.getCommitResponse()).getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
-          context = mgr.resetForRetryAsync();
+          Thread.sleep(e.getRetryDelayInMillis());
+          context = manager.resetForRetryAsync();
         }
       }
     }

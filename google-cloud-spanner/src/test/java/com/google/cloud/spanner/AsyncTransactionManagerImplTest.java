@@ -19,42 +19,35 @@ package com.google.cloud.spanner;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import io.opencensus.trace.Span;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public class AsyncTransactionManagerImplTest {
 
   @Mock private SessionImpl session;
-  @Mock TransactionRunnerImpl.TransactionContextImpl txn;
-
-  @Before
-  public void setUp() {
-    initMocks(this);
-  }
+  @Mock TransactionRunnerImpl.TransactionContextImpl transaction;
 
   @Test
-  public void commitReturnsCommitStats() {
+  public void testCommitReturnsCommitStats() {
     try (AsyncTransactionManagerImpl manager =
         new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
-          .thenReturn(txn);
-      when(txn.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));
+          .thenReturn(transaction);
+      when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));
       Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
       CommitResponse response = mock(CommitResponse.class);
       when(response.getCommitTimestamp()).thenReturn(commitTimestamp);
-      when(txn.commitAsync()).thenReturn(ApiFutures.immediateFuture(response));
+      when(transaction.commitAsync()).thenReturn(ApiFutures.immediateFuture(response));
       manager.beginAsync();
       manager.commitAsync();
-      verify(txn).commitAsync();
+      verify(transaction).commitAsync();
     }
   }
 }

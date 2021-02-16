@@ -187,8 +187,6 @@ import org.threeten.bp.Instant;
  * }</pre>
  */
 public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcService {
-  private static final Random RANDOM = new Random();
-
   private static class PartialResultSetsIterator implements Iterator<PartialResultSet> {
     private static final int MAX_ROWS_IN_CHUNK = 1;
 
@@ -410,6 +408,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   /** Class for simulating execution time of server calls. */
   public static class SimulatedExecutionTime {
+    private static final Random RANDOM = new Random();
     private final int minimumExecutionTime;
     private final int randomExecutionTime;
     private final Queue<Exception> exceptions;
@@ -503,9 +502,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
       if (minimumExecutionTime > 0 || randomExecutionTime > 0) {
         Uninterruptibles.sleepUninterruptibly(
-            (randomExecutionTime == 0
-                    ? 0
-                    : MockSpannerServiceImpl.RANDOM.nextInt(randomExecutionTime))
+            (randomExecutionTime == 0 ? 0 : RANDOM.nextInt(randomExecutionTime))
                 + minimumExecutionTime,
             TimeUnit.MILLISECONDS);
       }

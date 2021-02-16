@@ -216,14 +216,15 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   }
 
   @Test
-  public void asyncTransactionManager_returnsCommitStats() throws Exception {
+  public void testAsyncTransactionManager_returnsCommitStats() throws Exception {
     try (AsyncTransactionManager manager =
         client().transactionManagerAsync(Options.commitStats())) {
-      TransactionContextFuture txn = manager.beginAsync();
+      TransactionContextFuture transaction = manager.beginAsync();
       while (true) {
         try {
           CommitTimestampFuture commitTimestamp =
-              txn.then(
+              transaction
+                  .then(
                       AsyncTransactionManagerHelper.<Void>buffer(
                           Mutation.delete("FOO", Key.of("foo"))),
                       executor)
@@ -234,7 +235,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           assertEquals(1L, manager.getCommitResponse().get().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
+          transaction = manager.resetForRetryAsync();
         }
       }
     }

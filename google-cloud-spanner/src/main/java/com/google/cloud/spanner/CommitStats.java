@@ -42,11 +42,11 @@ public class CommitStats {
    * row from a parent table that has the ON DELETE CASCADE annotation is also counted as one
    * mutation regardless of the number of interleaved child rows present. The exception to this is
    * if there are secondary indexes defined on rows being deleted, then the changes to the secondary
-   * indexes will be counted individually. For example, if a table has 2 secondary indexes, deleting
-   * a range of rows in the table will count as 1 mutation for the table, plus 2 mutations for each
-   * row that is deleted because the rows in the secondary index might be scattered over the
-   * key-space, making it impossible for Cloud Spanner to call a single delete range operation on
-   * the secondary indexes. Secondary indexes include the foreign keys backing indexes.
+   * indexes are counted individually. For example, if a table has 2 secondary indexes, deleting a
+   * range of rows in the table counts as 1 mutation for the table, plus 2 mutations for each row
+   * that is deleted because the rows in the secondary index might be scattered over the key-space,
+   * making it impossible for Cloud Spanner to call a single delete range operation on the secondary
+   * indexes. Secondary indexes include the foreign keys backing indexes.
    */
   public long getMutationCount() {
     return mutationCount;

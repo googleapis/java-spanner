@@ -1489,7 +1489,7 @@ public class InlineBeginTransactionTest {
                   } catch (Throwable t) {
                     mockSpanner.unfreeze();
                     // Wait until the update actually finishes so it has returned a transaction.
-                    // That should ensure that the retry does not issue a BeginTransaction RPC.
+                    // This ensures that the retry does not issue a BeginTransaction RPC.
                     SpannerApiFutures.get(updateCount);
                     throw t;
                   }
