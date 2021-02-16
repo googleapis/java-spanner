@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "5af36739532037360dfd504a4a0988562550526c"
+        "sha": "3f5351df6d13bd3bc3639e8a75e24ae924a4cfec"
       }
     },
     {
