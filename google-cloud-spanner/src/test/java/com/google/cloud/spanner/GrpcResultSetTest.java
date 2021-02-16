@@ -765,6 +765,25 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getJson() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.json()))))
+            .addValues(Value.json(new Json("{\"color\":\"red\",\"value\":\"#f00\"}")).toProto())
+            .addValues(Value.json(new Json("{}")).toProto())
+            .addValues(Value.json(new Json("[]")).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getJson(0).toString()).isEqualTo("{\"color\":\"red\",\"value\":\"#f00\"}");
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getJson(0).toString()).isEqualTo("{}");
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getJson(0).toString()).isEqualTo("[]");
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -866,5 +885,23 @@ public class GrpcResultSetTest {
 
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getDateList(0)).isEqualTo(dateList);
+  }
+
+  @Test
+  public void getJsonList() {
+    List<Json> jsonList = new ArrayList<>();
+    jsonList.add(new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    jsonList.add(new Json("[]"));
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.json())))))
+            .addValues(Value.jsonArray(jsonList).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getJsonList(0)).isEqualTo(jsonList);
   }
 }

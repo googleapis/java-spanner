@@ -51,6 +51,7 @@ public class ResultSetsTest {
     double doubleVal = 1.2;
     BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
+    Json jsonVal = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
     String byteVal = "101";
     long usecs = 32343;
     int year = 2018;
@@ -78,6 +79,9 @@ public class ResultSetsTest {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
     String[] stringArray = {"abc", "def", "ghi"};
+    Json[] jsonArray = {
+      new Json("{}"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"), new Json("[]")
+    };
 
     Type type =
         Type.struct(
@@ -87,6 +91,7 @@ public class ResultSetsTest {
             Type.StructField.of("doubleVal", Type.float64()),
             Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("stringVal", Type.string()),
+            Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -97,7 +102,8 @@ public class ResultSetsTest {
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
-            Type.StructField.of("stringArray", Type.array(Type.string())));
+            Type.StructField.of("stringArray", Type.array(Type.string())),
+            Type.StructField.of("jsonArray", Type.array(Type.json())));
     Struct struct1 =
         Struct.newBuilder()
             .set("f1")
@@ -112,6 +118,8 @@ public class ResultSetsTest {
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
+            .set("jsonVal")
+            .to(Value.json(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -134,6 +142,8 @@ public class ResultSetsTest {
             .to(Value.dateArray(Arrays.asList(dateArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
+            .set("jsonArray")
+            .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .build();
     Struct struct2 =
         Struct.newBuilder()
@@ -149,6 +159,8 @@ public class ResultSetsTest {
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
+            .set("jsonVal")
+            .to(Value.json(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -171,6 +183,8 @@ public class ResultSetsTest {
             .to(Value.dateArray(Arrays.asList(dateArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
+            .set("jsonArray")
+            .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .build();
     ResultSet rs = ResultSets.forRows(type, Arrays.asList(struct1, struct2));
 
@@ -181,6 +195,7 @@ public class ResultSetsTest {
       assertThat(e.getMessage()).contains("Must be preceded by a next() call");
     }
 
+    int columnIndex = 0;
     assertThat(rs.next()).isTrue();
     assertThat(rs.getType()).isEqualTo(type);
     assertThat(rs.getColumnCount()).isEqualTo(type.getStructFields().size());
@@ -195,47 +210,51 @@ public class ResultSetsTest {
     assertThat(rs.getColumnType("f3")).isEqualTo(Type.bool());
     assertThat(rs.getColumnType(2)).isEqualTo(Type.bool());
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct1);
-    assertThat(rs.getString(0)).isEqualTo("x");
-    assertThat(rs.getLong(1)).isEqualTo(2L);
-    assertThat(rs.getBoolean(2)).isTrue();
+    assertThat(rs.getString(columnIndex++)).isEqualTo("x");
+    assertThat(rs.getLong(columnIndex++)).isEqualTo(2L);
+    assertThat(rs.getBoolean(columnIndex++)).isTrue();
     assertThat(rs.getBoolean("f3")).isTrue();
     assertThat(rs.getDouble("doubleVal")).isWithin(0.0).of(doubleVal);
-    assertThat(rs.getDouble(3)).isWithin(0.0).of(doubleVal);
+    assertThat(rs.getDouble(columnIndex++)).isWithin(0.0).of(doubleVal);
     assertThat(rs.getBigDecimal("bigDecimalVal")).isEqualTo(new BigDecimal("1.23"));
-    assertThat(rs.getBigDecimal(4)).isEqualTo(new BigDecimal("1.23"));
-    assertThat(rs.getString(5)).isEqualTo(stringVal);
+    assertThat(rs.getBigDecimal(columnIndex++)).isEqualTo(new BigDecimal("1.23"));
+    assertThat(rs.getString(columnIndex++)).isEqualTo(stringVal);
     assertThat(rs.getString("stringVal")).isEqualTo(stringVal);
-    assertThat(rs.getBytes(6)).isEqualTo(ByteArray.copyFrom(byteVal));
+    assertThat(rs.getJson(columnIndex++)).isEqualTo(jsonVal);
+    assertThat(rs.getJson("jsonVal")).isEqualTo(jsonVal);
+    assertThat(rs.getBytes(columnIndex++)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getBytes("byteVal")).isEqualTo(ByteArray.copyFrom(byteVal));
-    assertThat(rs.getTimestamp(7)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
+    assertThat(rs.getTimestamp(columnIndex++)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
     assertThat(rs.getTimestamp("timestamp")).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
-    assertThat(rs.getDate(8)).isEqualTo(Date.fromYearMonthDay(year, month, day));
+    assertThat(rs.getDate(columnIndex++)).isEqualTo(Date.fromYearMonthDay(year, month, day));
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
-    assertThat(rs.getBooleanArray(9)).isEqualTo(boolArray);
+    assertThat(rs.getBooleanArray(columnIndex)).isEqualTo(boolArray);
     assertThat(rs.getBooleanArray("boolArray")).isEqualTo(boolArray);
-    assertThat(rs.getBooleanList(9)).isEqualTo(Booleans.asList(boolArray));
+    assertThat(rs.getBooleanList(columnIndex++)).isEqualTo(Booleans.asList(boolArray));
     assertThat(rs.getBooleanList("boolArray")).isEqualTo(Booleans.asList(boolArray));
-    assertThat(rs.getLongArray(10)).isEqualTo(longArray);
+    assertThat(rs.getLongArray(columnIndex)).isEqualTo(longArray);
     assertThat(rs.getLongArray("longArray")).isEqualTo(longArray);
-    assertThat(rs.getLongList(10)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList(columnIndex++)).isEqualTo(Longs.asList(longArray));
     assertThat(rs.getLongList("longArray")).isEqualTo(Longs.asList(longArray));
-    assertThat(rs.getDoubleArray(11)).usingTolerance(0.0).containsAtLeast(doubleArray);
+    assertThat(rs.getDoubleArray(columnIndex)).usingTolerance(0.0).containsAtLeast(doubleArray);
     assertThat(rs.getDoubleArray("doubleArray"))
         .usingTolerance(0.0)
         .containsExactly(doubleArray)
         .inOrder();
-    assertThat(rs.getDoubleList(11)).isEqualTo(Doubles.asList(doubleArray));
+    assertThat(rs.getDoubleList(columnIndex++)).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getDoubleList("doubleArray")).isEqualTo(Doubles.asList(doubleArray));
-    assertThat(rs.getBigDecimalList(12)).isEqualTo(Arrays.asList(bigDecimalArray));
+    assertThat(rs.getBigDecimalList(columnIndex++)).isEqualTo(Arrays.asList(bigDecimalArray));
     assertThat(rs.getBigDecimalList("bigDecimalArray")).isEqualTo(Arrays.asList(bigDecimalArray));
-    assertThat(rs.getBytesList(13)).isEqualTo(Arrays.asList(byteArray));
+    assertThat(rs.getBytesList(columnIndex++)).isEqualTo(Arrays.asList(byteArray));
     assertThat(rs.getBytesList("byteArray")).isEqualTo(Arrays.asList(byteArray));
-    assertThat(rs.getTimestampList(14)).isEqualTo(Arrays.asList(timestampArray));
+    assertThat(rs.getTimestampList(columnIndex++)).isEqualTo(Arrays.asList(timestampArray));
     assertThat(rs.getTimestampList("timestampArray")).isEqualTo(Arrays.asList(timestampArray));
-    assertThat(rs.getDateList(15)).isEqualTo(Arrays.asList(dateArray));
+    assertThat(rs.getDateList(columnIndex++)).isEqualTo(Arrays.asList(dateArray));
     assertThat(rs.getDateList("dateArray")).isEqualTo(Arrays.asList(dateArray));
-    assertThat(rs.getStringList(16)).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getStringList(columnIndex++)).isEqualTo(Arrays.asList(stringArray));
     assertThat(rs.getStringList("stringArray")).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getJsonList(columnIndex)).isEqualTo(Arrays.asList(jsonArray));
+    assertThat(rs.getJsonList("jsonArray")).isEqualTo(Arrays.asList(jsonArray));
 
     assertThat(rs.next()).isTrue();
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct2);

@@ -193,6 +193,10 @@ public class ValueBinderTest {
       return "x";
     }
 
+    public static Json defaultJson() {
+      return new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    }
+
     public static ByteArray defaultByteArray() {
       return ByteArray.copyFrom(new byte[] {'x'});
     }
@@ -235,6 +239,11 @@ public class ValueBinderTest {
 
     public static Iterable<String> defaultStringIterable() {
       return Arrays.asList("a", "b");
+    }
+
+    public static Iterable<Json> defaultJsonIterable() {
+      return Arrays.asList(
+          new Json("{}"), new Json("[]"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
     }
 
     public static Iterable<ByteArray> defaultByteArrayIterable() {

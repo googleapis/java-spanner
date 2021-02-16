@@ -34,6 +34,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -485,12 +486,19 @@ public class ReadWriteTransactionTest {
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     Statement statement = Statement.of("SELECT * FROM FOO");
     when(parsedStatement.getStatement()).thenReturn(statement);
+
+    Json arrayJson =
+        new Json(
+            "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]");
+    Json emptyArrayJson = new Json("[]");
+    Json simpleJson = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
     ResultSet delegate1 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric())),
+                StructField.of("AMOUNT", Type.numeric()),
+                StructField.of("JSON", Type.json())),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -499,6 +507,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 1")
                     .set("AMOUNT")
                     .to(BigDecimal.valueOf(550, 2))
+                    .set("JSON")
+                    .to(simpleJson)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -507,6 +517,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 2")
                     .set("AMOUNT")
                     .to(BigDecimal.valueOf(750, 2))
+                    .set("JSON")
+                    .to(arrayJson)
                     .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
@@ -515,7 +527,8 @@ public class ReadWriteTransactionTest {
             Type.struct(
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric())),
+                StructField.of("AMOUNT", Type.numeric()),
+                StructField.of("JSON", Type.json())),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -524,6 +537,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 1")
                     .set("AMOUNT")
                     .to(new BigDecimal("5.50"))
+                    .set("JSON")
+                    .to(simpleJson)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -532,6 +547,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 2")
                     .set("AMOUNT")
                     .to(new BigDecimal("7.50"))
+                    .set("JSON")
+                    .to(arrayJson)
                     .build()));
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
@@ -541,7 +558,8 @@ public class ReadWriteTransactionTest {
             Type.struct(
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric())),
+                StructField.of("AMOUNT", Type.numeric()),
+                StructField.of("JSON", Type.json())),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -550,6 +568,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 2")
                     .set("AMOUNT")
                     .to(new BigDecimal("7.50"))
+                    .set("JSON")
+                    .to(arrayJson)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -558,6 +578,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 1")
                     .set("AMOUNT")
                     .to(new BigDecimal("5.50"))
+                    .set("JSON")
+                    .to(simpleJson)
                     .build()));
     ChecksumResultSet rs3 =
         transaction.createChecksumResultSet(delegate3, parsedStatement, AnalyzeMode.NONE);
@@ -568,7 +590,8 @@ public class ReadWriteTransactionTest {
             Type.struct(
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric())),
+                StructField.of("AMOUNT", Type.numeric()),
+                StructField.of("JSON", Type.json())),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -577,6 +600,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 1")
                     .set("AMOUNT")
                     .to(new BigDecimal("5.50"))
+                    .set("JSON")
+                    .to(simpleJson)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -585,6 +610,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 2")
                     .set("AMOUNT")
                     .to(new BigDecimal("7.50"))
+                    .set("JSON")
+                    .to(arrayJson)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -593,6 +620,8 @@ public class ReadWriteTransactionTest {
                     .to("TEST 3")
                     .set("AMOUNT")
                     .to(new BigDecimal("9.99"))
+                    .set("JSON")
+                    .to(emptyArrayJson)
                     .build()));
     ChecksumResultSet rs4 =
         transaction.createChecksumResultSet(delegate4, parsedStatement, AnalyzeMode.NONE);

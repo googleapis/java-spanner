@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -242,6 +243,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case STRING:
               funnelValue(type, row.getString(i), into);
               break;
+            case JSON:
+              funnelValue(type, row.getJson(i), into);
+              break;
             case TIMESTAMP:
               funnelValue(type, row.getTimestamp(i), into);
               break;
@@ -300,6 +304,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             funnelValue(Code.STRING, value, into);
           }
           break;
+        case JSON:
+          into.putInt(row.getJsonList(columnIndex).size());
+          for (Json value : row.getJsonList(columnIndex)) {
+            funnelValue(Code.JSON, value, into);
+          }
+          break;
         case TIMESTAMP:
           into.putInt(row.getTimestampList(columnIndex).size());
           for (Timestamp value : row.getTimestampList(columnIndex)) {
@@ -353,6 +363,11 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             String stringValue = (String) value;
             into.putInt(stringValue.length());
             into.putUnencodedChars(stringValue);
+            break;
+          case JSON:
+            Json json = (Json) value;
+            into.putInt(json.value.length());
+            into.putUnencodedChars(json.value);
             break;
           case TIMESTAMP:
             Timestamp timestamp = (Timestamp) value;

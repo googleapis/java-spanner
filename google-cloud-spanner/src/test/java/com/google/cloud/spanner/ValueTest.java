@@ -394,6 +394,61 @@ public class ValueTest {
   }
 
   @Test
+  public void json() {
+    Json json = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    Value v = Value.json(json);
+    assertThat(v.getType()).isEqualTo(Type.json());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getJson()).isEqualTo(json);
+  }
+
+  @Test
+  public void jsonNull() {
+    Value v = Value.json(null);
+    assertThat(v.getType()).isEqualTo(Type.json());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    try {
+      v.getJson();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
+  }
+
+  @Test
+  public void jsonEmpty() {
+    Json json = new Json("{}");
+    Value v = Value.json(json);
+    assertThat(v.getJson()).isEqualTo(json);
+  }
+
+  @Test
+  public void jsonWithEmptyArray() {
+    Json json = new Json("[]");
+    Value v = Value.json(json);
+    assertThat(v.getJson()).isEqualTo(json);
+  }
+
+  @Test
+  public void jsonWithArray() {
+    Json json =
+        new Json(
+            "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]");
+    Value v = Value.json(json);
+    assertThat(v.getJson()).isEqualTo(json);
+  }
+
+  @Test
+  public void jsonNested() {
+    Json json =
+        new Json(
+            "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]");
+    Value v = Value.json(json);
+    assertThat(v.getJson()).isEqualTo(json);
+  }
+
+  @Test
   public void bytes() {
     ByteArray bytes = newByteArray("abc");
     Value v = Value.bytes(bytes);
@@ -778,6 +833,52 @@ public class ValueTest {
   }
 
   @Test
+  public void jsonArray() {
+    Json one = new Json("{}");
+    Json two = null;
+    Json three = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    Value v = Value.jsonArray(Arrays.asList(one, two, three));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getJsonArray()).containsExactly(one, two, three).inOrder();
+    assertThat(v.toString()).isEqualTo("[{},NULL,{\"color\":\"red\",\"value\":\"#f00\"}]");
+  }
+
+  @Test
+  public void jsonArrayNull() {
+    Value v = Value.jsonArray(null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    try {
+      v.getJsonArray();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("null value"));
+    }
+  }
+
+  @Test
+  public void jsonArrayTryGetBytesArray() {
+    Value value = Value.jsonArray(Arrays.asList(new Json("{}")));
+    try {
+      value.getBytesArray();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<JSON>"));
+    }
+  }
+
+  @Test
+  public void jsonArrayTryGetStringArray() {
+    Value value = Value.jsonArray(Arrays.asList(new Json("{}")));
+    try {
+      value.getStringArray();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<JSON>"));
+    }
+  }
+
+  @Test
   public void bytesArray() {
     ByteArray a = newByteArray("a");
     ByteArray c = newByteArray("c");
@@ -1027,6 +1128,8 @@ public class ValueTest {
   @Test
   public void testEqualsHashCode() {
     EqualsTester tester = new EqualsTester();
+    Json emptyJson = new Json("{}");
+    Json simpleJson = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
 
     tester.addEqualityGroup(Value.bool(true), Value.bool(Boolean.TRUE));
     tester.addEqualityGroup(Value.bool(false));
@@ -1048,6 +1151,11 @@ public class ValueTest {
     tester.addEqualityGroup(Value.string("abc"), Value.string("abc"));
     tester.addEqualityGroup(Value.string("def"));
     tester.addEqualityGroup(Value.string(null));
+
+    tester.addEqualityGroup(Value.json(simpleJson), Value.json(simpleJson));
+    tester.addEqualityGroup(Value.json(new Json("{}")));
+    tester.addEqualityGroup(Value.json(new Json("[]")));
+    tester.addEqualityGroup(Value.json(null));
 
     tester.addEqualityGroup(Value.bytes(newByteArray("abc")), Value.bytes(newByteArray("abc")));
     tester.addEqualityGroup(Value.bytes(newByteArray("def")));
@@ -1111,6 +1219,12 @@ public class ValueTest {
     tester.addEqualityGroup(Value.stringArray(null));
 
     tester.addEqualityGroup(
+        Value.jsonArray(Arrays.asList(emptyJson, simpleJson)),
+        Value.jsonArray(Arrays.asList(emptyJson, simpleJson)));
+    tester.addEqualityGroup(Value.jsonArray(Arrays.asList(new Json("[]"))));
+    tester.addEqualityGroup(Value.jsonArray(null));
+
+    tester.addEqualityGroup(
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))),
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))));
     tester.addEqualityGroup(Value.bytesArray(Arrays.asList(newByteArray("c"))));
@@ -1160,6 +1274,9 @@ public class ValueTest {
     reserializeAndAssert(Value.string("abc"));
     reserializeAndAssert(Value.string(null));
 
+    reserializeAndAssert(Value.json(new Json("{\"color\":\"red\",\"value\":\"#f00\"}")));
+    reserializeAndAssert(Value.json(null));
+
     reserializeAndAssert(Value.bytes(newByteArray("abc")));
     reserializeAndAssert(Value.bytes(null));
 
@@ -1206,6 +1323,12 @@ public class ValueTest {
     BrokenSerializationList<String> of = BrokenSerializationList.of("a", "b");
     reserializeAndAssert(Value.stringArray(of));
     reserializeAndAssert(Value.stringArray(null));
+
+    BrokenSerializationList<Json> json =
+        BrokenSerializationList.of(
+            new Json("{}"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    reserializeAndAssert(Value.jsonArray(json));
+    reserializeAndAssert(Value.jsonArray(null));
 
     reserializeAndAssert(
         Value.bytesArray(BrokenSerializationList.of(newByteArray("a"), newByteArray("b"))));

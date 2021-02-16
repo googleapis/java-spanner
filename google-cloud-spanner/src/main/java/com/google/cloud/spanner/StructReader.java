@@ -114,6 +114,12 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
   String getString(String columnName);
 
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  Json getJson(int columnIndex);
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  Json getJson(String columnName);
+
   /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
   ByteArray getBytes(int columnIndex);
 
@@ -217,6 +223,12 @@ public interface StructReader {
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
   List<String> getStringList(String columnName);
+
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. */
+  List<Json> getJsonList(int columnIndex);
+
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. */
+  List<Json> getJsonList(String columnName);
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. */
   List<ByteArray> getBytesList(int columnIndex);

@@ -65,6 +65,7 @@ public final class Key implements Serializable {
    *   <li>{@code Float}, {@code Double} for the {@code FLOAT64} Cloud Spanner type
    *   <li>{@code BigDecimal} for the {@code NUMERIC} Cloud Spanner type
    *   <li>{@code String} for the {@code STRING} Cloud Spanner type
+   *   <li>{@code Json} for the {@code JSON} Cloud Spanner type
    *   <li>{@link ByteArray} for the {@code BYTES} Cloud Spanner type
    *   <li>{@link Timestamp} for the {@code TIMESTAMP} Cloud Spanner type
    *   <li>{@link Date} for the {@code DATE} Cloud Spanner type
@@ -145,6 +146,11 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
+    /** Appends a {@code JSON} value to the key. */
+    public Builder append(@Nullable Json value) {
+      buffer.add(value);
+      return this;
+    }
     /** Appends a {@code BYTES} value to the key. */
     public Builder append(@Nullable ByteArray value) {
       buffer.add(value);
@@ -185,6 +191,8 @@ public final class Key implements Serializable {
         append((BigDecimal) value);
       } else if (value instanceof String) {
         append((String) value);
+      } else if (value instanceof Json) {
+        append((Json) value);
       } else if (value instanceof ByteArray) {
         append((ByteArray) value);
       } else if (value instanceof Timestamp) {
@@ -228,6 +236,7 @@ public final class Key implements Serializable {
    *   <li>{@code FLOAT64} is represented by {@code Double}
    *   <li>{@code NUMERIC} is represented by {@code BigDecimal}
    *   <li>{@code STRING} is represented by {@code String}
+   *   <li>{@code JSON} is represented by {@code String}
    *   <li>{@code BYTES} is represented by {@link ByteArray}
    *   <li>{@code TIMESTAMP} is represented by {@link Timestamp}
    *   <li>{@code DATE} is represented by {@link Date}
@@ -292,6 +301,8 @@ public final class Key implements Serializable {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof String) {
         builder.addValuesBuilder().setStringValue((String) part);
+      } else if (part instanceof Json) {
+        builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof ByteArray) {
         builder.addValuesBuilder().setStringValue(((ByteArray) part).toBase64());
       } else if (part instanceof Timestamp) {
