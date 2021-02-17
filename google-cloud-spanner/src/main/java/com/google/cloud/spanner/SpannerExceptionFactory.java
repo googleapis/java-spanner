@@ -228,14 +228,20 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
-  static StatusRuntimeException createAbortedExceptionWithRetry(
-      String message, Throwable cause, long seconds, int nanos) {
+  /**
+   * Creates a {@link StatusRuntimeException} that contains a {@link RetryInfo} with the specified
+   * retry delay.
+   */
+  static StatusRuntimeException createAbortedExceptionWithRetryDelay(
+      String message, Throwable cause, long retryDelaySeconds, int retryDelayNanos) {
     Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
     Metadata trailers = new Metadata();
     RetryInfo retryInfo =
         RetryInfo.newBuilder()
             .setRetryDelay(
-                com.google.protobuf.Duration.newBuilder().setNanos(nanos).setSeconds(seconds))
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos(retryDelayNanos)
+                    .setSeconds(retryDelaySeconds))
             .build();
     trailers.put(key, retryInfo);
     return io.grpc.Status.ABORTED

@@ -533,7 +533,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.ABORTED,
                 "Aborted due to failed initial statement",
-                SpannerExceptionFactory.createAbortedExceptionWithRetry(null, e, 0, 1)));
+                SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(null, e, 0, 1)));
       }
 
       if (e.getErrorCode() == ErrorCode.ABORTED) {
@@ -686,6 +686,19 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       return updateCount;
     }
 
+    private SpannerException createAbortedExceptionForBatchDml(ExecuteBatchDmlResponse response) {
+      // Manually construct an AbortedException with a 10ms retry delay for BatchDML responses that
+      // return an Aborted status (and not an AbortedException).
+      return newSpannerException(
+          ErrorCode.fromRpcStatus(response.getStatus()),
+          response.getStatus().getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+              response.getStatus().getMessage(),
+              /* cause = */ null,
+              /* retryDelaySeconds = */ 0,
+              /* retryDelayNanos = */ (int) TimeUnit.MILLISECONDS.toNanos(10L)));
+    }
+
     @Override
     public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
       beforeReadOrQuery();
@@ -707,14 +720,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // If one of the DML statements was aborted, we should throw an aborted exception.
         // In all other cases, we should throw a BatchUpdateException.
         if (response.getStatus().getCode() == Code.ABORTED_VALUE) {
-          throw newSpannerException(
-              ErrorCode.fromRpcStatus(response.getStatus()),
-              response.getStatus().getMessage(),
-              SpannerExceptionFactory.createAbortedExceptionWithRetry(
-                  response.getStatus().getMessage(),
-                  null,
-                  0,
-                  (int) TimeUnit.MILLISECONDS.toNanos(10L)));
+          throw createAbortedExceptionForBatchDml(response);
         } else if (response.getStatus().getCode() != 0) {
           throw newSpannerBatchUpdateException(
               ErrorCode.fromRpcStatus(response.getStatus()),
@@ -762,14 +768,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
                   if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
-                    throw newSpannerException(
-                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
-                        batchDmlResponse.getStatus().getMessage(),
-                        SpannerExceptionFactory.createAbortedExceptionWithRetry(
-                            batchDmlResponse.getStatus().getMessage(),
-                            null,
-                            0,
-                            (int) TimeUnit.MILLISECONDS.toNanos(10L)));
+                    throw createAbortedExceptionForBatchDml(batchDmlResponse);
                   } else if (batchDmlResponse.getStatus().getCode() != 0) {
                     throw newSpannerBatchUpdateException(
                         ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
