@@ -17,12 +17,15 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -169,6 +172,7 @@ public class SpannerPoolTest {
   private static Logger log = Logger.getLogger(SpannerPool.class.getName());
   private static OutputStream logCapturingStream;
   private static StreamHandler customLogHandler;
+  private static boolean useParentHandlers;
 
   private void attachLogCapturer() {
     logCapturingStream = new ByteArrayOutputStream();
@@ -182,12 +186,21 @@ public class SpannerPoolTest {
       throw new IllegalStateException("no handlers found for logger");
     }
     customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
+    useParentHandlers = log.getUseParentHandlers();
+    log.setUseParentHandlers(false);
     log.addHandler(customLogHandler);
   }
 
-  public String getTestCapturedLog() {
+  private String getTestCapturedLog() {
     customLogHandler.flush();
     return logCapturingStream.toString();
+  }
+
+  @AfterClass
+  public static void resetUseParentHandlers() {
+    if (useParentHandlers) {
+      log.setUseParentHandlers(true);
+    }
   }
 
   @Test
@@ -420,8 +433,9 @@ public class SpannerPoolTest {
     ConnectionOptions options1 =
         ConnectionOptions.newBuilder()
             .setUri(
-                "cloudspanner:/projects/p/instances/i/databases/d?minSessions=200;maxSessions=400")
-            .setCredentials(NoCredentials.getInstance())
+                "cloudspanner://localhost:9010/projects/p1/instances/i/databases/d"
+                    + "?minSessions=200;maxSessions=400;numChannels=8;usePlainText=true;userAgent=test-agent")
+            .setCredentials(mock(Credentials.class))
             .build();
     // options2 equals the default session pool options, and is therefore equal to ConnectionOptions
     // without any session pool configuration.
@@ -441,8 +455,9 @@ public class SpannerPoolTest {
     SpannerPoolKey key2 = SpannerPoolKey.of(options2);
     SpannerPoolKey key3 = SpannerPoolKey.of(options3);
 
-    assertThat(key1).isNotEqualTo(key2);
-    assertThat(key2).isEqualTo(key3);
-    assertThat(key1).isNotEqualTo(key3);
+    assertFalse(key1.equals(key2));
+    assertTrue(key2.equals(key3));
+    assertFalse(key1.equals(key3));
+    assertFalse(key1.equals(new Object()));
   }
 }

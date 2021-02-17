@@ -463,7 +463,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             // Aborted error if the call that included the BeginTransaction option fails. The
             // Aborted error will cause the entire transaction to be retried, and the retry will use
             // a separate BeginTransaction RPC.
-            TransactionSelector.newBuilder()
+            // If tx.get() returns successfully, this.transactionId will also have been set to a
+            // valid value as the latter is always set when a transaction id is returned by a
+            // statement.
+            return TransactionSelector.newBuilder()
                 .setId(tx.get(waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS))
                 .build();
           }

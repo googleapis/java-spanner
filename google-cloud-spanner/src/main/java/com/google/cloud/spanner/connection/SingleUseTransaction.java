@@ -33,7 +33,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
@@ -71,7 +70,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
-  private volatile TransactionManager txManager;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
@@ -221,29 +219,21 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private boolean hasCommitTimestamp() {
-    return state == UnitOfWorkState.COMMITTED
-        && (writeTransaction != null
-            || (txManager != null
-                && txManager.getState()
-                    == com.google.cloud.spanner.TransactionManager.TransactionState.COMMITTED));
+    return state == UnitOfWorkState.COMMITTED && writeTransaction != null;
   }
 
   @Override
   public Timestamp getCommitTimestamp() {
     ConnectionPreconditions.checkState(
         hasCommitTimestamp(), "There is no commit timestamp available for this transaction.");
-    return writeTransaction != null
-        ? writeTransaction.getCommitTimestamp()
-        : txManager.getCommitTimestamp();
+    return writeTransaction.getCommitTimestamp();
   }
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
     if (hasCommitTimestamp()) {
       try {
-        return writeTransaction != null
-            ? writeTransaction.getCommitTimestamp()
-            : txManager.getCommitTimestamp();
+        return writeTransaction.getCommitTimestamp();
       } catch (SpannerException e) {
         // ignore
       }

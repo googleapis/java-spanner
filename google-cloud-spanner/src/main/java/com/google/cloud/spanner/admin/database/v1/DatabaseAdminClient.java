@@ -85,6 +85,13 @@ import javax.annotation.Generated;
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
  *
+ * <pre>{@code
+ * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+ *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Database response = databaseAdminClient.getDatabase(name);
+ * }
+ * }</pre>
+ *
  * <p>Note: close() needs to be called on the DatabaseAdminClient object to clean up resources such
  * as threads. In the example above, try-with-resources is used, which automatically calls close().
  *
@@ -199,6 +206,17 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Lists Cloud Spanner databases.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The instance whose databases should be listed. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -215,6 +233,17 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Lists Cloud Spanner databases.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The instance whose databases should be listed. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -228,6 +257,22 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Lists Cloud Spanner databases.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabasesRequest request =
+   *       ListDatabasesRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (Database element : databaseAdminClient.listDatabases(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -240,6 +285,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Lists Cloud Spanner databases.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabasesRequest request =
+   *       ListDatabasesRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<Database> future =
+   *       databaseAdminClient.listDatabasesPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Database element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable() {
@@ -251,6 +313,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Lists Cloud Spanner databases.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   while (true) {
+   *     ListDatabasesResponse response = databaseAdminClient.listDatabasesCallable().call(request);
+   *     for (Database element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable() {
     return stub.listDatabasesCallable();
@@ -265,6 +344,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String createStatement = "createStatement744686547";
+   *   Database response = databaseAdminClient.createDatabaseAsync(parent, createStatement).get();
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the instance that will serve the new database. Values are
    *     of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -295,6 +384,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [response][google.longrunning.Operation.response] field type is
    * [Database][google.spanner.admin.database.v1.Database], if successful.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   String createStatement = "createStatement744686547";
+   *   Database response = databaseAdminClient.createDatabaseAsync(parent, createStatement).get();
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the instance that will serve the new database. Values are
    *     of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @param createStatement Required. A `CREATE DATABASE` statement, which specifies the ID of the
@@ -324,6 +423,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [response][google.longrunning.Operation.response] field type is
    * [Database][google.spanner.admin.database.v1.Database], if successful.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateDatabaseRequest request =
+   *       CreateDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setCreateStatement("createStatement744686547")
+   *           .addAllExtraStatements(new ArrayList<String>())
+   *           .build();
+   *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -343,6 +456,21 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [Database][google.spanner.admin.database.v1.Database], if successful.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateDatabaseRequest request =
+   *       CreateDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setCreateStatement("createStatement744686547")
+   *           .addAllExtraStatements(new ArrayList<String>())
+   *           .build();
+   *   OperationFuture<Database, CreateDatabaseMetadata> future =
+   *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Database response = future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationCallable() {
@@ -360,6 +488,21 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [Database][google.spanner.admin.database.v1.Database], if successful.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateDatabaseRequest request =
+   *       CreateDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setCreateStatement("createStatement744686547")
+   *           .addAllExtraStatements(new ArrayList<String>())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.createDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<CreateDatabaseRequest, Operation> createDatabaseCallable() {
     return stub.createDatabaseCallable();
@@ -368,6 +511,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets the state of a Cloud Spanner database.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   Database response = databaseAdminClient.getDatabase(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the requested database. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
@@ -383,6 +535,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Gets the state of a Cloud Spanner database.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   Database response = databaseAdminClient.getDatabase(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the requested database. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -396,6 +557,18 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Gets the state of a Cloud Spanner database.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetDatabaseRequest request =
+   *       GetDatabaseRequest.newBuilder()
+   *           .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   Database response = databaseAdminClient.getDatabase(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -408,6 +581,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Gets the state of a Cloud Spanner database.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetDatabaseRequest request =
+   *       GetDatabaseRequest.newBuilder()
+   *           .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   ApiFuture<Database> future = databaseAdminClient.getDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   Database response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return stub.getDatabaseCallable();
@@ -422,6 +607,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * field type is
    * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata]. The
    * operation has no response.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   List<String> statements = new ArrayList<>();
+   *   databaseAdminClient.updateDatabaseDdlAsync(database, statements).get();
+   * }
+   * }</pre>
    *
    * @param database Required. The database to update.
    * @param statements Required. DDL statements to be applied to the database.
@@ -447,6 +642,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata]. The
    * operation has no response.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   List<String> statements = new ArrayList<>();
+   *   databaseAdminClient.updateDatabaseDdlAsync(database, statements).get();
+   * }
+   * }</pre>
+   *
    * @param database Required. The database to update.
    * @param statements Required. DDL statements to be applied to the database.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -471,6 +676,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata]. The
    * operation has no response.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseDdlRequest request =
+   *       UpdateDatabaseDdlRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllStatements(new ArrayList<String>())
+   *           .setOperationId("operationId129704162")
+   *           .build();
+   *   databaseAdminClient.updateDatabaseDdlAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -490,6 +709,21 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation has no response.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseDdlRequest request =
+   *       UpdateDatabaseDdlRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllStatements(new ArrayList<String>())
+   *           .setOperationId("operationId129704162")
+   *           .build();
+   *   OperationFuture<Empty, UpdateDatabaseDdlMetadata> future =
+   *       databaseAdminClient.updateDatabaseDdlOperationCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationCallable() {
@@ -507,6 +741,21 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation has no response.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseDdlRequest request =
+   *       UpdateDatabaseDdlRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllStatements(new ArrayList<String>())
+   *           .setOperationId("operationId129704162")
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.updateDatabaseDdlCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable() {
     return stub.updateDatabaseDdlCallable();
@@ -516,6 +765,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
    * retained according to their `expire_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   databaseAdminClient.dropDatabase(database);
+   * }
+   * }</pre>
    *
    * @param database Required. The database to be dropped.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -533,6 +791,15 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
    * retained according to their `expire_time`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   databaseAdminClient.dropDatabase(database);
+   * }
+   * }</pre>
+   *
    * @param database Required. The database to be dropped.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -545,6 +812,18 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
    * retained according to their `expire_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DropDatabaseRequest request =
+   *       DropDatabaseRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   databaseAdminClient.dropDatabase(request);
+   * }
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -559,6 +838,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * retained according to their `expire_time`.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DropDatabaseRequest request =
+   *       DropDatabaseRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   ApiFuture<Empty> future = databaseAdminClient.dropDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<DropDatabaseRequest, Empty> dropDatabaseCallable() {
     return stub.dropDatabaseCallable();
@@ -569,6 +860,15 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Returns the schema of a Cloud Spanner database as a list of formatted DDL statements. This
    * method does not show pending schema updates, those may be queried using the
    * [Operations][google.longrunning.Operations] API.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
+   * }
+   * }</pre>
    *
    * @param database Required. The database whose schema we wish to get. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
@@ -588,6 +888,15 @@ public class DatabaseAdminClient implements BackgroundResource {
    * method does not show pending schema updates, those may be queried using the
    * [Operations][google.longrunning.Operations] API.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
+   * }
+   * }</pre>
+   *
    * @param database Required. The database whose schema we wish to get. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -604,6 +913,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * method does not show pending schema updates, those may be queried using the
    * [Operations][google.longrunning.Operations] API.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetDatabaseDdlRequest request =
+   *       GetDatabaseDdlRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -618,6 +939,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [Operations][google.longrunning.Operations] API.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetDatabaseDdlRequest request =
+   *       GetDatabaseDdlRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .build();
+   *   ApiFuture<GetDatabaseDdlResponse> future =
+   *       databaseAdminClient.getDatabaseDdlCallable().futureCall(request);
+   *   // Do something.
+   *   GetDatabaseDdlResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
       getDatabaseDdlCallable() {
@@ -632,6 +966,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires
    * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   Policy policy = Policy.newBuilder().build();
+   *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
@@ -658,6 +1002,16 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   Policy policy = Policy.newBuilder().build();
+   *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
    * @param policy REQUIRED: The complete policy to be applied to the `resource`. The size of the
@@ -680,6 +1034,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `spanner.backups.setIamPolicy` permission on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
+   *   Policy response = databaseAdminClient.setIamPolicy(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -697,6 +1064,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
+   *   // Do something.
+   *   Policy response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable() {
     return stub.setIamPolicyCallable();
@@ -711,6 +1091,15 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires
    * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   Policy response = databaseAdminClient.getIamPolicy(resource);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -734,6 +1123,15 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   Policy response = databaseAdminClient.getIamPolicy(resource);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -753,6 +1151,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `spanner.backups.getIamPolicy` permission on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
+   *   Policy response = databaseAdminClient.getIamPolicy(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -771,6 +1182,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = databaseAdminClient.getIamPolicyCallable().futureCall(request);
+   *   // Do something.
+   *   Policy response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable() {
     return stub.getIamPolicyCallable();
@@ -785,6 +1209,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * instance. Otherwise returns an empty set of permissions. Calling this method on a backup that
    * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
    * permission on the containing instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       databaseAdminClient.testIamPermissions(resource, permissions);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -813,6 +1248,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
    * permission on the containing instance.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       databaseAdminClient.testIamPermissions(resource, permissions);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
    * @param permissions The set of permissions to check for the `resource`. Permissions with
@@ -840,6 +1286,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list`
    * permission on the containing instance.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
+   *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -858,6 +1317,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * permission on the containing instance.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
+   *   ApiFuture<TestIamPermissionsResponse> future =
+   *       databaseAdminClient.testIamPermissionsCallable().futureCall(request);
+   *   // Do something.
+   *   TestIamPermissionsResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
@@ -876,6 +1349,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
    * operation will stop the creation and delete the backup. There can be only one pending backup
    * creation per database. Backup creation of different databases can run concurrently.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Backup backup = Backup.newBuilder().build();
+   *   String backupId = "backupId2121930365";
+   *   Backup response = databaseAdminClient.createBackupAsync(parent, backup, backupId).get();
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the instance in which the backup will be created. This must
    *     be the same instance that contains the database the backup will be created from. The backup
@@ -911,6 +1395,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation will stop the creation and delete the backup. There can be only one pending backup
    * creation per database. Backup creation of different databases can run concurrently.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   Backup backup = Backup.newBuilder().build();
+   *   String backupId = "backupId2121930365";
+   *   Backup response = databaseAdminClient.createBackupAsync(parent, backup, backupId).get();
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the instance in which the backup will be created. This must
    *     be the same instance that contains the database the backup will be created from. The backup
    *     will be stored in the location(s) specified in the instance configuration of this instance.
@@ -945,6 +1440,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation will stop the creation and delete the backup. There can be only one pending backup
    * creation per database. Backup creation of different databases can run concurrently.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateBackupRequest request =
+   *       CreateBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setBackup(Backup.newBuilder().build())
+   *           .build();
+   *   Backup response = databaseAdminClient.createBackupAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -967,6 +1476,21 @@ public class DatabaseAdminClient implements BackgroundResource {
    * creation per database. Backup creation of different databases can run concurrently.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateBackupRequest request =
+   *       CreateBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setBackup(Backup.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Backup, CreateBackupMetadata> future =
+   *       databaseAdminClient.createBackupOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Backup response = future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationCallable() {
@@ -987,6 +1511,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * creation per database. Backup creation of different databases can run concurrently.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CreateBackupRequest request =
+   *       CreateBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setBackup(Backup.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future = databaseAdminClient.createBackupCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
     return stub.createBackupCallable();
@@ -995,6 +1533,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Backup response = databaseAdminClient.getBackup(name);
+   * }
+   * }</pre>
    *
    * @param name Required. Name of the backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
@@ -1010,6 +1557,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   Backup response = databaseAdminClient.getBackup(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. Name of the backup. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1023,6 +1579,18 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetBackupRequest request =
+   *       GetBackupRequest.newBuilder()
+   *           .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .build();
+   *   Backup response = databaseAdminClient.getBackup(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1035,6 +1603,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   GetBackupRequest request =
+   *       GetBackupRequest.newBuilder()
+   *           .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .build();
+   *   ApiFuture<Backup> future = databaseAdminClient.getBackupCallable().futureCall(request);
+   *   // Do something.
+   *   Backup response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {
     return stub.getBackupCallable();
@@ -1043,6 +1623,16 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Backup backup = Backup.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   Backup response = databaseAdminClient.updateBackup(backup, updateMask);
+   * }
+   * }</pre>
    *
    * @param backup Required. The backup to update. `backup.name`, and the fields to be updated as
    *     specified by `update_mask` are required. Other fields are ignored. Update is only supported
@@ -1063,6 +1653,19 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateBackupRequest request =
+   *       UpdateBackupRequest.newBuilder()
+   *           .setBackup(Backup.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Backup response = databaseAdminClient.updateBackup(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1075,6 +1678,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateBackupRequest request =
+   *       UpdateBackupRequest.newBuilder()
+   *           .setBackup(Backup.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Backup> future = databaseAdminClient.updateBackupCallable().futureCall(request);
+   *   // Do something.
+   *   Backup response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<UpdateBackupRequest, Backup> updateBackupCallable() {
     return stub.updateBackupCallable();
@@ -1083,6 +1699,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   databaseAdminClient.deleteBackup(name);
+   * }
+   * }</pre>
    *
    * @param name Required. Name of the backup to delete. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
@@ -1098,6 +1723,15 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   databaseAdminClient.deleteBackup(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. Name of the backup to delete. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1111,6 +1745,18 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DeleteBackupRequest request =
+   *       DeleteBackupRequest.newBuilder()
+   *           .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .build();
+   *   databaseAdminClient.deleteBackup(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1123,6 +1769,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DeleteBackupRequest request =
+   *       DeleteBackupRequest.newBuilder()
+   *           .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .build();
+   *   ApiFuture<Empty> future = databaseAdminClient.deleteBackupCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<DeleteBackupRequest, Empty> deleteBackupCallable() {
     return stub.deleteBackupCallable();
@@ -1132,6 +1790,17 @@ public class DatabaseAdminClient implements BackgroundResource {
   /**
    * Lists completed and pending backups. Backups returned are ordered by `create_time` in
    * descending order, starting from the most recent `create_time`.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param parent Required. The instance to list backups from. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -1150,6 +1819,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Lists completed and pending backups. Backups returned are ordered by `create_time` in
    * descending order, starting from the most recent `create_time`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The instance to list backups from. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1164,6 +1844,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Lists completed and pending backups. Backups returned are ordered by `create_time` in
    * descending order, starting from the most recent `create_time`.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListBackupsRequest request =
+   *       ListBackupsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (Backup element : databaseAdminClient.listBackups(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1177,6 +1874,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * descending order, starting from the most recent `create_time`.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListBackupsRequest request =
+   *       ListBackupsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<Backup> future = databaseAdminClient.listBackupsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Backup element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListBackupsRequest, ListBackupsPagedResponse>
       listBackupsPagedCallable() {
@@ -1189,6 +1903,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * descending order, starting from the most recent `create_time`.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   while (true) {
+   *     ListBackupsResponse response = databaseAdminClient.listBackupsCallable().call(request);
+   *     for (Backup element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListBackupsRequest, ListBackupsResponse> listBackupsCallable() {
     return stub.listBackupsCallable();
@@ -1210,6 +1941,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * restored into an instance at a time. Once the restore operation completes, a new restore
    * operation can be initiated, without waiting for the optimize operation associated with the
    * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "databaseId1688905718";
+   *   BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Database response =
+   *       databaseAdminClient.restoreDatabaseAsync(parent, databaseId, backup).get();
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the instance in which to create the restored database. This
    *     instance must be in the same project and have the same instance configuration as the
@@ -1251,6 +1994,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation can be initiated, without waiting for the optimize operation associated with the
    * first restore to complete.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String databaseId = "databaseId1688905718";
+   *   String backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   Database response =
+   *       databaseAdminClient.restoreDatabaseAsync(parent, databaseId, backup).get();
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the instance in which to create the restored database. This
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
@@ -1290,6 +2045,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * restored into an instance at a time. Once the restore operation completes, a new restore
    * operation can be initiated, without waiting for the optimize operation associated with the
    * first restore to complete.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   String databaseId = "databaseId1688905718";
+   *   BackupName backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Database response =
+   *       databaseAdminClient.restoreDatabaseAsync(parent, databaseId, backup).get();
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the instance in which to create the restored database. This
    *     instance must be in the same project and have the same instance configuration as the
@@ -1331,6 +2098,18 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation can be initiated, without waiting for the optimize operation associated with the
    * first restore to complete.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   String databaseId = "databaseId1688905718";
+   *   String backup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   Database response =
+   *       databaseAdminClient.restoreDatabaseAsync(parent, databaseId, backup).get();
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the instance in which to create the restored database. This
    *     instance must be in the same project and have the same instance configuration as the
    *     instance containing the source backup. Values are of the form
@@ -1371,6 +2150,19 @@ public class DatabaseAdminClient implements BackgroundResource {
    * operation can be initiated, without waiting for the optimize operation associated with the
    * first restore to complete.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   RestoreDatabaseRequest request =
+   *       RestoreDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setDatabaseId("databaseId1688905718")
+   *           .build();
+   *   Database response = databaseAdminClient.restoreDatabaseAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1397,6 +2189,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * first restore to complete.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   RestoreDatabaseRequest request =
+   *       RestoreDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setDatabaseId("databaseId1688905718")
+   *           .build();
+   *   OperationFuture<Database, RestoreDatabaseMetadata> future =
+   *       databaseAdminClient.restoreDatabaseOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Database response = future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
       restoreDatabaseOperationCallable() {
@@ -1421,6 +2227,20 @@ public class DatabaseAdminClient implements BackgroundResource {
    * first restore to complete.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   RestoreDatabaseRequest request =
+   *       RestoreDatabaseRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setDatabaseId("databaseId1688905718")
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.restoreDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<RestoreDatabaseRequest, Operation> restoreDatabaseCallable() {
     return stub.restoreDatabaseCallable();
@@ -1434,6 +2254,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
    * `metadata.type_url` describes the type of the metadata. Operations returned include those that
    * have completed/failed/canceled within the last 7 days, and pending operations.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param parent Required. The instance of the database operations. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -1456,6 +2287,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `metadata.type_url` describes the type of the metadata. Operations returned include those that
    * have completed/failed/canceled within the last 7 days, and pending operations.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The instance of the database operations. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1475,6 +2317,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * `metadata.type_url` describes the type of the metadata. Operations returned include those that
    * have completed/failed/canceled within the last 7 days, and pending operations.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseOperationsRequest request =
+   *       ListDatabaseOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (Operation element : databaseAdminClient.listDatabaseOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1493,6 +2352,24 @@ public class DatabaseAdminClient implements BackgroundResource {
    * have completed/failed/canceled within the last 7 days, and pending operations.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseOperationsRequest request =
+   *       ListDatabaseOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.listDatabaseOperationsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsPagedResponse>
       listDatabaseOperationsPagedCallable() {
@@ -1509,6 +2386,24 @@ public class DatabaseAdminClient implements BackgroundResource {
    * have completed/failed/canceled within the last 7 days, and pending operations.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   while (true) {
+   *     ListDatabaseOperationsResponse response =
+   *         databaseAdminClient.listDatabaseOperationsCallable().call(request);
+   *     for (Operation element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
       listDatabaseOperationsCallable() {
@@ -1525,6 +2420,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * have completed/failed/canceled within the last 7 days, and pending operations. Operations
    * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
    * starting from the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param parent Required. The instance of the backup operations. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -1549,6 +2455,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
    * starting from the most recently started operation.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The instance of the backup operations. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1570,6 +2487,23 @@ public class DatabaseAdminClient implements BackgroundResource {
    * returned are ordered by `operation.metadata.value.progress.start_time` in descending order
    * starting from the most recently started operation.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListBackupOperationsRequest request =
+   *       ListBackupOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (Operation element : databaseAdminClient.listBackupOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1590,6 +2524,24 @@ public class DatabaseAdminClient implements BackgroundResource {
    * starting from the most recently started operation.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListBackupOperationsRequest request =
+   *       ListBackupOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.listBackupOperationsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
       listBackupOperationsPagedCallable() {
@@ -1608,6 +2560,24 @@ public class DatabaseAdminClient implements BackgroundResource {
    * starting from the most recently started operation.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   while (true) {
+   *     ListBackupOperationsResponse response =
+   *         databaseAdminClient.listBackupOperationsCallable().call(request);
+   *     for (Operation element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {

@@ -24,12 +24,16 @@ import java.lang.reflect.Method;
  * SHOW AUTOCOMMIT. The executor just calls a method with no parameters.
  */
 class ClientSideStatementNoParamExecutor implements ClientSideStatementExecutor {
-  private Method method;
+  private final Method method;
 
-  ClientSideStatementNoParamExecutor() {}
-
-  @Override
-  public void compile(ClientSideStatementImpl statement) throws CompileException {
+  /**
+   * Creates and compiles the given {@link ClientSideStatementImpl}.
+   *
+   * @param statement The statement to compile.
+   * @throws CompileException If the statement could not be compiled. This should never happen, as
+   *     it would indicate that an invalid statement has been defined in the source file.
+   */
+  ClientSideStatementNoParamExecutor(ClientSideStatementImpl statement) throws CompileException {
     try {
       this.method = ConnectionStatementExecutor.class.getDeclaredMethod(statement.getMethodName());
     } catch (NoSuchMethodException | SecurityException e) {
