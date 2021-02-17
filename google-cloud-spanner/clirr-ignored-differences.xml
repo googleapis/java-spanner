@@ -453,4 +453,27 @@
     <className>com/google/cloud/spanner/TransactionContext</className>
     <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
   </difference>
+  
+  <!-- Support for CommitStats added -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncTransactionManager</className>
+    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/AsyncRunner</className>
+    <method>com.google.api.core.ApiFuture getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionManager</className>
+    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionRunner</className>
+    <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
+  </difference>
+  
 </differences>

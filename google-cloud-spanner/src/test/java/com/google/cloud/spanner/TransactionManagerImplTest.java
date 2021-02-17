@@ -37,7 +37,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -141,7 +140,8 @@ public class TransactionManagerImplTest {
   public void commitSucceeds() {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
-    when(txn.commitTimestamp()).thenReturn(commitTimestamp);
+    CommitResponse response = new CommitResponse(commitTimestamp);
+    when(txn.getCommitResponse()).thenReturn(response);
     manager.begin();
     manager.commit();
     assertThat(manager.getState()).isEqualTo(TransactionState.COMMITTED);
@@ -266,12 +266,12 @@ public class TransactionManagerImplTest {
             });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<CommitResponse>>() {
+            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
+                  InvocationOnMock invocation) throws Throwable {
                 return ApiFutures.immediateFuture(
-                    CommitResponse.newBuilder()
+                    com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
@@ -360,12 +360,12 @@ public class TransactionManagerImplTest {
             });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<CommitResponse>>() {
+            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
+                  InvocationOnMock invocation) throws Throwable {
                 return ApiFutures.immediateFuture(
-                    CommitResponse.newBuilder()
+                    com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))

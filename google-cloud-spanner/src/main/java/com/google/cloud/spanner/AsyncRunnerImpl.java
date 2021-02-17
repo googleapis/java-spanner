@@ -16,23 +16,31 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 class AsyncRunnerImpl implements AsyncRunner {
   private final TransactionRunnerImpl delegate;
-  private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+  private SettableApiFuture<CommitResponse> commitResponse;
 
   AsyncRunnerImpl(TransactionRunnerImpl delegate) {
-    this.delegate = delegate;
+    this.delegate = Preconditions.checkNotNull(delegate);
   }
 
   @Override
   public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+    Preconditions.checkState(commitResponse == null, "runAsync() can only be called once");
+    commitResponse = SettableApiFuture.create();
     final SettableApiFuture<R> res = SettableApiFuture.create();
     executor.execute(
         new Runnable() {
@@ -43,7 +51,7 @@ class AsyncRunnerImpl implements AsyncRunner {
             } catch (Throwable t) {
               res.setException(t);
             } finally {
-              setCommitTimestamp();
+              setCommitResponse();
             }
           }
         });
@@ -66,16 +74,30 @@ class AsyncRunnerImpl implements AsyncRunner {
         });
   }
 
-  private void setCommitTimestamp() {
+  private void setCommitResponse() {
     try {
-      commitTimestamp.set(delegate.getCommitTimestamp());
+      commitResponse.set(delegate.getCommitResponse());
     } catch (Throwable t) {
-      commitTimestamp.setException(t);
+      commitResponse.setException(t);
     }
   }
 
   @Override
   public ApiFuture<Timestamp> getCommitTimestamp() {
-    return commitTimestamp;
+    checkState(commitResponse != null, "runAsync() has not yet been called");
+    return ApiFutures.transform(
+        commitResponse,
+        new ApiFunction<CommitResponse, Timestamp>() {
+          @Override
+          public Timestamp apply(CommitResponse input) {
+            return input.getCommitTimestamp();
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
+
+  public ApiFuture<CommitResponse> getCommitResponse() {
+    checkState(commitResponse != null, "runAsync() has not yet been called");
+    return commitResponse;
   }
 }

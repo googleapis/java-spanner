@@ -290,4 +290,22 @@ class SessionPoolAsyncTransactionManager
       return txnState;
     }
   }
+
+  public ApiFuture<CommitResponse> getCommitResponse() {
+    synchronized (lock) {
+      Preconditions.checkState(
+          txnState == TransactionState.COMMITTED,
+          "commit can only be invoked if the transaction was successfully committed");
+    }
+    return ApiFutures.transformAsync(
+        delegate,
+        new ApiAsyncFunction<AsyncTransactionManagerImpl, CommitResponse>() {
+          @Override
+          public ApiFuture<CommitResponse> apply(AsyncTransactionManagerImpl input)
+              throws Exception {
+            return input.getCommitResponse();
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
 }

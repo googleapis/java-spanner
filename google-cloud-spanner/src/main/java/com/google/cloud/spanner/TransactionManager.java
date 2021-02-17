@@ -87,6 +87,9 @@ public interface TransactionManager extends AutoCloseable {
    */
   Timestamp getCommitTimestamp();
 
+  /** Returns the {@link CommitResponse} of this transaction. */
+  CommitResponse getCommitResponse();
+
   /** Returns the state of the transaction. */
   TransactionState getState();
 
