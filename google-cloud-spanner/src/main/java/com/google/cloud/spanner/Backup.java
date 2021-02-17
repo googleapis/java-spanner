@@ -65,7 +65,7 @@ public class Backup extends BackupInfo {
         getExpireTime() != null, "Cannot create a backup without an expire time");
     Preconditions.checkState(
         getDatabase() != null, "Cannot create a backup without a source database");
-    return dbClient.createBackup(instance(), backup(), sourceDatabase(), getExpireTime());
+    return dbClient.createBackup(this);
   }
 
   /**
@@ -182,6 +182,7 @@ public class Backup extends BackupInfo {
         .setState(fromProtoState(proto.getState()))
         .setSize(proto.getSizeBytes())
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
+        .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
         .setProto(proto)
         .build();

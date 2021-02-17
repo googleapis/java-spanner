@@ -118,8 +118,14 @@ public class Database extends DatabaseInfo {
     Preconditions.checkArgument(
         backup.getInstanceId().equals(getId().getInstanceId()),
         "The instance of the backup must be equal to the instance of this database.");
+
     return dbClient.createBackup(
-        instance(), backup.getId().getBackup(), database(), backup.getExpireTime());
+        dbClient
+            .newBackupBuilder(backup.getId())
+            .setDatabase(getId())
+            .setExpireTime(backup.getExpireTime())
+            .setVersionTime(backup.getVersionTime())
+            .build());
   }
 
   /**
@@ -177,6 +183,8 @@ public class Database extends DatabaseInfo {
         .setState(fromProtoState(proto.getState()))
         .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
         .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
+        .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
+        .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
         .setProto(proto)
         .build();
   }

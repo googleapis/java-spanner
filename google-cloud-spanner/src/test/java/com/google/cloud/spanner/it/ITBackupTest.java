@@ -17,6 +17,9 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.cloud.spanner.testing.TimestampHelper.afterDays;
+import static com.google.cloud.spanner.testing.TimestampHelper.afterMinutes;
+import static com.google.cloud.spanner.testing.TimestampHelper.daysAgo;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -58,7 +61,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -87,7 +89,6 @@ public class ITBackupTest {
   private InstanceAdminClient instanceAdminClient;
   private Instance instance;
   private RemoteSpannerHelper testHelper;
-  private final AtomicInteger backupSeq = new AtomicInteger();
   private List<String> databases = new ArrayList<>();
   private List<String> backups = new ArrayList<>();
   private final Random random = new Random();
@@ -188,34 +189,6 @@ public class ITBackupTest {
     }
   }
 
-  private String getUniqueBackupId() {
-    return String.format("testbck_%06d_%04d", random.nextInt(1000000), backupSeq.incrementAndGet());
-  }
-
-  private static Timestamp after7Days() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            + TimeUnit.MICROSECONDS.convert(7L, TimeUnit.DAYS));
-  }
-
-  private Timestamp after5Minutes() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            + TimeUnit.MICROSECONDS.convert(5L, TimeUnit.MINUTES));
-  }
-
-  private Timestamp tomorrow() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            + TimeUnit.MICROSECONDS.convert(1L, TimeUnit.DAYS));
-  }
-
-  private Timestamp yesterday() {
-    return Timestamp.ofTimeMicroseconds(
-        TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            - TimeUnit.MICROSECONDS.convert(1L, TimeUnit.DAYS));
-  }
-
   @Test
   public void testBackups() throws InterruptedException, ExecutionException {
     // Create two test databases in parallel.
@@ -250,9 +223,9 @@ public class ITBackupTest {
                 .build()));
 
     // Create two backups in parallel.
-    String backupId1 = getUniqueBackupId() + "_bck1";
-    String backupId2 = getUniqueBackupId() + "_bck2";
-    Timestamp expireTime = after7Days();
+    String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
+    String backupId2 = testHelper.getUniqueBackupId() + "_bck2";
+    Timestamp expireTime = afterDays(7);
     logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
     OperationFuture<Backup, CreateBackupMetadata> op1 =
         dbAdminClient.createBackup(
@@ -414,8 +387,8 @@ public class ITBackupTest {
 
   private void testCreateInvalidExpirationDate(Database db) throws InterruptedException {
     // This is not allowed, the expiration date must be at least 6 hours in the future.
-    Timestamp expireTime = yesterday();
-    String backupId = getUniqueBackupId();
+    Timestamp expireTime = daysAgo(1);
+    String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Creating backup %s with invalid expiration date", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
         dbAdminClient.createBackup(
@@ -437,8 +410,8 @@ public class ITBackupTest {
 
   private void testCancelBackupOperation(Database db)
       throws InterruptedException, ExecutionException {
-    Timestamp expireTime = after7Days();
-    String backupId = getUniqueBackupId();
+    Timestamp expireTime = afterDays(7);
+    String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Starting to create backup %s", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
         dbAdminClient.createBackup(
@@ -477,7 +450,7 @@ public class ITBackupTest {
 
   private void testUpdateBackup(Backup backup) {
     // Update the expire time.
-    Timestamp tomorrow = tomorrow();
+    Timestamp tomorrow = afterDays(1);
     backup = backup.toBuilder().setExpireTime(tomorrow).build();
     logger.info(
         String.format("Updating expire time of backup %s to 1 week", backup.getId().getBackup()));
@@ -488,7 +461,7 @@ public class ITBackupTest {
     assertThat(backup.getExpireTime()).isEqualTo(tomorrow);
 
     // Try to set the expire time to 5 minutes in the future.
-    Timestamp in5Minutes = after5Minutes();
+    Timestamp in5Minutes = afterMinutes(5);
     backup = backup.toBuilder().setExpireTime(in5Minutes).build();
     try {
       logger.info(

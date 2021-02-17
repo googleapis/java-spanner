@@ -453,7 +453,7 @@
     <className>com/google/cloud/spanner/TransactionContext</className>
     <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
   </difference>
-  
+
   <!-- Support for CommitStats added -->
   <difference>
     <differenceType>7012</differenceType>
@@ -475,5 +475,16 @@
     <className>com/google/cloud/spanner/TransactionRunner</className>
     <method>com.google.cloud.spanner.CommitResponse getCommitResponse()</method>
   </difference>
-  
+
+  <!-- PITR -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/BackupInfo$Builder</className>
+    <method>com.google.cloud.spanner.BackupInfo$Builder setVersionTime(com.google.cloud.Timestamp)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createBackup(com.google.cloud.spanner.Backup)</method>
+  </difference>
 </differences>
