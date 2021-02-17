@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -29,6 +30,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -210,6 +212,33 @@ public class ITTransactionManagerTest {
       assertThat(row.getString(0)).isEqualTo("Key3");
       assertThat(row.getBoolean(1)).isTrue();
       manager2.close();
+    }
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void testTransactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        transaction.buffer(
+            Mutation.newInsertBuilder("T")
+                .set("K")
+                .to("KeyCommitStats")
+                .set("BoolValue")
+                .to(true)
+                .build());
+        try {
+          manager.commit();
+          assertNotNull(manager.getCommitResponse().getCommitStats());
+          assertEquals(2L, manager.getCommitResponse().getCommitStats().getMutationCount());
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis());
+          transaction = manager.resetForRetry();
+        }
+      }
     }
   }
 }

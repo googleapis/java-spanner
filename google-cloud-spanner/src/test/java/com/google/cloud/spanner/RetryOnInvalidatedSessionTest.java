@@ -18,6 +18,10 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFunction;
@@ -1151,7 +1155,7 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void transactionManagerUpdate() throws InterruptedException {
     invalidateSessionPool();
-    try (TransactionManager manager = client.transactionManager()) {
+    try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
       long count;
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -1164,10 +1168,11 @@ public class RetryOnInvalidatedSessionTest {
           transaction = manager.resetForRetry();
         }
       }
-      assertThat(count).isEqualTo(UPDATE_COUNT);
-      assertThat(failOnInvalidatedSession).isFalse();
+      assertEquals(UPDATE_COUNT, count);
+      assertNotNull(manager.getCommitResponse().getCommitStats());
+      assertFalse(failOnInvalidatedSession);
     } catch (SessionNotFoundException e) {
-      assertThat(failOnInvalidatedSession).isTrue();
+      assertTrue(failOnInvalidatedSession);
     }
   }
 

@@ -74,6 +74,9 @@ public interface TransactionRunner {
    */
   Timestamp getCommitTimestamp();
 
+  /** Returns the {@link CommitResponse} of this transaction. */
+  CommitResponse getCommitResponse();
+
   /**
    * Allows overriding the default behaviour of blocking nested transactions.
    *

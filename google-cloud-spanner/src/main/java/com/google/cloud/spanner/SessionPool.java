@@ -37,6 +37,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
@@ -868,7 +869,7 @@ class SessionPool {
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
           PooledSession pooledSession = session.get();
-          delegate = pooledSession.delegate.transactionManager();
+          delegate = pooledSession.delegate.transactionManager(options);
           restartedAfterSessionNotFound = true;
         }
       }
@@ -877,6 +878,11 @@ class SessionPool {
     @Override
     public Timestamp getCommitTimestamp() {
       return delegate.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return delegate.getCommitResponse();
     }
 
     @Override
@@ -958,6 +964,11 @@ class SessionPool {
     }
 
     @Override
+    public CommitResponse getCommitResponse() {
+      return getRunner().getCommitResponse();
+    }
+
+    @Override
     public TransactionRunner allowNestedTransaction() {
       getRunner().allowNestedTransaction();
       return this;
@@ -968,7 +979,7 @@ class SessionPool {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
     private final TransactionOption[] options;
-    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private SettableApiFuture<CommitResponse> commitResponse;
 
     private SessionPoolAsyncRunner(
         SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
@@ -979,6 +990,7 @@ class SessionPool {
 
     @Override
     public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
           new Runnable() {
@@ -1018,7 +1030,7 @@ class SessionPool {
               }
               session.get().markUsed();
               session.close();
-              setCommitTimestamp(runner);
+              setCommitResponse(runner);
               if (exception != null) {
                 res.setException(exception);
               } else {
@@ -1029,17 +1041,32 @@ class SessionPool {
       return res;
     }
 
-    private void setCommitTimestamp(AsyncRunner delegate) {
+    private void setCommitResponse(AsyncRunner delegate) {
       try {
-        commitTimestamp.set(delegate.getCommitTimestamp().get());
+        commitResponse.set(delegate.getCommitResponse().get());
       } catch (Throwable t) {
-        commitTimestamp.setException(t);
+        commitResponse.setException(t);
       }
     }
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
-      return commitTimestamp;
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return ApiFutures.transform(
+          commitResponse,
+          new ApiFunction<CommitResponse, Timestamp>() {
+            @Override
+            public Timestamp apply(CommitResponse input) {
+              return input.getCommitTimestamp();
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ApiFuture<CommitResponse> getCommitResponse() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return commitResponse;
     }
   }
 

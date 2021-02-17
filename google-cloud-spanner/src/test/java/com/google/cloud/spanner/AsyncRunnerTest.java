@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFunction;
@@ -53,6 +54,29 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
+
+  @Test
+  public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
+    AsyncRunner runner = client().runAsync();
+    try {
+      runner.getCommitTimestamp();
+      fail("missing expected exception");
+    } catch (IllegalStateException e) {
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
+  }
+
+  @Test
+  public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
+    AsyncRunner runner = client().runAsync();
+    try {
+      runner.getCommitResponse();
+      fail("missing expected exception");
+    } catch (IllegalStateException e) {
+      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
+    }
+  }
+
   @Test
   public void asyncRunnerUpdate() throws Exception {
     AsyncRunner runner = client().runAsync();

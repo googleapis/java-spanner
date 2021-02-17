@@ -46,6 +46,11 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
 
+  /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
+  public static TransactionOption commitStats() {
+    return COMMIT_STATS_OPTION;
+  }
+
   /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
    * than 0.
@@ -116,6 +121,16 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  /** Option to request {@link CommitStats} for read/write transactions. */
+  static final class CommitStatsOption extends InternalOption implements TransactionOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.withCommitStats = true;
+    }
+  }
+
+  static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
+
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
     final int prefetchChunks;
@@ -143,6 +158,7 @@ public final class Options implements Serializable {
     }
   }
 
+  private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
   private Integer bufferRows;
@@ -152,6 +168,10 @@ public final class Options implements Serializable {
 
   // Construction is via factory methods below.
   private Options() {}
+
+  boolean withCommitStats() {
+    return withCommitStats;
+  }
 
   boolean hasLimit() {
     return limit != null;
@@ -204,6 +224,9 @@ public final class Options implements Serializable {
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
+    if (withCommitStats) {
+      b.append("withCommitStats: ").append(withCommitStats).append(' ');
+    }
     if (limit != null) {
       b.append("limit: ").append(limit).append(' ');
     }
@@ -234,7 +257,8 @@ public final class Options implements Serializable {
     }
 
     Options that = (Options) o;
-    return (!hasLimit() && !that.hasLimit()
+    return Objects.equals(withCommitStats, that.withCommitStats)
+        && (!hasLimit() && !that.hasLimit()
             || hasLimit() && that.hasLimit() && Objects.equals(limit(), that.limit()))
         && (!hasPrefetchChunks() && !that.hasPrefetchChunks()
             || hasPrefetchChunks()
@@ -253,6 +277,9 @@ public final class Options implements Serializable {
   @Override
   public int hashCode() {
     int result = 31;
+    if (withCommitStats) {
+      result = 31 * result + 1231;
+    }
     if (limit != null) {
       result = 31 * result + limit.hashCode();
     }

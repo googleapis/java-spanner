@@ -19,6 +19,8 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -33,6 +35,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
@@ -629,5 +632,24 @@ public class ITTransactionTest {
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     }
+  }
+
+  @Test
+  public void testTransactionRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    final String key = uniqueKey();
+    TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(
+                Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build());
+            return null;
+          }
+        });
+    assertNotNull(runner.getCommitResponse().getCommitStats());
+    // MutationCount = 2 (2 columns).
+    assertEquals(2L, runner.getCommitResponse().getCommitStats().getMutationCount());
   }
 }

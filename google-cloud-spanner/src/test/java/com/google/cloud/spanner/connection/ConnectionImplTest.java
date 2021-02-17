@@ -37,6 +37,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
@@ -84,7 +85,7 @@ public class ConnectionImplTest {
 
   static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
 
     private SimpleTransactionManager(TransactionContext txContext) {
@@ -99,7 +100,7 @@ public class ConnectionImplTest {
 
     @Override
     public void commit() {
-      commitTimestamp = Timestamp.now();
+      commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
       state = TransactionState.COMMITTED;
     }
 
@@ -115,7 +116,12 @@ public class ConnectionImplTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -317,15 +323,15 @@ public class ConnectionImplTest {
               public TransactionRunner answer(InvocationOnMock invocation) {
                 TransactionRunner runner =
                     new TransactionRunner() {
-                      private Timestamp commitTimestamp;
+                      private CommitResponse commitResponse;
 
                       @Override
                       public <T> T run(TransactionCallable<T> callable) {
-                        this.commitTimestamp = Timestamp.now();
-                        TransactionContext tx = mock(TransactionContext.class);
-                        when(tx.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                        commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+                        TransactionContext transaction = mock(TransactionContext.class);
+                        when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
                         try {
-                          return callable.run(tx);
+                          return callable.run(transaction);
                         } catch (Exception e) {
                           throw SpannerExceptionFactory.newSpannerException(e);
                         }
@@ -333,7 +339,12 @@ public class ConnectionImplTest {
 
                       @Override
                       public Timestamp getCommitTimestamp() {
-                        return commitTimestamp;
+                        return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+                      }
+
+                      @Override
+                      public CommitResponse getCommitResponse() {
+                        return commitResponse;
                       }
 
                       @Override

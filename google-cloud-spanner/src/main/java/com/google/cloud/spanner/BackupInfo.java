@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.client.util.Preconditions;
 import com.google.cloud.Timestamp;
+import com.google.spanner.admin.database.v1.Database;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -41,6 +42,17 @@ public class BackupInfo {
     public abstract Builder setExpireTime(Timestamp expireTime);
 
     /**
+     * Optional for creating a new backup.
+     *
+     * <p>Specifies the timestamp to have an externally consistent copy of the database. If no
+     * version time is specified, it will be automatically set to the backup create time.
+     *
+     * <p>The version time can be as far in the past as specified by the database earliest version
+     * time (see {@link Database#getEarliestVersionTime()}).
+     */
+    public abstract Builder setVersionTime(Timestamp versionTime);
+
+    /**
      * Required for creating a new backup.
      *
      * <p>Sets the source database to use for creating the backup.
@@ -55,6 +67,7 @@ public class BackupInfo {
     protected final BackupId id;
     private State state = State.UNSPECIFIED;
     private Timestamp expireTime;
+    private Timestamp versionTime;
     private DatabaseId database;
     private long size;
     private com.google.spanner.admin.database.v1.Backup proto;
@@ -67,6 +80,7 @@ public class BackupInfo {
       this.id = other.id;
       this.state = other.state;
       this.expireTime = other.expireTime;
+      this.versionTime = other.versionTime;
       this.database = other.database;
       this.size = other.size;
       this.proto = other.proto;
@@ -81,6 +95,12 @@ public class BackupInfo {
     @Override
     public Builder setExpireTime(Timestamp expireTime) {
       this.expireTime = Preconditions.checkNotNull(expireTime);
+      return this;
+    }
+
+    @Override
+    public Builder setVersionTime(Timestamp versionTime) {
+      this.versionTime = versionTime;
       return this;
     }
 
@@ -119,6 +139,7 @@ public class BackupInfo {
   private final BackupId id;
   private final State state;
   private final Timestamp expireTime;
+  private final Timestamp versionTime;
   private final DatabaseId database;
   private final long size;
   private final com.google.spanner.admin.database.v1.Backup proto;
@@ -128,6 +149,7 @@ public class BackupInfo {
     this.state = builder.state;
     this.size = builder.size;
     this.expireTime = builder.expireTime;
+    this.versionTime = builder.versionTime;
     this.database = builder.database;
     this.proto = builder.proto;
   }
@@ -157,6 +179,11 @@ public class BackupInfo {
     return expireTime;
   }
 
+  /** Returns the version time of the backup. */
+  public Timestamp getVersionTime() {
+    return versionTime;
+  }
+
   /** Returns the id of the database that was used to create the backup. */
   public DatabaseId getDatabase() {
     return database;
@@ -180,17 +207,19 @@ public class BackupInfo {
         && state == that.state
         && size == that.size
         && Objects.equals(expireTime, that.expireTime)
+        && Objects.equals(versionTime, that.versionTime)
         && Objects.equals(database, that.database);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, state, size, expireTime, database);
+    return Objects.hash(id, state, size, expireTime, versionTime, database);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Backup[%s, %s, %d, %s, %s]", id.getName(), state, size, expireTime, database);
+        "Backup[%s, %s, %d, %s, %s, %s]",
+        id.getName(), state, size, expireTime, versionTime, database);
   }
 }
