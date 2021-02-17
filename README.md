@@ -218,7 +218,8 @@ dependency to collect the data and exporter dependency to export to backend.
 
 To use OpenTelemetry with the Cloud Spanner client, set up the OpenTelemetry pipeline, and add 
 the [OpenCensus shim](https://github.com/open-telemetry/opentelemetry-java/tree/main/opencensus-shim)
-to your project. Follow the [README instructions](https://github.com/open-telemetry/opentelemetry-java/blob/main/opencensus-shim/README.md) to set up traces and metrics.
+to your project. Follow the [README instructions](https://github.com/open-telemetry/opentelemetry-java/blob/main/opencensus-shim/README.md)
+to set up traces and metrics.
 
 
 ## Samples
