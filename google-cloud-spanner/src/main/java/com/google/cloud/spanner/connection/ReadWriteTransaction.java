@@ -725,8 +725,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       logger.fine(toString() + ": Starting internal transaction retry");
       while (true) {
         // First back off and then restart the transaction.
+        long delay = aborted.getRetryDelayInMillis();
         try {
-          Thread.sleep(aborted.getRetryDelayInMillis());
+          if (delay > 0L) {
+            Thread.sleep(delay);
+          }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           throw SpannerExceptionFactory.newSpannerException(

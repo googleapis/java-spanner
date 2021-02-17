@@ -67,10 +67,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
-import com.google.rpc.RetryInfo;
-import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.common.Scope;
 import io.opencensus.common.ToLongFunction;
 import io.opencensus.metrics.DerivedLongCumulative;
@@ -826,21 +822,14 @@ class SessionPool {
       restartedAfterSessionNotFound = true;
       return createAbortedExceptionWithMinimalRetry(notFoundException);
     }
-    
-    private static SpannerException createAbortedExceptionWithMinimalRetry(SessionNotFoundException notFound) {
-      Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
-      Metadata trailers = new Metadata();
-      RetryInfo retryInfo =
-          RetryInfo.newBuilder()
-              .setRetryDelay(
-                  com.google.protobuf.Duration.newBuilder()
-                      .setNanos((int) TimeUnit.MILLISECONDS.toNanos(1L))
-                      .setSeconds(0L))
-              .build();
-      trailers.put(key, retryInfo);
-      StatusRuntimeException statusException = io.grpc.Status.ABORTED.withCause(notFound).asRuntimeException(trailers);
+
+    private static SpannerException createAbortedExceptionWithMinimalRetry(
+        SessionNotFoundException notFound) {
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), statusException);
+          ErrorCode.ABORTED,
+          notFound.getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetry(
+              notFound.getMessage(), notFound, 0, 1));
     }
 
     @Override

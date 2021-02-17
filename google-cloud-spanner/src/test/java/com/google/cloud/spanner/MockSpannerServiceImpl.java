@@ -1732,7 +1732,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   public StatusRuntimeException createAbortedException(ByteString transactionId) {
     RetryInfo retryInfo =
-        RetryInfo.newBuilder().setRetryDelay(Duration.newBuilder().setNanos(100).build()).build();
+        RetryInfo.newBuilder().setRetryDelay(Duration.newBuilder().setNanos(1).build()).build();
     Metadata.Key<RetryInfo> key =
         Metadata.Key.of(
             retryInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,

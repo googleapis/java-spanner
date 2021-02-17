@@ -24,9 +24,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.ResourceInfo;
+import com.google.rpc.RetryInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
@@ -224,6 +226,22 @@ public final class SpannerExceptionFactory {
       }
     }
     return null;
+  }
+
+  static StatusRuntimeException createAbortedExceptionWithRetry(
+      String message, Throwable cause, long seconds, int nanos) {
+    Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder().setNanos(nanos).setSeconds(seconds))
+            .build();
+    trailers.put(key, retryInfo);
+    return io.grpc.Status.ABORTED
+        .withDescription(message)
+        .withCause(cause)
+        .asRuntimeException(trailers);
   }
 
   static SpannerException newSpannerExceptionPreformatted(

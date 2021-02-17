@@ -531,7 +531,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Simulate an aborted transaction to force a retry with a new transaction.
         this.transactionIdFuture.setException(
             SpannerExceptionFactory.newSpannerException(
-                ErrorCode.ABORTED, "Aborted due to failed initial statement", e));
+                ErrorCode.ABORTED,
+                "Aborted due to failed initial statement",
+                SpannerExceptionFactory.createAbortedExceptionWithRetry(null, e, 0, 1)));
       }
 
       if (e.getErrorCode() == ErrorCode.ABORTED) {
@@ -706,7 +708,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // In all other cases, we should throw a BatchUpdateException.
         if (response.getStatus().getCode() == Code.ABORTED_VALUE) {
           throw newSpannerException(
-              ErrorCode.fromRpcStatus(response.getStatus()), response.getStatus().getMessage());
+              ErrorCode.fromRpcStatus(response.getStatus()),
+              response.getStatus().getMessage(),
+              SpannerExceptionFactory.createAbortedExceptionWithRetry(
+                  response.getStatus().getMessage(),
+                  null,
+                  0,
+                  (int) TimeUnit.MILLISECONDS.toNanos(10L)));
         } else if (response.getStatus().getCode() != 0) {
           throw newSpannerBatchUpdateException(
               ErrorCode.fromRpcStatus(response.getStatus()),
@@ -741,25 +749,31 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               response,
               new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
                 @Override
-                public long[] apply(ExecuteBatchDmlResponse input) {
-                  long[] results = new long[input.getResultSetsCount()];
-                  for (int i = 0; i < input.getResultSetsCount(); ++i) {
-                    results[i] = input.getResultSets(i).getStats().getRowCountExact();
-                    if (input.getResultSets(i).getMetadata().hasTransaction()) {
+                public long[] apply(ExecuteBatchDmlResponse batchDmlResponse) {
+                  long[] results = new long[batchDmlResponse.getResultSetsCount()];
+                  for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
+                    results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
+                    if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
                       onTransactionMetadata(
-                          input.getResultSets(i).getMetadata().getTransaction(),
+                          batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
                           builder.getTransaction().hasBegin());
                     }
                   }
                   // If one of the DML statements was aborted, we should throw an aborted exception.
                   // In all other cases, we should throw a BatchUpdateException.
-                  if (input.getStatus().getCode() == Code.ABORTED_VALUE) {
+                  if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
                     throw newSpannerException(
-                        ErrorCode.fromRpcStatus(input.getStatus()), input.getStatus().getMessage());
-                  } else if (input.getStatus().getCode() != 0) {
+                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
+                        batchDmlResponse.getStatus().getMessage(),
+                        SpannerExceptionFactory.createAbortedExceptionWithRetry(
+                            batchDmlResponse.getStatus().getMessage(),
+                            null,
+                            0,
+                            (int) TimeUnit.MILLISECONDS.toNanos(10L)));
+                  } else if (batchDmlResponse.getStatus().getCode() != 0) {
                     throw newSpannerBatchUpdateException(
-                        ErrorCode.fromRpcStatus(input.getStatus()),
-                        input.getStatus().getMessage(),
+                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
+                        batchDmlResponse.getStatus().getMessage(),
                         results);
                   }
                   return results;
