@@ -16,14 +16,19 @@
 
 package com.google.cloud.spanner;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import java.util.Arrays;
@@ -43,6 +48,35 @@ public class TransactionContextImplTest {
   @Test(expected = SpannerBatchUpdateException.class)
   public void batchDmlException() {
     batchDml(Code.FAILED_PRECONDITION_VALUE);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testReturnCommitStats() {
+    SessionImpl session = mock(SessionImpl.class);
+    when(session.getName()).thenReturn("test");
+    ByteString transactionId = ByteString.copyFromUtf8("test");
+    SpannerRpc rpc = mock(SpannerRpc.class);
+    when(rpc.commitAsync(any(CommitRequest.class), anyMap()))
+        .thenReturn(
+            ApiFutures.immediateFuture(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+
+    try (TransactionContextImpl context =
+        TransactionContextImpl.newBuilder()
+            .setSession(session)
+            .setRpc(rpc)
+            .setTransactionId(transactionId)
+            .setOptions(Options.fromTransactionOptions(Options.commitStats()))
+            .build()) {
+      context.commitAsync();
+      CommitRequest request =
+          CommitRequest.newBuilder()
+              .setReturnCommitStats(true)
+              .setSession(session.getName())
+              .setTransactionId(transactionId)
+              .build();
+      verify(rpc).commitAsync(Mockito.eq(request), anyMap());
+    }
   }
 
   @SuppressWarnings("unchecked")

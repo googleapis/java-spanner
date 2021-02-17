@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -69,7 +70,7 @@ public class ReadWriteTransactionTest {
 
   private static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
     private CommitBehavior commitBehavior;
 
@@ -88,7 +89,7 @@ public class ReadWriteTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitTimestamp = Timestamp.now();
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -115,7 +116,11 @@ public class ReadWriteTransactionTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+    }
+
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override

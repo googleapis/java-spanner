@@ -147,7 +147,7 @@ class SessionImpl implements Session {
             return null;
           }
         });
-    return new CommitResponse(runner.getCommitTimestamp());
+    return runner.getCommitResponse();
   }
 
   @Override
@@ -165,6 +165,8 @@ class SessionImpl implements Session {
     final CommitRequest request =
         CommitRequest.newBuilder()
             .setSession(name)
+            .setReturnCommitStats(
+                Options.fromTransactionOptions(transactionOptions).withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
@@ -174,11 +176,7 @@ class SessionImpl implements Session {
     try (Scope s = tracer.withSpan(span)) {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(request, this.options);
-      Timestamp t = Timestamp.fromProto(response.getCommitTimestamp());
-      return new CommitResponse(t);
-    } catch (IllegalArgumentException e) {
-      TraceUtil.setWithFailure(span, e);
-      throw newSpannerException(ErrorCode.INTERNAL, "Could not parse commit timestamp", e);
+      return new CommitResponse(response);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
@@ -246,17 +244,12 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    return setActive(
-        new TransactionRunnerImpl(
-            this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options));
+    return setActive(new TransactionRunnerImpl(this, options));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    return new AsyncRunnerImpl(
-        setActive(
-            new TransactionRunnerImpl(
-                this, spanner.getRpc(), spanner.getDefaultPrefetchChunks(), options)));
+    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, options)));
   }
 
   @Override
@@ -350,6 +343,7 @@ class SessionImpl implements Session {
   TransactionContextImpl newTransaction(Options options) {
     return TransactionContextImpl.newBuilder()
         .setSession(this)
+        .setOptions(options)
         .setTransactionId(readyTransactionId)
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())

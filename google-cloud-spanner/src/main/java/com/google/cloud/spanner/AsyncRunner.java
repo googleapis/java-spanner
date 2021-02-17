@@ -56,4 +56,10 @@ public interface AsyncRunner {
    * {@link ExecutionException} if the transaction did not commit.
    */
   ApiFuture<Timestamp> getCommitTimestamp();
+
+  /**
+   * Returns the {@link CommitResponse} of this transaction. {@link ApiFuture#get()} throws an
+   * {@link ExecutionException} if the transaction did not commit.
+   */
+  ApiFuture<CommitResponse> getCommitResponse();
 }
