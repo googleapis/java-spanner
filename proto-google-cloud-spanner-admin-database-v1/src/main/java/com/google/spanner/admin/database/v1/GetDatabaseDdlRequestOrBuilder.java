@@ -28,6 +28,8 @@ public interface GetDatabaseDdlRequestOrBuilder
    *
    * <pre>
    * Required. The database whose schema we wish to get.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * </pre>
    *
    * <code>
@@ -42,6 +44,8 @@ public interface GetDatabaseDdlRequestOrBuilder
    *
    * <pre>
    * Required. The database whose schema we wish to get.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * </pre>
    *
    * <code>

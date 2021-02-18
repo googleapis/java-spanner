@@ -17,6 +17,8 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -221,22 +223,57 @@ public class OptionsTest {
   }
 
   @Test
-  public void testFromTransactionOptions() {
+  public void testFromTransactionOptions_toStringNoOptions() {
     Options opts = Options.fromTransactionOptions();
     assertThat(opts.toString()).isEqualTo("");
   }
 
   @Test
-  public void testTransactionOptionsEquality() {
-    Options o1;
-    Options o2;
+  public void testFromTransactionOptions_toStringWithCommitStats() {
+    Options options = Options.fromTransactionOptions(Options.commitStats());
+    assertThat(options.toString()).contains("withCommitStats: true");
+  }
 
-    o1 = Options.fromTransactionOptions();
-    o2 = Options.fromTransactionOptions();
-    assertThat(o1.equals(o2)).isTrue();
+  @Test
+  public void testTransactionOptions_noOptionsAreEqual() {
+    Options option1 = Options.fromTransactionOptions();
+    Options option2 = Options.fromTransactionOptions();
+    assertEquals(option1, option2);
+  }
 
-    o2 = Options.fromReadOptions(Options.prefetchChunks(1));
-    assertThat(o1.equals(o2)).isFalse();
+  @Test
+  public void testTransactionOptions_withCommitStatsAreEqual() {
+    Options option1 = Options.fromTransactionOptions(Options.commitStats());
+    Options option2 = Options.fromTransactionOptions(Options.commitStats());
+    assertEquals(option1, option2);
+  }
+
+  @Test
+  public void testTransactionOptions_withCommitStatsAndOtherOptionAreNotEqual() {
+    Options option1 = Options.fromTransactionOptions(Options.commitStats());
+    Options option2 = Options.fromQueryOptions(Options.prefetchChunks(10));
+    assertNotEquals(option1, option2);
+  }
+
+  @Test
+  public void testTransactionOptions_noOptionsHashCode() {
+    Options option1 = Options.fromTransactionOptions();
+    Options option2 = Options.fromTransactionOptions();
+    assertEquals(option2.hashCode(), option1.hashCode());
+  }
+
+  @Test
+  public void testTransactionOptions_withCommitStatsHashCode() {
+    Options option1 = Options.fromTransactionOptions(Options.commitStats());
+    Options option2 = Options.fromTransactionOptions(Options.commitStats());
+    assertEquals(option2.hashCode(), option1.hashCode());
+  }
+
+  @Test
+  public void testTransactionOptions_withCommitStatsAndOtherOptionHashCode() {
+    Options option1 = Options.fromTransactionOptions(Options.commitStats());
+    Options option2 = Options.fromQueryOptions(Options.prefetchChunks(10));
+    assertNotEquals(option2.hashCode(), option1.hashCode());
   }
 
   @Test

@@ -48,6 +48,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,6 +70,8 @@ public class DatabaseAdminClientImplTest {
   private static final String BK_ID = "my-bk";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
+  private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
+  private static final String VERSION_RETENTION_PERIOD = "7d";
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -80,7 +83,12 @@ public class DatabaseAdminClientImplTest {
   }
 
   private Database getDatabaseProto() {
-    return Database.newBuilder().setName(DB_NAME).setState(Database.State.READY).build();
+    return Database.newBuilder()
+        .setName(DB_NAME)
+        .setState(Database.State.READY)
+        .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+        .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .build();
   }
 
   private Database getAnotherDatabaseProto() {
@@ -116,6 +124,8 @@ public class DatabaseAdminClientImplTest {
     com.google.cloud.spanner.Database db = client.getDatabase(INSTANCE_ID, DB_ID);
     assertThat(db.getId().getName()).isEqualTo(DB_NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.READY);
+    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
+    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
   }
 
   @Test
@@ -292,7 +302,7 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
-  public void createBackup() throws Exception {
+  public void createBackupWithParams() throws Exception {
     OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
@@ -304,6 +314,40 @@ public class DatabaseAdminClientImplTest {
     when(rpc.createBackup(INSTANCE_NAME, BK_ID, backup)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, BK_ID, DB_ID, t);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void createBackupWithBackupObject() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final Backup expectedCallBackup =
+        Backup.newBuilder()
+            .setDatabase(DB_NAME)
+            .setExpireTime(expireTime.toProto())
+            .setVersionTime(versionTime.toProto())
+            .build();
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    when(rpc.createBackup(INSTANCE_NAME, BK_ID, expectedCallBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(requestBackup);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }

@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "2f1450cb4780590d6660ebae56f96331b78dd973"
+        "sha": "1f9f76a0f0a12604146194edc1173aff5ba76878"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "8fa381b7138f1d72966ff20563efae1b2194d359",
-        "internalRef": "353145174"
+        "sha": "8d8c008e56f1af31d57f75561e0f1848ffb29eeb",
+        "internalRef": "356341083"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "3816b080296d4d52975079fd26c110dd26ba25af"
+        "sha": "b416a7befcdbc42de41cf387dcf428f894fb812b"
       }
     }
   ],
@@ -60,7 +60,6 @@
     ".github/blunderbuss.yml",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
-    ".github/release-please.yml",
     ".github/snippet-bot.yml",
     ".github/trusted-contribution.yml",
     ".github/workflows/approve-readme.yaml",
@@ -75,7 +74,6 @@
     ".kokoro/continuous/java8.cfg",
     ".kokoro/continuous/readme.cfg",
     ".kokoro/dependencies.sh",
-    ".kokoro/linkage-monitor.sh",
     ".kokoro/nightly/integration.cfg",
     ".kokoro/nightly/java11.cfg",
     ".kokoro/nightly/java7.cfg",
@@ -103,6 +101,8 @@
     ".kokoro/release/promote.sh",
     ".kokoro/release/publish_javadoc.cfg",
     ".kokoro/release/publish_javadoc.sh",
+    ".kokoro/release/publish_javadoc11.cfg",
+    ".kokoro/release/publish_javadoc11.sh",
     ".kokoro/release/snapshot.cfg",
     ".kokoro/release/snapshot.sh",
     ".kokoro/release/stage.cfg",

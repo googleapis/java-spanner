@@ -30,14 +30,20 @@ import java.util.regex.Pattern;
  * AUTOCOMMIT=TRUE.
  */
 class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
-  private ClientSideStatementImpl statement;
-  private Method method;
-  private ClientSideStatementValueConverter<T> converter;
-  private Pattern allowedValuesPattern;
+  private final ClientSideStatementImpl statement;
+  private final Method method;
+  private final ClientSideStatementValueConverter<T> converter;
+  private final Pattern allowedValuesPattern;
 
+  /**
+   * Creates and compiles the given {@link ClientSideStatementImpl}.
+   *
+   * @param statement The statement to compile.
+   * @throws CompileException If the statement could not be compiled. This should never happen, as
+   *     it would indicate that an invalid statement has been defined in the source file.
+   */
   @SuppressWarnings("unchecked")
-  @Override
-  public void compile(ClientSideStatementImpl statement) throws CompileException {
+  ClientSideStatementSetExecutor(ClientSideStatementImpl statement) throws CompileException {
     Preconditions.checkNotNull(statement.getSetStatement());
     try {
       this.statement = statement;

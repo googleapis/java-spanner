@@ -1,5 +1,38 @@
 # Changelog
 
+## [4.0.0](https://www.github.com/googleapis/java-spanner/compare/v3.3.2...v4.0.0) (2021-02-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Point In Time Recovery (PITR) (#452)
+* add support for CommitStats (#544)
+
+### Features
+
+* add option for returning Spanner commit stats ([#817](https://www.github.com/googleapis/java-spanner/issues/817)) ([80d3585](https://www.github.com/googleapis/java-spanner/commit/80d3585870b81949ec641291e5a88fe391f78e27))
+* add support for CommitStats ([#544](https://www.github.com/googleapis/java-spanner/issues/544)) ([44aa384](https://www.github.com/googleapis/java-spanner/commit/44aa384429056dd6c6563351c43fe7dcac451008))
+* allow session pool settings in connection url ([#821](https://www.github.com/googleapis/java-spanner/issues/821)) ([e1e9152](https://www.github.com/googleapis/java-spanner/commit/e1e915289755e5f46ba07569d85afda5df5e3f0d))
+* generate sample code in the Java microgenerator ([#859](https://www.github.com/googleapis/java-spanner/issues/859)) ([7cdfb82](https://www.github.com/googleapis/java-spanner/commit/7cdfb82b40487600547d0bad92119508161ca689))
+* Point In Time Recovery (PITR) ([#452](https://www.github.com/googleapis/java-spanner/issues/452)) ([ab14a5e](https://www.github.com/googleapis/java-spanner/commit/ab14a5ec2dc2b7e2141305b5326f436eb6eee76f))
+
+
+### Bug Fixes
+
+* allows user-agent header with header provider ([#871](https://www.github.com/googleapis/java-spanner/issues/871)) ([3de7e2a](https://www.github.com/googleapis/java-spanner/commit/3de7e2a91349cac5d79a32d2cda7ca727140f0bf))
+* make compiled statements immutable ([#843](https://www.github.com/googleapis/java-spanner/issues/843)) ([118d1b3](https://www.github.com/googleapis/java-spanner/commit/118d1b31f5f7771023766fd72a8229db80f1f5a2))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.12 ([#854](https://www.github.com/googleapis/java-spanner/issues/854)) ([58cebd8](https://www.github.com/googleapis/java-spanner/commit/58cebd85a9d82bd1526b9eae98892181f1a022f1))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.11 ([#825](https://www.github.com/googleapis/java-spanner/issues/825)) ([49c8c5d](https://www.github.com/googleapis/java-spanner/commit/49c8c5d241803565fa9ff96ba55f3eb00ed5b85e))
+
+
+### Documentation
+
+* libraries-bom 16.4.0 ([#867](https://www.github.com/googleapis/java-spanner/issues/867)) ([5af3673](https://www.github.com/googleapis/java-spanner/commit/5af36739532037360dfd504a4a0988562550526c))
+
 ### [3.3.2](https://www.github.com/googleapis/java-spanner/compare/v3.3.1...v3.3.2) (2021-01-18)
 
 

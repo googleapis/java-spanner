@@ -82,9 +82,9 @@ public interface ListBackupOperationsRequestOrBuilder
    *   * `done:true` - The operation is complete.
    *   * `metadata.database:prod` - The database the backup was taken from has
    *      a name containing the string "prod".
-   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` &lt;br/&gt;
-   *     `(metadata.name:howl) AND` &lt;br/&gt;
-   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` &#92;
+   *     `(metadata.name:howl) AND` &#92;
+   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Returns operations where:
    *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
    *     * The backup name contains the string "howl".
@@ -125,9 +125,9 @@ public interface ListBackupOperationsRequestOrBuilder
    *   * `done:true` - The operation is complete.
    *   * `metadata.database:prod` - The database the backup was taken from has
    *      a name containing the string "prod".
-   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` &lt;br/&gt;
-   *     `(metadata.name:howl) AND` &lt;br/&gt;
-   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` &#92;
+   *     `(metadata.name:howl) AND` &#92;
+   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Returns operations where:
    *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
    *     * The backup name contains the string "howl".

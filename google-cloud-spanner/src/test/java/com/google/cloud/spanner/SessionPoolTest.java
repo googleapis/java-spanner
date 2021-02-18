@@ -676,7 +676,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getSession();
-    session1.writeAtLeastOnce(new ArrayList<Mutation>());
+    session1.writeAtLeastOnceWithOptions(new ArrayList<Mutation>());
     session1.close();
     runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
@@ -900,8 +900,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
-      TransactionRunnerImpl closedTransactionRunner =
-          new TransactionRunnerImpl(closedSession, rpc, 10);
+      TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(mock(Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -915,8 +914,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync())
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
-      TransactionRunnerImpl openTransactionRunner =
-          new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+      TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(mock(Span.class));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
@@ -1047,10 +1045,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.write(mutations)).thenThrow(sessionNotFound);
+    when(closedSession.writeWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.write(mutations)).thenReturn(Timestamp.now());
+    com.google.cloud.spanner.CommitResponse response =
+        mock(com.google.cloud.spanner.CommitResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.writeWithOptions(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override
@@ -1099,10 +1100,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.writeAtLeastOnce(mutations)).thenThrow(sessionNotFound);
+    when(closedSession.writeAtLeastOnceWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.writeAtLeastOnce(mutations)).thenReturn(Timestamp.now());
+    com.google.cloud.spanner.CommitResponse response =
+        mock(com.google.cloud.spanner.CommitResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.writeAtLeastOnceWithOptions(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,6 +46,8 @@ public class RemoteSpannerHelper {
   private final InstanceId instanceId;
   private static int dbSeq;
   private static int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final AtomicInteger backupSeq = new AtomicInteger();
+  private static int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private final List<Database> dbs = new ArrayList<>();
 
   protected RemoteSpannerHelper(SpannerOptions options, InstanceId instanceId, Spanner client) {
@@ -98,6 +101,13 @@ public class RemoteSpannerHelper {
    */
   public String getUniqueDatabaseId() {
     return String.format("testdb_%d_%04d", dbPrefix, dbSeq++);
+  }
+
+  /**
+   * Returns a backup id which is guaranteed to be unique within the context of this environment.
+   */
+  public String getUniqueBackupId() {
+    return String.format("testbck_%06d_%04d", backupPrefix, backupSeq.incrementAndGet());
   }
 
   /**

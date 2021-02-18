@@ -164,6 +164,14 @@ class StatementExecutor {
     this.interceptors = Collections.unmodifiableList(interceptors);
   }
 
+  void shutdown() {
+    executor.shutdown();
+  }
+
+  void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+    executor.awaitTermination(timeout, unit);
+  }
+
   /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */

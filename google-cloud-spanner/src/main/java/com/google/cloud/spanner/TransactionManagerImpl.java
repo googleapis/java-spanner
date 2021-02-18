@@ -118,7 +118,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,
         "getCommitTimestamp can only be invoked if the transaction committed successfully");
-    return txn.commitTimestamp();
+    return txn.getCommitResponse().getCommitTimestamp();
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitResponse can only be invoked if the transaction committed successfully");
+    return txn.getCommitResponse();
   }
 
   @Override
