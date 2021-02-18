@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -60,7 +59,7 @@ public class ITPitrBackupAndRestore {
   private static final Logger logger = Logger.getLogger(ITPitrBackupAndRestore.class.getName());
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static final long OP_TIMEOUT = 10;
+  private static final long OP_TIMEOUT = 20;
   private static final TimeUnit OP_TIMEOUT_UNIT = TimeUnit.MINUTES;
   private static RemoteSpannerHelper testHelper;
   private static DatabaseAdminClient dbAdminClient;
@@ -106,7 +105,6 @@ public class ITPitrBackupAndRestore {
   }
 
   @Test
-  @Ignore("backup and restore for pitr is not released yet")
   public void backupCreationWithVersionTimeWithinVersionRetentionPeriodSucceeds() throws Exception {
     final DatabaseId backupDatabaseId = testDatabase.getId();
     final String restoreDatabaseId = testHelper.getUniqueDatabaseId();
@@ -147,7 +145,6 @@ public class ITPitrBackupAndRestore {
   }
 
   @Test(expected = SpannerException.class)
-  @Ignore("backup and restore for pitr is not released yet")
   public void backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
@@ -166,7 +163,6 @@ public class ITPitrBackupAndRestore {
   }
 
   @Test(expected = SpannerException.class)
-  @Ignore("backup and restore for pitr is not released yet")
   public void backupCreationWithVersionTimeInTheFutureFails() throws Exception {
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
