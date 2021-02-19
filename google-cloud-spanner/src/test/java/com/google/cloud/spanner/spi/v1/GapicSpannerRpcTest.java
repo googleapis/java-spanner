@@ -536,16 +536,17 @@ public class GapicSpannerRpcTest {
         };
     final SpannerOptions options =
         createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
-    final Spanner spanner = options.getService();
-    final DatabaseClient databaseClient =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
 
-    try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
-      rs.next();
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+          .contains("test-agent " + defaultUserAgent);
     }
-
-    assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
-        .contains("test-agent " + defaultUserAgent);
   }
 
   @SuppressWarnings("rawtypes")
