@@ -533,7 +533,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.ABORTED,
                 "Aborted due to failed initial statement",
-                SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(null, e, 0, 1)));
+                SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+                    "Aborted due to failed initial statement", e, 0, 1)));
       }
 
       if (e.getErrorCode() == ErrorCode.ABORTED) {
