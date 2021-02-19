@@ -29,25 +29,24 @@ import java.util.concurrent.ExecutionException;
 
 public class GetCommitStatsSample {
 
-  private static final String TABLE = "Albums";
-
   static void getCommitStats() throws InterruptedException, ExecutionException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
     final String databaseId = "my-database";
+    final String table = "Albums";
 
     try (final Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseClient databaseClient = spanner
           .getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
-      getCommitStats(databaseClient);
+      getCommitStats(databaseClient, table);
     }
   }
 
-  private static void getCommitStats(DatabaseClient databaseClient) {
+  static void getCommitStats(DatabaseClient databaseClient, String table) {
     final CommitResponse commitResponse = databaseClient.writeWithOptions(Arrays.asList(
-        Mutation.newInsertOrUpdateBuilder(TABLE)
+        Mutation.newInsertOrUpdateBuilder(table)
             .set("SingerId")
             .to("1")
             .set("AlbumId")
@@ -55,7 +54,7 @@ public class GetCommitStatsSample {
             .set("MarketingBudget")
             .to("200000")
             .build(),
-        Mutation.newInsertOrUpdateBuilder(TABLE)
+        Mutation.newInsertOrUpdateBuilder(table)
             .set("SingerId")
             .to("2")
             .set("AlbumId")
