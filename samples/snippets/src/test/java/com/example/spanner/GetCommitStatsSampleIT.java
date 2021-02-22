@@ -90,7 +90,7 @@ public class GetCommitStatsSampleIT {
   }
 
   @AfterClass
-  public static void dropTestDatabase() throws Exception {
+  public static void dropTestDatabase() {
     dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
     spanner.close();
   }
@@ -127,17 +127,17 @@ public class GetCommitStatsSampleIT {
   @Test
   public void testGetCommitStatsSample() {
     final DatabaseClient client = spanner.getDatabaseClient(dbId);
-    final String out = runExample(client, "Albums");
+    final String out = runExample(client);
 
     assertThat(out).contains("Updated data with 8 mutations.");
   }
 
-  private String runExample(DatabaseClient client, String table) {
+  private String runExample(DatabaseClient client) {
     PrintStream stdOut = System.out;
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    GetCommitStatsSample.getCommitStats(client, table);
+    GetCommitStatsSample.getCommitStats(client);
     System.setOut(stdOut);
     return bout.toString();
   }

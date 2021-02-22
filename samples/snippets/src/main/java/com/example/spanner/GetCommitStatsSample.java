@@ -34,19 +34,18 @@ public class GetCommitStatsSample {
     final String projectId = "my-project";
     final String instanceId = "my-instance";
     final String databaseId = "my-database";
-    final String table = "Albums";
 
     try (final Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseClient databaseClient = spanner
           .getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
-      getCommitStats(databaseClient, table);
+      getCommitStats(databaseClient);
     }
   }
 
-  static void getCommitStats(DatabaseClient databaseClient, String table) {
+  static void getCommitStats(DatabaseClient databaseClient) {
     final CommitResponse commitResponse = databaseClient.writeWithOptions(Arrays.asList(
-        Mutation.newInsertOrUpdateBuilder(table)
+        Mutation.newInsertOrUpdateBuilder("Albums")
             .set("SingerId")
             .to("1")
             .set("AlbumId")
@@ -54,7 +53,7 @@ public class GetCommitStatsSample {
             .set("MarketingBudget")
             .to("200000")
             .build(),
-        Mutation.newInsertOrUpdateBuilder(table)
+        Mutation.newInsertOrUpdateBuilder("Albums")
             .set("SingerId")
             .to("2")
             .set("AlbumId")
