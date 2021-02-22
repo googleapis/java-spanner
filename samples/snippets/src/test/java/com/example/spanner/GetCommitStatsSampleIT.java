@@ -46,8 +46,10 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class GetCommitStatsSampleIT {
+
   private static String instanceId = System.getProperty("spanner.test.instance");
-  private static String databaseId = formatForTest(System.getProperty("spanner.sample.database", "commitstatssample"));
+  private static String databaseId = formatForTest(
+      System.getProperty("spanner.sample.database", "commitstatssample"));
   private static DatabaseId dbId;
   private static DatabaseAdminClient dbClient;
   private static Spanner spanner;

@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 // [START spanner_get_commit_stats]
+
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -25,11 +26,10 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 
 public class GetCommitStatsSample {
 
-  static void getCommitStats() throws InterruptedException, ExecutionException {
+  static void getCommitStats() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
