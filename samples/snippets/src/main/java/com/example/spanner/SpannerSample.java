@@ -1586,11 +1586,13 @@ public class SpannerSample {
   // [START spanner_create_backup]
   static void createBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
+    Database databaseToBackup = dbAdminClient
+        .getDatabase(databaseId.getInstanceId().getInstance(), databaseId.getDatabase());
     // Set expire time to 14 days from now.
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
     // Sets the version time to the current time.
-    Timestamp versionTime = Timestamp.now();
+    Timestamp versionTime = databaseToBackup.getEarliestVersionTime();
     Backup backup =
         dbAdminClient
             .newBackupBuilder(backupId)
