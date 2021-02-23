@@ -130,7 +130,7 @@ public class GetCommitStatsSampleIT {
     final DatabaseClient client = spanner.getDatabaseClient(dbId);
     final String out = runExample(client);
 
-    assertThat(out).contains("Updated data with 8 mutations.");
+    assertThat(out).contains("Updated data with 6 mutations.");
   }
 
   private String runExample(DatabaseClient client) {
