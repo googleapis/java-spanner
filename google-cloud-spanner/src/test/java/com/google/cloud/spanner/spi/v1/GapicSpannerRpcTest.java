@@ -24,7 +24,9 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -151,6 +153,8 @@ public class GapicSpannerRpcTest {
   private Server server;
   private InetSocketAddress address;
   private final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+  private Metadata seenHeaders;
+  private String defaultUserAgent;
 
   @BeforeClass
   public static void checkNotEmulator() {
@@ -161,6 +165,7 @@ public class GapicSpannerRpcTest {
 
   @Before
   public void startServer() throws IOException {
+    defaultUserAgent = "spanner-java/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
@@ -183,6 +188,7 @@ public class GapicSpannerRpcTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    seenHeaders = headers;
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
@@ -500,6 +506,47 @@ public class GapicSpannerRpcTest {
     assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
 
     assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
+  }
+
+  @Test
+  public void testDefaultUserAgent() {
+    final SpannerOptions options = createSpannerOptions();
+    final Spanner spanner = options.getService();
+    final DatabaseClient databaseClient =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+    try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+      rs.next();
+    }
+
+    assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+        .contains(defaultUserAgent);
+  }
+
+  @Test
+  public void testCustomUserAgent() {
+    final HeaderProvider userAgentHeaderProvider =
+        new HeaderProvider() {
+          @Override
+          public Map<String, String> getHeaders() {
+            final Map<String, String> headers = new HashMap<>();
+            headers.put("user-agent", "test-agent");
+            return headers;
+          }
+        };
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+          .contains("test-agent " + defaultUserAgent);
+    }
   }
 
   @SuppressWarnings("rawtypes")

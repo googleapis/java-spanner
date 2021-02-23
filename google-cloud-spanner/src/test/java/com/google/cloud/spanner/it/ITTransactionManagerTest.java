@@ -91,7 +91,7 @@ public class ITTransactionManagerTest {
           assertThat(row.getBoolean(1)).isTrue();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -115,7 +115,7 @@ public class ITTransactionManagerTest {
           manager.commit();
           fail("Expected exception");
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         } catch (SpannerException e) {
           // expected
@@ -145,7 +145,7 @@ public class ITTransactionManagerTest {
           manager.rollback();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -188,7 +188,7 @@ public class ITTransactionManagerTest {
           manager1.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           // It is possible that it was txn2 that aborted.
           // In that case we should just retry without resetting anything.
           if (manager1.getState() == TransactionState.ABORTED) {

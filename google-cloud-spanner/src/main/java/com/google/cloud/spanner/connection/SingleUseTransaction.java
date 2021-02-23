@@ -35,7 +35,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
@@ -74,7 +73,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
-  private volatile TransactionManager txManager;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
@@ -231,11 +229,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private boolean hasCommitResponse() {
-    return state == UnitOfWorkState.COMMITTED
-        && (writeTransaction != null
-            || (txManager != null
-                && txManager.getState()
-                    == com.google.cloud.spanner.TransactionManager.TransactionState.COMMITTED));
+    return state == UnitOfWorkState.COMMITTED && writeTransaction != null;
   }
 
   @Override
@@ -255,18 +249,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   public CommitResponse getCommitResponse() {
     ConnectionPreconditions.checkState(
         hasCommitResponse(), "There is no commit response available for this transaction.");
-    return writeTransaction != null
-        ? writeTransaction.getCommitResponse()
-        : txManager.getCommitResponse();
+    return writeTransaction.getCommitResponse();
   }
 
   @Override
   public CommitResponse getCommitResponseOrNull() {
     if (hasCommitResponse()) {
       try {
-        return writeTransaction != null
-            ? writeTransaction.getCommitResponse()
-            : txManager.getCommitResponse();
+        return writeTransaction.getCommitResponse();
       } catch (SpannerException e) {
         // ignore
       }

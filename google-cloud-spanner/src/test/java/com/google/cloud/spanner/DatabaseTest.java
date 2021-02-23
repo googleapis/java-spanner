@@ -42,6 +42,9 @@ public class DatabaseTest {
   private static final String NAME =
       "projects/test-project/instances/test-instance/databases/database-1";
 
+  private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
+  private static final String VERSION_RETENTION_PERIOD = "7d";
+
   @Mock DatabaseAdminClient dbClient;
 
   @Before
@@ -61,12 +64,13 @@ public class DatabaseTest {
   public void backup() {
     Timestamp expireTime = Timestamp.now();
     Database db = createDatabase();
-    db.backup(
+    Backup backup =
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .setExpireTime(expireTime)
-            .build());
-    verify(dbClient).createBackup("test-instance", "test-backup", "database-1", expireTime);
+            .build();
+    db.backup(backup);
+    verify(dbClient).createBackup(backup.toBuilder().setDatabase(db.getId()).build());
   }
 
   @Test
@@ -82,6 +86,8 @@ public class DatabaseTest {
     Database db = createDatabase();
     assertThat(db.getId().getName()).isEqualTo(NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
+    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
+    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
   }
 
   @Test
@@ -119,6 +125,8 @@ public class DatabaseTest {
         com.google.spanner.admin.database.v1.Database.newBuilder()
             .setName(NAME)
             .setState(com.google.spanner.admin.database.v1.Database.State.CREATING)
+            .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+            .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
             .build();
     return Database.fromProto(proto, dbClient);
   }
