@@ -100,7 +100,6 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
         assertEquals(2L, resultSet.getLong("MUTATION_COUNT"));
-        assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
         assertFalse(resultSet.next());
       }
     }
@@ -150,7 +149,6 @@ public class ITCommitResponseTest extends ITAbstractSpannerTest {
         assertTrue(resultSet.next());
         assertNotNull(resultSet.getTimestamp("COMMIT_TIMESTAMP"));
         assertEquals(2L, resultSet.getLong("MUTATION_COUNT"));
-        assertNotNull(resultSet.getString("OVERLOAD_DELAY"));
         assertFalse(resultSet.next());
       }
     }
