@@ -453,7 +453,7 @@
     <className>com/google/cloud/spanner/TransactionContext</className>
     <method>com.google.api.core.ApiFuture executeUpdateAsync(com.google.cloud.spanner.Statement)</method>
   </difference>
-  
+
   <!-- Support for CommitStats added -->
   <difference>
     <differenceType>7012</differenceType>

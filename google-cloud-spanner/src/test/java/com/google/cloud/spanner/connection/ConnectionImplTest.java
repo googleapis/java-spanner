@@ -643,11 +643,11 @@ public class ConnectionImplTest {
       assertFalse(subject.isReturnCommitStats());
 
       StatementResult result = subject.execute(Statement.of("set return_commit_stats=true"));
-      assertThat(result.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
       assertTrue(subject.isReturnCommitStats());
 
       result = subject.execute(Statement.of("set return_commit_stats=false"));
-      assertThat(result.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
       assertFalse(subject.isReturnCommitStats());
     }
   }
@@ -666,7 +666,7 @@ public class ConnectionImplTest {
         subject.execute(Statement.of("set return_commit_stats=yes"));
         fail("Missing expected exception");
       } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
+        assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
       }
     }
   }
@@ -683,14 +683,14 @@ public class ConnectionImplTest {
 
       StatementResult returnCommitStatsFalse =
           subject.execute(Statement.of("show variable return_commit_stats"));
-      assertThat(returnCommitStatsFalse.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsFalse.getResultType());
       assertTrue(returnCommitStatsFalse.getResultSet().next());
       assertFalse(returnCommitStatsFalse.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
 
       subject.execute(Statement.of("set return_commit_stats=true"));
       StatementResult returnCommitStatsTrue =
           subject.execute(Statement.of("show variable return_commit_stats"));
-      assertThat(returnCommitStatsTrue.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsTrue.getResultType());
       assertTrue(returnCommitStatsTrue.getResultSet().next());
       assertTrue(returnCommitStatsTrue.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
     }
@@ -837,7 +837,7 @@ public class ConnectionImplTest {
       subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
       subject.commit();
       StatementResult response = subject.execute(Statement.of("show variable commit_response"));
-      assertThat(response.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
       assertTrue(response.getResultSet().next());
       assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
       assertTrue(response.getResultSet().isNull("MUTATION_COUNT"));
@@ -854,7 +854,7 @@ public class ConnectionImplTest {
       subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
       subject.commit();
       StatementResult response = subject.execute(Statement.of("show variable commit_response"));
-      assertThat(response.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
       assertTrue(response.getResultSet().next());
       assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
       assertFalse(response.getResultSet().isNull("MUTATION_COUNT"));
