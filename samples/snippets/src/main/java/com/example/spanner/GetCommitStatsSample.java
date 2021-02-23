@@ -35,7 +35,7 @@ public class GetCommitStatsSample {
     final String instanceId = "my-instance";
     final String databaseId = "my-database";
 
-    try (final Spanner spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseClient databaseClient = spanner
           .getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));

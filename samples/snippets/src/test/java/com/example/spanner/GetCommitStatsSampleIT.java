@@ -86,8 +86,7 @@ public class GetCommitStatsSampleIT {
                     + "  AlbumTitle      STRING(MAX),"
                     + "  MarketingBudget INT64"
                     + ") PRIMARY KEY (SingerId, AlbumId),"
-                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE",
-                "CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle)"))
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"))
         .get();
   }
 
@@ -145,6 +144,6 @@ public class GetCommitStatsSampleIT {
   }
 
   private static String formatForTest(String name) {
-    return name + "-" + UUID.randomUUID().toString().substring(0, 20);
+    return (name + "-" + UUID.randomUUID().toString()).substring(0, 30);
   }
 }
