@@ -39,8 +39,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -127,7 +127,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
 
       assertThat(get(res.finished)).isNull();
@@ -143,7 +144,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       assertThat(counter.retryCount).isEqualTo(0);
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -160,12 +162,14 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       // Wait until the first query aborted.
       assertThat(counter.latch.await(10L, TimeUnit.SECONDS)).isTrue();
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -180,7 +184,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testSingleQueryAbortedMidway() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -200,7 +205,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
           SimulatedExecutionTime.ofStreamException(
-              Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT_2 / 2));
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+              RANDOM_RESULT_SET_ROW_COUNT_2 / 2));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -215,7 +221,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testTwoQueriesOneAbortedMidway() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(),
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
             Math.min(RANDOM_RESULT_SET_ROW_COUNT / 2, RANDOM_RESULT_SET_ROW_COUNT_2 / 2)));
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
@@ -239,7 +245,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testUpdateAndQueryAbortedMidway() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     final RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -334,7 +341,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testUpdateAndQueryAbortedMidway_UpdateCountChanged() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     final RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -423,7 +431,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testQueriesAbortedMidway_ResultsChanged() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT - 1));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT - 1));
     final Statement statement = Statement.of("SELECT * FROM TEST_TABLE");
     final RandomResultSetGenerator generator =
         new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT - 10);

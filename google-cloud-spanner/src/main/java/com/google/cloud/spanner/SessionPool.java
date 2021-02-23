@@ -816,13 +816,21 @@ class SessionPool {
     }
 
     @Override
-    public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
-      session = sessionPool.replaceSession(notFound, session);
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
+      session = sessionPool.replaceSession(notFoundException, session);
       PooledSession pooledSession = session.get();
       delegate = pooledSession.delegate.transactionManager(options);
       restartedAfterSessionNotFound = true;
+      return createAbortedExceptionWithMinimalRetryDelay(notFoundException);
+    }
+
+    private static SpannerException createAbortedExceptionWithMinimalRetryDelay(
+        SessionNotFoundException notFoundException) {
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), notFound);
+          ErrorCode.ABORTED,
+          notFoundException.getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+              notFoundException.getMessage(), notFoundException, 0, 1));
     }
 
     @Override
