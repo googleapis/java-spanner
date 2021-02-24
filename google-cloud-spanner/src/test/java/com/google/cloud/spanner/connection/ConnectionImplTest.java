@@ -24,6 +24,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -38,11 +42,13 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -87,9 +93,11 @@ public class ConnectionImplTest {
     private TransactionState state;
     private CommitResponse commitResponse;
     private TransactionContext txContext;
+    private final boolean returnCommitStats;
 
-    private SimpleTransactionManager(TransactionContext txContext) {
+    private SimpleTransactionManager(TransactionContext txContext, boolean returnCommitStats) {
       this.txContext = txContext;
+      this.returnCommitStats = returnCommitStats;
     }
 
     @Override
@@ -100,7 +108,15 @@ public class ConnectionImplTest {
 
     @Override
     public void commit() {
-      commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+      Timestamp commitTimestamp = Timestamp.now();
+      commitResponse = mock(CommitResponse.class);
+      when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
+      if (returnCommitStats) {
+        CommitStats stats = mock(CommitStats.class);
+        when(commitResponse.hasCommitStats()).thenReturn(true);
+        when(stats.getMutationCount()).thenReturn(5L);
+        when(commitResponse.getCommitStats()).thenReturn(stats);
+      }
       state = TransactionState.COMMITTED;
     }
 
@@ -204,7 +220,7 @@ public class ConnectionImplTest {
     }
   }
 
-  public static ConnectionImpl createConnection(ConnectionOptions options) {
+  public static ConnectionImpl createConnection(final ConnectionOptions options) {
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))
@@ -249,7 +265,7 @@ public class ConnectionImplTest {
     when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
-    when(dbClient.transactionManager())
+    when(dbClient.transactionManager((TransactionOption[]) Mockito.anyVararg()))
         .thenAnswer(
             new Answer<TransactionManager>() {
               @Override
@@ -272,7 +288,7 @@ public class ConnectionImplTest {
                 when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
                     .thenReturn(select1ResultSetWithStats);
                 when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                return new SimpleTransactionManager(txContext);
+                return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
               }
             });
 
@@ -617,6 +633,70 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testExecuteSetReturnCommitStats() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      StatementResult result = subject.execute(Statement.of("set return_commit_stats=true"));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
+      assertTrue(subject.isReturnCommitStats());
+
+      result = subject.execute(Statement.of("set return_commit_stats=false"));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
+      assertFalse(subject.isReturnCommitStats());
+    }
+  }
+
+  @Test
+  public void testExecuteSetReturnCommitStatsInvalidValue() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      try {
+        subject.execute(Statement.of("set return_commit_stats=yes"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteGetReturnCommitStats() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      StatementResult returnCommitStatsFalse =
+          subject.execute(Statement.of("show variable return_commit_stats"));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsFalse.getResultType());
+      assertTrue(returnCommitStatsFalse.getResultSet().next());
+      assertFalse(returnCommitStatsFalse.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
+
+      subject.execute(Statement.of("set return_commit_stats=true"));
+      StatementResult returnCommitStatsTrue =
+          subject.execute(Statement.of("show variable return_commit_stats"));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsTrue.getResultType());
+      assertTrue(returnCommitStatsTrue.getResultSet().next());
+      assertTrue(returnCommitStatsTrue.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
+    }
+  }
+
+  @Test
   public void testExecuteSetStatementTimeout() {
     try (ConnectionImpl subject =
         createConnection(
@@ -742,6 +822,43 @@ public class ConnectionImplTest {
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
       assertThat(res.getResultSet().next(), is(true));
       assertThat(res.getResultSet().getTimestamp("COMMIT_TIMESTAMP"), is(notNullValue()));
+    }
+  }
+
+  @Test
+  public void testExecuteGetCommitResponse() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      subject.beginTransaction();
+      subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
+      subject.commit();
+      StatementResult response = subject.execute(Statement.of("show variable commit_response"));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
+      assertTrue(response.getResultSet().next());
+      assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
+      assertTrue(response.getResultSet().isNull("MUTATION_COUNT"));
+      assertFalse(response.getResultSet().next());
+    }
+
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";returnCommitStats=true")
+                .build())) {
+      subject.beginTransaction();
+      subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
+      subject.commit();
+      StatementResult response = subject.execute(Statement.of("show variable commit_response"));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
+      assertTrue(response.getResultSet().next());
+      assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
+      assertFalse(response.getResultSet().isNull("MUTATION_COUNT"));
+      assertFalse(response.getResultSet().next());
     }
   }
 

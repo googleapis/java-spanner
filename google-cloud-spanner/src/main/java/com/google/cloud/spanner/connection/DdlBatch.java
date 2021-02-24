@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -165,6 +166,17 @@ class DdlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
+    return null;
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "There is no commit response available for DDL batches.");
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
     return null;
   }
 

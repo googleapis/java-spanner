@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -197,6 +198,19 @@ public class DdlBatchTest {
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    DdlBatch batch = createSubject();
+    get(batch.runBatchAsync());
+    try {
+      batch.getCommitResponse();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+    assertNull(batch.getCommitResponseOrNull());
   }
 
   @Test

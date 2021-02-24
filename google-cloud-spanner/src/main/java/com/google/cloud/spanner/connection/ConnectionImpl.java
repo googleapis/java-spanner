@@ -22,6 +22,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -179,6 +180,7 @@ class ConnectionImpl implements Connection {
   private DatabaseClient dbClient;
   private boolean autocommit;
   private boolean readOnly;
+  private boolean returnCommitStats;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
@@ -213,6 +215,7 @@ class ConnectionImpl implements Connection {
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -237,6 +240,7 @@ class ConnectionImpl implements Connection {
     this.dbClient = dbClient;
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
+    setReturnCommitStats(options.isReturnCommitStats());
     setDefaultTransactionOptions();
   }
 
@@ -578,6 +582,31 @@ class ConnectionImpl implements Connection {
     return this.currentUnitOfWork == null
         ? null
         : this.currentUnitOfWork.getCommitTimestampOrNull();
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        this.currentUnitOfWork != null, "There is no transaction on this connection");
+    return this.currentUnitOfWork.getCommitResponse();
+  }
+
+  CommitResponse getCommitResponseOrNull() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.currentUnitOfWork == null ? null : this.currentUnitOfWork.getCommitResponseOrNull();
+  }
+
+  @Override
+  public void setReturnCommitStats(boolean returnCommitStats) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.returnCommitStats = returnCommitStats;
+  }
+
+  @Override
+  public boolean isReturnCommitStats() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.returnCommitStats;
   }
 
   /** Resets this connection to its default transaction options. */
@@ -954,6 +983,7 @@ class ConnectionImpl implements Connection {
           .setReadOnly(isReadOnly())
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
+          .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
           .build();
@@ -970,6 +1000,7 @@ class ConnectionImpl implements Connection {
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setRetryAbortsInternally(retryAbortsInternally)
+              .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

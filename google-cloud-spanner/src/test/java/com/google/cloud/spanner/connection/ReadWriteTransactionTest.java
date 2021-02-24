@@ -24,6 +24,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -683,6 +685,41 @@ public class ReadWriteTransactionTest {
     rs1.next();
     rs2.next();
     assertThat(rs1.getChecksum(), is(not(equalTo(rs2.getChecksum()))));
+  }
+
+  @Test
+  public void testGetCommitResponseBeforeCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    try {
+      transaction.getCommitResponse();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    get(transaction.commitAsync());
+
+    assertNotNull(transaction.getCommitResponse());
+    assertNotNull(transaction.getCommitResponseOrNull());
   }
 
   private static StatusRuntimeException createAbortedExceptionWithMinimalRetry() {
