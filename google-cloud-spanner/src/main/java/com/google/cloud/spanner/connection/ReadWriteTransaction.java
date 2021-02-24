@@ -271,7 +271,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public Timestamp getCommitTimestamp() {
-    ConnectionPreconditions.checkState(hasCommitResponse(), "This transaction has not committed.");
+    ConnectionPreconditions.checkState(
+        hasCommitResponse(), "This transaction has not been committed.");
     return get(commitResponseFuture).getCommitTimestamp();
   }
 
@@ -282,7 +283,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public CommitResponse getCommitResponse() {
-    ConnectionPreconditions.checkState(hasCommitResponse(), "This transaction has not committed.");
+    ConnectionPreconditions.checkState(
+        hasCommitResponse(), "This transaction has not been committed.");
     return get(commitResponseFuture);
   }
 

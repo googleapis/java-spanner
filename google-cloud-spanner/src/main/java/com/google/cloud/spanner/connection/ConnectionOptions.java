@@ -185,8 +185,6 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
-  /** Return commit stats for read/write transactions. */
-  private static final String RETURN_COMMIT_STATS_PROPERTY_NAME = "returnCommitStats";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
 
@@ -232,8 +230,7 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_VERSION_PROPERTY_NAME,
                       "Sets the default query optimizer version to use for this connection."),
-                  ConnectionProperty.createBooleanProperty(
-                      RETURN_COMMIT_STATS_PROPERTY_NAME, "", DEFAULT_RETURN_COMMIT_STATS),
+                  ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
                       "Silently ignore unknown properties in the connection string/properties (true/false)",
@@ -643,8 +640,8 @@ public class ConnectionOptions {
 
   @VisibleForTesting
   static boolean parseReturnCommitStats(String uri) {
-    String value = parseUriProperty(uri, RETURN_COMMIT_STATS_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_RETURN_COMMIT_STATS;
+    String value = parseUriProperty(uri, "returnCommitStats");
+    return value != null ? Boolean.valueOf(value) : false;
   }
 
   @VisibleForTesting
@@ -836,9 +833,7 @@ public class ConnectionOptions {
     return queryOptions;
   }
 
-  /**
-   * The initial returnCommitStats value for connections created by this {@link ConnectionOptions}
-   */
+  /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
   public boolean isReturnCommitStats() {
     return returnCommitStats;
   }
