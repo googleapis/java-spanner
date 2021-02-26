@@ -52,7 +52,7 @@ public class ClientSideStatementsTest {
   }
 
   private static final String SCRIPT_FILE =
-      "src/test/resources/com/google/cloud/spanner/jdbc/ClientSideStatementsTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/ClientSideStatementsTest.sql";
   private static PrintWriter writer;
 
   /** Generates the test script file */

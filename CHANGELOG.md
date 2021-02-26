@@ -1,5 +1,30 @@
 # Changelog
 
+### [4.0.2](https://www.github.com/googleapis/java-spanner/compare/v4.0.1...v4.0.2) (2021-02-23)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.13 ([#901](https://www.github.com/googleapis/java-spanner/issues/901)) ([10749c7](https://www.github.com/googleapis/java-spanner/commit/10749c7a074d33c853b0f11a0e6c6ee5f09e75c9))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.12 ([#896](https://www.github.com/googleapis/java-spanner/issues/896)) ([84ee6e0](https://www.github.com/googleapis/java-spanner/commit/84ee6e0d442a29893e1ac77fa7882ed0407c9a7d))
+
+### [4.0.1](https://www.github.com/googleapis/java-spanner/compare/v4.0.0...v4.0.1) (2021-02-22)
+
+
+### Bug Fixes
+
+* wrong use of getRetryDelayInMillis() / 1000 in documentation and retry loops ([#885](https://www.github.com/googleapis/java-spanner/issues/885)) ([a55d7ce](https://www.github.com/googleapis/java-spanner/commit/a55d7ce64fff434151c1c3af0796d290e9db7470)), closes [#874](https://www.github.com/googleapis/java-spanner/issues/874)
+
+
+### Documentation
+
+* Add OpenCensus to OpenTelemetry shim to README ([#879](https://www.github.com/googleapis/java-spanner/issues/879)) ([b58d73d](https://www.github.com/googleapis/java-spanner/commit/b58d73ddb768c0d33d149ed8bc84f5af618514e1))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.19.0 ([#895](https://www.github.com/googleapis/java-spanner/issues/895)) ([e3e2c95](https://www.github.com/googleapis/java-spanner/commit/e3e2c95936f40a7954639a95c84cc9495e318e55))
+
 ## [4.0.0](https://www.github.com/googleapis/java-spanner/compare/v3.3.2...v4.0.0) (2021-02-17)
 
 

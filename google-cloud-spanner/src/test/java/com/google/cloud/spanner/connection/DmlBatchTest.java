@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.mock;
@@ -110,6 +111,25 @@ public class DmlBatchTest {
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    DmlBatch batch = createSubject();
+    get(batch.runBatchAsync());
+    try {
+      batch.getCommitResponse();
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testGetCommitResponseOrNull() {
+    DmlBatch batch = createSubject();
+    get(batch.runBatchAsync());
+    assertNull(batch.getCommitResponseOrNull());
   }
 
   @Test

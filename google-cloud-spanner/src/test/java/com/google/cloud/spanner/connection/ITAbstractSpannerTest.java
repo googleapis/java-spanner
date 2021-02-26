@@ -34,6 +34,10 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.rpc.RetryInfo;
+import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -158,9 +162,22 @@ public abstract class ITAbstractSpannerTest {
             probability = 0;
           }
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.ABORTED, "Transaction was aborted by interceptor");
+              ErrorCode.ABORTED,
+              "Transaction was aborted by interceptor",
+              createAbortedExceptionWithMinimalRetry());
         }
       }
+    }
+
+    private static StatusRuntimeException createAbortedExceptionWithMinimalRetry() {
+      Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+      Metadata trailers = new Metadata();
+      RetryInfo retryInfo =
+          RetryInfo.newBuilder()
+              .setRetryDelay(com.google.protobuf.Duration.newBuilder().setNanos(1).setSeconds(0L))
+              .build();
+      trailers.put(key, retryInfo);
+      return io.grpc.Status.ABORTED.asRuntimeException(trailers);
     }
   }
 

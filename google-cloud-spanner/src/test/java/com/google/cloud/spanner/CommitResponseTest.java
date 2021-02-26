@@ -17,9 +17,12 @@
 package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.Timestamp;
+import com.google.spanner.v1.CommitResponse.CommitStats;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -82,5 +85,20 @@ public class CommitResponseTest {
     assertEquals(response3.hashCode(), response1.hashCode());
     assertNotEquals(response2.hashCode(), response1.hashCode());
     assertNotEquals(response3.hashCode(), response2.hashCode());
+  }
+
+  @Test
+  public void testHasCommitStats() {
+    com.google.spanner.v1.CommitResponse protoWithoutCommitStats =
+        com.google.spanner.v1.CommitResponse.getDefaultInstance();
+    CommitResponse responseWithoutCommitStats = new CommitResponse(protoWithoutCommitStats);
+    assertFalse(responseWithoutCommitStats.hasCommitStats());
+
+    com.google.spanner.v1.CommitResponse protoWithCommitStats =
+        com.google.spanner.v1.CommitResponse.newBuilder()
+            .setCommitStats(CommitStats.getDefaultInstance())
+            .build();
+    CommitResponse responseWithCommitStats = new CommitResponse(protoWithCommitStats);
+    assertTrue(responseWithCommitStats.hasCommitStats());
   }
 }
