@@ -105,9 +105,9 @@ public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
 
   static String generateDatabaseId() {
     final String databaseId = (
-        baseDatabaseId +
-            "-" +
-            UUID.randomUUID().toString().replaceAll("-", "")
+        baseDatabaseId
+            + "-"
+            + UUID.randomUUID().toString().replaceAll("-", "")
     ).substring(0, 30);
     databasesToDrop.add(databaseId);
     return databaseId;
