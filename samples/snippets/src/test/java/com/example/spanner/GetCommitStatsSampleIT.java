@@ -21,17 +21,16 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -56,17 +55,11 @@ public class GetCommitStatsSampleIT {
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
+    Preconditions.checkState(instanceId != null, "No instance id set");
     final SpannerOptions options =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
-    if (instanceId == null) {
-      Iterator<Instance> iterator =
-          spanner.getInstanceAdminClient().listInstances().iterateAll().iterator();
-      if (iterator.hasNext()) {
-        instanceId = iterator.next().getId().getInstance();
-      }
-    }
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
     dbClient
@@ -144,6 +137,10 @@ public class GetCommitStatsSampleIT {
   }
 
   private static String formatForTest(String name) {
-    return (name + "-" + UUID.randomUUID().toString()).substring(0, 30);
+    return (
+        name
+            + "-"
+            + UUID.randomUUID().toString().replaceAll("-", "")
+    ).substring(0, 30);
   }
 }
