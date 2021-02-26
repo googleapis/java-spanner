@@ -662,7 +662,7 @@ public class DatabaseClientImplTest {
           txManager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           tx = txManager.resetForRetry();
         }
       }
@@ -705,7 +705,7 @@ public class DatabaseClientImplTest {
           txManager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           tx = txManager.resetForRetry();
         }
       }

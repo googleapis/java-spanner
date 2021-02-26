@@ -72,7 +72,7 @@ public abstract class AbstractConnectionImplTest {
    * subclasses of {@link AbstractConnectionImplTest}.
    */
   private static final String LOG_FILE =
-      "src/test/resources/com/google/cloud/spanner/jdbc/ConnectionImplGeneratedSqlScriptTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
 
   private static final String DO_LOG_PROPERTY = "do_log_statements";
   private static boolean doLog;
@@ -731,6 +731,22 @@ public abstract class AbstractConnectionImplTest {
         log("SHOW VARIABLE COMMIT_TIMESTAMP;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getCommitTimestamp();
+      }
+    }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    try (Connection connection = getConnection()) {
+      if (isGetCommitTimestampAllowed()) {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP'");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        assertThat(connection.getCommitResponse(), is(notNullValue()));
+      } else {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP',null");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getCommitResponse();
       }
     }
   }

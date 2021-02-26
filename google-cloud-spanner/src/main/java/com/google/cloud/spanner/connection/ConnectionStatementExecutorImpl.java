@@ -27,26 +27,37 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DDL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DML;
 import static com.google.cloud.spanner.connection.StatementResultImpl.noResult;
 import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 
+import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.CommitStats;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -171,6 +182,28 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementShowCommitResponse() {
+    CommitResponse response = getConnection().getCommitResponseOrNull();
+    CommitStats stats = null;
+    if (response != null && response.hasCommitStats()) {
+      stats = response.getCommitStats();
+    }
+    ResultSet resultSet =
+        ResultSets.forRows(
+            Type.struct(
+                StructField.of("COMMIT_TIMESTAMP", Type.timestamp()),
+                StructField.of("MUTATION_COUNT", Type.int64())),
+            Arrays.asList(
+                Struct.newBuilder()
+                    .set("COMMIT_TIMESTAMP")
+                    .to(response == null ? null : response.getCommitTimestamp())
+                    .set("MUTATION_COUNT")
+                    .to(stats == null ? null : stats.getMutationCount())
+                    .build()));
+    return StatementResultImpl.of(resultSet, SHOW_COMMIT_RESPONSE);
+  }
+
+  @Override
   public StatementResult statementSetReadOnlyStaleness(TimestampBound staleness) {
     getConnection().setReadOnlyStaleness(staleness);
     return noResult(SET_READ_ONLY_STALENESS);
@@ -195,6 +228,18 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowOptimizerVersion() {
     return resultSet(
         "OPTIMIZER_VERSION", getConnection().getOptimizerVersion(), SHOW_OPTIMIZER_VERSION);
+  }
+
+  @Override
+  public StatementResult statementSetReturnCommitStats(Boolean returnCommitStats) {
+    getConnection().setReturnCommitStats(returnCommitStats);
+    return noResult(SET_RETURN_COMMIT_STATS);
+  }
+
+  @Override
+  public StatementResult statementShowReturnCommitStats() {
+    return resultSet(
+        "RETURN_COMMIT_STATS", getConnection().isReturnCommitStats(), SHOW_RETURN_COMMIT_STATS);
   }
 
   @Override

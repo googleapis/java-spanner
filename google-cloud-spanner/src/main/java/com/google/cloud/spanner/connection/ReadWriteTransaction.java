@@ -26,9 +26,11 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -75,7 +77,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private int successfulRetries;
   private final List<TransactionRetryListener> transactionRetryListeners;
   private volatile ApiFuture<TransactionContext> txContextFuture;
-  private volatile SettableApiFuture<Timestamp> commitTimestampFuture;
+  private volatile SettableApiFuture<CommitResponse> commitResponseFuture;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
   private volatile AbortedException abortedException;
   private boolean timedOutOrCancelled = false;
@@ -87,6 +89,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
+    private boolean returnCommitStats;
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
@@ -99,6 +102,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
     Builder setRetryAbortsInternally(boolean retryAbortsInternally) {
       this.retryAbortsInternally = retryAbortsInternally;
+      return this;
+    }
+
+    Builder setReturnCommitStats(boolean returnCommitStats) {
+      this.returnCommitStats = returnCommitStats;
       return this;
     }
 
@@ -129,7 +137,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
-    this.txManager = dbClient.transactionManager();
+    this.txManager =
+        builder.returnCommitStats
+            ? dbClient.transactionManager(Options.commitStats())
+            : dbClient.transactionManager();
   }
 
   @Override
@@ -254,19 +265,32 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return null;
   }
 
-  private boolean hasCommitTimestamp() {
-    return commitTimestampFuture != null;
+  private boolean hasCommitResponse() {
+    return commitResponseFuture != null;
   }
 
   @Override
   public Timestamp getCommitTimestamp() {
-    ConnectionPreconditions.checkState(hasCommitTimestamp(), "This transaction has not committed.");
-    return get(commitTimestampFuture);
+    ConnectionPreconditions.checkState(
+        hasCommitResponse(), "This transaction has not been committed.");
+    return get(commitResponseFuture).getCommitTimestamp();
   }
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
-    return hasCommitTimestamp() ? get(commitTimestampFuture) : null;
+    return hasCommitResponse() ? get(commitResponseFuture).getCommitTimestamp() : null;
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    ConnectionPreconditions.checkState(
+        hasCommitResponse(), "This transaction has not been committed.");
+    return get(commitResponseFuture);
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
+    return hasCommitResponse() ? get(commitResponseFuture) : null;
   }
 
   @Override
@@ -540,7 +564,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           checkAborted();
           get(txContextFuture).buffer(mutations);
           txManager.commit();
-          commitTimestampFuture.set(txManager.getCommitTimestamp());
+          commitResponseFuture.set(txManager.getCommitResponse());
           state = UnitOfWorkState.COMMITTED;
           return null;
         }
@@ -550,7 +574,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public ApiFuture<Void> commitAsync() {
     checkValidTransaction();
     state = UnitOfWorkState.COMMITTING;
-    commitTimestampFuture = SettableApiFuture.create();
+    commitResponseFuture = SettableApiFuture.create();
     ApiFuture<Void> res;
     if (retryAbortsInternally) {
       res =
@@ -573,7 +597,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                           }
                         });
                   } catch (Throwable t) {
-                    commitTimestampFuture.setException(t);
+                    commitResponseFuture.setException(t);
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -596,7 +620,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                   try {
                     return commitCallable.call();
                   } catch (Throwable t) {
-                    commitTimestampFuture.setException(t);
+                    commitResponseFuture.setException(t);
                     state = UnitOfWorkState.COMMIT_FAILED;
                     try {
                       txManager.close();
@@ -725,8 +749,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       logger.fine(toString() + ": Starting internal transaction retry");
       while (true) {
         // First back off and then restart the transaction.
+        long delay = aborted.getRetryDelayInMillis();
         try {
-          Thread.sleep(aborted.getRetryDelayInMillis() / 1000);
+          if (delay > 0L) {
+            Thread.sleep(delay);
+          }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           throw SpannerExceptionFactory.newSpannerException(

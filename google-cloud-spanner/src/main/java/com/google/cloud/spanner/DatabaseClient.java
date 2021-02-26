@@ -321,19 +321,19 @@ public interface DatabaseClient {
    * <pre>{@code
    * long singerId = my_singer_id;
    * try (TransactionManager manager = dbClient.transactionManager()) {
-   *   TransactionContext txn = manager.begin();
+   *   TransactionContext transaction = manager.begin();
    *   while (true) {
    *     String column = "FirstName";
-   *     Struct row = txn.readRow("Singers", Key.of(singerId), Collections.singleton(column));
+   *     Struct row = transaction.readRow("Singers", Key.of(singerId), Collections.singleton(column));
    *     String name = row.getString(column);
-   *     txn.buffer(
+   *     transaction.buffer(
    *         Mutation.newUpdateBuilder("Singers").set(column).to(name.toUpperCase()).build());
    *     try {
    *       manager.commit();
    *       break;
    *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txn = manager.resetForRetry();
+   *       Thread.sleep(e.getRetryDelayInMillis());
+   *       transaction = manager.resetForRetry();
    *     }
    *   }
    * }
@@ -385,19 +385,19 @@ public interface DatabaseClient {
    * <pre>{@code
    * long singerId = 1L;
    * try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
-   *   TransactionContextFuture txnFut = manager.beginAsync();
+   *   TransactionContextFuture transactionFuture = manager.beginAsync();
    *   while (true) {
    *     String column = "FirstName";
    *     CommitTimestampFuture commitTimestamp =
-   *         txnFut
+   *         transactionFuture
    *             .then(
-   *                 (txn, __) ->
-   *                     txn.readRowAsync(
+   *                 (transaction, __) ->
+   *                     transaction.readRowAsync(
    *                         "Singers", Key.of(singerId), Collections.singleton(column)))
    *             .then(
-   *                 (txn, row) -> {
+   *                 (transaction, row) -> {
    *                   String name = row.getString(column);
-   *                   txn.buffer(
+   *                   transaction.buffer(
    *                       Mutation.newUpdateBuilder("Singers")
    *                           .set(column)
    *                           .to(name.toUpperCase())
@@ -409,8 +409,8 @@ public interface DatabaseClient {
    *       commitTimestamp.get();
    *       break;
    *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txnFut = manager.resetForRetryAsync();
+   *       Thread.sleep(e.getRetryDelayInMillis());
+   *       transactionFuture = manager.resetForRetryAsync();
    *     }
    *   }
    * }
@@ -421,26 +421,26 @@ public interface DatabaseClient {
    * <pre>{@code
    * final long singerId = 1L;
    * try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-   *   TransactionContextFuture txn = manager.beginAsync();
+   *   TransactionContextFuture transactionFuture = manager.beginAsync();
    *   while (true) {
    *     final String column = "FirstName";
    *     CommitTimestampFuture commitTimestamp =
-   *         txn.then(
+   *         transactionFuture.then(
    *                 new AsyncTransactionFunction<Void, Struct>() {
    *                   @Override
-   *                   public ApiFuture<Struct> apply(TransactionContext txn, Void input)
+   *                   public ApiFuture<Struct> apply(TransactionContext transaction, Void input)
    *                       throws Exception {
-   *                     return txn.readRowAsync(
+   *                     return transaction.readRowAsync(
    *                         "Singers", Key.of(singerId), Collections.singleton(column));
    *                   }
    *                 })
    *             .then(
    *                 new AsyncTransactionFunction<Struct, Void>() {
    *                   @Override
-   *                   public ApiFuture<Void> apply(TransactionContext txn, Struct input)
+   *                   public ApiFuture<Void> apply(TransactionContext transaction, Struct input)
    *                       throws Exception {
    *                     String name = input.getString(column);
-   *                     txn.buffer(
+   *                     transaction.buffer(
    *                         Mutation.newUpdateBuilder("Singers")
    *                             .set(column)
    *                             .to(name.toUpperCase())
@@ -453,8 +453,8 @@ public interface DatabaseClient {
    *       commitTimestamp.get();
    *       break;
    *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txn = manager.resetForRetryAsync();
+   *       Thread.sleep(e.getRetryDelayInMillis());
+   *       transactionFuture = manager.resetForRetryAsync();
    *     }
    *   }
    * }

@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -247,6 +248,25 @@ public class ReadOnlyTransactionTest {
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
     }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    ReadOnlyTransaction transaction = createSubject();
+    get(transaction.commitAsync());
+    try {
+      transaction.getCommitResponse();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testGetCommitResponseOrNull() {
+    ReadOnlyTransaction transaction = createSubject();
+    get(transaction.commitAsync());
+    assertNull(transaction.getCommitResponseOrNull());
   }
 
   @Test
