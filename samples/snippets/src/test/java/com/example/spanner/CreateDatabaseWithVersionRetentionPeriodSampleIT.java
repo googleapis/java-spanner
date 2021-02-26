@@ -38,6 +38,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
 
+  private static String projectId;
   private static final String instanceId = System.getProperty("spanner.test.instance");
   private static final String baseDatabaseId = System.getProperty(
       "spanner.sample.database",
@@ -71,6 +72,7 @@ public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
         .newBuilder()
         .setAutoThrottleAdministrativeRequests()
         .build();
+    projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
     databasesToDrop = new ArrayList<>();
@@ -95,13 +97,18 @@ public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
 
     final String out = runSample(databaseId, versionRetentionPeriod);
 
-    assertThat(out).contains("Created database [" + databaseId + "]");
+    assertThat(out).contains(
+        "Created database [projects/" + projectId + "/instances/" + instanceId + "/databases/"
+            + databaseId + "]");
     assertThat(out).contains("Version retention period: " + versionRetentionPeriod);
   }
 
   static String generateDatabaseId() {
-    final String databaseId = (baseDatabaseId + "-"
-        + UUID.randomUUID().toString()).substring(0, 30);
+    final String databaseId = (
+        baseDatabaseId +
+            "-" +
+            UUID.randomUUID().toString().replaceAll("-", "")
+    ).substring(0, 30);
     databasesToDrop.add(databaseId);
     return databaseId;
   }
