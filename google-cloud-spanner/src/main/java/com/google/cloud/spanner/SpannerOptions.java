@@ -80,6 +80,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
+  private static final String LIQUIBASE_API_CLIENT_LIB_TOKEN = "sp-liq";
+
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final ImmutableSet<String> SCOPES =
@@ -612,7 +614,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
             JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN);
+            HIBERNATE_API_CLIENT_LIB_TOKEN,
+            LIQUIBASE_API_CLIENT_LIB_TOKEN);
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
