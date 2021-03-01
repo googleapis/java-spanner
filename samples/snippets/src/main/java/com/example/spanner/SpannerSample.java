@@ -1587,8 +1587,6 @@ public class SpannerSample {
   static void createBackup(
       DatabaseClient databaseClient, DatabaseAdminClient dbAdminClient, DatabaseId databaseId,
       BackupId backupId) {
-    Database databaseToBackup = dbAdminClient
-        .getDatabase(databaseId.getInstanceId().getInstance(), databaseId.getDatabase());
     // Set expire time to 14 days from now.
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
