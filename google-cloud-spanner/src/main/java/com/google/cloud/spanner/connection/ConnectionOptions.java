@@ -232,6 +232,10 @@ public class ConnectionOptions {
                       "Sets the default query optimizer version to use for this connection."),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
+                      "autoConfigEmulator",
+                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). The instance and database in the connection string will automatically be created if these do not yet exist on the emulator.",
+                      false),
+                  ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
                       "Silently ignore unknown properties in the connection string/properties (true/false)",
                       DEFAULT_LENIENT))));
@@ -347,6 +351,14 @@ public class ConnectionOptions {
      *   <li>retryAbortsInternally (boolean): Sets the initial retryAbortsInternally mode for the
      *       connection. Default is true.
      *   <li>optimizerVersion (string): Sets the query optimizer version to use for the connection.
+     *   <li>autoConfigEmulator (boolean): Automatically configures the connection to connect to the
+     *       Cloud Spanner emulator. If no host and port is specified in the connection string, the
+     *       connection will automatically use the default emulator host/port combination
+     *       (localhost:9010). Plain text communication will be enabled and authentication will be
+     *       disabled. The instance and database in the connection string will automatically be
+     *       created on the emulator if any of them do not yet exist. Any existing instance or
+     *       database on the emulator will remain untouched. No other configuration is needed in
+     *       order to connect to the emulator than setting this property.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.
@@ -459,6 +471,7 @@ public class ConnectionOptions {
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
+  private final boolean autoConfigEmulator;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -483,18 +496,28 @@ public class ConnectionOptions {
         (builder.credentials == null && this.credentialsUrl == null) || this.oauthToken == null,
         "Cannot specify both credentials and an OAuth token.");
 
-    this.usePlainText = parseUsePlainText(this.uri);
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
+    this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
 
-    this.host =
-        matcher.group(Builder.HOST_GROUP) == null
-            ? DEFAULT_HOST
-            : (usePlainText ? PLAIN_TEXT_PROTOCOL : HOST_PROTOCOL)
-                + matcher.group(Builder.HOST_GROUP);
+    if (matcher.group(Builder.HOST_GROUP) == null) {
+      if (this.autoConfigEmulator) {
+        this.host = "http://localhost:9010";
+      } else {
+        this.host = DEFAULT_HOST;
+      }
+    } else {
+      if (this.usePlainText) {
+        this.host = PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      } else {
+        this.host = HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      }
+    }
+
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
@@ -641,6 +664,11 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
+    return value != null ? Boolean.valueOf(value) : false;
+  }
+
+  static boolean parseAutoConfigEmulator(String uri) {
+    String value = parseUriProperty(uri, "autoConfigEmulator");
     return value != null ? Boolean.valueOf(value) : false;
   }
 
@@ -836,6 +864,16 @@ public class ConnectionOptions {
   /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
   public boolean isReturnCommitStats() {
     return returnCommitStats;
+  }
+
+  /**
+   * Whether connections created by this {@link ConnectionOptions} will automatically try to connect
+   * to the emulator using the default host/port of the emulator, and automatically create the
+   * instance and database that is specified in the connection string if these do not exist on the
+   * emulator instance.
+   */
+  public boolean isAutoConfigEmulator() {
+    return autoConfigEmulator;
   }
 
   /** Interceptors that should be executed after each statement */
