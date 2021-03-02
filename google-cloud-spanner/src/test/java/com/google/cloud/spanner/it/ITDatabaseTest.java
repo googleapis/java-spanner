@@ -156,6 +156,8 @@ public class ITDatabaseTest {
   @Test
   public void testNumericPrimaryKey()
       throws InterruptedException, ExecutionException, TimeoutException {
+    assumeFalse("Emulator does not support numeric primary keys", isUsingEmulator());
+
     final String projectId = env.getTestHelper().getInstanceId().getProject();
     final String instanceId = env.getTestHelper().getInstanceId().getInstance();
     final String databaseId = env.getTestHelper().getUniqueDatabaseId();
