@@ -182,6 +182,33 @@ public class EmulatorUtilTest {
   }
 
   @Test
+  public void testCreateInstanceAndDatabase_propagatesInterruptsOnInstanceCreation()
+      throws InterruptedException, ExecutionException {
+    Spanner spanner = mock(Spanner.class);
+    SpannerOptions options = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(options);
+    when(options.getCredentials()).thenReturn(NoCredentials.getInstance());
+
+    InstanceAdminClient instanceClient = mock(InstanceAdminClient.class);
+    @SuppressWarnings("unchecked")
+    OperationFuture<Instance, CreateInstanceMetadata> instanceOperationFuture =
+        mock(OperationFuture.class);
+
+    when(spanner.getInstanceAdminClient()).thenReturn(instanceClient);
+    when(instanceClient.createInstance(any(InstanceInfo.class)))
+        .thenReturn(instanceOperationFuture);
+    when(instanceOperationFuture.get()).thenThrow(new InterruptedException());
+
+    try {
+      EmulatorUtil.maybeCreateInstanceAndDatabase(
+          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+    }
+  }
+
+  @Test
   public void testCreateInstanceAndDatabase_propagatesOtherErrorsOnDatabaseCreation()
       throws InterruptedException, ExecutionException {
     Spanner spanner = mock(Spanner.class);
@@ -222,6 +249,46 @@ public class EmulatorUtilTest {
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testCreateInstanceAndDatabase_propagatesInterruptsOnDatabaseCreation()
+      throws InterruptedException, ExecutionException {
+    Spanner spanner = mock(Spanner.class);
+    SpannerOptions options = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(options);
+    when(options.getCredentials()).thenReturn(NoCredentials.getInstance());
+
+    InstanceAdminClient instanceClient = mock(InstanceAdminClient.class);
+    @SuppressWarnings("unchecked")
+    OperationFuture<Instance, CreateInstanceMetadata> instanceOperationFuture =
+        mock(OperationFuture.class);
+
+    when(spanner.getInstanceAdminClient()).thenReturn(instanceClient);
+    when(instanceClient.createInstance(any(InstanceInfo.class)))
+        .thenReturn(instanceOperationFuture);
+    when(instanceOperationFuture.get()).thenReturn(mock(Instance.class));
+
+    DatabaseAdminClient databaseClient = mock(DatabaseAdminClient.class);
+    @SuppressWarnings("unchecked")
+    OperationFuture<Database, CreateDatabaseMetadata> databaseOperationFuture =
+        mock(OperationFuture.class);
+
+    when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
+    when(databaseClient.createDatabase(
+            Matchers.eq("test-instance"),
+            Matchers.eq("test-database"),
+            Matchers.eq(ImmutableList.<String>of())))
+        .thenReturn(databaseOperationFuture);
+    when(databaseOperationFuture.get()).thenThrow(new InterruptedException());
+
+    try {
+      EmulatorUtil.maybeCreateInstanceAndDatabase(
+          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
     }
   }
 }
