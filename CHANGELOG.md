@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.0.0](https://www.github.com/googleapis/java-spanner/compare/v4.0.2...v5.0.0) (2021-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* add CommitStats to Connection API (#608)
+
+### Features
+
+* add CommitStats to Connection API ([#608](https://www.github.com/googleapis/java-spanner/issues/608)) ([b2b1191](https://www.github.com/googleapis/java-spanner/commit/b2b1191763cd47ca39849bdf93292ed5ef3e0c8a))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.20.0 ([#917](https://www.github.com/googleapis/java-spanner/issues/917)) ([aca9d45](https://www.github.com/googleapis/java-spanner/commit/aca9d45c4e86c45a75e6b5e0d3794e7ac97bdf1a))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.13 ([#918](https://www.github.com/googleapis/java-spanner/issues/918)) ([8843998](https://www.github.com/googleapis/java-spanner/commit/8843998a1c5ddb9228fa16162e0ea13f859f7f35))
+
 ### [4.0.2](https://www.github.com/googleapis/java-spanner/compare/v4.0.1...v4.0.2) (2021-02-23)
 
 

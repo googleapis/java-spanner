@@ -51,12 +51,12 @@ compile 'com.google.cloud:google-cloud-spanner'
 ```
 If you are using Gradle without BOM, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:4.0.2'
+compile 'com.google.cloud:google-cloud-spanner:5.0.0'
 ```
 
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "4.0.2"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "5.0.0"
 ```
 
 ## Authentication
@@ -237,6 +237,7 @@ has instructions for running the samples.
 | Batch Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/BatchSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/BatchSample.java) |
 | Create Instance Example | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/CreateInstanceExample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/CreateInstanceExample.java) |
 | Custom Timeout And Retry Settings Example | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/CustomTimeoutAndRetrySettingsExample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/CustomTimeoutAndRetrySettingsExample.java) |
+| Get Commit Stats Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/GetCommitStatsSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/GetCommitStatsSample.java) |
 | Query With Numeric Parameter Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/QueryWithNumericParameterSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/QueryWithNumericParameterSample.java) |
 | Quickstart Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/QuickstartSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/QuickstartSample.java) |
 | Spanner Sample | [source code](https://github.com/googleapis/java-spanner/blob/master/samples/snippets/src/main/java/com/example/spanner/SpannerSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/SpannerSample.java) |
