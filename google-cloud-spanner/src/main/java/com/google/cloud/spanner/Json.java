@@ -16,14 +16,26 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.base.Preconditions;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 public class Json implements Comparable<Json>, Serializable {
   public String value;
 
-  public Json(@Nullable String value) {
+  /**
+   * Representation of a JSON object.
+   *
+   * @param value JSON text
+   * @throws NullPointerException if {@code value} is null
+   * @throws JsonParseException if {@code value} is not valid JSON
+   */
+  public Json(String value) {
+    Preconditions.checkNotNull(value, "JSON cannot contain NULL value.");
+    // Attempts to parse the JSON String, throws JsonParseException if it is not valid JSON
+    JsonParser.parseString(value);
     this.value = value;
   }
 
@@ -37,7 +49,7 @@ public class Json implements Comparable<Json>, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Json)) {
       return false;
     }
     Json that = (Json) o;
@@ -51,6 +63,11 @@ public class Json implements Comparable<Json>, Serializable {
 
   @Override
   public int compareTo(Json other) {
+    if (value == null) {
+      if (other.value == null) {
+        return 0;
+      }
+    }
     return value.compareTo(other.value);
   }
 }

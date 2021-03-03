@@ -762,7 +762,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<STRING> produces a List<String>.
+    @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<JSON>.
     protected List<Json> getJsonListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<Json>) rowData.get(columnIndex));
     }

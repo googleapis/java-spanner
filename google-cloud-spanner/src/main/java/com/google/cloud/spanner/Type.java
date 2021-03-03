@@ -96,6 +96,7 @@ public final class Type implements Serializable {
     return TYPE_STRING;
   }
 
+  /** Returns the descriptor for the {@code JSON} type. */
   public static Type json() {
     return TYPE_JSON;
   }

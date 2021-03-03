@@ -891,6 +891,7 @@ public class GrpcResultSetTest {
   public void getJsonList() {
     List<Json> jsonList = new ArrayList<>();
     jsonList.add(new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    jsonList.add(new Json("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}"));
     jsonList.add(new Json("[]"));
 
     consumer.onPartialResultSet(
