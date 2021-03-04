@@ -523,68 +523,84 @@ public class GrpcSpannerStub extends SpannerStub {
     return operationsStub;
   }
 
+  @Override
   public UnaryCallable<CreateSessionRequest, Session> createSessionCallable() {
     return createSessionCallable;
   }
 
+  @Override
   public UnaryCallable<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsCallable() {
     return batchCreateSessionsCallable;
   }
 
+  @Override
   public UnaryCallable<GetSessionRequest, Session> getSessionCallable() {
     return getSessionCallable;
   }
 
+  @Override
   public UnaryCallable<ListSessionsRequest, ListSessionsResponse> listSessionsCallable() {
     return listSessionsCallable;
   }
 
+  @Override
   public UnaryCallable<ListSessionsRequest, ListSessionsPagedResponse> listSessionsPagedCallable() {
     return listSessionsPagedCallable;
   }
 
+  @Override
   public UnaryCallable<DeleteSessionRequest, Empty> deleteSessionCallable() {
     return deleteSessionCallable;
   }
 
+  @Override
   public UnaryCallable<ExecuteSqlRequest, ResultSet> executeSqlCallable() {
     return executeSqlCallable;
   }
 
+  @Override
   public ServerStreamingCallable<ExecuteSqlRequest, PartialResultSet>
       executeStreamingSqlCallable() {
     return executeStreamingSqlCallable;
   }
 
+  @Override
   public UnaryCallable<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse> executeBatchDmlCallable() {
     return executeBatchDmlCallable;
   }
 
+  @Override
   public UnaryCallable<ReadRequest, ResultSet> readCallable() {
     return readCallable;
   }
 
+  @Override
   public ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     return streamingReadCallable;
   }
 
+  @Override
   public UnaryCallable<BeginTransactionRequest, Transaction> beginTransactionCallable() {
     return beginTransactionCallable;
   }
 
+  @Override
   public UnaryCallable<CommitRequest, CommitResponse> commitCallable() {
     return commitCallable;
   }
 
+  @Override
   public UnaryCallable<RollbackRequest, Empty> rollbackCallable() {
     return rollbackCallable;
   }
 
+  @Override
   public UnaryCallable<PartitionQueryRequest, PartitionResponse> partitionQueryCallable() {
     return partitionQueryCallable;
   }
 
+  @Override
   public UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return partitionReadCallable;
   }

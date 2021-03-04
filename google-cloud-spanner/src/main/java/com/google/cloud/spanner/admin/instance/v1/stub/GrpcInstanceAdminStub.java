@@ -424,63 +424,77 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
     return operationsStub;
   }
 
+  @Override
   public UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable() {
     return listInstanceConfigsCallable;
   }
 
+  @Override
   public UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
       listInstanceConfigsPagedCallable() {
     return listInstanceConfigsPagedCallable;
   }
 
+  @Override
   public UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
     return getInstanceConfigCallable;
   }
 
+  @Override
   public UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
     return listInstancesCallable;
   }
 
+  @Override
   public UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable() {
     return listInstancesPagedCallable;
   }
 
+  @Override
   public UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return getInstanceCallable;
   }
 
+  @Override
   public UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
     return createInstanceCallable;
   }
 
+  @Override
   public OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
       createInstanceOperationCallable() {
     return createInstanceOperationCallable;
   }
 
+  @Override
   public UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
     return updateInstanceCallable;
   }
 
+  @Override
   public OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
       updateInstanceOperationCallable() {
     return updateInstanceOperationCallable;
   }
 
+  @Override
   public UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable() {
     return deleteInstanceCallable;
   }
 
+  @Override
   public UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable() {
     return setIamPolicyCallable;
   }
 
+  @Override
   public UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable() {
     return getIamPolicyCallable;
   }
 
+  @Override
   public UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
     return testIamPermissionsCallable;
