@@ -101,6 +101,19 @@ public interface RestoreDatabaseRequestOrBuilder
    *
    * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
    *
+   * @return Whether the backup field is set.
+   */
+  boolean hasBackup();
+  /**
+   *
+   *
+   * <pre>
+   * Name of the backup from which to restore.  Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * </pre>
+   *
+   * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
    * @return The backup.
    */
   java.lang.String getBackup();

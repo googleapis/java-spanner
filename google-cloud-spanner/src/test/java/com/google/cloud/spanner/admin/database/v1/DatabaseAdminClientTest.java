@@ -48,6 +48,7 @@ import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.CryptoKeyVersionName;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
@@ -650,7 +651,9 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -674,7 +677,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -736,7 +741,9 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -758,7 +765,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -812,7 +821,9 @@ public class DatabaseAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -836,7 +847,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");

@@ -1282,6 +1282,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>bool strong = 1;</code>
      *
+     * @return Whether the strong field is set.
+     */
+    boolean hasStrong();
+    /**
+     *
+     *
+     * <pre>
+     * Read at a timestamp where all previously committed transactions
+     * are visible.
+     * </pre>
+     *
+     * <code>bool strong = 1;</code>
+     *
      * @return The strong.
      */
     boolean getStrong();
@@ -1754,6 +1767,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final int STRONG_FIELD_NUMBER = 1;
+    /**
+     *
+     *
+     * <pre>
+     * Read at a timestamp where all previously committed transactions
+     * are visible.
+     * </pre>
+     *
+     * <code>bool strong = 1;</code>
+     *
+     * @return Whether the strong field is set.
+     */
+    @java.lang.Override
+    public boolean hasStrong() {
+      return timestampBoundCase_ == 1;
+    }
     /**
      *
      *
@@ -2580,6 +2609,21 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
+      /**
+       *
+       *
+       * <pre>
+       * Read at a timestamp where all previously committed transactions
+       * are visible.
+       * </pre>
+       *
+       * <code>bool strong = 1;</code>
+       *
+       * @return Whether the strong field is set.
+       */
+      public boolean hasStrong() {
+        return timestampBoundCase_ == 1;
+      }
       /**
        *
        *
