@@ -11,8 +11,8 @@
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "e8bc4471a88ac5f60defe3ed436f517174e59ba0",
-        "internalRef": "357800868"
+        "sha": "af8f71dae961ee036a0ac52a1965270149a6b2c9",
+        "internalRef": "358516065"
       }
     },
     {
@@ -114,6 +114,7 @@
     "codecov.yaml",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStub.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStubSettings.java",
@@ -121,6 +122,7 @@
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminStub.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminCallableFactory.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminStub.java",
@@ -128,6 +130,7 @@
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/InstanceAdminStubSettings.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerCallableFactory.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerStub.java",
