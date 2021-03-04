@@ -432,6 +432,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
    * }
@@ -464,6 +465,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Database, CreateDatabaseMetadata> future =
    *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
@@ -496,6 +498,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.createDatabaseCallable().futureCall(request);
@@ -1449,6 +1452,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   Backup response = databaseAdminClient.createBackupAsync(request).get();
    * }
@@ -1484,6 +1488,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Backup, CreateBackupMetadata> future =
    *       databaseAdminClient.createBackupOperationCallable().futureCall(request);
@@ -1519,6 +1524,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future = databaseAdminClient.createBackupCallable().futureCall(request);
    *   // Do something.
@@ -2158,6 +2164,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   Database response = databaseAdminClient.restoreDatabaseAsync(request).get();
    * }
@@ -2196,6 +2203,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Database, RestoreDatabaseMetadata> future =
    *       databaseAdminClient.restoreDatabaseOperationCallable().futureCall(request);
@@ -2234,6 +2242,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.restoreDatabaseCallable().futureCall(request);
