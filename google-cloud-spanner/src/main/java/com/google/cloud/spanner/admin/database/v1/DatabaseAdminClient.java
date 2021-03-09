@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -432,6 +432,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
    * }
@@ -464,6 +465,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Database, CreateDatabaseMetadata> future =
    *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
@@ -496,6 +498,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
+   *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.createDatabaseCallable().futureCall(request);
@@ -971,7 +974,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource =
+   *       CryptoKeyVersionName.of(
+   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1006,7 +1011,10 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource =
+   *       CryptoKeyVersionName.of(
+   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
+   *           .toString();
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1040,7 +1048,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.setIamPolicy(request);
@@ -1069,7 +1084,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
@@ -1096,7 +1118,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource =
+   *       CryptoKeyVersionName.of(
+   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1127,7 +1151,10 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource =
+   *       CryptoKeyVersionName.of(
+   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
+   *           .toString();
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1157,7 +1184,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.getIamPolicy(request);
@@ -1187,7 +1221,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.getIamPolicyCallable().futureCall(request);
@@ -1214,7 +1255,9 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource =
+   *       CryptoKeyVersionName.of(
+   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1252,7 +1295,10 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource =
+   *       CryptoKeyVersionName.of(
+   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
+   *           .toString();
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1292,7 +1338,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(request);
@@ -1322,7 +1375,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(
+   *               CryptoKeyVersionName.of(
+   *                       "[PROJECT]",
+   *                       "[LOCATION]",
+   *                       "[KEY_RING]",
+   *                       "[CRYPTO_KEY]",
+   *                       "[CRYPTO_KEY_VERSION]")
+   *                   .toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   ApiFuture<TestIamPermissionsResponse> future =
@@ -1449,6 +1509,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   Backup response = databaseAdminClient.createBackupAsync(request).get();
    * }
@@ -1484,6 +1545,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Backup, CreateBackupMetadata> future =
    *       databaseAdminClient.createBackupOperationCallable().futureCall(request);
@@ -1519,6 +1581,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setBackupId("backupId2121930365")
    *           .setBackup(Backup.newBuilder().build())
+   *           .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future = databaseAdminClient.createBackupCallable().futureCall(request);
    *   // Do something.
@@ -2158,6 +2221,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   Database response = databaseAdminClient.restoreDatabaseAsync(request).get();
    * }
@@ -2196,6 +2260,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   OperationFuture<Database, RestoreDatabaseMetadata> future =
    *       databaseAdminClient.restoreDatabaseOperationCallable().futureCall(request);
@@ -2234,6 +2299,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *       RestoreDatabaseRequest.newBuilder()
    *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
    *           .setDatabaseId("databaseId1688905718")
+   *           .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder().build())
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.restoreDatabaseCallable().futureCall(request);

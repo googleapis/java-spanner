@@ -1584,8 +1584,8 @@ public class SpannerSample {
   // [END spanner_query_with_query_options]
 
   // [START spanner_create_backup]
-  static void createBackup(
-      DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
+  static void createBackup(DatabaseAdminClient dbAdminClient, DatabaseId databaseId,
+      BackupId backupId, Timestamp versionTime) {
     // Set expire time to 14 days from now.
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
@@ -1594,6 +1594,7 @@ public class SpannerSample {
             .newBackupBuilder(backupId)
             .setDatabase(databaseId)
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .build();
     // Initiate the request which returns an OperationFuture.
     System.out.println("Creating backup [" + backup.getId() + "]...");
@@ -1612,13 +1613,18 @@ public class SpannerSample {
     backup = backup.reload();
     System.out.println(
         String.format(
-            "Backup %s of size %d bytes was created at %s",
+            "Backup %s of size %d bytes was created at %s for version of database at %s",
             backup.getId().getName(),
             backup.getSize(),
             LocalDateTime.ofEpochSecond(
                 backup.getProto().getCreateTime().getSeconds(),
                 backup.getProto().getCreateTime().getNanos(),
-                OffsetDateTime.now().getOffset())).toString());
+                OffsetDateTime.now().getOffset()),
+            LocalDateTime.ofEpochSecond(
+                backup.getProto().getVersionTime().getSeconds(),
+                backup.getProto().getVersionTime().getNanos(),
+                OffsetDateTime.now().getOffset())
+            ));
   }
   // [END spanner_create_backup]
 
@@ -1820,12 +1826,16 @@ public class SpannerSample {
       Database db = op.get();
       // Refresh database metadata and get the restore info.
       RestoreInfo restore = db.reload().getRestoreInfo();
+      Timestamp versionTime = Timestamp.fromProto(restore
+          .getProto()
+          .getBackupInfo()
+          .getVersionTime());
       System.out.println(
           "Restored database ["
               + restore.getSourceDatabase().getName()
               + "] from ["
               + restore.getBackup().getName()
-              + "]");
+              + "] with version time [" + versionTime + "]");
     } catch (ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
     } catch (InterruptedException e) {
@@ -2044,7 +2054,7 @@ public class SpannerSample {
         queryWithQueryOptions(dbClient);
         break;
       case "createbackup":
-        createBackup(dbAdminClient, database, backup);
+        createBackup(dbAdminClient, database, backup, getVersionTime(dbClient));
         break;
       case "cancelcreatebackup":
         cancelCreateBackup(
@@ -2077,6 +2087,17 @@ public class SpannerSample {
       default:
         printUsageAndExit();
     }
+  }
+
+  static Timestamp getVersionTime(DatabaseClient dbClient) {
+    // Generates a version time for the backup
+    Timestamp versionTime;
+    try (ResultSet resultSet = dbClient.singleUse()
+        .executeQuery(Statement.of("SELECT CURRENT_TIMESTAMP()"))) {
+      resultSet.next();
+      versionTime = resultSet.getTimestamp(0);
+    }
+    return versionTime;
   }
 
   static void printUsageAndExit() {
@@ -2177,6 +2198,7 @@ public class SpannerSample {
       InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       // Use client here...
       // [END init_client]
+
       run(dbClient, dbAdminClient, instanceAdminClient, command, db, backup);
       // [START init_client]
     } finally {

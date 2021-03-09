@@ -140,6 +140,23 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
               referencingDatabases_.add(s);
               break;
             }
+          case 66:
+            {
+              com.google.spanner.admin.database.v1.EncryptionInfo.Builder subBuilder = null;
+              if (encryptionInfo_ != null) {
+                subBuilder = encryptionInfo_.toBuilder();
+              }
+              encryptionInfo_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionInfo_);
+                encryptionInfo_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           case 74:
             {
               com.google.protobuf.Timestamp.Builder subBuilder = null;
@@ -357,10 +374,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-   * Name of the database from which this backup was
-   * created. This needs to be in the same instance as the backup.
-   * Values are of the form
+   * Required for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * operation. Name of the database from which this backup was created. This
+   * needs to be in the same instance as the backup. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
@@ -384,10 +401,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-   * Name of the database from which this backup was
-   * created. This needs to be in the same instance as the backup.
-   * Values are of the form
+   * Required for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * operation. Name of the database from which this backup was created. This
+   * needs to be in the same instance as the backup. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
@@ -469,7 +486,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Required for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * operation. The expiration time of the backup, with microseconds
    * granularity that must be at least 6 hours and at most 366 days
    * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -489,7 +507,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Required for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * operation. The expiration time of the backup, with microseconds
    * granularity that must be at least 6 hours and at most 366 days
    * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -509,7 +528,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Required for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * operation. The expiration time of the backup, with microseconds
    * granularity that must be at least 6 hours and at most 366 days
    * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -530,8 +550,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-   * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+   * Output only for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * operation. Required for the
+   * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+   * operation.
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -563,8 +586,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-   * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+   * Output only for the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * operation. Required for the
+   * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+   * operation.
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -599,7 +625,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Output only. The time the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * request is received. If the request does not specify `version_time`, the
    * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
@@ -617,7 +644,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Output only. The time the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * request is received. If the request does not specify `version_time`, the
    * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
@@ -635,7 +663,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * Output only. The time the
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * request is received. If the request does not specify `version_time`, the
    * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
@@ -721,7 +750,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return A list containing the referencingDatabases.
@@ -742,7 +772,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return The count of referencingDatabases.
@@ -763,7 +794,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the element to return.
@@ -785,7 +817,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the value to return.
@@ -793,6 +826,60 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    */
   public com.google.protobuf.ByteString getReferencingDatabasesBytes(int index) {
     return referencingDatabases_.getByteString(index);
+  }
+
+  public static final int ENCRYPTION_INFO_FIELD_NUMBER = 8;
+  private com.google.spanner.admin.database.v1.EncryptionInfo encryptionInfo_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionInfo field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionInfo() {
+    return encryptionInfo_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionInfo.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo() {
+    return encryptionInfo_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+        : encryptionInfo_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder() {
+    return getEncryptionInfo();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -830,6 +917,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < referencingDatabases_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(
           output, 7, referencingDatabases_.getRaw(i));
+    }
+    if (encryptionInfo_ != null) {
+      output.writeMessage(8, getEncryptionInfo());
     }
     if (versionTime_ != null) {
       output.writeMessage(9, getVersionTime());
@@ -869,6 +959,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       size += dataSize;
       size += 1 * getReferencingDatabasesList().size();
     }
+    if (encryptionInfo_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, getEncryptionInfo());
+    }
     if (versionTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(9, getVersionTime());
     }
@@ -905,6 +998,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (getSizeBytes() != other.getSizeBytes()) return false;
     if (state_ != other.state_) return false;
     if (!getReferencingDatabasesList().equals(other.getReferencingDatabasesList())) return false;
+    if (hasEncryptionInfo() != other.hasEncryptionInfo()) return false;
+    if (hasEncryptionInfo()) {
+      if (!getEncryptionInfo().equals(other.getEncryptionInfo())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -939,6 +1036,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (getReferencingDatabasesCount() > 0) {
       hash = (37 * hash) + REFERENCING_DATABASES_FIELD_NUMBER;
       hash = (53 * hash) + getReferencingDatabasesList().hashCode();
+    }
+    if (hasEncryptionInfo()) {
+      hash = (37 * hash) + ENCRYPTION_INFO_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionInfo().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1113,6 +1214,12 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
 
       referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = null;
+      } else {
+        encryptionInfo_ = null;
+        encryptionInfoBuilder_ = null;
+      }
       return this;
     }
 
@@ -1165,6 +1272,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.referencingDatabases_ = referencingDatabases_;
+      if (encryptionInfoBuilder_ == null) {
+        result.encryptionInfo_ = encryptionInfo_;
+      } else {
+        result.encryptionInfo_ = encryptionInfoBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1247,6 +1359,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         }
         onChanged();
       }
+      if (other.hasEncryptionInfo()) {
+        mergeEncryptionInfo(other.getEncryptionInfo());
+      }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -1283,10 +1398,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Name of the database from which this backup was
-     * created. This needs to be in the same instance as the backup.
-     * Values are of the form
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Name of the database from which this backup was created. This
+     * needs to be in the same instance as the backup. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
@@ -1309,10 +1424,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Name of the database from which this backup was
-     * created. This needs to be in the same instance as the backup.
-     * Values are of the form
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Name of the database from which this backup was created. This
+     * needs to be in the same instance as the backup. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
@@ -1335,10 +1450,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Name of the database from which this backup was
-     * created. This needs to be in the same instance as the backup.
-     * Values are of the form
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Name of the database from which this backup was created. This
+     * needs to be in the same instance as the backup. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
@@ -1360,10 +1475,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Name of the database from which this backup was
-     * created. This needs to be in the same instance as the backup.
-     * Values are of the form
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Name of the database from which this backup was created. This
+     * needs to be in the same instance as the backup. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
@@ -1381,10 +1496,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Name of the database from which this backup was
-     * created. This needs to be in the same instance as the backup.
-     * Values are of the form
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Name of the database from which this backup was created. This
+     * needs to be in the same instance as the backup. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
@@ -1626,7 +1741,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1645,7 +1761,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1670,7 +1787,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1697,7 +1815,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1721,7 +1840,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1750,7 +1870,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1775,7 +1896,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1794,7 +1916,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1817,7 +1940,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Required for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * operation. The expiration time of the backup, with microseconds
      * granularity that must be at least 6 hours and at most 366 days
      * from the time the CreateBackup request is processed. Once the `expire_time`
@@ -1849,8 +1973,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     * Output only for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Required for the
+     * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+     * operation.
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -1881,8 +2008,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     * Output only for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Required for the
+     * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+     * operation.
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -1913,8 +2043,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     * Output only for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Required for the
+     * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+     * operation.
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -1944,8 +2077,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     * Output only for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Required for the
+     * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+     * operation.
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -1971,8 +2107,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
-     * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     * Output only for the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * operation. Required for the
+     * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup]
+     * operation.
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
@@ -2010,7 +2149,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2028,7 +2168,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2052,7 +2193,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2078,7 +2220,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2101,7 +2244,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2129,7 +2273,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2153,7 +2298,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2171,7 +2317,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2193,7 +2340,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+     * Output only. The time the
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
      * request is received. If the request does not specify `version_time`, the
      * `version_time` of the backup will be equivalent to the `create_time`.
      * </pre>
@@ -2396,7 +2544,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @return A list containing the referencingDatabases.
@@ -2417,7 +2566,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @return The count of referencingDatabases.
@@ -2438,7 +2588,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param index The index of the element to return.
@@ -2460,7 +2611,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param index The index of the value to return.
@@ -2482,7 +2634,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param index The index to set the value at.
@@ -2511,7 +2664,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param value The referencingDatabases to add.
@@ -2539,7 +2693,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param values The referencingDatabases to add.
@@ -2564,7 +2719,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @return This builder for chaining.
@@ -2588,7 +2744,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * to the backup is removed.
      * </pre>
      *
-     * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * <code>
+     * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
      * </code>
      *
      * @param value The bytes of the referencingDatabases to add.
@@ -2603,6 +2760,211 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       referencingDatabases_.add(value);
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.database.v1.EncryptionInfo encryptionInfo_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        encryptionInfoBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the encryptionInfo field is set.
+     */
+    public boolean hasEncryptionInfo() {
+      return encryptionInfoBuilder_ != null || encryptionInfo_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The encryptionInfo.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo() {
+      if (encryptionInfoBuilder_ == null) {
+        return encryptionInfo_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+            : encryptionInfo_;
+      } else {
+        return encryptionInfoBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionInfo_ = value;
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(
+        com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (encryptionInfo_ != null) {
+          encryptionInfo_ =
+              com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder(encryptionInfo_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionInfo_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionInfo() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = null;
+        onChanged();
+      } else {
+        encryptionInfo_ = null;
+        encryptionInfoBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder getEncryptionInfoBuilder() {
+
+      onChanged();
+      return getEncryptionInfoFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder
+        getEncryptionInfoOrBuilder() {
+      if (encryptionInfoBuilder_ != null) {
+        return encryptionInfoBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionInfo_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()
+            : encryptionInfo_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The encryption information for the backup.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInfoFieldBuilder() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfoBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionInfo,
+                com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+                com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
+                getEncryptionInfo(), getParentForChildren(), isClean());
+        encryptionInfo_ = null;
+      }
+      return encryptionInfoBuilder_;
     }
 
     @java.lang.Override

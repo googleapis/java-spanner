@@ -18,6 +18,9 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -72,6 +75,7 @@ public class SingleUseTransactionTest {
   private static final String VALID_UPDATE = "UPDATE FOO SET BAR=1";
   private static final String INVALID_UPDATE = "UPDATE BAR SET FOO=1";
   private static final String SLOW_UPDATE = "UPDATE SLOW_TABLE SET FOO=1";
+  private static final String VALID_DDL = "CREATE TABLE FOO";
   private static final long VALID_UPDATE_COUNT = 99L;
 
   private final StatementExecutor executor = new StatementExecutor();
@@ -738,5 +742,42 @@ public class SingleUseTransactionTest {
       fail("missing expected exception");
     } catch (IllegalStateException e) {
     }
+  }
+
+  @Test
+  public void testGetCommitResponseAfterUpdate() {
+    ParsedStatement update = createParsedUpdate(VALID_UPDATE);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(update));
+    assertNotNull(transaction.getCommitResponse());
+    assertNotNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterQuery() {
+    ParsedStatement query = createParsedQuery(VALID_QUERY);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeQueryAsync(query, AnalyzeMode.NONE));
+    try {
+      transaction.getCommitResponse();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterDdl() {
+    ParsedStatement ddl = createParsedDdl(VALID_DDL);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeDdlAsync(ddl));
+    try {
+      transaction.getCommitResponse();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
   }
 }

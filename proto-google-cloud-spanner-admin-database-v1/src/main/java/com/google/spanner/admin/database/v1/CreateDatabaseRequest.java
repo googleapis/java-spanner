@@ -22,7 +22,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
+ * The request for
+ * [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.CreateDatabaseRequest}
@@ -95,6 +96,23 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
                 mutable_bitField0_ |= 0x00000001;
               }
               extraStatements_.add(s);
+              break;
+            }
+          case 34:
+            {
+              com.google.spanner.admin.database.v1.EncryptionConfig.Builder subBuilder = null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           default:
@@ -319,6 +337,67 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     return extraStatements_.getByteString(index);
   }
 
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
+  private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is
+   * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is
+   * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is
+   * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -341,6 +420,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     for (int i = 0; i < extraStatements_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, extraStatements_.getRaw(i));
+    }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(4, getEncryptionConfig());
     }
     unknownFields.writeTo(output);
   }
@@ -365,6 +447,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       size += dataSize;
       size += 1 * getExtraStatementsList().size();
     }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEncryptionConfig());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -384,6 +469,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (!getParent().equals(other.getParent())) return false;
     if (!getCreateStatement().equals(other.getCreateStatement())) return false;
     if (!getExtraStatementsList().equals(other.getExtraStatementsList())) return false;
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -402,6 +491,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (getExtraStatementsCount() > 0) {
       hash = (37 * hash) + EXTRA_STATEMENTS_FIELD_NUMBER;
       hash = (53 * hash) + getExtraStatementsList().hashCode();
+    }
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -508,7 +601,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The request for [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
+   * The request for
+   * [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.CreateDatabaseRequest}
@@ -555,6 +649,12 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
       extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
       return this;
     }
 
@@ -590,6 +690,11 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.extraStatements_ = extraStatements_;
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -657,6 +762,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
           extraStatements_.addAll(other.extraStatements_);
         }
         onChanged();
+      }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1130,6 +1238,232 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       extraStatements_.add(value);
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is
+     * not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionConfig,
+                com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
     }
 
     @java.lang.Override
