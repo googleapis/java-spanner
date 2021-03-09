@@ -71,6 +71,10 @@ public final class BackupProto {
       internal_static_google_spanner_admin_database_v1_BackupInfo_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_BackupInfo_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
@@ -87,63 +91,76 @@ public final class BackupProto {
           + "g/operations.proto\032 google/protobuf/fiel"
           + "d_mask.proto\032\037google/protobuf/timestamp."
           + "proto\032-google/spanner/admin/database/v1/"
-          + "common.proto\032\034google/api/annotations.pro"
-          + "to\"\377\003\n\006Backup\0226\n\010database\030\002 \001(\tB$\372A!\n\037sp"
-          + "anner.googleapis.com/Database\0220\n\014version"
-          + "_time\030\t \001(\0132\032.google.protobuf.Timestamp\022"
-          + "/\n\013expire_time\030\003 \001(\0132\032.google.protobuf.T"
-          + "imestamp\022\014\n\004name\030\001 \001(\t\0224\n\013create_time\030\004 "
-          + "\001(\0132\032.google.protobuf.TimestampB\003\340A\003\022\027\n\n"
-          + "size_bytes\030\005 \001(\003B\003\340A\003\022B\n\005state\030\006 \001(\0162..g"
-          + "oogle.spanner.admin.database.v1.Backup.S"
-          + "tateB\003\340A\003\022\"\n\025referencing_databases\030\007 \003(\t"
-          + "B\003\340A\003\"7\n\005State\022\025\n\021STATE_UNSPECIFIED\020\000\022\014\n"
-          + "\010CREATING\020\001\022\t\n\005READY\020\002:\\\352AY\n\035spanner.goo"
-          + "gleapis.com/Backup\0228projects/{project}/i"
-          + "nstances/{instance}/backups/{backup}\"\245\001\n"
-          + "\023CreateBackupRequest\0227\n\006parent\030\001 \001(\tB\'\340A"
-          + "\002\372A!\n\037spanner.googleapis.com/Instance\022\026\n"
-          + "\tbackup_id\030\002 \001(\tB\003\340A\002\022=\n\006backup\030\003 \001(\0132(."
+          + "common.proto\"\363\004\n\006Backup\0226\n\010database\030\002 \001("
+          + "\tB$\372A!\n\037spanner.googleapis.com/Database\022"
+          + "0\n\014version_time\030\t \001(\0132\032.google.protobuf."
+          + "Timestamp\022/\n\013expire_time\030\003 \001(\0132\032.google."
+          + "protobuf.Timestamp\022\014\n\004name\030\001 \001(\t\0224\n\013crea"
+          + "te_time\030\004 \001(\0132\032.google.protobuf.Timestam"
+          + "pB\003\340A\003\022\027\n\nsize_bytes\030\005 \001(\003B\003\340A\003\022B\n\005state"
+          + "\030\006 \001(\0162..google.spanner.admin.database.v"
+          + "1.Backup.StateB\003\340A\003\022F\n\025referencing_datab"
+          + "ases\030\007 \003(\tB\'\340A\003\372A!\n\037spanner.googleapis.c"
+          + "om/Database\022N\n\017encryption_info\030\010 \001(\01320.g"
+          + "oogle.spanner.admin.database.v1.Encrypti"
+          + "onInfoB\003\340A\003\"7\n\005State\022\025\n\021STATE_UNSPECIFIE"
+          + "D\020\000\022\014\n\010CREATING\020\001\022\t\n\005READY\020\002:\\\352AY\n\035spann"
+          + "er.googleapis.com/Backup\0228projects/{proj"
+          + "ect}/instances/{instance}/backups/{backu"
+          + "p}\"\205\002\n\023CreateBackupRequest\0227\n\006parent\030\001 \001"
+          + "(\tB\'\340A\002\372A!\n\037spanner.googleapis.com/Insta"
+          + "nce\022\026\n\tbackup_id\030\002 \001(\tB\003\340A\002\022=\n\006backup\030\003 "
+          + "\001(\0132(.google.spanner.admin.database.v1.B"
+          + "ackupB\003\340A\002\022^\n\021encryption_config\030\004 \001(\0132>."
+          + "google.spanner.admin.database.v1.CreateB"
+          + "ackupEncryptionConfigB\003\340A\001\"\370\001\n\024CreateBac"
+          + "kupMetadata\0220\n\004name\030\001 \001(\tB\"\372A\037\n\035spanner."
+          + "googleapis.com/Backup\0226\n\010database\030\002 \001(\tB"
+          + "$\372A!\n\037spanner.googleapis.com/Database\022E\n"
+          + "\010progress\030\003 \001(\01323.google.spanner.admin.d"
+          + "atabase.v1.OperationProgress\022/\n\013cancel_t"
+          + "ime\030\004 \001(\0132\032.google.protobuf.Timestamp\"\212\001"
+          + "\n\023UpdateBackupRequest\022=\n\006backup\030\001 \001(\0132(."
           + "google.spanner.admin.database.v1.BackupB"
-          + "\003\340A\002\"\370\001\n\024CreateBackupMetadata\0220\n\004name\030\001 "
-          + "\001(\tB\"\372A\037\n\035spanner.googleapis.com/Backup\022"
-          + "6\n\010database\030\002 \001(\tB$\372A!\n\037spanner.googleap"
-          + "is.com/Database\022E\n\010progress\030\003 \001(\01323.goog"
-          + "le.spanner.admin.database.v1.OperationPr"
-          + "ogress\022/\n\013cancel_time\030\004 \001(\0132\032.google.pro"
-          + "tobuf.Timestamp\"\212\001\n\023UpdateBackupRequest\022"
-          + "=\n\006backup\030\001 \001(\0132(.google.spanner.admin.d"
-          + "atabase.v1.BackupB\003\340A\002\0224\n\013update_mask\030\002 "
-          + "\001(\0132\032.google.protobuf.FieldMaskB\003\340A\002\"G\n\020"
-          + "GetBackupRequest\0223\n\004name\030\001 \001(\tB%\340A\002\372A\037\n\035"
-          + "spanner.googleapis.com/Backup\"J\n\023DeleteB"
-          + "ackupRequest\0223\n\004name\030\001 \001(\tB%\340A\002\372A\037\n\035span"
-          + "ner.googleapis.com/Backup\"\204\001\n\022ListBackup"
-          + "sRequest\0227\n\006parent\030\001 \001(\tB\'\340A\002\372A!\n\037spanne"
-          + "r.googleapis.com/Instance\022\016\n\006filter\030\002 \001("
-          + "\t\022\021\n\tpage_size\030\003 \001(\005\022\022\n\npage_token\030\004 \001(\t"
-          + "\"i\n\023ListBackupsResponse\0229\n\007backups\030\001 \003(\013"
-          + "2(.google.spanner.admin.database.v1.Back"
-          + "up\022\027\n\017next_page_token\030\002 \001(\t\"\215\001\n\033ListBack"
-          + "upOperationsRequest\0227\n\006parent\030\001 \001(\tB\'\340A\002"
-          + "\372A!\n\037spanner.googleapis.com/Instance\022\016\n\006"
-          + "filter\030\002 \001(\t\022\021\n\tpage_size\030\003 \001(\005\022\022\n\npage_"
-          + "token\030\004 \001(\t\"j\n\034ListBackupOperationsRespo"
-          + "nse\0221\n\noperations\030\001 \003(\0132\035.google.longrun"
-          + "ning.Operation\022\027\n\017next_page_token\030\002 \001(\t\""
-          + "\342\001\n\nBackupInfo\0222\n\006backup\030\001 \001(\tB\"\372A\037\n\035spa"
-          + "nner.googleapis.com/Backup\0220\n\014version_ti"
-          + "me\030\004 \001(\0132\032.google.protobuf.Timestamp\022/\n\013"
-          + "create_time\030\002 \001(\0132\032.google.protobuf.Time"
-          + "stamp\022=\n\017source_database\030\003 \001(\tB$\372A!\n\037spa"
-          + "nner.googleapis.com/DatabaseB\377\001\n$com.goo"
-          + "gle.spanner.admin.database.v1B\013BackupPro"
-          + "toP\001ZHgoogle.golang.org/genproto/googlea"
-          + "pis/spanner/admin/database/v1;database\252\002"
-          + "&Google.Cloud.Spanner.Admin.Database.V1\312"
-          + "\002&Google\\Cloud\\Spanner\\Admin\\Database\\V1"
-          + "\352\002+Google::Cloud::Spanner::Admin::Databa"
-          + "se::V1b\006proto3"
+          + "\003\340A\002\0224\n\013update_mask\030\002 \001(\0132\032.google.proto"
+          + "buf.FieldMaskB\003\340A\002\"G\n\020GetBackupRequest\0223"
+          + "\n\004name\030\001 \001(\tB%\340A\002\372A\037\n\035spanner.googleapis"
+          + ".com/Backup\"J\n\023DeleteBackupRequest\0223\n\004na"
+          + "me\030\001 \001(\tB%\340A\002\372A\037\n\035spanner.googleapis.com"
+          + "/Backup\"\204\001\n\022ListBackupsRequest\0227\n\006parent"
+          + "\030\001 \001(\tB\'\340A\002\372A!\n\037spanner.googleapis.com/I"
+          + "nstance\022\016\n\006filter\030\002 \001(\t\022\021\n\tpage_size\030\003 \001"
+          + "(\005\022\022\n\npage_token\030\004 \001(\t\"i\n\023ListBackupsRes"
+          + "ponse\0229\n\007backups\030\001 \003(\0132(.google.spanner."
+          + "admin.database.v1.Backup\022\027\n\017next_page_to"
+          + "ken\030\002 \001(\t\"\215\001\n\033ListBackupOperationsReques"
+          + "t\0227\n\006parent\030\001 \001(\tB\'\340A\002\372A!\n\037spanner.googl"
+          + "eapis.com/Instance\022\016\n\006filter\030\002 \001(\t\022\021\n\tpa"
+          + "ge_size\030\003 \001(\005\022\022\n\npage_token\030\004 \001(\t\"j\n\034Lis"
+          + "tBackupOperationsResponse\0221\n\noperations\030"
+          + "\001 \003(\0132\035.google.longrunning.Operation\022\027\n\017"
+          + "next_page_token\030\002 \001(\t\"\342\001\n\nBackupInfo\0222\n\006"
+          + "backup\030\001 \001(\tB\"\372A\037\n\035spanner.googleapis.co"
+          + "m/Backup\0220\n\014version_time\030\004 \001(\0132\032.google."
+          + "protobuf.Timestamp\022/\n\013create_time\030\002 \001(\0132"
+          + "\032.google.protobuf.Timestamp\022=\n\017source_da"
+          + "tabase\030\003 \001(\tB$\372A!\n\037spanner.googleapis.co"
+          + "m/Database\"\335\002\n\034CreateBackupEncryptionCon"
+          + "fig\022k\n\017encryption_type\030\001 \001(\0162M.google.sp"
+          + "anner.admin.database.v1.CreateBackupEncr"
+          + "yptionConfig.EncryptionTypeB\003\340A\002\022?\n\014kms_"
+          + "key_name\030\002 \001(\tB)\340A\001\372A#\n!cloudkms.googlea"
+          + "pis.com/CryptoKey\"\216\001\n\016EncryptionType\022\037\n\033"
+          + "ENCRYPTION_TYPE_UNSPECIFIED\020\000\022\033\n\027USE_DAT"
+          + "ABASE_ENCRYPTION\020\001\022\035\n\031GOOGLE_DEFAULT_ENC"
+          + "RYPTION\020\002\022\037\n\033CUSTOMER_MANAGED_ENCRYPTION"
+          + "\020\003B\377\001\n$com.google.spanner.admin.database"
+          + ".v1B\013BackupProtoP\001ZHgoogle.golang.org/ge"
+          + "nproto/googleapis/spanner/admin/database"
+          + "/v1;database\252\002&Google.Cloud.Spanner.Admi"
+          + "n.Database.V1\312\002&Google\\Cloud\\Spanner\\Adm"
+          + "in\\Database\\V1\352\002+Google::Cloud::Spanner:"
+          + ":Admin::Database::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -155,7 +172,6 @@ public final class BackupProto {
               com.google.protobuf.FieldMaskProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
               com.google.spanner.admin.database.v1.CommonProto.getDescriptor(),
-              com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_admin_database_v1_Backup_descriptor =
         getDescriptor().getMessageTypes().get(0);
@@ -171,6 +187,7 @@ public final class BackupProto {
               "SizeBytes",
               "State",
               "ReferencingDatabases",
+              "EncryptionInfo",
             });
     internal_static_google_spanner_admin_database_v1_CreateBackupRequest_descriptor =
         getDescriptor().getMessageTypes().get(1);
@@ -178,7 +195,7 @@ public final class BackupProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_CreateBackupRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "BackupId", "Backup",
+              "Parent", "BackupId", "Backup", "EncryptionConfig",
             });
     internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_descriptor =
         getDescriptor().getMessageTypes().get(2);
@@ -252,6 +269,14 @@ public final class BackupProto {
             new java.lang.String[] {
               "Backup", "VersionTime", "CreateTime", "SourceDatabase",
             });
+    internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor =
+        getDescriptor().getMessageTypes().get(11);
+    internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor,
+            new java.lang.String[] {
+              "EncryptionType", "KmsKeyName",
+            });
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
     registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
@@ -265,7 +290,6 @@ public final class BackupProto {
     com.google.protobuf.FieldMaskProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
     com.google.spanner.admin.database.v1.CommonProto.getDescriptor();
-    com.google.api.AnnotationsProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
