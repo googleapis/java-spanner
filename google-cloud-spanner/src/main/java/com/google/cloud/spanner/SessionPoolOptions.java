@@ -31,7 +31,12 @@ public class SessionPoolOptions {
   private final int minSessions;
   private final int maxSessions;
   private final int incStep;
-  private final int maxIdleSessions;
+  /**
+   * Use {@link #minSessions} instead to set the minimum number of sessions in the pool to maintain.
+   * Creating a larger number of sessions during startup is relatively cheap as it is executed with
+   * the BatchCreateSessions RPC.
+   */
+  @Deprecated private final int maxIdleSessions;
   /**
    * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
    * This setting therefore does not have any meaning anymore, and may be removed in the future.
@@ -118,6 +123,11 @@ public class SessionPoolOptions {
     return incStep;
   }
 
+  /**
+   * @deprecated Use a higher value for {@link SessionPoolOptions.Builder#setMinSessions(int)}
+   *     instead of setting this option.
+   */
+  @Deprecated
   public int getMaxIdleSessions() {
     return maxIdleSessions;
   }
@@ -193,7 +203,10 @@ public class SessionPoolOptions {
     private int minSessions = DEFAULT_MIN_SESSIONS;
     private int maxSessions = DEFAULT_MAX_SESSIONS;
     private int incStep = DEFAULT_INC_STEP;
-    private int maxIdleSessions;
+
+    /** Set a higher value for {@link #minSessions} instead of using {@link #maxIdleSessions}. */
+    @Deprecated private int maxIdleSessions;
+
     /**
      * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
      * This setting therefore does not have any meaning anymore, and may be removed in the future.
@@ -265,7 +278,11 @@ public class SessionPoolOptions {
      * #setMinSessions}. To determine how many sessions are idle we look at maximum number of
      * sessions used concurrently over a window of time. Any sessions beyond that are idle. Defaults
      * to 0.
+     *
+     * @deprecated set a higher value for {@link #setMinSessions(int)} instead of using this
+     *     configuration option. This option will be removed in a future release.
      */
+    @Deprecated
     public Builder setMaxIdleSessions(int maxIdleSessions) {
       this.maxIdleSessions = maxIdleSessions;
       return this;
