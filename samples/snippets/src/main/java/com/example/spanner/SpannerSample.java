@@ -1892,8 +1892,7 @@ public class SpannerSample {
       InstanceAdminClient instanceAdminClient,
       String command,
       DatabaseId database,
-      BackupId backup,
-      Timestamp versionTime) {
+      BackupId backup) {
     switch (command) {
       case "createdatabase":
         createDatabase(dbAdminClient, database);
@@ -2055,7 +2054,7 @@ public class SpannerSample {
         queryWithQueryOptions(dbClient);
         break;
       case "createbackup":
-        createBackup(dbAdminClient, database, backup, versionTime);
+        createBackup(dbAdminClient, database, backup, getVersionTime(dbClient));
         break;
       case "cancelcreatebackup":
         cancelCreateBackup(
@@ -2088,6 +2087,17 @@ public class SpannerSample {
       default:
         printUsageAndExit();
     }
+  }
+
+  static Timestamp getVersionTime(DatabaseClient dbClient) {
+    // Generates a version time for the backup
+    Timestamp versionTime;
+    try (ResultSet resultSet = dbClient.singleUse()
+        .executeQuery(Statement.of("SELECT CURRENT_TIMESTAMP()"))) {
+      resultSet.next();
+      versionTime = resultSet.getTimestamp(0);
+    }
+    return versionTime;
   }
 
   static void printUsageAndExit() {
@@ -2189,15 +2199,7 @@ public class SpannerSample {
       // Use client here...
       // [END init_client]
 
-      // Generates a version time for the backup
-      Timestamp versionTime;
-      try (ResultSet resultSet = dbClient.singleUse()
-          .executeQuery(Statement.of("SELECT CURRENT_TIMESTAMP()"))) {
-        resultSet.next();
-        versionTime = resultSet.getTimestamp(0);
-      }
-
-      run(dbClient, dbAdminClient, instanceAdminClient, command, db, backup, versionTime);
+      run(dbClient, dbAdminClient, instanceAdminClient, command, db, backup);
       // [START init_client]
     } finally {
       spanner.close();
