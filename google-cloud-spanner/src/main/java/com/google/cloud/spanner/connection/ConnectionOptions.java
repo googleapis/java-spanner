@@ -161,6 +161,7 @@ public class ConnectionOptions {
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
   /** Name of the 'autocommit' connection property. */
@@ -503,20 +504,7 @@ public class ConnectionOptions {
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-
-    if (matcher.group(Builder.HOST_GROUP) == null) {
-      if (this.autoConfigEmulator) {
-        this.host = "http://localhost:9010";
-      } else {
-        this.host = DEFAULT_HOST;
-      }
-    } else {
-      if (this.usePlainText) {
-        this.host = PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      } else {
-        this.host = HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      }
-    }
+    this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -569,6 +557,23 @@ public class ConnectionOptions {
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else {
       this.sessionPoolOptions = builder.sessionPoolOptions;
+    }
+  }
+
+  private static String determineHost(
+      Matcher matcher, boolean autoConfigEmulator, boolean usePlainText) {
+    if (matcher.group(Builder.HOST_GROUP) == null) {
+      if (autoConfigEmulator) {
+        return DEFAULT_EMULATOR_HOST;
+      } else {
+        return DEFAULT_HOST;
+      }
+    } else {
+      if (usePlainText) {
+        return PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      } else {
+        return HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      }
     }
   }
 
