@@ -184,8 +184,7 @@ public class Backup extends BackupInfo {
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
         .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
-        .setEncryptionInfo(
-            EncryptionInfo.fromProtoOrNullIfDefaultInstance(proto.getEncryptionInfo()))
+        .setEncryptionInfo(proto.getEncryptionInfo())
         .setProto(proto)
         .build();
   }

@@ -399,7 +399,7 @@ public class DatabaseAdminClientImplTest {
             .setVersionTime(versionTime)
             .build();
 
-    when(rpc.createBackup(INSTANCE_NAME, BK_ID, expectedCallBackup)).thenReturn(rawOperationFuture);
+    when(rpc.createBackup(requestBackup)).thenReturn(rawOperationFuture);
 
     final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
         client.createBackup(requestBackup);
