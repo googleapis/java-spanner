@@ -508,6 +508,21 @@
   <!-- Support creating encrypted databases -->
   <difference>
     <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createBackup(java.lang.String, java.lang.String, com.google.spanner.admin.database.v1.Backup)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture restoreDatabase(java.lang.String, java.lang.String, java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
     <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, java.lang.Iterable)</method>
   </difference>
