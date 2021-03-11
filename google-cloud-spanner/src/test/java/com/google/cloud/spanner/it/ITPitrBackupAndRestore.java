@@ -24,6 +24,7 @@ import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
+import com.google.api.gax.rpc.FailedPreconditionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -34,6 +35,7 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -125,7 +127,7 @@ public class ITPitrBackupAndRestore {
     assertThat(createdBackup.getVersionTime()).isEqualTo(versionTime);
 
     final RestoreDatabaseMetadata restoreDatabaseMetadata =
-        restoreDatabase(instanceId, backupId, restoreDatabaseId);
+        restoreDatabaseWithRetryOnPendingRestores(instanceId, backupId, restoreDatabaseId);
     assertThat(Timestamp.fromProto(restoreDatabaseMetadata.getBackupInfo().getVersionTime()))
         .isEqualTo(versionTime);
 
@@ -187,14 +189,41 @@ public class ITPitrBackupAndRestore {
     return createdBackup;
   }
 
-  private RestoreDatabaseMetadata restoreDatabase(
+  private RestoreDatabaseMetadata restoreDatabaseWithRetryOnPendingRestores(
       String instanceId, String backupId, String databaseId)
       throws InterruptedException, ExecutionException, TimeoutException {
-    final OperationFuture<Database, RestoreDatabaseMetadata> op =
-        dbAdminClient.restoreDatabase(instanceId, backupId, instanceId, databaseId);
-    final Database database = getOrThrow(op);
-    databasesToDrop.add(database);
-    return op.getMetadata().get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+    OperationFuture<Database, RestoreDatabaseMetadata> restoreOperation;
+    int attempts = 0;
+    while (true) {
+      try {
+        logger.info(String.format("Restoring backup %s to database %s", backupId, databaseId));
+        restoreOperation =
+            dbAdminClient.restoreDatabase(instanceId, backupId, instanceId, databaseId);
+        final Database database = getOrThrow(restoreOperation);
+        databasesToDrop.add(database);
+        return restoreOperation.getMetadata().get(OP_TIMEOUT, OP_TIMEOUT_UNIT);
+      } catch (ExecutionException e) {
+        if (e.getCause() instanceof FailedPreconditionException
+            && e.getCause()
+                .getMessage()
+                .contains("Please retry the operation once the pending restores complete")) {
+          attempts++;
+          if (attempts == 10) {
+            logger.info(
+                "Restore operation failed 10 times because of other pending restores. Skipping restore test.");
+            throw SpannerExceptionFactory.asSpannerException(e.getCause());
+          }
+          // wait and then retry.
+          logger.info(
+              String.format(
+                  "Restoring backup %s to database %s must wait because of other pending restore operation",
+                  backupId, databaseId));
+          Thread.sleep(60_000L);
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 
   private Database listDatabase(String instanceId, String databaseId) {
