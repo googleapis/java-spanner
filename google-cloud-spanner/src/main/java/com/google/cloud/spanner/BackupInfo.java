@@ -267,16 +267,21 @@ public class BackupInfo {
 
   @Override
   public int hashCode() {
-    return Objects
-        .hash(id, state, size, encryptionConfigInfo, encryptionInfo, expireTime, versionTime,
-            database);
+    return Objects.hash(
+        id, state, size, encryptionConfigInfo, encryptionInfo, expireTime, versionTime, database);
   }
 
   @Override
   public String toString() {
     return String.format(
         "Backup[%s, %s, %d, %s, %s, %s, %s, %s]",
-        id.getName(), state, size, encryptionConfigInfo, encryptionInfo, expireTime, versionTime,
+        id.getName(),
+        state,
+        size,
+        encryptionConfigInfo,
+        encryptionInfo,
+        expireTime,
+        versionTime,
         database);
   }
 }
