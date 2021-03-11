@@ -258,7 +258,7 @@ Cloud Spanner uses gRPC for the transport layer.
 
 ## Java Versions
 
-Java 7 or above is required for using this client.
+Java 8 or above is required for using this client.
 
 ## Versioning
 
@@ -285,7 +285,6 @@ Apache 2.0 - See [LICENSE][license] for more information.
 
 Java Version | Status
 ------------ | ------
-Java 7 | [![Kokoro CI][kokoro-badge-image-1]][kokoro-badge-link-1]
 Java 8 | [![Kokoro CI][kokoro-badge-image-2]][kokoro-badge-link-2]
 Java 8 OSX | [![Kokoro CI][kokoro-badge-image-3]][kokoro-badge-link-3]
 Java 8 Windows | [![Kokoro CI][kokoro-badge-image-4]][kokoro-badge-link-4]
@@ -295,8 +294,6 @@ Java is a registered trademark of Oracle and/or its affiliates.
 
 [product-docs]: https://cloud.google.com/spanner/docs/
 [javadocs]: https://googleapis.dev/java/google-cloud-spanner/latest/
-[kokoro-badge-image-1]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java7.svg
-[kokoro-badge-link-1]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java7.html
 [kokoro-badge-image-2]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java8.svg
 [kokoro-badge-link-2]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java8.html
 [kokoro-badge-image-3]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java8-osx.svg
