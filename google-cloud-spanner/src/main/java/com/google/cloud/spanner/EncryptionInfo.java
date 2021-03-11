@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.rpc.Status;
 import java.util.Objects;
 
@@ -27,9 +28,17 @@ public class EncryptionInfo {
   private final Status encryptionStatus;
 
   public EncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo proto) {
-    this.kmsKeyVersion = proto.getKmsKeyVersion();
-    this.encryptionType = proto.getEncryptionType();
-    this.encryptionStatus = proto.getEncryptionStatus();
+    this(proto.getKmsKeyVersion(), proto.getEncryptionType(), proto.getEncryptionStatus());
+  }
+
+  @VisibleForTesting
+  EncryptionInfo(
+      String kmsKeyVersion,
+      com.google.spanner.admin.database.v1.EncryptionInfo.Type encryptionType,
+      Status encryptionStatus) {
+    this.kmsKeyVersion = kmsKeyVersion;
+    this.encryptionType = encryptionType;
+    this.encryptionStatus = encryptionStatus;
   }
 
   /**

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 
 public class Restore {
@@ -46,9 +47,14 @@ public class Restore {
   private final EncryptionConfigInfo encryptionConfigInfo;
 
   Restore(Builder builder) {
-    this.source = builder.source;
-    this.destination = builder.destination;
-    this.encryptionConfigInfo = builder.encryptionConfigInfo;
+    this(builder.source, builder.destination, builder.encryptionConfigInfo);
+  }
+
+  @VisibleForTesting
+  Restore(BackupId source, DatabaseId destination, EncryptionConfigInfo encryptionConfigInfo) {
+    this.source = source;
+    this.destination = destination;
+    this.encryptionConfigInfo = encryptionConfigInfo;
   }
 
   public BackupId getSource() {
