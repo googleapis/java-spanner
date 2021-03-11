@@ -73,40 +73,37 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void test03_MultipleStatements_WithTimeouts() {
-    for (int run = 0; run < 1000; run++) {
-      try (ITConnection connection = createConnection()) {
-        // do an insert that should succeed
-        assertThat(
-            connection.executeUpdate(
-                Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1000, 'test')")),
-            is(equalTo(1L)));
-        // check that the insert succeeded
-        try (ResultSet rs =
-            connection.executeQuery(Statement.of("SELECT * FROM TEST WHERE ID=1000"))) {
-          assertThat(rs.next(), is(true));
-          assertThat(rs.getString("NAME"), is(equalTo("test")));
-          assertThat(rs.next(), is(false));
-        }
+    try (ITConnection connection = createConnection()) {
+      // do an insert that should succeed
+      assertThat(
+          connection.executeUpdate(
+              Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1000, 'test')")),
+          is(equalTo(1L)));
+      // check that the insert succeeded
+      try (ResultSet rs =
+          connection.executeQuery(Statement.of("SELECT * FROM TEST WHERE ID=1000"))) {
+        assertThat(rs.next(), is(true));
+        assertThat(rs.getString("NAME"), is(equalTo("test")));
+        assertThat(rs.next(), is(false));
+      }
 
-        // do an update that should always time out (both on real Spanner as well as on the
-        // emulator)
-        connection.setStatementTimeout(1L, TimeUnit.NANOSECONDS);
-        try {
-          connection.executeUpdate(Statement.of("UPDATE TEST SET NAME='test18' WHERE ID=1000"));
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertThat(e.getErrorCode(), is(equalTo(ErrorCode.DEADLINE_EXCEEDED)));
-        }
-        // remove the timeout setting
-        connection.clearStatementTimeout();
+      // do an update that should always time out (both on real Spanner as well as on the emulator)
+      connection.setStatementTimeout(1L, TimeUnit.NANOSECONDS);
+      try {
+        connection.executeUpdate(Statement.of("UPDATE TEST SET NAME='test18' WHERE ID=1000"));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.DEADLINE_EXCEEDED)));
+      }
+      // remove the timeout setting
+      connection.clearStatementTimeout();
 
-        // do a delete that should succeed
-        connection.executeUpdate(Statement.of("DELETE FROM TEST WHERE ID=1000"));
-        // verify that the delete did succeed
-        try (ResultSet rs =
-            connection.executeQuery(Statement.of("SELECT * FROM TEST WHERE ID=1000"))) {
-          assertThat(rs.next(), is(false));
-        }
+      // do a delete that should succeed
+      connection.executeUpdate(Statement.of("DELETE FROM TEST WHERE ID=1000"));
+      // verify that the delete did succeed
+      try (ResultSet rs =
+          connection.executeQuery(Statement.of("SELECT * FROM TEST WHERE ID=1000"))) {
+        assertThat(rs.next(), is(false));
       }
     }
   }
