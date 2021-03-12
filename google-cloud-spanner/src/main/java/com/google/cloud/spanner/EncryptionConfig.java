@@ -16,22 +16,21 @@
 
 package com.google.cloud.spanner;
 
-import com.google.spanner.admin.database.v1.EncryptionConfig;
 import java.util.Objects;
 
-/** Represents the encryption information of a Cloud Spanner database. */
-public class EncryptionConfigInfo {
+/** Represents the encryption configuration for of a Cloud Spanner resource. */
+public class EncryptionConfig {
   private final String kmsKeyName;
 
-  public static EncryptionConfigInfo ofKey(String kmsKeyName) {
-    return new EncryptionConfigInfo(kmsKeyName);
+  public static EncryptionConfig ofKey(String kmsKeyName) {
+    return new EncryptionConfig(kmsKeyName);
   }
 
-  private EncryptionConfigInfo(String kmsKeyName) {
+  private EncryptionConfig(String kmsKeyName) {
     this.kmsKeyName = kmsKeyName;
   }
 
-  private EncryptionConfigInfo(EncryptionConfig proto) {
+  private EncryptionConfig(com.google.spanner.admin.database.v1.EncryptionConfig proto) {
     this.kmsKeyName = proto.getKmsKeyName();
   }
 
@@ -40,18 +39,20 @@ public class EncryptionConfigInfo {
   }
 
   /**
-   * Returns a {@link EncryptionConfigInfo} instance from the given proto, or <code>null</code> if
-   * the given proto is the default proto instance (i.e. there is no encryption config info).
+   * Returns a {@link EncryptionConfig} instance from the given proto, or <code>null</code> if the
+   * given proto is the default proto instance (i.e. there is no encryption config info).
    */
-  static EncryptionConfigInfo fromProtoOrNullIfDefaultInstance(
+  static EncryptionConfig fromProtoOrNullIfDefaultInstance(
       com.google.spanner.admin.database.v1.EncryptionConfig proto) {
     return proto.equals(com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance())
         ? null
-        : new EncryptionConfigInfo(proto);
+        : new EncryptionConfig(proto);
   }
 
-  public EncryptionConfig toProto() {
-    return EncryptionConfig.newBuilder().setKmsKeyName(kmsKeyName).build();
+  public com.google.spanner.admin.database.v1.EncryptionConfig toProto() {
+    return com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+        .setKmsKeyName(kmsKeyName)
+        .build();
   }
 
   public int hashCode() {
@@ -62,14 +63,14 @@ public class EncryptionConfigInfo {
     if (o == this) {
       return true;
     }
-    if (!(o instanceof EncryptionConfigInfo)) {
+    if (!(o instanceof EncryptionConfig)) {
       return false;
     }
-    EncryptionConfigInfo other = (EncryptionConfigInfo) o;
+    EncryptionConfig other = (EncryptionConfig) o;
     return Objects.equals(kmsKeyName, other.kmsKeyName);
   }
 
   public String toString() {
-    return String.format("EncryptionConfigInfo[kmsKeyName=%s]", kmsKeyName);
+    return String.format("EncryptionConfig[kmsKeyName=%s]", kmsKeyName);
   }
 }

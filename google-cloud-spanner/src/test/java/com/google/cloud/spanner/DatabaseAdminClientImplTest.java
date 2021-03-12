@@ -44,7 +44,6 @@ import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -99,7 +98,10 @@ public class DatabaseAdminClientImplTest {
   private Database getEncryptedDatabaseProto() {
     return getDatabaseProto()
         .toBuilder()
-        .setEncryptionConfig(EncryptionConfig.newBuilder().setKmsKeyName(KMS_KEY_NAME).build())
+        .setEncryptionConfig(
+            com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+                .setKmsKeyName(KMS_KEY_NAME)
+                .build())
         .build();
   }
 
@@ -172,7 +174,7 @@ public class DatabaseAdminClientImplTest {
     com.google.cloud.spanner.Database database =
         client
             .newDatabaseBuilder(DatabaseId.of(DB_NAME))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
+            .setEncryptionConfig(EncryptionConfig.ofKey(KMS_KEY_NAME))
             .build();
 
     OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =
@@ -421,7 +423,7 @@ public class DatabaseAdminClientImplTest {
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .setExpireTime(t)
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME))
+            .setEncryptionConfig(EncryptionConfig.ofKey(KMS_KEY_NAME))
             .build();
     when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
     final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
@@ -512,6 +514,6 @@ public class DatabaseAdminClientImplTest {
         client.restoreDatabase(restore);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
-    assertThat(op.get().getEncryptionConfigInfo().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
+    assertThat(op.get().getEncryptionConfig().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
   }
 }

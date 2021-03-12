@@ -27,14 +27,14 @@ public class RestoreTest {
   private static final DatabaseId DATABASE_ID =
       DatabaseId.of("test-project", "test-instance", "test-database");
   private static final String KMS_KEY_NAME = "kms-key-name";
-  private static final EncryptionConfigInfo ENCRYPTION_CONFIG_INFO =
-      EncryptionConfigInfo.ofKey(KMS_KEY_NAME);
+  private static final EncryptionConfig ENCRYPTION_CONFIG_INFO =
+      EncryptionConfig.ofKey(KMS_KEY_NAME);
 
   @Test
   public void testRestore() {
     final Restore actualRestore =
         new Restore.Builder(BACKUP_ID, DATABASE_ID)
-            .setEncryptionConfigInfo(ENCRYPTION_CONFIG_INFO)
+            .setEncryptionConfig(ENCRYPTION_CONFIG_INFO)
             .build();
     final Restore expectedRestore = new Restore(BACKUP_ID, DATABASE_ID, ENCRYPTION_CONFIG_INFO);
 

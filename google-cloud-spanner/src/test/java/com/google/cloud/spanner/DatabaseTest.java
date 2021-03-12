@@ -29,7 +29,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,8 +52,10 @@ public class DatabaseTest {
   private static final String VERSION_RETENTION_PERIOD = "7d";
   private static final String KMS_KEY_NAME = "kms-key-name";
   private static final String KMS_KEY_VERSION = "kms-key-version";
-  private static final EncryptionConfig ENCRYPTION_CONFIG =
-      EncryptionConfig.newBuilder().setKmsKeyName(KMS_KEY_NAME).build();
+  private static final com.google.spanner.admin.database.v1.EncryptionConfig ENCRYPTION_CONFIG =
+      com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+          .setKmsKeyName(KMS_KEY_NAME)
+          .build();
   private static final List<EncryptionInfo> ENCRYPTION_INFOS =
       Collections.singletonList(
           EncryptionInfo.newBuilder()
@@ -114,7 +115,7 @@ public class DatabaseTest {
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
     assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
     assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
-    assertThat(db.getEncryptionConfigInfo()).isEqualTo(EncryptionConfigInfo.ofKey(KMS_KEY_NAME));
+    assertThat(db.getEncryptionConfig()).isEqualTo(EncryptionConfig.ofKey(KMS_KEY_NAME));
   }
 
   @Test
@@ -122,11 +123,14 @@ public class DatabaseTest {
     com.google.spanner.admin.database.v1.Database proto =
         com.google.spanner.admin.database.v1.Database.newBuilder()
             .setName(NAME)
-            .setEncryptionConfig(EncryptionConfig.newBuilder().setKmsKeyName("some-key").build())
+            .setEncryptionConfig(
+                com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+                    .setKmsKeyName("some-key")
+                    .build())
             .build();
     Database db = Database.fromProto(proto, dbClient);
-    assertThat(db.getEncryptionConfigInfo()).isNotNull();
-    assertThat(db.getEncryptionConfigInfo().getKmsKeyName()).isEqualTo("some-key");
+    assertThat(db.getEncryptionConfig()).isNotNull();
+    assertThat(db.getEncryptionConfig().getKmsKeyName()).isEqualTo("some-key");
   }
 
   @Test
@@ -134,12 +138,12 @@ public class DatabaseTest {
     Database db =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-            .setEncryptionConfigInfo(
-                EncryptionConfigInfo.ofKey(
+            .setEncryptionConfig(
+                EncryptionConfig.ofKey(
                     "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
             .build();
-    assertThat(db.getEncryptionConfigInfo()).isNotNull();
-    assertThat(db.getEncryptionConfigInfo().getKmsKeyName())
+    assertThat(db.getEncryptionConfig()).isNotNull();
+    assertThat(db.getEncryptionConfig().getKmsKeyName())
         .isEqualTo(
             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key");
   }

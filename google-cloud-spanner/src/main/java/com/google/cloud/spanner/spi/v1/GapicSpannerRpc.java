@@ -985,8 +985,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setParent(instanceName)
             .setCreateStatement(createDatabaseStatement)
             .addAllExtraStatements(additionalStatements);
-    if (databaseInfo.getEncryptionConfigInfo() != null) {
-      requestBuilder.setEncryptionConfig(databaseInfo.getEncryptionConfigInfo().toProto());
+    if (databaseInfo.getEncryptionConfig() != null) {
+      requestBuilder.setEncryptionConfig(databaseInfo.getEncryptionConfig().toProto());
     }
     final CreateDatabaseRequest request = requestBuilder.build();
 
@@ -1170,10 +1170,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setParent(instanceName)
             .setBackupId(backupId)
             .setBackup(backup);
-    if (backupInfo.getEncryptionConfigInfo() != null) {
+    if (backupInfo.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
           CreateBackupEncryptionConfig.newBuilder()
-              .setKmsKeyName(backupInfo.getEncryptionConfigInfo().getKmsKeyName()));
+              .setKmsKeyName(backupInfo.getEncryptionConfig().getKmsKeyName()));
     }
     final CreateBackupRequest request = requestBuilder.build();
     final OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
@@ -1228,10 +1228,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setParent(databaseInstanceName)
             .setDatabaseId(databaseId)
             .setBackup(restore.getSource().getName());
-    if (restore.getEncryptionConfigInfo() != null) {
+    if (restore.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
           RestoreDatabaseEncryptionConfig.newBuilder()
-              .setKmsKeyName(restore.getEncryptionConfigInfo().getKmsKeyName()));
+              .setKmsKeyName(restore.getEncryptionConfig().getKmsKeyName()));
     }
 
     final OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>

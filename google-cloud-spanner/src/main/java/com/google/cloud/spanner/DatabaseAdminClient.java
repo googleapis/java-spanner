@@ -79,8 +79,8 @@ public interface DatabaseAdminClient {
    * Database dbInfo =
    *     dbClient
    *         .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-   *         .setEncryptionConfigInfo(
-   *             EncryptionConfigInfo.ofKey(
+   *         .setEncryptionConfig(
+   *             EncryptionConfig.ofKey(
    *                 "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
    *         .build();
    * Operation<Database, CreateDatabaseMetadata> op = dbAdminClient
@@ -158,8 +158,8 @@ public interface DatabaseAdminClient {
    * DatabaseId databaseId = DatabaseId.of("project", "instance", "database-id");
    * Timestamp expireTime = Timestamp.ofTimeMicroseconds(expireTimeMicros);
    * Timestamp versionTime = Timestamp.ofTimeMicroseconds(versionTimeMicros);
-   * EncryptionConfigInfo encryptionConfigInfo =
-   *         EncryptionConfigInfo.ofKey(
+   * EncryptionConfig encryptionConfig =
+   *         EncryptionConfig.ofKey(
    *             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"));
    *
    * Backup backupToCreate = dbAdminClient
@@ -167,7 +167,7 @@ public interface DatabaseAdminClient {
    *     .setDatabase(databaseId)
    *     .setExpireTime(expireTime)
    *     .setVersionTime(versionTime)
-   *     .setEncryptionConfigInfo(encryptionConfigInfo)
+   *     .setEncryptionConfig(encryptionConfig)
    *     .build();
    *
    * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackup(backupToCreate);
@@ -220,7 +220,7 @@ public interface DatabaseAdminClient {
    *         BackupId.of("my-project", "my-instance", "my-backup"),
    *         DatabaseId.of("my-project", "my-instance", "my-database")
    *     )
-   *     .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(
+   *     .setEncryptionConfig(EncryptionConfig.ofKey(
    *         "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
    *     .build();
    *

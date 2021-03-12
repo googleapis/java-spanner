@@ -25,15 +25,15 @@ public class Restore {
 
     private final BackupId source;
     private final DatabaseId destination;
-    private EncryptionConfigInfo encryptionConfigInfo;
+    private EncryptionConfig encryptionConfig;
 
     public Builder(BackupId source, DatabaseId destination) {
       this.source = source;
       this.destination = destination;
     }
 
-    public Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo) {
-      this.encryptionConfigInfo = encryptionConfigInfo;
+    public Builder setEncryptionConfig(EncryptionConfig encryptionConfig) {
+      this.encryptionConfig = encryptionConfig;
       return this;
     }
 
@@ -44,17 +44,17 @@ public class Restore {
 
   private final BackupId source;
   private final DatabaseId destination;
-  private final EncryptionConfigInfo encryptionConfigInfo;
+  private final EncryptionConfig encryptionConfig;
 
   Restore(Builder builder) {
-    this(builder.source, builder.destination, builder.encryptionConfigInfo);
+    this(builder.source, builder.destination, builder.encryptionConfig);
   }
 
   @VisibleForTesting
-  Restore(BackupId source, DatabaseId destination, EncryptionConfigInfo encryptionConfigInfo) {
+  Restore(BackupId source, DatabaseId destination, EncryptionConfig encryptionConfig) {
     this.source = source;
     this.destination = destination;
-    this.encryptionConfigInfo = encryptionConfigInfo;
+    this.encryptionConfig = encryptionConfig;
   }
 
   public BackupId getSource() {
@@ -65,8 +65,8 @@ public class Restore {
     return destination;
   }
 
-  public EncryptionConfigInfo getEncryptionConfigInfo() {
-    return encryptionConfigInfo;
+  public EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig;
   }
 
   @Override
@@ -80,17 +80,17 @@ public class Restore {
     Restore restore = (Restore) o;
     return Objects.equals(source, restore.source)
         && Objects.equals(destination, restore.destination)
-        && Objects.equals(encryptionConfigInfo, restore.encryptionConfigInfo);
+        && Objects.equals(encryptionConfig, restore.encryptionConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(source, destination, encryptionConfigInfo);
+    return Objects.hash(source, destination, encryptionConfig);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Restore[%s, %s, %s]", source.getName(), destination.getName(), encryptionConfigInfo);
+        "Restore[%s, %s, %s]", source.getName(), destination.getName(), encryptionConfig);
   }
 }

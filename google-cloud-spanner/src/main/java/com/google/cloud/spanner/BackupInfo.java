@@ -44,7 +44,7 @@ public class BackupInfo {
      *
      * <p>Sets the customer-managed encryption key to be used for the given backup.
      */
-    public abstract Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo);
+    public abstract Builder setEncryptionConfig(EncryptionConfig encryptionConfig);
 
     /**
      * Required for creating a new backup.
@@ -85,7 +85,7 @@ public class BackupInfo {
     private Timestamp versionTime;
     private DatabaseId database;
     private long size;
-    private EncryptionConfigInfo encryptionConfigInfo;
+    private EncryptionConfig encryptionConfig;
     private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
 
@@ -100,7 +100,7 @@ public class BackupInfo {
       this.versionTime = other.versionTime;
       this.database = other.database;
       this.size = other.size;
-      this.encryptionConfigInfo = other.encryptionConfigInfo;
+      this.encryptionConfig = other.encryptionConfig;
       this.encryptionInfo = other.encryptionInfo;
       this.proto = other.proto;
     }
@@ -133,8 +133,8 @@ public class BackupInfo {
     }
 
     @Override
-    public Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo) {
-      this.encryptionConfigInfo = encryptionConfigInfo;
+    public Builder setEncryptionConfig(EncryptionConfig encryptionConfig) {
+      this.encryptionConfig = encryptionConfig;
       return this;
     }
 
@@ -173,7 +173,7 @@ public class BackupInfo {
   private final Timestamp versionTime;
   private final DatabaseId database;
   private final long size;
-  private final EncryptionConfigInfo encryptionConfigInfo;
+  private final EncryptionConfig encryptionConfig;
   private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
 
@@ -181,7 +181,7 @@ public class BackupInfo {
     this.id = builder.id;
     this.state = builder.state;
     this.size = builder.size;
-    this.encryptionConfigInfo = builder.encryptionConfigInfo;
+    this.encryptionConfig = builder.encryptionConfig;
     this.encryptionInfo = builder.encryptionInfo;
     this.expireTime = builder.expireTime;
     this.versionTime = builder.versionTime;
@@ -210,11 +210,11 @@ public class BackupInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfigInfo} to encrypt the backup during its creation. Returns
-   * <code>null</code> if no customer-managed encryption key should be used.
+   * Returns the {@link EncryptionConfig} to encrypt the backup during its creation. Returns <code>
+   * null</code> if no customer-managed encryption key should be used.
    */
-  public EncryptionConfigInfo getEncryptionConfigInfo() {
-    return encryptionConfigInfo;
+  public EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig;
   }
 
   /**
@@ -257,7 +257,7 @@ public class BackupInfo {
     return id.equals(that.id)
         && state == that.state
         && size == that.size
-        && Objects.equals(encryptionConfigInfo, that.encryptionConfigInfo)
+        && Objects.equals(encryptionConfig, that.encryptionConfig)
         && Objects.equals(encryptionInfo, that.encryptionInfo)
         && Objects.equals(expireTime, that.expireTime)
         && Objects.equals(versionTime, that.versionTime)
@@ -267,7 +267,7 @@ public class BackupInfo {
   @Override
   public int hashCode() {
     return Objects.hash(
-        id, state, size, encryptionConfigInfo, encryptionInfo, expireTime, versionTime, database);
+        id, state, size, encryptionConfig, encryptionInfo, expireTime, versionTime, database);
   }
 
   @Override
@@ -277,7 +277,7 @@ public class BackupInfo {
         id.getName(),
         state,
         size,
-        encryptionConfigInfo,
+        encryptionConfig,
         encryptionInfo,
         expireTime,
         versionTime,

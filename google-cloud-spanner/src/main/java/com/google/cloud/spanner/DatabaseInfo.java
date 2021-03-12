@@ -34,7 +34,7 @@ public class DatabaseInfo {
 
     abstract Builder setEarliestVersionTime(Timestamp earliestVersionTime);
 
-    public abstract Builder setEncryptionConfigInfo(EncryptionConfigInfo encryptionConfigInfo);
+    public abstract Builder setEncryptionConfig(EncryptionConfig encryptionConfig);
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
@@ -49,7 +49,7 @@ public class DatabaseInfo {
     private RestoreInfo restoreInfo;
     private String versionRetentionPeriod;
     private Timestamp earliestVersionTime;
-    private EncryptionConfigInfo encryptionConfigInfo;
+    private EncryptionConfig encryptionConfig;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -63,7 +63,7 @@ public class DatabaseInfo {
       this.restoreInfo = other.restoreInfo;
       this.versionRetentionPeriod = other.versionRetentionPeriod;
       this.earliestVersionTime = other.earliestVersionTime;
-      this.encryptionConfigInfo = other.encryptionConfigInfo;
+      this.encryptionConfig = other.encryptionConfig;
       this.proto = other.proto;
     }
 
@@ -98,8 +98,8 @@ public class DatabaseInfo {
     }
 
     @Override
-    public Builder setEncryptionConfigInfo(@Nullable EncryptionConfigInfo encryptionConfigInfo) {
-      this.encryptionConfigInfo = encryptionConfigInfo;
+    public Builder setEncryptionConfig(@Nullable EncryptionConfig encryptionConfig) {
+      this.encryptionConfig = encryptionConfig;
       return this;
     }
 
@@ -128,7 +128,7 @@ public class DatabaseInfo {
   private final RestoreInfo restoreInfo;
   private final String versionRetentionPeriod;
   private final Timestamp earliestVersionTime;
-  private final EncryptionConfigInfo encryptionConfigInfo;
+  private final EncryptionConfig encryptionConfig;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -138,7 +138,7 @@ public class DatabaseInfo {
     this.restoreInfo = null;
     this.versionRetentionPeriod = null;
     this.earliestVersionTime = null;
-    this.encryptionConfigInfo = null;
+    this.encryptionConfig = null;
     this.proto = null;
   }
 
@@ -149,7 +149,7 @@ public class DatabaseInfo {
     this.restoreInfo = builder.restoreInfo;
     this.versionRetentionPeriod = builder.versionRetentionPeriod;
     this.earliestVersionTime = builder.earliestVersionTime;
-    this.encryptionConfigInfo = builder.encryptionConfigInfo;
+    this.encryptionConfig = builder.encryptionConfig;
     this.proto = builder.proto;
   }
 
@@ -194,11 +194,11 @@ public class DatabaseInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfigInfo} of the database if the database is encrypted, or
-   * <code>null</code> if this database is not encrypted.
+   * Returns the {@link EncryptionConfig} of the database if the database is encrypted, or <code>
+   * null</code> if this database is not encrypted.
    */
-  public @Nullable EncryptionConfigInfo getEncryptionConfigInfo() {
-    return encryptionConfigInfo;
+  public @Nullable EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig;
   }
 
   /** Returns the raw proto instance that was used to construct this {@link Database}. */
@@ -221,7 +221,7 @@ public class DatabaseInfo {
         && Objects.equals(restoreInfo, that.restoreInfo)
         && Objects.equals(versionRetentionPeriod, that.versionRetentionPeriod)
         && Objects.equals(earliestVersionTime, that.earliestVersionTime)
-        && Objects.equals(encryptionConfigInfo, that.encryptionConfigInfo);
+        && Objects.equals(encryptionConfig, that.encryptionConfig);
   }
 
   @Override
@@ -233,7 +233,7 @@ public class DatabaseInfo {
         restoreInfo,
         versionRetentionPeriod,
         earliestVersionTime,
-        encryptionConfigInfo);
+        encryptionConfig);
   }
 
   @Override
@@ -246,6 +246,6 @@ public class DatabaseInfo {
         restoreInfo,
         versionRetentionPeriod,
         earliestVersionTime,
-        encryptionConfigInfo);
+        encryptionConfig);
   }
 }

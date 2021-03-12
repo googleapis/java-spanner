@@ -32,7 +32,7 @@ import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.EncryptionConfigInfo;
+import com.google.cloud.spanner.EncryptionConfig;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -123,13 +123,13 @@ public class ITCmek {
     final Database sourceDatabase =
         dbAdminClient
             .newDatabaseBuilder(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
             .build();
     final Backup backup =
         dbAdminClient
             .newBackupBuilder(BackupId.of(testHelper.getInstanceId(), backupId))
             .setDatabase(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
             .setExpireTime(
                 com.google.cloud.Timestamp.ofTimeSecondsAndNanos(after7DaysInSeconds(), 0))
             .build();
@@ -138,18 +138,18 @@ public class ITCmek {
             .newRestoreBuilder(
                 BackupId.of(testHelper.getInstanceId(), backupId),
                 DatabaseId.of(testHelper.getInstanceId(), destinationDatabaseId))
-            .setEncryptionConfigInfo(EncryptionConfigInfo.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
             .build();
 
     final Database createdDatabase = createDatabase(sourceDatabase);
     final Backup createdBackup = createBackup(backup);
     final Database restoredDatabase = restoreDatabase(restore);
 
-    assertThat(createdDatabase.getEncryptionConfigInfo()).isNotNull();
-    assertThat(createdDatabase.getEncryptionConfigInfo().getKmsKeyName()).isEqualTo(key.getName());
+    assertThat(createdDatabase.getEncryptionConfig()).isNotNull();
+    assertThat(createdDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(key.getName());
     assertThat(createdBackup.getEncryptionInfo().getKmsKeyVersion()).isNotNull();
-    assertThat(restoredDatabase.getEncryptionConfigInfo()).isNotNull();
-    assertThat(restoredDatabase.getEncryptionConfigInfo().getKmsKeyName()).isEqualTo(key.getName());
+    assertThat(restoredDatabase.getEncryptionConfig()).isNotNull();
+    assertThat(restoredDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(key.getName());
   }
 
   private String randomKeyId() {
