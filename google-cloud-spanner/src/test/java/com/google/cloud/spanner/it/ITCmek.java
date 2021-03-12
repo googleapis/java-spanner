@@ -19,14 +19,6 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.api.gax.rpc.NotFoundException;
-import com.google.cloud.kms.v1.CryptoKey;
-import com.google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose;
-import com.google.cloud.kms.v1.CryptoKeyVersion;
-import com.google.cloud.kms.v1.KeyManagementServiceClient;
-import com.google.cloud.kms.v1.KeyRing;
-import com.google.cloud.kms.v1.KeyRingName;
-import com.google.cloud.kms.v1.LocationName;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
@@ -38,13 +30,10 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
-import com.google.iam.v1.Binding;
-import com.google.iam.v1.Policy;
-import com.google.protobuf.Timestamp;
+import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -64,53 +52,39 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITCmek {
 
+  private static final String KMS_KEY_NAME_PROPERTY = "spanner.testenv.kms_key.name";
   private static final String BACKUP_ID_PREFIX = "spanner-test-backup";
-  // FIXME: This should not be hardcoded
-  private static final String KMS_KEY_LOCATION = "eur5";
-  private static final String KMS_KEY_RING_ID = "spanner-test-keyring";
-  private static final String KMS_KEY_ID_PREFIX = "spanner-test-key";
-  private static final List<CryptoKey> keys = new ArrayList<>();
   private static final List<DatabaseId> dbs = new ArrayList<>();
   private static final List<BackupId> backups = new ArrayList<>();
-  // FIXME: This should not be hardcoded
-  public static final String SPANNER_PRODUCTION_ACCOUNT =
-      "serviceAccount:service-353504090643@gcp-sa-spanner.iam.gserviceaccount.com";
-  public static final String KMS_KEY_ENCRYPTER_DECRYPTER =
-      "roles/cloudkms.cryptoKeyEncrypterDecrypter";
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static KeyManagementServiceClient kmsClient;
   private static DatabaseAdminClient dbAdminClient;
 
   private static RemoteSpannerHelper testHelper;
   private static Random random;
+  private static String keyName;
 
   @BeforeClass
-  public static void beforeClass() throws IOException {
+  public static void beforeClass() {
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
-    kmsClient = KeyManagementServiceClient.create();
     random = new Random();
+    keyName = System.getProperty(KMS_KEY_NAME_PROPERTY);
+    Preconditions.checkNotNull(
+        keyName,
+        "Key name is null, please set a key to be used for this test. The necessary permissions should be grant to the spanner service account according to the CMEK user guide.");
   }
 
   @AfterClass
   public static void afterClass() {
-    for (CryptoKey key : keys) {
-      for (CryptoKeyVersion keyVersion :
-          kmsClient.listCryptoKeyVersions(key.getName()).iterateAll()) {
-        kmsClient.destroyCryptoKeyVersion(keyVersion.getName());
-      }
-    }
     for (DatabaseId db : dbs) {
       dbAdminClient.dropDatabase(db.getInstanceId().getInstance(), db.getDatabase());
     }
     for (BackupId backup : backups) {
       dbAdminClient.deleteBackup(backup.getInstanceId().getInstance(), backup.getBackup());
     }
-    kmsClient.close();
   }
 
-  @Ignore("Backup and restore is not yet enabled for CMEK")
   @Test
   public void createsEncryptedDatabaseBackupAndRestore()
       throws ExecutionException, InterruptedException {
@@ -119,17 +93,16 @@ public class ITCmek {
     final String destinationDatabaseId = testHelper.getUniqueDatabaseId();
     final String backupId = randomBackupId();
 
-    final CryptoKey key = createKey(randomKeyId());
     final Database sourceDatabase =
         dbAdminClient
             .newDatabaseBuilder(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
             .build();
     final Backup backup =
         dbAdminClient
             .newBackupBuilder(BackupId.of(testHelper.getInstanceId(), backupId))
             .setDatabase(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
             .setExpireTime(
                 com.google.cloud.Timestamp.ofTimeSecondsAndNanos(after7DaysInSeconds(), 0))
             .build();
@@ -138,7 +111,7 @@ public class ITCmek {
             .newRestoreBuilder(
                 BackupId.of(testHelper.getInstanceId(), backupId),
                 DatabaseId.of(testHelper.getInstanceId(), destinationDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(key.getName()))
+            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
             .build();
 
     final Database createdDatabase = createDatabase(sourceDatabase);
@@ -146,60 +119,20 @@ public class ITCmek {
     final Database restoredDatabase = restoreDatabase(restore);
 
     assertThat(createdDatabase.getEncryptionConfig()).isNotNull();
-    assertThat(createdDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(key.getName());
+    assertThat(createdDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(keyName);
     assertThat(createdBackup.getEncryptionInfo().getKmsKeyVersion()).isNotNull();
     assertThat(restoredDatabase.getEncryptionConfig()).isNotNull();
-    assertThat(restoredDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(key.getName());
-  }
-
-  private String randomKeyId() {
-    return KMS_KEY_ID_PREFIX + random.nextInt();
+    assertThat(restoredDatabase.getEncryptionConfig().getKmsKeyName()).isEqualTo(keyName);
   }
 
   private String randomBackupId() {
     return BACKUP_ID_PREFIX + random.nextInt();
   }
 
-  private CryptoKey createKey(final String keyId) {
-    final LocationName locationName =
-        LocationName.of(testHelper.getOptions().getProjectId(), KMS_KEY_LOCATION);
-    final KeyRing keyRing = createOrRetrieveKeyRing(locationName);
-    final Timestamp.Builder rotationTime = Timestamp.newBuilder().setSeconds(after7DaysInSeconds());
-
-    final CryptoKey cryptoKeyInput =
-        CryptoKey.newBuilder()
-            .setPurpose(CryptoKeyPurpose.ENCRYPT_DECRYPT)
-            .setNextRotationTime(rotationTime)
-            .build();
-    final CryptoKey cryptoKey =
-        kmsClient.createCryptoKey(KeyRingName.parse(keyRing.getName()), keyId, cryptoKeyInput);
-
-    final Policy policy = kmsClient.getIamPolicy(cryptoKey.getName());
-    final Binding binding =
-        Binding.newBuilder()
-            .addMembers(SPANNER_PRODUCTION_ACCOUNT)
-            .setRole(KMS_KEY_ENCRYPTER_DECRYPTER)
-            .build();
-    final Policy newPolicy = policy.toBuilder().addBindings(binding).build();
-    kmsClient.setIamPolicy(cryptoKey.getName(), newPolicy);
-
-    keys.add(cryptoKey);
-    return cryptoKey;
-  }
-
   private long after7DaysInSeconds() {
     return TimeUnit.SECONDS.convert(
         System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(7L, TimeUnit.DAYS),
         TimeUnit.MILLISECONDS);
-  }
-
-  private KeyRing createOrRetrieveKeyRing(final LocationName locationName) {
-    try {
-      return kmsClient.getKeyRing(
-          KeyRingName.of(locationName.getProject(), locationName.getLocation(), KMS_KEY_RING_ID));
-    } catch (NotFoundException e) {
-      return kmsClient.createKeyRing(locationName, KMS_KEY_RING_ID, KeyRing.getDefaultInstance());
-    }
   }
 
   private Database createDatabase(final Database database)
