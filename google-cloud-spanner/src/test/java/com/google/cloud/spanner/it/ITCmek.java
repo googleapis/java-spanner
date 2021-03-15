@@ -158,9 +158,13 @@ public class ITCmek {
       throws ExecutionException, InterruptedException {
     final OperationFuture<Database, RestoreDatabaseMetadata> op =
         dbAdminClient.restoreDatabase(restore);
-    final Database database = op.get();
-    dbs.add(database.getId());
+    final Database restoredDatabase = op.get();
+    dbs.add(restoredDatabase.getId());
 
-    return database;
+    return dbAdminClient
+        .getDatabase(
+            restoredDatabase.getId().getInstanceId().getInstance(),
+            restoredDatabase.getId().getDatabase()
+        );
   }
 }
