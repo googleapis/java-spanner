@@ -161,10 +161,8 @@ public class ITCmek {
     final Database restoredDatabase = op.get();
     dbs.add(restoredDatabase.getId());
 
-    return dbAdminClient
-        .getDatabase(
-            restoredDatabase.getId().getInstanceId().getInstance(),
-            restoredDatabase.getId().getDatabase()
-        );
+    return dbAdminClient.getDatabase(
+        restoredDatabase.getId().getInstanceId().getInstance(),
+        restoredDatabase.getId().getDatabase());
   }
 }
