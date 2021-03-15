@@ -403,7 +403,7 @@ public class ITBackupTest {
     try {
       return operation.get();
     } catch (ExecutionException e) {
-      if (e.getCause() != null && e.getCause() instanceof SpannerException) {
+      if (e.getCause() instanceof SpannerException) {
         throw (SpannerException) e.getCause();
       } else {
         throw e;
