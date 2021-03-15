@@ -37,12 +37,15 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
@@ -77,6 +80,8 @@ import org.junit.runners.JUnit4;
 /**
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
+ *
+ * <p>This test also exercises the PITR functionality for backups.
  */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -92,6 +97,8 @@ public class ITBackupTest {
   private List<String> databases = new ArrayList<>();
   private List<String> backups = new ArrayList<>();
   private final Random random = new Random();
+  private String projectId;
+  private String instanceId;
 
   @BeforeClass
   public static void doNotRunOnEmulator() {
@@ -105,6 +112,8 @@ public class ITBackupTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
     instance = instanceAdminClient.getInstance(testHelper.getInstanceId().getInstance());
+    projectId = testHelper.getInstanceId().getProject();
+    instanceId = testHelper.getInstanceId().getInstance();
     logger.info("Finished setup");
 
     // Cancel any backup operation that has been started by this integration test if it has been
@@ -226,19 +235,25 @@ public class ITBackupTest {
     String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
     String backupId2 = testHelper.getUniqueBackupId() + "_bck2";
     Timestamp expireTime = afterDays(7);
+    Timestamp versionTime = getCurrentTimestamp(client);
     logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
-    OperationFuture<Backup, CreateBackupMetadata> op1 =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId1,
-            db1.getId().getDatabase(),
-            expireTime);
-    OperationFuture<Backup, CreateBackupMetadata> op2 =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId2,
-            db2.getId().getDatabase(),
-            expireTime);
+    // This backup has the version time specified as the server's current timestamp
+    final Backup backupToCreate1 =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId1))
+            .setDatabase(db1.getId())
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+    // This backup has no version time specified
+    final Backup backupToCreate2 =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId2))
+            .setDatabase(db2.getId())
+            .setExpireTime(expireTime)
+            .build();
+    OperationFuture<Backup, CreateBackupMetadata> op1 = dbAdminClient.createBackup(backupToCreate1);
+    OperationFuture<Backup, CreateBackupMetadata> op2 = dbAdminClient.createBackup(backupToCreate2);
     backups.add(backupId1);
     backups.add(backupId2);
 
@@ -274,8 +289,8 @@ public class ITBackupTest {
             "Backup2 still not finished. Test is giving up waiting for it.");
       }
       logger.info("Long-running operations finished. Getting backups by id.");
-      backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
-      backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
+      backup1 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId1);
+      backup2 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId2);
     }
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
@@ -291,29 +306,25 @@ public class ITBackupTest {
     // Test listing operations.
     // List all backups.
     logger.info("Listing all backups");
-    assertThat(instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
+    assertThat(this.instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
     // List all backups whose names contain 'bck1'.
     logger.info("Listing backups with name bck1");
     assertThat(
             dbAdminClient
                 .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("name:%s", backup1.getId().getName())))
+                    instanceId, Options.filter(String.format("name:%s", backup1.getId().getName())))
                 .iterateAll())
         .containsExactly(backup1);
     logger.info("Listing ready backups");
     Iterable<Backup> readyBackups =
-        dbAdminClient
-            .listBackups(testHelper.getInstanceId().getInstance(), Options.filter("state:READY"))
-            .iterateAll();
+        dbAdminClient.listBackups(instanceId, Options.filter("state:READY")).iterateAll();
     assertThat(readyBackups).containsAtLeast(backup1, backup2);
     // List all backups for databases whose names contain 'db1'.
     logger.info("Listing backups for database db1");
     assertThat(
             dbAdminClient
                 .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("database:%s", db1.getId().getName())))
+                    instanceId, Options.filter(String.format("database:%s", db1.getId().getName())))
                 .iterateAll())
         .containsExactly(backup1);
     // List all backups that were created before a certain time.
@@ -321,24 +332,14 @@ public class ITBackupTest {
     logger.info(String.format("Listing backups created before %s", ts));
     assertThat(
             dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("create_time<\"%s\"", ts)))
+                .listBackups(instanceId, Options.filter(String.format("create_time<\"%s\"", ts)))
                 .iterateAll())
         .containsAtLeast(backup1, backup2);
     // List all backups with a size > 0.
     logger.info("Listing backups with size>0");
-    assertThat(
-            dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
-                .iterateAll())
+    assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
         .contains(backup2);
-    assertThat(
-            dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
-                .iterateAll())
+    assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
         .doesNotContain(backup1);
 
     // Test pagination.
@@ -355,6 +356,52 @@ public class ITBackupTest {
     testCancelBackupOperation(db1);
     // Finished all tests.
     logger.info("Finished all backup tests");
+  }
+
+  @Test(expected = SpannerException.class)
+  public void backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
+    final Database testDatabase = testHelper.createTestDatabase();
+    final DatabaseId databaseId = testDatabase.getId();
+    final InstanceId instanceId = databaseId.getInstanceId();
+    final String backupId = testHelper.getUniqueBackupId();
+    final Timestamp expireTime = afterDays(7);
+    final Timestamp versionTime = daysAgo(30);
+    final Backup backupToCreate =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(instanceId, backupId))
+            .setDatabase(databaseId)
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    dbAdminClient.createBackup(backupToCreate).get();
+  }
+
+  @Test(expected = SpannerException.class)
+  public void backupCreationWithVersionTimeInTheFutureFails() throws Exception {
+    final Database testDatabase = testHelper.createTestDatabase();
+    final DatabaseId databaseId = testDatabase.getId();
+    final InstanceId instanceId = databaseId.getInstanceId();
+    final String backupId = testHelper.getUniqueBackupId();
+    final Timestamp expireTime = afterDays(7);
+    final Timestamp versionTime = afterDays(1);
+    final Backup backupToCreate =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(instanceId, backupId))
+            .setDatabase(databaseId)
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    dbAdminClient.createBackup(backupToCreate).get();
+  }
+
+  private Timestamp getCurrentTimestamp(DatabaseClient client) {
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(Statement.of("SELECT CURRENT_TIMESTAMP()"))) {
+      resultSet.next();
+      return resultSet.getTimestamp(0);
+    }
   }
 
   private void testMetadata(
@@ -391,11 +438,7 @@ public class ITBackupTest {
     String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Creating backup %s with invalid expiration date", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId,
-            db.getId().getDatabase(),
-            expireTime);
+        dbAdminClient.createBackup(instanceId, backupId, db.getId().getDatabase(), expireTime);
     backups.add(backupId);
     try {
       op.get();
@@ -414,11 +457,7 @@ public class ITBackupTest {
     String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Starting to create backup %s", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId,
-            db.getId().getDatabase(),
-            expireTime);
+        dbAdminClient.createBackup(instanceId, backupId, db.getId().getDatabase(), expireTime);
     backups.add(backupId);
     // Cancel the backup operation.
     logger.info(String.format("Cancelling the creation of backup %s", backupId));
@@ -428,8 +467,7 @@ public class ITBackupTest {
     for (Operation operation :
         dbAdminClient
             .listBackupOperations(
-                testHelper.getInstanceId().getInstance(),
-                Options.filter(String.format("name:%s", op.getName())))
+                instanceId, Options.filter(String.format("name:%s", op.getName())))
             .iterateAll()) {
       assertThat(operation.getError().getCode()).isEqualTo(Status.Code.CANCELLED.value());
       operationFound = true;
@@ -481,8 +519,7 @@ public class ITBackupTest {
     logger.info("Listing backups using pagination");
     int numBackups = 0;
     logger.info("Fetching first page");
-    Page<Backup> page =
-        dbAdminClient.listBackups(testHelper.getInstanceId().getInstance(), Options.pageSize(1));
+    Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
     assertThat(page.getValues()).hasSize(1);
     numBackups++;
     assertThat(page.hasNextPage()).isTrue();
@@ -490,9 +527,7 @@ public class ITBackupTest {
       logger.info(String.format("Fetching page %d", numBackups + 1));
       page =
           dbAdminClient.listBackups(
-              testHelper.getInstanceId().getInstance(),
-              Options.pageToken(page.getNextPageToken()),
-              Options.pageSize(1));
+              instanceId, Options.pageToken(page.getNextPageToken()), Options.pageSize(1));
       assertThat(page.getValues()).hasSize(1);
       numBackups++;
     }
