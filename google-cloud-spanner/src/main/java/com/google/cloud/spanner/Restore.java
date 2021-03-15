@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.encryption.RestoreEncryptionConfig;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 
@@ -25,14 +26,25 @@ public class Restore {
 
     private final BackupId source;
     private final DatabaseId destination;
-    private EncryptionConfig encryptionConfig;
+    private RestoreEncryptionConfig encryptionConfig;
 
     public Builder(BackupId source, DatabaseId destination) {
       this.source = source;
       this.destination = destination;
     }
 
-    public Builder setEncryptionConfig(EncryptionConfig encryptionConfig) {
+    /**
+     * Optional for restoring a backup.
+     *
+     * <p>The encryption configuration to be used for the backup. The possible configurations are
+     * {@link com.google.cloud.spanner.encryption.CustomerManagedEncryption}, {@link
+     * com.google.cloud.spanner.encryption.GoogleDefaultEncryption} and {@link
+     * com.google.cloud.spanner.encryption.UseBackupEncryption}.
+     *
+     * <p>If no encryption config is given the database will be restored with the same encryption as
+     * set by the backup ({@link com.google.cloud.spanner.encryption.UseBackupEncryption}).
+     */
+    public Builder setEncryptionConfig(RestoreEncryptionConfig encryptionConfig) {
       this.encryptionConfig = encryptionConfig;
       return this;
     }
@@ -44,14 +56,14 @@ public class Restore {
 
   private final BackupId source;
   private final DatabaseId destination;
-  private final EncryptionConfig encryptionConfig;
+  private final RestoreEncryptionConfig encryptionConfig;
 
   Restore(Builder builder) {
     this(builder.source, builder.destination, builder.encryptionConfig);
   }
 
   @VisibleForTesting
-  Restore(BackupId source, DatabaseId destination, EncryptionConfig encryptionConfig) {
+  Restore(BackupId source, DatabaseId destination, RestoreEncryptionConfig encryptionConfig) {
     this.source = source;
     this.destination = destination;
     this.encryptionConfig = encryptionConfig;
@@ -65,7 +77,7 @@ public class Restore {
     return destination;
   }
 
-  public EncryptionConfig getEncryptionConfig() {
+  public RestoreEncryptionConfig getEncryptionConfig() {
     return encryptionConfig;
   }
 

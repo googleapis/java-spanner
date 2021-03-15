@@ -24,11 +24,11 @@ import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.EncryptionConfig;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -96,13 +96,13 @@ public class ITCmek {
     final Database sourceDatabase =
         dbAdminClient
             .newDatabaseBuilder(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
     final Backup backup =
         dbAdminClient
             .newBackupBuilder(BackupId.of(testHelper.getInstanceId(), backupId))
             .setDatabase(DatabaseId.of(instanceId, sourceDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .setExpireTime(
                 com.google.cloud.Timestamp.ofTimeSecondsAndNanos(after7DaysInSeconds(), 0))
             .build();
@@ -111,7 +111,7 @@ public class ITCmek {
             .newRestoreBuilder(
                 BackupId.of(testHelper.getInstanceId(), backupId),
                 DatabaseId.of(testHelper.getInstanceId(), destinationDatabaseId))
-            .setEncryptionConfig(EncryptionConfig.ofKey(keyName))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
 
     final Database createdDatabase = createDatabase(sourceDatabase);

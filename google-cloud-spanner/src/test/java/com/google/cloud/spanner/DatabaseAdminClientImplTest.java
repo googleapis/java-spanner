@@ -26,6 +26,7 @@ import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.collect.ImmutableList;
@@ -174,7 +175,7 @@ public class DatabaseAdminClientImplTest {
     com.google.cloud.spanner.Database database =
         client
             .newDatabaseBuilder(DatabaseId.of(DB_NAME))
-            .setEncryptionConfig(EncryptionConfig.ofKey(KMS_KEY_NAME))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
             .build();
 
     OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =
@@ -423,7 +424,7 @@ public class DatabaseAdminClientImplTest {
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .setExpireTime(t)
-            .setEncryptionConfig(EncryptionConfig.ofKey(KMS_KEY_NAME))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
             .build();
     when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
     final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =

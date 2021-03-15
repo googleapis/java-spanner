@@ -27,6 +27,7 @@ import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
@@ -115,7 +116,8 @@ public class DatabaseTest {
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
     assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
     assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
-    assertThat(db.getEncryptionConfig()).isEqualTo(EncryptionConfig.ofKey(KMS_KEY_NAME));
+    assertThat(db.getEncryptionConfig())
+        .isEqualTo(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME));
   }
 
   @Test
@@ -139,7 +141,7 @@ public class DatabaseTest {
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
             .setEncryptionConfig(
-                EncryptionConfig.ofKey(
+                EncryptionConfigs.customerManagedEncryption(
                     "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
             .build();
     assertThat(db.getEncryptionConfig()).isNotNull();

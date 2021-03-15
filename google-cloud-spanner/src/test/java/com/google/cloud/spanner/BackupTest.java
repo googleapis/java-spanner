@@ -31,6 +31,7 @@ import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup.Builder;
 import com.google.cloud.spanner.BackupInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import java.util.Arrays;
@@ -331,7 +332,7 @@ public class BackupTest {
     assertThat(backup.getExpireTime()).isEqualTo(EXP_TIME);
     assertThat(backup.getVersionTime()).isEqualTo(VERSION_TIME);
     assertThat(backup.getEncryptionInfo())
-        .isEqualTo(EncryptionInfo.fromProtoOrNullIfDefaultInstance(ENCRYPTION_INFO));
+        .isEqualTo(EncryptionInfo.fromProtoOrNull(ENCRYPTION_INFO));
   }
 
   @Test

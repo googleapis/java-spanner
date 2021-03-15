@@ -70,6 +70,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
+import com.google.cloud.spanner.encryption.EncryptionConfigProtoMapper;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -96,7 +97,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -116,7 +116,6 @@ import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
-import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
@@ -986,7 +985,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setCreateStatement(createDatabaseStatement)
             .addAllExtraStatements(additionalStatements);
     if (databaseInfo.getEncryptionConfig() != null) {
-      requestBuilder.setEncryptionConfig(databaseInfo.getEncryptionConfig().toProto());
+      requestBuilder.setEncryptionConfig(
+          EncryptionConfigProtoMapper.encryptionConfig(databaseInfo.getEncryptionConfig()));
     }
     final CreateDatabaseRequest request = requestBuilder.build();
 
@@ -1172,8 +1172,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setBackup(backup);
     if (backupInfo.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
-          CreateBackupEncryptionConfig.newBuilder()
-              .setKmsKeyName(backupInfo.getEncryptionConfig().getKmsKeyName()));
+          EncryptionConfigProtoMapper.createBackupEncryptionConfig(
+              backupInfo.getEncryptionConfig()));
     }
     final CreateBackupRequest request = requestBuilder.build();
     final OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
@@ -1230,8 +1230,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setBackup(restore.getSource().getName());
     if (restore.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
-          RestoreDatabaseEncryptionConfig.newBuilder()
-              .setKmsKeyName(restore.getEncryptionConfig().getKmsKeyName()));
+          EncryptionConfigProtoMapper.restoreDatabaseEncryptionConfig(
+              restore.getEncryptionConfig()));
     }
 
     final OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>

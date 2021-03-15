@@ -23,6 +23,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -184,8 +185,7 @@ public class Backup extends BackupInfo {
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
         .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
-        .setEncryptionInfo(
-            EncryptionInfo.fromProtoOrNullIfDefaultInstance(proto.getEncryptionInfo()))
+        .setEncryptionInfo(EncryptionInfo.fromProtoOrNull(proto.getEncryptionInfo()))
         .setProto(proto)
         .build();
   }

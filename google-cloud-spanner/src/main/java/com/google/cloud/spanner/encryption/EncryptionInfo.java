@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.encryption;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.rpc.Status;
@@ -32,7 +32,7 @@ public class EncryptionInfo {
   }
 
   @VisibleForTesting
-  EncryptionInfo(
+  public EncryptionInfo(
       String kmsKeyVersion,
       com.google.spanner.admin.database.v1.EncryptionInfo.Type encryptionType,
       Status encryptionStatus) {
@@ -45,19 +45,11 @@ public class EncryptionInfo {
    * Returns a {@link EncryptionInfo} instance from the given proto, or <code>null</code> if the
    * given proto is the default proto instance (i.e. there is no encryption info).
    */
-  static EncryptionInfo fromProtoOrNullIfDefaultInstance(
+  public static EncryptionInfo fromProtoOrNull(
       com.google.spanner.admin.database.v1.EncryptionInfo proto) {
     return proto.equals(com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance())
         ? null
         : new EncryptionInfo(proto);
-  }
-
-  public com.google.spanner.admin.database.v1.EncryptionInfo toProto() {
-    return com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder()
-        .setKmsKeyVersion(kmsKeyVersion)
-        .setEncryptionType(encryptionType)
-        .setEncryptionStatus(encryptionStatus)
-        .build();
   }
 
   public String getKmsKeyVersion() {

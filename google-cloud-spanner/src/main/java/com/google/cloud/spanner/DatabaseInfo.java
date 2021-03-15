@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -34,7 +35,14 @@ public class DatabaseInfo {
 
     abstract Builder setEarliestVersionTime(Timestamp earliestVersionTime);
 
-    public abstract Builder setEncryptionConfig(EncryptionConfig encryptionConfig);
+    /**
+     * Optional for creating a new backup.
+     *
+     * <p>The encryption configuration to be used for the database. The only encryption, other than
+     * google's default encryption, is a customer managed encryption with a provided key. If no
+     * encryption is provided, google's default encryption will be used.
+     */
+    public abstract Builder setEncryptionConfig(CustomerManagedEncryption encryptionConfig);
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
@@ -49,7 +57,7 @@ public class DatabaseInfo {
     private RestoreInfo restoreInfo;
     private String versionRetentionPeriod;
     private Timestamp earliestVersionTime;
-    private EncryptionConfig encryptionConfig;
+    private CustomerManagedEncryption encryptionConfig;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -98,7 +106,7 @@ public class DatabaseInfo {
     }
 
     @Override
-    public Builder setEncryptionConfig(@Nullable EncryptionConfig encryptionConfig) {
+    public Builder setEncryptionConfig(@Nullable CustomerManagedEncryption encryptionConfig) {
       this.encryptionConfig = encryptionConfig;
       return this;
     }
@@ -128,7 +136,7 @@ public class DatabaseInfo {
   private final RestoreInfo restoreInfo;
   private final String versionRetentionPeriod;
   private final Timestamp earliestVersionTime;
-  private final EncryptionConfig encryptionConfig;
+  private final CustomerManagedEncryption encryptionConfig;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -194,10 +202,10 @@ public class DatabaseInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfig} of the database if the database is encrypted, or <code>
-   * null</code> if this database is not encrypted.
+   * Returns the {@link CustomerManagedEncryption} of the database if the database is encrypted, or
+   * <code>null</code> if this database is not encrypted.
    */
-  public @Nullable EncryptionConfig getEncryptionConfig() {
+  public @Nullable CustomerManagedEncryption getEncryptionConfig() {
     return encryptionConfig;
   }
 

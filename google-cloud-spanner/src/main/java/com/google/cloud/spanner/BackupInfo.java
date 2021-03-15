@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import com.google.api.client.util.Preconditions;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.spanner.admin.database.v1.Database;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -42,9 +44,15 @@ public class BackupInfo {
     /**
      * Optional for creating a new backup.
      *
-     * <p>Sets the customer-managed encryption key to be used for the given backup.
+     * <p>The encryption configuration to be used for the backup. The possible configurations are
+     * {@link com.google.cloud.spanner.encryption.CustomerManagedEncryption}, {@link
+     * com.google.cloud.spanner.encryption.GoogleDefaultEncryption} and {@link
+     * com.google.cloud.spanner.encryption.UseDatabaseEncryption}.
+     *
+     * <p>If no encryption config is given the backup will be created with the same encryption as
+     * set by the database ({@link com.google.cloud.spanner.encryption.UseDatabaseEncryption}).
      */
-    public abstract Builder setEncryptionConfig(EncryptionConfig encryptionConfig);
+    public abstract Builder setEncryptionConfig(BackupEncryptionConfig encryptionConfig);
 
     /**
      * Required for creating a new backup.
@@ -85,7 +93,7 @@ public class BackupInfo {
     private Timestamp versionTime;
     private DatabaseId database;
     private long size;
-    private EncryptionConfig encryptionConfig;
+    private BackupEncryptionConfig encryptionConfig;
     private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
 
@@ -133,7 +141,7 @@ public class BackupInfo {
     }
 
     @Override
-    public Builder setEncryptionConfig(EncryptionConfig encryptionConfig) {
+    public Builder setEncryptionConfig(BackupEncryptionConfig encryptionConfig) {
       this.encryptionConfig = encryptionConfig;
       return this;
     }
@@ -173,7 +181,7 @@ public class BackupInfo {
   private final Timestamp versionTime;
   private final DatabaseId database;
   private final long size;
-  private final EncryptionConfig encryptionConfig;
+  private final BackupEncryptionConfig encryptionConfig;
   private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
 
@@ -210,10 +218,11 @@ public class BackupInfo {
   }
 
   /**
-   * Returns the {@link EncryptionConfig} to encrypt the backup during its creation. Returns <code>
+   * Returns the {@link BackupEncryptionConfig} to encrypt the backup during its creation. Returns
+   * <code>
    * null</code> if no customer-managed encryption key should be used.
    */
-  public EncryptionConfig getEncryptionConfig() {
+  public BackupEncryptionConfig getEncryptionConfig() {
     return encryptionConfig;
   }
 

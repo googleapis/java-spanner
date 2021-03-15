@@ -17,6 +17,8 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
+import com.google.cloud.spanner.encryption.RestoreEncryptionConfig;
 import org.junit.Test;
 
 /** Unit tests for {@link com.google.cloud.spanner.Restore} */
@@ -27,8 +29,8 @@ public class RestoreTest {
   private static final DatabaseId DATABASE_ID =
       DatabaseId.of("test-project", "test-instance", "test-database");
   private static final String KMS_KEY_NAME = "kms-key-name";
-  private static final EncryptionConfig ENCRYPTION_CONFIG_INFO =
-      EncryptionConfig.ofKey(KMS_KEY_NAME);
+  private static final RestoreEncryptionConfig ENCRYPTION_CONFIG_INFO =
+      EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME);
 
   @Test
   public void testRestore() {

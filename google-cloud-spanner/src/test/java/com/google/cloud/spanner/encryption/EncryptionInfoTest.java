@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.encryption;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -22,7 +22,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import org.junit.Test;
 
-/** Unit tests for {@link com.google.cloud.spanner.EncryptionInfo} */
+/** Unit tests for {@link com.google.cloud.spanner.encryption.EncryptionInfo} */
 public class EncryptionInfoTest {
 
   private static final String KMS_KEY_VERSION = "kms-key-version";
@@ -34,7 +34,7 @@ public class EncryptionInfoTest {
   @Test
   public void testEncryptionInfoFromProtoDefaultInstance() {
     final EncryptionInfo encryptionInfo =
-        EncryptionInfo.fromProtoOrNullIfDefaultInstance(
+        EncryptionInfo.fromProtoOrNull(
             com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance());
 
     assertNull(encryptionInfo);
@@ -43,7 +43,7 @@ public class EncryptionInfoTest {
   @Test
   public void testEncryptionInfoFromProto() {
     final EncryptionInfo actualEncryptionInfo =
-        EncryptionInfo.fromProtoOrNullIfDefaultInstance(
+        EncryptionInfo.fromProtoOrNull(
             com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder()
                 .setEncryptionStatus(OK_STATUS)
                 .setEncryptionTypeValue(CUSTOMER_MANAGED_ENCRYPTION.getNumber())
@@ -59,14 +59,14 @@ public class EncryptionInfoTest {
   @Test
   public void testEqualsAndHashCode() {
     final EncryptionInfo encryptionInfo1 =
-        EncryptionInfo.fromProtoOrNullIfDefaultInstance(
+        EncryptionInfo.fromProtoOrNull(
             com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder()
                 .setEncryptionStatus(OK_STATUS)
                 .setEncryptionTypeValue(CUSTOMER_MANAGED_ENCRYPTION.getNumber())
                 .setKmsKeyVersion(KMS_KEY_VERSION)
                 .build());
     final EncryptionInfo encryptionInfo2 =
-        EncryptionInfo.fromProtoOrNullIfDefaultInstance(
+        EncryptionInfo.fromProtoOrNull(
             com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder()
                 .setEncryptionStatus(OK_STATUS)
                 .setEncryptionTypeValue(CUSTOMER_MANAGED_ENCRYPTION.getNumber())
