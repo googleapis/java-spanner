@@ -4,3 +4,6 @@ branches:
 - branch: 3.1.x
   releaseType: java-yoshi
   bumpMinorPreMajor: true
+- branch: 4.0.x
+  releaseType: java-yoshi
+  bumpMinorPreMajor: true
