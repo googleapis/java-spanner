@@ -70,10 +70,11 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing</spanner.testenv.instance>
             <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
-            <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
+            <spanner.gce.config.instance_id>spanner-testing</spanner.gce.config.instance_id>
+            <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
+            <spanner.testenv.instance>projects/${spanner.gce.config.project_id}/instances/${spanner.gce.config.instance_id}</spanner.testenv.instance>
+            <spanner.testenv.kms_key.name>projects/${spanner.gce.config.project_id}/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
