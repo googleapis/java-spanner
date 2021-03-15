@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.0](https://www.github.com/googleapis/java-spanner/compare/v5.0.0...v5.1.0) (2021-03-10)
+
+
+### Features
+
+* add client lib token for Liquibase ([#925](https://www.github.com/googleapis/java-spanner/issues/925)) ([0d93d92](https://www.github.com/googleapis/java-spanner/commit/0d93d92fcd7c8bb2ffd3198560c4be3e4afc4990))
+* adds samples for PITR ([#837](https://www.github.com/googleapis/java-spanner/issues/837)) ([55fa0cc](https://www.github.com/googleapis/java-spanner/commit/55fa0ccca4faf44da8f9a3553ab4b35574c14830))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.14 ([#919](https://www.github.com/googleapis/java-spanner/issues/919)) ([178500c](https://www.github.com/googleapis/java-spanner/commit/178500c7e48cbdeb45f657d9c413e9afdacefbab))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.20.1 ([#944](https://www.github.com/googleapis/java-spanner/issues/944)) ([b74b764](https://www.github.com/googleapis/java-spanner/commit/b74b7648343dc789b60fb2636615f288b6e6c854))
+* update dependency org.json:json to v20210307 ([#943](https://www.github.com/googleapis/java-spanner/issues/943)) ([4088981](https://www.github.com/googleapis/java-spanner/commit/4088981314097647e3ed79f2c748545cac6fc34e))
+* update dependency org.openjdk.jmh:jmh-core to v1.28 ([#923](https://www.github.com/googleapis/java-spanner/issues/923)) ([b4d6e5a](https://www.github.com/googleapis/java-spanner/commit/b4d6e5ac762393b70b684159d11a55edf8f2fba7))
+
 ## [5.0.0](https://www.github.com/googleapis/java-spanner/compare/v4.0.2...v5.0.0) (2021-02-26)
 
 
