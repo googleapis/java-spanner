@@ -80,8 +80,6 @@ import org.junit.runners.JUnit4;
 /**
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
- *
- * <p>This test also exercises the PITR functionality for backups.
  */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -292,6 +290,10 @@ public class ITBackupTest {
       backup1 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId1);
       backup2 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId2);
     }
+
+    // Verifies that backup version time is the specified one
+    testBackupVersionTime(backup1, versionTime);
+
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
@@ -350,7 +352,7 @@ public class ITBackupTest {
     testGetBackup(db2, backupId2, expireTime);
     testUpdateBackup(backup1);
     testCreateInvalidExpirationDate(db1);
-    testRestore(backup1, op1);
+    testRestore(backup1, op1, versionTime);
 
     testDelete(backupId2);
     testCancelBackupOperation(db1);
@@ -374,7 +376,7 @@ public class ITBackupTest {
             .setVersionTime(versionTime)
             .build();
 
-    dbAdminClient.createBackup(backupToCreate).get();
+    getOrThrow(dbAdminClient.createBackup(backupToCreate));
   }
 
   @Test(expected = SpannerException.class)
@@ -393,7 +395,20 @@ public class ITBackupTest {
             .setVersionTime(versionTime)
             .build();
 
-    dbAdminClient.createBackup(backupToCreate).get();
+    getOrThrow(dbAdminClient.createBackup(backupToCreate));
+  }
+
+  private <T> T getOrThrow(OperationFuture<T, ?> operation)
+      throws InterruptedException, ExecutionException {
+    try {
+      return operation.get();
+    } catch (ExecutionException e) {
+      if (e.getCause() != null && e.getCause() instanceof SpannerException) {
+        throw (SpannerException) e.getCause();
+      } else {
+        throw e;
+      }
+    }
   }
 
   private Timestamp getCurrentTimestamp(DatabaseClient client) {
@@ -402,6 +417,12 @@ public class ITBackupTest {
       resultSet.next();
       return resultSet.getTimestamp(0);
     }
+  }
+
+  private void testBackupVersionTime(Backup backup, Timestamp versionTime) {
+    logger.info("Verifying backup version time for " + backup.getId());
+    assertThat(backup.getVersionTime()).isEqualTo(versionTime);
+    logger.info("Done verifying backup version time for " + backup.getId());
   }
 
   private void testMetadata(
@@ -556,7 +577,8 @@ public class ITBackupTest {
     logger.info("Finished delete tests");
   }
 
-  private void testRestore(Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp)
+  private void testRestore(
+      Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp, Timestamp versionTime)
       throws InterruptedException, ExecutionException {
     // Restore the backup to a new database.
     String restoredDb = testHelper.getUniqueDatabaseId();
@@ -600,6 +622,8 @@ public class ITBackupTest {
     assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
     assertThat(metadata.getName())
         .isEqualTo(DatabaseId.of(testHelper.getInstanceId(), restoredDb).getName());
+    assertThat(Timestamp.fromProto(metadata.getBackupInfo().getVersionTime()))
+        .isEqualTo(versionTime);
 
     // Ensure the operations show up in the right collections.
     // TODO: Re-enable when it is clear why this fails on the CI environment.
@@ -608,6 +632,14 @@ public class ITBackupTest {
     // Wait until the restore operation has finished successfully.
     Database database = restoreOp.get();
     assertThat(database.getId().getDatabase()).isEqualTo(restoredDb);
+
+    // Reloads the database
+    final Database reloadedDatabase = database.reload();
+    assertThat(
+            Timestamp.fromProto(
+                reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()))
+        .isEqualTo(versionTime);
+
     // Restoring the backup to an existing database should fail.
     try {
       logger.info(
