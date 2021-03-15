@@ -20,6 +20,7 @@ import com.google.cloud.spanner.encryption.RestoreEncryptionConfig;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 
+/** Represents a restore operation of a Cloud Spanner backup. */
 public class Restore {
 
   public static class Builder {
