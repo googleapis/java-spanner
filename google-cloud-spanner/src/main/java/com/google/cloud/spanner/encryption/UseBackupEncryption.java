@@ -22,4 +22,9 @@ public class UseBackupEncryption implements RestoreEncryptionConfig {
   static final UseBackupEncryption INSTANCE = new UseBackupEncryption();
 
   private UseBackupEncryption() {}
+
+  @Override
+  public String toString() {
+    return "UseBackupEncryption{}";
+  }
 }

@@ -25,4 +25,9 @@ public class UseDatabaseEncryption implements BackupEncryptionConfig {
   static final UseDatabaseEncryption INSTANCE = new UseDatabaseEncryption();
 
   private UseDatabaseEncryption() {}
+
+  @Override
+  public String toString() {
+    return "UseDatabaseEncryption{}";
+  }
 }

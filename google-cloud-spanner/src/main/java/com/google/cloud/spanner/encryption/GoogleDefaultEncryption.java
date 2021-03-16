@@ -22,4 +22,9 @@ public class GoogleDefaultEncryption implements BackupEncryptionConfig, RestoreE
   static final GoogleDefaultEncryption INSTANCE = new GoogleDefaultEncryption();
 
   private GoogleDefaultEncryption() {}
+
+  @Override
+  public String toString() {
+    return "GoogleDefaultEncryption{}";
+  }
 }
