@@ -37,13 +37,16 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
@@ -248,16 +251,19 @@ public class ITBackupTest {
     String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
     String backupId2 = testHelper.getUniqueBackupId() + "_bck2";
     Timestamp expireTime = afterDays(7);
+    Timestamp versionTime = getCurrentTimestamp(client);
     logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
+    // This backup has the version time specified as the server's current timestamp
     // This backup is encrypted with a customer managed key
     final Backup backupToCreate1 =
         dbAdminClient
             .newBackupBuilder(BackupId.of(projectId, instanceId, backupId1))
             .setDatabase(db1.getId())
             .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
-    // This backup uses the default encryption
+    // This backup has no version time specified
     final Backup backupToCreate2 =
         dbAdminClient
             .newBackupBuilder(BackupId.of(projectId, instanceId, backupId2))
@@ -305,6 +311,8 @@ public class ITBackupTest {
       backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
     }
 
+    // Verifies that backup version time is the specified one
+    testBackupVersionTime(backup1, versionTime);
     // Verifies that backup encryption has been properly set
     testBackupEncryption(backup1);
 
@@ -328,23 +336,19 @@ public class ITBackupTest {
     assertThat(
             dbAdminClient
                 .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("name:%s", backup1.getId().getName())))
+                    instanceId, Options.filter(String.format("name:%s", backup1.getId().getName())))
                 .iterateAll())
         .containsExactly(backup1);
     logger.info("Listing ready backups");
     Iterable<Backup> readyBackups =
-        dbAdminClient
-            .listBackups(testHelper.getInstanceId().getInstance(), Options.filter("state:READY"))
-            .iterateAll();
+        dbAdminClient.listBackups(instanceId, Options.filter("state:READY")).iterateAll();
     assertThat(readyBackups).containsAtLeast(backup1, backup2);
     // List all backups for databases whose names contain 'db1'.
     logger.info("Listing backups for database db1");
     assertThat(
             dbAdminClient
                 .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("database:%s", db1.getId().getName())))
+                    instanceId, Options.filter(String.format("database:%s", db1.getId().getName())))
                 .iterateAll())
         .containsExactly(backup1);
     // List all backups that were created before a certain time.
@@ -352,24 +356,14 @@ public class ITBackupTest {
     logger.info(String.format("Listing backups created before %s", ts));
     assertThat(
             dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(),
-                    Options.filter(String.format("create_time<\"%s\"", ts)))
+                .listBackups(instanceId, Options.filter(String.format("create_time<\"%s\"", ts)))
                 .iterateAll())
         .containsAtLeast(backup1, backup2);
     // List all backups with a size > 0.
     logger.info("Listing backups with size>0");
-    assertThat(
-            dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
-                .iterateAll())
+    assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
         .contains(backup2);
-    assertThat(
-            dbAdminClient
-                .listBackups(
-                    testHelper.getInstanceId().getInstance(), Options.filter("size_bytes>0"))
-                .iterateAll())
+    assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
         .doesNotContain(backup1);
 
     // Test pagination.
@@ -380,12 +374,77 @@ public class ITBackupTest {
     testGetBackup(db2, backupId2, expireTime);
     testUpdateBackup(backup1);
     testCreateInvalidExpirationDate(db1);
-    testRestore(backup1, op1);
+    testRestore(backup1, op1, versionTime);
 
     testDelete(backupId2);
     testCancelBackupOperation(db1);
     // Finished all tests.
     logger.info("Finished all backup tests");
+  }
+
+  @Test(expected = SpannerException.class)
+  public void backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
+    final Database testDatabase = testHelper.createTestDatabase();
+    final DatabaseId databaseId = testDatabase.getId();
+    final InstanceId instanceId = databaseId.getInstanceId();
+    final String backupId = testHelper.getUniqueBackupId();
+    final Timestamp expireTime = afterDays(7);
+    final Timestamp versionTime = daysAgo(30);
+    final Backup backupToCreate =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(instanceId, backupId))
+            .setDatabase(databaseId)
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    getOrThrow(dbAdminClient.createBackup(backupToCreate));
+  }
+
+  @Test(expected = SpannerException.class)
+  public void backupCreationWithVersionTimeInTheFutureFails() throws Exception {
+    final Database testDatabase = testHelper.createTestDatabase();
+    final DatabaseId databaseId = testDatabase.getId();
+    final InstanceId instanceId = databaseId.getInstanceId();
+    final String backupId = testHelper.getUniqueBackupId();
+    final Timestamp expireTime = afterDays(7);
+    final Timestamp versionTime = afterDays(1);
+    final Backup backupToCreate =
+        dbAdminClient
+            .newBackupBuilder(BackupId.of(instanceId, backupId))
+            .setDatabase(databaseId)
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    getOrThrow(dbAdminClient.createBackup(backupToCreate));
+  }
+
+  private <T> T getOrThrow(OperationFuture<T, ?> operation)
+      throws InterruptedException, ExecutionException {
+    try {
+      return operation.get();
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof SpannerException) {
+        throw (SpannerException) e.getCause();
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  private Timestamp getCurrentTimestamp(DatabaseClient client) {
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(Statement.of("SELECT CURRENT_TIMESTAMP()"))) {
+      resultSet.next();
+      return resultSet.getTimestamp(0);
+    }
+  }
+
+  private void testBackupVersionTime(Backup backup, Timestamp versionTime) {
+    logger.info("Verifying backup version time for " + backup.getId());
+    assertThat(backup.getVersionTime()).isEqualTo(versionTime);
+    logger.info("Done verifying backup version time for " + backup.getId());
   }
 
   private void testDatabaseEncryption(Database database) {
@@ -436,11 +495,7 @@ public class ITBackupTest {
     String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Creating backup %s with invalid expiration date", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId,
-            db.getId().getDatabase(),
-            expireTime);
+        dbAdminClient.createBackup(instanceId, backupId, db.getId().getDatabase(), expireTime);
     backups.add(backupId);
     try {
       op.get();
@@ -459,11 +514,7 @@ public class ITBackupTest {
     String backupId = testHelper.getUniqueBackupId();
     logger.info(String.format("Starting to create backup %s", backupId));
     OperationFuture<Backup, CreateBackupMetadata> op =
-        dbAdminClient.createBackup(
-            testHelper.getInstanceId().getInstance(),
-            backupId,
-            db.getId().getDatabase(),
-            expireTime);
+        dbAdminClient.createBackup(instanceId, backupId, db.getId().getDatabase(), expireTime);
     backups.add(backupId);
     // Cancel the backup operation.
     logger.info(String.format("Cancelling the creation of backup %s", backupId));
@@ -473,8 +524,7 @@ public class ITBackupTest {
     for (Operation operation :
         dbAdminClient
             .listBackupOperations(
-                testHelper.getInstanceId().getInstance(),
-                Options.filter(String.format("name:%s", op.getName())))
+                instanceId, Options.filter(String.format("name:%s", op.getName())))
             .iterateAll()) {
       assertThat(operation.getError().getCode()).isEqualTo(Status.Code.CANCELLED.value());
       operationFound = true;
@@ -526,8 +576,7 @@ public class ITBackupTest {
     logger.info("Listing backups using pagination");
     int numBackups = 0;
     logger.info("Fetching first page");
-    Page<Backup> page =
-        dbAdminClient.listBackups(testHelper.getInstanceId().getInstance(), Options.pageSize(1));
+    Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
     assertThat(page.getValues()).hasSize(1);
     numBackups++;
     assertThat(page.hasNextPage()).isTrue();
@@ -535,9 +584,7 @@ public class ITBackupTest {
       logger.info(String.format("Fetching page %d", numBackups + 1));
       page =
           dbAdminClient.listBackups(
-              testHelper.getInstanceId().getInstance(),
-              Options.pageToken(page.getNextPageToken()),
-              Options.pageSize(1));
+              instanceId, Options.pageToken(page.getNextPageToken()), Options.pageSize(1));
       assertThat(page.getValues()).hasSize(1);
       numBackups++;
     }
@@ -566,7 +613,8 @@ public class ITBackupTest {
     logger.info("Finished delete tests");
   }
 
-  private void testRestore(Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp)
+  private void testRestore(
+      Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp, Timestamp versionTime)
       throws InterruptedException, ExecutionException {
     // Restore the backup to a new database.
     String restoredDb = testHelper.getUniqueDatabaseId();
@@ -615,6 +663,8 @@ public class ITBackupTest {
     assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
     assertThat(metadata.getName())
         .isEqualTo(DatabaseId.of(testHelper.getInstanceId(), restoredDb).getName());
+    assertThat(Timestamp.fromProto(metadata.getBackupInfo().getVersionTime()))
+        .isEqualTo(versionTime);
 
     // Ensure the operations show up in the right collections.
     // TODO: Re-enable when it is clear why this fails on the CI environment.
@@ -624,8 +674,12 @@ public class ITBackupTest {
     Database database = restoreOperation.get();
     assertThat(database.getId().getDatabase()).isEqualTo(restoredDb);
 
-    // Verify that the encryption has been correctly set
+    // Reloads the database
     final Database reloadedDatabase = database.reload();
+    assertThat(
+            Timestamp.fromProto(
+                reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()))
+        .isEqualTo(versionTime);
     testDatabaseEncryption(reloadedDatabase);
 
     // Restoring the backup to an existing database should fail.
