@@ -318,6 +318,12 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
    *   while (true) {
    *     ListInstanceConfigsResponse response =
    *         instanceAdminClient.listInstanceConfigsCallable().call(request);
@@ -548,6 +554,13 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
    *   while (true) {
    *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
    *     for (Instance element : response.getResponsesList()) {

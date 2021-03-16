@@ -657,6 +657,13 @@ public class SpannerClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   ListSessionsRequest request =
+   *       ListSessionsRequest.newBuilder()
+   *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
    *   while (true) {
    *     ListSessionsResponse response = spannerClient.listSessionsCallable().call(request);
    *     for (Session element : response.getResponsesList()) {
