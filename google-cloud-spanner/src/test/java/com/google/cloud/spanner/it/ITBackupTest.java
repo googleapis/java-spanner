@@ -59,8 +59,9 @@ import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -94,7 +95,6 @@ public class ITBackupTest {
   private RemoteSpannerHelper testHelper;
   private List<String> databases = new ArrayList<>();
   private List<String> backups = new ArrayList<>();
-  private final Random random = new Random();
   private String projectId;
   private String instanceId;
 
@@ -544,8 +544,15 @@ public class ITBackupTest {
     assertThat(page.getValues()).hasSize(1);
     numBackups++;
     assertThat(page.hasNextPage()).isTrue();
+    Set<String> seenPageTokens = new HashSet<>();
+    seenPageTokens.add("");
     while (page.hasNextPage()) {
-      logger.info(String.format("Fetching page %d", numBackups + 1));
+      logger.info(
+          String.format(
+              "Fetching page %d with page token %s", numBackups + 1, page.getNextPageToken()));
+      // The backend should not return the same page token twice.
+      assertThat(seenPageTokens).doesNotContain(page.getNextPageToken());
+      seenPageTokens.add(page.getNextPageToken());
       page =
           dbAdminClient.listBackups(
               instanceId, Options.pageToken(page.getNextPageToken()), Options.pageSize(1));
