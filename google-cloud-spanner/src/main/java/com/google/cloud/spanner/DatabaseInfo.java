@@ -39,7 +39,7 @@ public class DatabaseInfo {
      * Optional for creating a new backup.
      *
      * <p>The encryption configuration to be used for the database. The only encryption, other than
-     * google's default encryption, is a customer managed encryption with a provided key. If no
+     * Google's default encryption, is a customer managed encryption with a provided key. If no
      * encryption is provided, google's default encryption will be used.
      */
     public abstract Builder setEncryptionConfig(CustomerManagedEncryption encryptionConfig);
