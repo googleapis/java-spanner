@@ -263,6 +263,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>bytes transaction_id = 2;</code>
    *
+   * @return Whether the transactionId field is set.
+   */
+  @java.lang.Override
+  public boolean hasTransactionId() {
+    return transactionCase_ == 2;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Commit a previously-started transaction.
+   * </pre>
+   *
+   * <code>bytes transaction_id = 2;</code>
+   *
    * @return The transactionId.
    */
   @java.lang.Override
@@ -1031,6 +1046,20 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    /**
+     *
+     *
+     * <pre>
+     * Commit a previously-started transaction.
+     * </pre>
+     *
+     * <code>bytes transaction_id = 2;</code>
+     *
+     * @return Whether the transactionId field is set.
+     */
+    public boolean hasTransactionId() {
+      return transactionCase_ == 2;
+    }
     /**
      *
      *

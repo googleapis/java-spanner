@@ -22,7 +22,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+ * The request for
+ * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.ListDatabasesRequest}
@@ -205,8 +206,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-   * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+   * from a previous
+   * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -230,8 +232,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-   * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+   * from a previous
+   * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -433,7 +436,8 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The request for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+   * The request for
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.ListDatabasesRequest}
@@ -783,8 +787,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-     * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+     * from a previous
+     * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -807,8 +812,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-     * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+     * from a previous
+     * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -831,8 +837,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-     * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+     * from a previous
+     * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -854,8 +861,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-     * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+     * from a previous
+     * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -873,8 +881,9 @@ public final class ListDatabasesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
-     * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
+     * from a previous
+     * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
      * </pre>
      *
      * <code>string page_token = 4;</code>

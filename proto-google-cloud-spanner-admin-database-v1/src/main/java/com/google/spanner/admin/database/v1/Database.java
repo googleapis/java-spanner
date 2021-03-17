@@ -40,6 +40,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   private Database() {
     name_ = "";
     state_ = 0;
+    encryptionInfo_ = java.util.Collections.emptyList();
     versionRetentionPeriod_ = "";
   }
 
@@ -62,6 +63,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -117,6 +119,23 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
 
               break;
             }
+          case 42:
+            {
+              com.google.spanner.admin.database.v1.EncryptionConfig.Builder subBuilder = null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           case 50:
             {
               java.lang.String s = input.readStringRequireUtf8();
@@ -139,6 +158,19 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
 
               break;
             }
+          case 66:
+            {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                encryptionInfo_ =
+                    new java.util.ArrayList<com.google.spanner.admin.database.v1.EncryptionInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              encryptionInfo_.add(
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
+                      extensionRegistry));
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -153,6 +185,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000001) != 0)) {
+        encryptionInfo_ = java.util.Collections.unmodifiableList(encryptionInfo_);
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -571,6 +606,181 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return getRestoreInfo();
   }
 
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 5;
+  private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
+  }
+
+  public static final int ENCRYPTION_INFO_FIELD_NUMBER = 8;
+  private java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo> encryptionInfo_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+      getEncryptionInfoList() {
+    return encryptionInfo_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+      getEncryptionInfoOrBuilderList() {
+    return encryptionInfo_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public int getEncryptionInfoCount() {
+    return encryptionInfo_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo(int index) {
+    return encryptionInfo_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder(
+      int index) {
+    return encryptionInfo_.get(index);
+  }
+
   public static final int VERSION_RETENTION_PERIOD_FIELD_NUMBER = 6;
   private volatile java.lang.Object versionRetentionPeriod_;
   /**
@@ -580,8 +790,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-   * if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+   * Defaults to 1 hour, if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -607,8 +817,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-   * if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+   * Defaults to 1 hour, if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -635,7 +845,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>
@@ -653,7 +866,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>
@@ -673,7 +889,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>
@@ -712,11 +931,17 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (restoreInfo_ != null) {
       output.writeMessage(4, getRestoreInfo());
     }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(5, getEncryptionConfig());
+    }
     if (!getVersionRetentionPeriodBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 6, versionRetentionPeriod_);
     }
     if (earliestVersionTime_ != null) {
       output.writeMessage(7, getEarliestVersionTime());
+    }
+    for (int i = 0; i < encryptionInfo_.size(); i++) {
+      output.writeMessage(8, encryptionInfo_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -740,11 +965,17 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (restoreInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getRestoreInfo());
     }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getEncryptionConfig());
+    }
     if (!getVersionRetentionPeriodBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, versionRetentionPeriod_);
     }
     if (earliestVersionTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(7, getEarliestVersionTime());
+    }
+    for (int i = 0; i < encryptionInfo_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, encryptionInfo_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -772,6 +1003,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasRestoreInfo()) {
       if (!getRestoreInfo().equals(other.getRestoreInfo())) return false;
     }
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
+    if (!getEncryptionInfoList().equals(other.getEncryptionInfoList())) return false;
     if (!getVersionRetentionPeriod().equals(other.getVersionRetentionPeriod())) return false;
     if (hasEarliestVersionTime() != other.hasEarliestVersionTime()) return false;
     if (hasEarliestVersionTime()) {
@@ -799,6 +1035,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasRestoreInfo()) {
       hash = (37 * hash) + RESTORE_INFO_FIELD_NUMBER;
       hash = (53 * hash) + getRestoreInfo().hashCode();
+    }
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
+    }
+    if (getEncryptionInfoCount() > 0) {
+      hash = (37 * hash) + ENCRYPTION_INFO_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionInfoList().hashCode();
     }
     hash = (37 * hash) + VERSION_RETENTION_PERIOD_FIELD_NUMBER;
     hash = (53 * hash) + getVersionRetentionPeriod().hashCode();
@@ -945,7 +1189,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     }
 
     private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+        getEncryptionInfoFieldBuilder();
+      }
     }
 
     @java.lang.Override
@@ -966,6 +1212,18 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       } else {
         restoreInfo_ = null;
         restoreInfoBuilder_ = null;
+      }
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      } else {
+        encryptionInfoBuilder_.clear();
       }
       versionRetentionPeriod_ = "";
 
@@ -1002,6 +1260,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.Database buildPartial() {
       com.google.spanner.admin.database.v1.Database result =
           new com.google.spanner.admin.database.v1.Database(this);
+      int from_bitField0_ = bitField0_;
       result.name_ = name_;
       result.state_ = state_;
       if (createTimeBuilder_ == null) {
@@ -1013,6 +1272,20 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         result.restoreInfo_ = restoreInfo_;
       } else {
         result.restoreInfo_ = restoreInfoBuilder_.build();
+      }
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      }
+      if (encryptionInfoBuilder_ == null) {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          encryptionInfo_ = java.util.Collections.unmodifiableList(encryptionInfo_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.encryptionInfo_ = encryptionInfo_;
+      } else {
+        result.encryptionInfo_ = encryptionInfoBuilder_.build();
       }
       result.versionRetentionPeriod_ = versionRetentionPeriod_;
       if (earliestVersionTimeBuilder_ == null) {
@@ -1082,6 +1355,36 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (other.hasRestoreInfo()) {
         mergeRestoreInfo(other.getRestoreInfo());
       }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
+      }
+      if (encryptionInfoBuilder_ == null) {
+        if (!other.encryptionInfo_.isEmpty()) {
+          if (encryptionInfo_.isEmpty()) {
+            encryptionInfo_ = other.encryptionInfo_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureEncryptionInfoIsMutable();
+            encryptionInfo_.addAll(other.encryptionInfo_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.encryptionInfo_.isEmpty()) {
+          if (encryptionInfoBuilder_.isEmpty()) {
+            encryptionInfoBuilder_.dispose();
+            encryptionInfoBuilder_ = null;
+            encryptionInfo_ = other.encryptionInfo_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+            encryptionInfoBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getEncryptionInfoFieldBuilder()
+                    : null;
+          } else {
+            encryptionInfoBuilder_.addAllMessages(other.encryptionInfo_);
+          }
+        }
+      }
       if (!other.getVersionRetentionPeriod().isEmpty()) {
         versionRetentionPeriod_ = other.versionRetentionPeriod_;
         onChanged();
@@ -1117,6 +1420,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object name_ = "";
     /**
@@ -1761,6 +2066,747 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       return restoreInfoBuilder_;
     }
 
+    private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption configuration for the database.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionConfig,
+                com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
+    }
+
+    private java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo> encryptionInfo_ =
+        java.util.Collections.emptyList();
+
+    private void ensureEncryptionInfoIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        encryptionInfo_ =
+            new java.util.ArrayList<com.google.spanner.admin.database.v1.EncryptionInfo>(
+                encryptionInfo_);
+        bitField0_ |= 0x00000001;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        encryptionInfoBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+        getEncryptionInfoList() {
+      if (encryptionInfoBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(encryptionInfo_);
+      } else {
+        return encryptionInfoBuilder_.getMessageList();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public int getEncryptionInfoCount() {
+      if (encryptionInfoBuilder_ == null) {
+        return encryptionInfo_.size();
+      } else {
+        return encryptionInfoBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo(int index) {
+      if (encryptionInfoBuilder_ == null) {
+        return encryptionInfo_.get(index);
+      } else {
+        return encryptionInfoBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.set(index, value);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInfo(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInfoBuilder_ == null) {
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.add(value);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInfo(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.add(index, value);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInfo(
+        com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInfoBuilder_ == null) {
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.add(builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInfo(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInfoBuilder_ == null) {
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addAllEncryptionInfo(
+        java.lang.Iterable<? extends com.google.spanner.admin.database.v1.EncryptionInfo> values) {
+      if (encryptionInfoBuilder_ == null) {
+        ensureEncryptionInfoIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, encryptionInfo_);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionInfo() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfo_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder removeEncryptionInfo(int index) {
+      if (encryptionInfoBuilder_ == null) {
+        ensureEncryptionInfoIsMutable();
+        encryptionInfo_.remove(index);
+        onChanged();
+      } else {
+        encryptionInfoBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder getEncryptionInfoBuilder(
+        int index) {
+      return getEncryptionInfoFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder(
+        int index) {
+      if (encryptionInfoBuilder_ == null) {
+        return encryptionInfo_.get(index);
+      } else {
+        return encryptionInfoBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInfoOrBuilderList() {
+      if (encryptionInfoBuilder_ != null) {
+        return encryptionInfoBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(encryptionInfo_);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder addEncryptionInfoBuilder() {
+      return getEncryptionInfoFieldBuilder()
+          .addBuilder(com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder addEncryptionInfoBuilder(
+        int index) {
+      return getEncryptionInfoFieldBuilder()
+          .addBuilder(
+              index, com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For databases that are using customer managed encryption, this
+     * field contains the encryption information for the database, such as
+     * encryption state and the Cloud KMS key versions that are in use.
+     * For databases that are using Google default or other types of encryption,
+     * this field is empty.
+     * This field is propagated lazily from the backend. There might be a delay
+     * from when a key version is being used and when it appears in this field.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo.Builder>
+        getEncryptionInfoBuilderList() {
+      return getEncryptionInfoFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInfoFieldBuilder() {
+      if (encryptionInfoBuilder_ == null) {
+        encryptionInfoBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionInfo,
+                com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+                com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
+                encryptionInfo_,
+                ((bitField0_ & 0x00000001) != 0),
+                getParentForChildren(),
+                isClean());
+        encryptionInfo_ = null;
+      }
+      return encryptionInfoBuilder_;
+    }
+
     private java.lang.Object versionRetentionPeriod_ = "";
     /**
      *
@@ -1769,8 +2815,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -1796,8 +2842,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -1823,8 +2869,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -1849,8 +2895,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -1871,8 +2917,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -1903,7 +2949,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -1920,7 +2969,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -1943,7 +2995,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -1968,7 +3023,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -1990,7 +3048,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -2019,7 +3080,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -2042,7 +3106,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -2059,7 +3126,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>
@@ -2080,7 +3150,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. Earliest timestamp at which older versions of the data can be
-     * read.
+     * read. This value is continuously updated by Cloud Spanner and becomes stale
+     * the moment it is queried. If you are using this value to recover data, make
+     * sure to account for the time from the moment when the value is queried to
+     * the moment when you initiate the recovery.
      * </pre>
      *
      * <code>

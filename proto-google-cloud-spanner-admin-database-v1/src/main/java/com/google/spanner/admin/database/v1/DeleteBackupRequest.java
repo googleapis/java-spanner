@@ -22,7 +22,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [DeleteBackup][google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackup].
+ * The request for
+ * [DeleteBackup][google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackup].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.DeleteBackupRequest}
@@ -332,7 +333,8 @@ public final class DeleteBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * The request for [DeleteBackup][google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackup].
+   * The request for
+   * [DeleteBackup][google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackup].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.DeleteBackupRequest}

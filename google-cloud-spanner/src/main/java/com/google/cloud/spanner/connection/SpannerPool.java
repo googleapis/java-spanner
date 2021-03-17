@@ -104,7 +104,7 @@ public class SpannerPool {
     public void run() {
       try {
         checkAndCloseSpanners(CheckAndCloseSpannersMode.WARN);
-      } catch (Exception e) {
+      } catch (Throwable e) {
         // ignore
       }
     }
