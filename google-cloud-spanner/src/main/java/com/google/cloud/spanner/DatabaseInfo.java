@@ -40,7 +40,7 @@ public class DatabaseInfo {
      *
      * <p>The encryption configuration to be used for the database. The only encryption, other than
      * Google's default encryption, is a customer managed encryption with a provided key. If no
-     * encryption is provided, google's default encryption will be used.
+     * encryption is provided, Google's default encryption will be used.
      */
     public abstract Builder setEncryptionConfig(CustomerManagedEncryption encryptionConfig);
 
