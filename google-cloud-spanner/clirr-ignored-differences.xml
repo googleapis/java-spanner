@@ -504,4 +504,11 @@
     <className>com/google/cloud/spanner/DatabaseAdminClient</className>
     <method>com.google.api.gax.longrunning.OperationFuture createBackup(com.google.cloud.spanner.Backup)</method>
   </difference>
+  
+  <!-- Connection#closeAsync() -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture closeAsync()</method>
+  </difference>
 </differences>

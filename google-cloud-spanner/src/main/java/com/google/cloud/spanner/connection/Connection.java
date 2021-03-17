@@ -139,9 +139,18 @@ import java.util.concurrent.TimeUnit;
  */
 @InternalApi
 public interface Connection extends AutoCloseable {
-  /** Closes this connection. This is a no-op if the {@link Connection} has alread been closed. */
+
+  /** Closes this connection. This is a no-op if the {@link Connection} has already been closed. */
   @Override
   void close();
+
+  /**
+   * Closes this connection without blocking. This is a no-op if the {@link Connection} has already
+   * been closed. The {@link Connection} is no longer usable directly after calling this method. The
+   * returned {@link ApiFuture} is done when the running statement(s) (if any) on the connection
+   * have finished.
+   */
+  ApiFuture<Void> closeAsync();
 
   /** @return <code>true</code> if this connection has been closed. */
   boolean isClosed();
