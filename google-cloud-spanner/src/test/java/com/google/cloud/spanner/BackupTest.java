@@ -114,37 +114,6 @@ public class BackupTest {
   }
 
   @Test
-  public void createWithoutSource() {
-    Timestamp expireTime = Timestamp.now();
-    Backup backup =
-        dbClient
-            .newBackupBuilder(BackupId.of("test-project", "dest-instance", "backup-id"))
-            .setExpireTime(expireTime)
-            .build();
-    try {
-      backup.create();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
-  }
-
-  @Test
-  public void createWithoutExpireTime() {
-    Backup backup =
-        dbClient
-            .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
-            .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
-            .build();
-    try {
-      backup.create();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
-  }
-
-  @Test
   public void createWithoutVersionTimeShouldSucceed() {
     final Timestamp expireTime = Timestamp.now();
     Backup backup =

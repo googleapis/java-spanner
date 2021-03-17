@@ -219,8 +219,7 @@ public class BackupInfo {
 
   /**
    * Returns the {@link BackupEncryptionConfig} to encrypt the backup during its creation. Returns
-   * <code>
-   * null</code> if no customer-managed encryption key should be used.
+   * <code>null</code> if no customer-managed encryption key should be used.
    */
   public BackupEncryptionConfig getEncryptionConfig() {
     return encryptionConfig;

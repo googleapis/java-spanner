@@ -17,7 +17,6 @@ package com.google.cloud.spanner.encryption;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -37,7 +36,6 @@ public class EncryptionConfigsTest {
   @Test(expected = IllegalArgumentException.class)
   public void testCustomerManagedEncryptionNullKeyName() {
     EncryptionConfigs.customerManagedEncryption(null);
-    fail("Customer managed encryption with null key should fail");
   }
 
   @Test

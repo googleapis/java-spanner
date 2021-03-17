@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -261,7 +262,7 @@ public class DatabaseAdminClientImplTest {
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
     try {
       client.listDatabases(INSTANCE_ID, Options.pageSize(1));
-      Assert.fail("Missing expected exception");
+      fail("Missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getMessage()).contains(INSTANCE_NAME);
       // Assert that the call was done without a page token.
@@ -279,7 +280,7 @@ public class DatabaseAdminClientImplTest {
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
     try {
       Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
-      Assert.fail("Missing expected exception");
+      fail("Missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getMessage()).contains(INSTANCE_NAME);
       // Assert that the call was done without a page token.
@@ -388,12 +389,6 @@ public class DatabaseAdminClientImplTest {
     final Timestamp versionTime =
         Timestamp.ofTimeMicroseconds(
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
-    final Backup expectedCallBackup =
-        Backup.newBuilder()
-            .setDatabase(DB_NAME)
-            .setExpireTime(expireTime.toProto())
-            .setVersionTime(versionTime.toProto())
-            .build();
     final com.google.cloud.spanner.Backup requestBackup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
@@ -408,6 +403,28 @@ public class DatabaseAdminClientImplTest {
         client.createBackup(requestBackup);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateBackupNoExpireTime() {
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+
+    client.createBackup(requestBackup);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateBackupNoDatabase() {
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(Timestamp.now())
+            .build();
+
+    client.createBackup(requestBackup);
   }
 
   @Test

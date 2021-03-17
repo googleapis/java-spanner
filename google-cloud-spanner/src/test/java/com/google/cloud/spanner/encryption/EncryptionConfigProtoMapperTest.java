@@ -16,7 +16,6 @@
 package com.google.cloud.spanner.encryption;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
@@ -85,7 +84,6 @@ public class EncryptionConfigProtoMapperTest {
   @Test(expected = IllegalArgumentException.class)
   public void testCreateBackupInvalidEncryption() {
     EncryptionConfigProtoMapper.createBackupEncryptionConfig(null);
-    fail("Create backup encryption config with invalid encryption should fail");
   }
 
   @Test
@@ -137,6 +135,5 @@ public class EncryptionConfigProtoMapperTest {
   @Test(expected = IllegalArgumentException.class)
   public void testRestoreDatabaseConfigInvalidEncryption() {
     EncryptionConfigProtoMapper.restoreDatabaseEncryptionConfig(null);
-    fail("Restore database encryption config with invalid encryption should fail");
   }
 }

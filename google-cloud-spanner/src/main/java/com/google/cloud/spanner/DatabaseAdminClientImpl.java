@@ -143,6 +143,11 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   @Override
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backupInfo)
       throws SpannerException {
+    Preconditions.checkArgument(
+        backupInfo.getExpireTime() != null, "Cannot create a backup without an expire time");
+    Preconditions.checkArgument(
+        backupInfo.getDatabase() != null, "Cannot create a backup without a source database");
+
     final OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
         rawOperationFuture = rpc.createBackup(backupInfo);
 

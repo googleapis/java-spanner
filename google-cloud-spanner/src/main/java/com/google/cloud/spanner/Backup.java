@@ -62,10 +62,6 @@ public class Backup extends BackupInfo {
 
   /** Creates a backup on the server based on the source of this {@link Backup} instance. */
   public OperationFuture<Backup, CreateBackupMetadata> create() {
-    Preconditions.checkState(
-        getExpireTime() != null, "Cannot create a backup without an expire time");
-    Preconditions.checkState(
-        getDatabase() != null, "Cannot create a backup without a source database");
     return dbClient.createBackup(this);
   }
 

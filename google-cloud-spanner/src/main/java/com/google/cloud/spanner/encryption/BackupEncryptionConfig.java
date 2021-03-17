@@ -20,4 +20,4 @@ import com.google.api.core.InternalApi;
 
 /** Marker interface for encryption configurations that can be applied on backups. */
 @InternalApi
-public interface BackupEncryptionConfig extends EncryptionConfig {}
+public interface BackupEncryptionConfig {}
