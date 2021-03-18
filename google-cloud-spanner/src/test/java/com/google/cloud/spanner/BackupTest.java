@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -30,6 +31,9 @@ import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup.Builder;
 import com.google.cloud.spanner.BackupInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,11 +46,20 @@ import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class BackupTest {
+
   private static final String NAME =
       "projects/test-project/instances/test-instance/backups/backup-1";
   private static final String DB = "projects/test-project/instances/test-instance/databases/db-1";
   private static final Timestamp EXP_TIME = Timestamp.ofTimeSecondsAndNanos(1000L, 1000);
   private static final Timestamp VERSION_TIME = Timestamp.ofTimeSecondsAndNanos(2000L, 2000);
+  public static final String KMS_KEY_VERSION = "key-version";
+  private static final com.google.spanner.admin.database.v1.EncryptionInfo ENCRYPTION_INFO =
+      com.google.spanner.admin.database.v1.EncryptionInfo.newBuilder()
+          .setEncryptionType(
+              com.google.spanner.admin.database.v1.EncryptionInfo.Type.CUSTOMER_MANAGED_ENCRYPTION)
+          .setEncryptionStatus(Status.newBuilder().setCode(Code.OK.getNumber()))
+          .setKmsKeyVersion(KMS_KEY_VERSION)
+          .build();
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -98,37 +111,6 @@ public class BackupTest {
             .build();
     backup.create();
     verify(dbClient).createBackup(backup);
-  }
-
-  @Test
-  public void createWithoutSource() {
-    Timestamp expireTime = Timestamp.now();
-    Backup backup =
-        dbClient
-            .newBackupBuilder(BackupId.of("test-project", "dest-instance", "backup-id"))
-            .setExpireTime(expireTime)
-            .build();
-    try {
-      backup.create();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
-  }
-
-  @Test
-  public void createWithoutExpireTime() {
-    Backup backup =
-        dbClient
-            .newBackupBuilder(BackupId.of("test-project", "instance-id", "backup-id"))
-            .setDatabase(DatabaseId.of("test-project", "instance-id", "src-database"))
-            .build();
-    try {
-      backup.create();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
   }
 
   @Test
@@ -318,6 +300,17 @@ public class BackupTest {
     assertThat(backup.getState()).isEqualTo(BackupInfo.State.CREATING);
     assertThat(backup.getExpireTime()).isEqualTo(EXP_TIME);
     assertThat(backup.getVersionTime()).isEqualTo(VERSION_TIME);
+    assertThat(backup.getEncryptionInfo())
+        .isEqualTo(EncryptionInfo.fromProtoOrNull(ENCRYPTION_INFO));
+  }
+
+  @Test
+  public void testEqualsAndHashCode() {
+    final Backup backup1 = createBackup();
+    final Backup backup2 = createBackup();
+
+    assertEquals(backup1, backup2);
+    assertEquals(backup1.hashCode(), backup2.hashCode());
   }
 
   private Backup createBackup() {
@@ -329,6 +322,7 @@ public class BackupTest {
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
             .setVersionTime(
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
+            .setEncryptionInfo(ENCRYPTION_INFO)
             .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
             .build();
     return Backup.fromProto(proto, dbClient);

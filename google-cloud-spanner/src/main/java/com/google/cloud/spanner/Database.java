@@ -22,6 +22,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -185,6 +186,7 @@ public class Database extends DatabaseInfo {
         .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
         .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
         .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
+        .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
         .setProto(proto)
         .build();
   }

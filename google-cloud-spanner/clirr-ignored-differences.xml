@@ -319,7 +319,7 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getNumericArray()</method>
   </difference>
-  
+
   <!-- Async Connection API -->
   <difference>
     <differenceType>7012</differenceType>
@@ -406,7 +406,7 @@
     <className>com/google/cloud/spanner/AbstractLazyInitializer</className>
     <method>java.lang.Object initialize()</method>
   </difference>
-  
+
   <!-- TransactionOptions and UpdateOptions -->
   <difference>
     <differenceType>7004</differenceType>
@@ -503,5 +503,72 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/DatabaseAdminClient</className>
     <method>com.google.api.gax.longrunning.OperationFuture createBackup(com.google.cloud.spanner.Backup)</method>
+  </difference>
+
+  <!-- Support creating encrypted databases -->
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createBackup(java.lang.String, java.lang.String, com.google.spanner.admin.database.v1.Backup)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture restoreDatabase(java.lang.String, java.lang.String, java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createBackup(java.lang.String, java.lang.String, com.google.spanner.admin.database.v1.Backup)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture restoreDatabase(java.lang.String, java.lang.String, java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(com.google.cloud.spanner.Database, java.lang.Iterable)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createBackup(com.google.cloud.spanner.Backup)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture restoreDatabase(com.google.cloud.spanner.Restore)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.cloud.spanner.Database$Builder newDatabaseBuilder(com.google.cloud.spanner.DatabaseId)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.cloud.spanner.Restore$Builder newRestoreBuilder(com.google.cloud.spanner.BackupId, com.google.cloud.spanner.DatabaseId)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/DatabaseInfo$Builder</className>
+    <method>com.google.cloud.spanner.DatabaseInfo$Builder setEncryptionConfig(com.google.cloud.spanner.encryption.CustomerManagedEncryption)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/BackupInfo$Builder</className>
+    <method>com.google.cloud.spanner.BackupInfo$Builder setEncryptionConfig(com.google.cloud.spanner.encryption.BackupEncryptionConfig)</method>
   </difference>
 </differences>
