@@ -571,4 +571,11 @@
     <className>com/google/cloud/spanner/BackupInfo$Builder</className>
     <method>com.google.cloud.spanner.BackupInfo$Builder setEncryptionConfig(com.google.cloud.spanner.encryption.BackupEncryptionConfig)</method>
   </difference>
+
+  <!-- Connection#closeAsync() -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.api.core.ApiFuture closeAsync()</method>
+  </difference>
 </differences>

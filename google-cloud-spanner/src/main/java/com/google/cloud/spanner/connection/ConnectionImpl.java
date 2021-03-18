@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
@@ -42,6 +43,7 @@ import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,8 +51,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -257,28 +262,49 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void close() {
-    if (!isClosed()) {
-      try {
-        if (isTransactionStarted()) {
-          try {
-            rollback();
-          } catch (Exception e) {
-            // Ignore as we are closing the connection.
-          }
-        }
-        // Try to wait for the current statement to finish (if any) before we actually close the
-        // connection.
-        this.closed = true;
-        statementExecutor.shutdown();
-        leakedException = null;
-        spannerPool.removeConnection(options, this);
-        statementExecutor.awaitTermination(10L, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        // ignore and continue to close the connection.
-      } finally {
-        statementExecutor.shutdownNow();
-      }
+    try {
+      closeAsync().get(10L, TimeUnit.SECONDS);
+    } catch (SpannerException | InterruptedException | ExecutionException | TimeoutException e) {
+      // ignore and continue to close the connection.
+    } finally {
+      statementExecutor.shutdownNow();
     }
+  }
+
+  public ApiFuture<Void> closeAsync() {
+    if (!isClosed()) {
+      List<ApiFuture<Void>> futures = new ArrayList<>();
+      if (isTransactionStarted()) {
+        futures.add(rollbackAsync());
+      }
+      // Try to wait for the current statement to finish (if any) before we actually close the
+      // connection.
+      this.closed = true;
+      // Add a no-op statement to the execute. Once this has been executed, we know that all
+      // preceeding statements have also been executed, as the executor is single-threaded and
+      // executes all statements in order of submitting.
+      futures.add(
+          statementExecutor.submit(
+              new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                  return null;
+                }
+              }));
+      statementExecutor.shutdown();
+      leakedException = null;
+      spannerPool.removeConnection(options, this);
+      return ApiFutures.transform(
+          ApiFutures.allAsList(futures),
+          new ApiFunction<List<Void>, Void>() {
+            @Override
+            public Void apply(List<Void> input) {
+              return null;
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+    return ApiFutures.immediateFuture(null);
   }
 
   /** Get the current unit-of-work type of this connection. */
