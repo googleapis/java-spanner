@@ -57,6 +57,7 @@ import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -69,6 +70,7 @@ import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
+import com.google.cloud.spanner.encryption.EncryptionConfigProtoMapper;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -971,17 +973,22 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       final String instanceName,
       String createDatabaseStatement,
-      Iterable<String> additionalStatements)
+      Iterable<String> additionalStatements,
+      com.google.cloud.spanner.Database databaseInfo)
       throws SpannerException {
     final String databaseId =
         createDatabaseStatement.substring(
             "CREATE DATABASE `".length(), createDatabaseStatement.length() - 1);
-    CreateDatabaseRequest request =
+    CreateDatabaseRequest.Builder requestBuilder =
         CreateDatabaseRequest.newBuilder()
             .setParent(instanceName)
             .setCreateStatement(createDatabaseStatement)
-            .addAllExtraStatements(additionalStatements)
-            .build();
+            .addAllExtraStatements(additionalStatements);
+    if (databaseInfo.getEncryptionConfig() != null) {
+      requestBuilder.setEncryptionConfig(
+          EncryptionConfigProtoMapper.encryptionConfig(databaseInfo.getEncryptionConfig()));
+    }
+    final CreateDatabaseRequest request = requestBuilder.build();
 
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>(
@@ -1145,15 +1152,31 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
-      final String instanceName, final String backupId, final Backup backup)
-      throws SpannerException {
-    CreateBackupRequest request =
+      final com.google.cloud.spanner.Backup backupInfo) throws SpannerException {
+    final String instanceName = backupInfo.getInstanceId().getName();
+    final String databaseName = backupInfo.getDatabase().getName();
+    final String backupId = backupInfo.getId().getBackup();
+    final Backup.Builder backupBuilder =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setDatabase(databaseName)
+            .setExpireTime(backupInfo.getExpireTime().toProto());
+    if (backupInfo.getVersionTime() != null) {
+      backupBuilder.setVersionTime(backupInfo.getVersionTime().toProto());
+    }
+    final Backup backup = backupBuilder.build();
+
+    final CreateBackupRequest.Builder requestBuilder =
         CreateBackupRequest.newBuilder()
             .setParent(instanceName)
             .setBackupId(backupId)
-            .setBackup(backup)
-            .build();
-    OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
+            .setBackup(backup);
+    if (backupInfo.getEncryptionConfig() != null) {
+      requestBuilder.setEncryptionConfig(
+          EncryptionConfigProtoMapper.createBackupEncryptionConfig(
+              backupInfo.getEncryptionConfig()));
+    }
+    final CreateBackupRequest request = requestBuilder.build();
+    final OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
         new OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata>(
             databaseAdminStub.createBackupOperationCallable(),
             request,
@@ -1197,48 +1220,54 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
-      final String databaseInstanceName, final String databaseId, String backupName) {
-    RestoreDatabaseRequest request =
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(final Restore restore) {
+    final String databaseInstanceName = restore.getDestination().getInstanceId().getName();
+    final String databaseId = restore.getDestination().getDatabase();
+    final RestoreDatabaseRequest.Builder requestBuilder =
         RestoreDatabaseRequest.newBuilder()
             .setParent(databaseInstanceName)
             .setDatabaseId(databaseId)
-            .setBackup(backupName)
-            .build();
+            .setBackup(restore.getSource().getName());
+    if (restore.getEncryptionConfig() != null) {
+      requestBuilder.setEncryptionConfig(
+          EncryptionConfigProtoMapper.restoreDatabaseEncryptionConfig(
+              restore.getEncryptionConfig()));
+    }
 
-    OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata> callable =
-        new OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>(
-            databaseAdminStub.restoreDatabaseOperationCallable(),
-            request,
-            DatabaseAdminGrpc.getRestoreDatabaseMethod(),
-            databaseInstanceName,
-            new OperationsLister() {
-              @Override
-              public Paginated<Operation> listOperations(String nextPageToken) {
-                return listDatabaseOperations(
-                    databaseInstanceName,
-                    0,
-                    String.format(
-                        "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
-                        RestoreDatabaseMetadata.getDescriptor().getFullName(),
-                        String.format("%s/databases/%s", databaseInstanceName, databaseId)),
-                    nextPageToken);
-              }
-            },
-            new Function<Operation, Timestamp>() {
-              @Override
-              public Timestamp apply(Operation input) {
-                try {
-                  return input
-                      .getMetadata()
-                      .unpack(RestoreDatabaseMetadata.class)
-                      .getProgress()
-                      .getStartTime();
-                } catch (InvalidProtocolBufferException e) {
-                  return null;
-                }
-              }
-            });
+    final OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+        callable =
+            new OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>(
+                databaseAdminStub.restoreDatabaseOperationCallable(),
+                requestBuilder.build(),
+                DatabaseAdminGrpc.getRestoreDatabaseMethod(),
+                databaseInstanceName,
+                new OperationsLister() {
+                  @Override
+                  public Paginated<Operation> listOperations(String nextPageToken) {
+                    return listDatabaseOperations(
+                        databaseInstanceName,
+                        0,
+                        String.format(
+                            "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
+                            RestoreDatabaseMetadata.getDescriptor().getFullName(),
+                            String.format("%s/databases/%s", databaseInstanceName, databaseId)),
+                        nextPageToken);
+                  }
+                },
+                new Function<Operation, Timestamp>() {
+                  @Override
+                  public Timestamp apply(Operation input) {
+                    try {
+                      return input
+                          .getMetadata()
+                          .unpack(RestoreDatabaseMetadata.class)
+                          .getProgress()
+                          .getStartTime();
+                    } catch (InvalidProtocolBufferException e) {
+                      return null;
+                    }
+                  }
+                });
     return RetryHelper.runWithRetries(
         callable,
         databaseAdminStubSettings
