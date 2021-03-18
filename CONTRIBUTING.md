@@ -57,9 +57,12 @@ Code Samples must be bundled in separate Maven modules, and guarded by a
 Maven profile with the name `enable-samples`.
 
 The samples must be separate from the primary project for a few reasons:
-1. Many code samples depend on external GCP services and need
+1. Primary projects have a minimum Java version of Java 7 whereas samples have
+   a minimum Java version of Java 8. Due to this we need the ability to
+   selectively exclude samples from a build run.
+2. Many code samples depend on external GCP services and need
    credentials to access the service.
-2. Code samples are not released as Maven artifacts and must be excluded from
+3. Code samples are not released as Maven artifacts and must be excluded from 
    release builds.
    
 ### Building
