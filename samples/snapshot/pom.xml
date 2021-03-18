@@ -31,7 +31,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>5.1.1-SNAPSHOT</version>
+      <version>5.2.0</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
