@@ -210,6 +210,9 @@ class ConnectionImpl implements Connection {
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
+    if (options.isAutoConfigEmulator()) {
+      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+    }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
