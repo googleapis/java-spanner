@@ -17,10 +17,13 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
 import org.junit.Test;
@@ -116,6 +119,34 @@ public class ConnectionOptionsTest {
         .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
     assertThat(options.isAutocommit()).isEqualTo(ConnectionOptions.DEFAULT_AUTOCOMMIT);
     assertThat(options.isReadOnly()).isEqualTo(ConnectionOptions.DEFAULT_READONLY);
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulator() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://localhost:9010", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulatorAndHost() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner://central-emulator.local:8080/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://central-emulator.local:8080", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
   }
 
   @Test

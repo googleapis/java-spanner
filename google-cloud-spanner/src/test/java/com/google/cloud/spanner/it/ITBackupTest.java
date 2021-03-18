@@ -42,11 +42,14 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
@@ -59,6 +62,7 @@ import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,7 +91,9 @@ import org.junit.runners.JUnit4;
 public class ITBackupTest {
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
   private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
+  private static final String KMS_KEY_NAME_PROPERTY = "spanner.testenv.kms_key.name";
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  private static String keyName;
 
   private DatabaseAdminClient dbAdminClient;
   private InstanceAdminClient instanceAdminClient;
@@ -101,6 +107,10 @@ public class ITBackupTest {
   @BeforeClass
   public static void doNotRunOnEmulator() {
     assumeFalse("backups are not supported on the emulator", isUsingEmulator());
+    keyName = System.getProperty(KMS_KEY_NAME_PROPERTY);
+    Preconditions.checkNotNull(
+        keyName,
+        "Key name is null, please set a key to be used for this test. The necessary permissions should be grant to the spanner service account according to the CMEK user guide.");
   }
 
   @Before
@@ -199,13 +209,18 @@ public class ITBackupTest {
   @Test
   public void testBackups() throws InterruptedException, ExecutionException {
     // Create two test databases in parallel.
-    String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
+    final String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
+    final Database sourceDatabase1 =
+        dbAdminClient
+            .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, db1Id))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
+            .build();
     logger.info(String.format("Creating test database %s", db1Id));
     OperationFuture<Database, CreateDatabaseMetadata> dbOp1 =
         dbAdminClient.createDatabase(
-            testHelper.getInstanceId().getInstance(),
-            db1Id,
-            Arrays.asList("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+            sourceDatabase1,
+            Collections.singletonList(
+                "CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     String db2Id = testHelper.getUniqueDatabaseId() + "_db2";
     logger.info(String.format("Creating test database %s", db2Id));
     OperationFuture<Database, CreateDatabaseMetadata> dbOp2 =
@@ -229,6 +244,9 @@ public class ITBackupTest {
                 .to("TEST")
                 .build()));
 
+    // Verifies that the database encryption has been properly set
+    testDatabaseEncryption(db1);
+
     // Create two backups in parallel.
     String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
     String backupId2 = testHelper.getUniqueBackupId() + "_bck2";
@@ -236,12 +254,14 @@ public class ITBackupTest {
     Timestamp versionTime = getCurrentTimestamp(client);
     logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
     // This backup has the version time specified as the server's current timestamp
+    // This backup is encrypted with a customer managed key
     final Backup backupToCreate1 =
         dbAdminClient
             .newBackupBuilder(BackupId.of(projectId, instanceId, backupId1))
             .setDatabase(db1.getId())
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
     // This backup has no version time specified
     final Backup backupToCreate2 =
@@ -287,12 +307,14 @@ public class ITBackupTest {
             "Backup2 still not finished. Test is giving up waiting for it.");
       }
       logger.info("Long-running operations finished. Getting backups by id.");
-      backup1 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId1);
-      backup2 = dbAdminClient.getBackup(this.instance.getId().getInstance(), backupId2);
+      backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
+      backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
     }
 
     // Verifies that backup version time is the specified one
     testBackupVersionTime(backup1, versionTime);
+    // Verifies that backup encryption has been properly set
+    testBackupEncryption(backup1);
 
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
@@ -308,7 +330,7 @@ public class ITBackupTest {
     // Test listing operations.
     // List all backups.
     logger.info("Listing all backups");
-    assertThat(this.instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
+    assertThat(instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
     // List all backups whose names contain 'bck1'.
     logger.info("Listing backups with name bck1");
     assertThat(
@@ -423,6 +445,20 @@ public class ITBackupTest {
     logger.info("Verifying backup version time for " + backup.getId());
     assertThat(backup.getVersionTime()).isEqualTo(versionTime);
     logger.info("Done verifying backup version time for " + backup.getId());
+  }
+
+  private void testDatabaseEncryption(Database database) {
+    logger.info("Verifying database encryption for " + database.getId());
+    assertThat(database.getEncryptionConfig()).isNotNull();
+    assertThat(database.getEncryptionConfig().getKmsKeyName()).isEqualTo(keyName);
+    logger.info("Done verifying database encryption for " + database.getId());
+  }
+
+  private void testBackupEncryption(Backup backup) {
+    logger.info("Verifying backup encryption for " + backup.getId());
+    assertThat(backup.getEncryptionInfo()).isNotNull();
+    assertThat(backup.getEncryptionInfo().getKmsKeyVersion()).isNotNull();
+    logger.info("Done verifying backup encryption for " + backup.getId());
   }
 
   private void testMetadata(
@@ -590,15 +626,20 @@ public class ITBackupTest {
     // Restore the backup to a new database.
     String restoredDb = testHelper.getUniqueDatabaseId();
     String restoreOperationName;
-    OperationFuture<Database, RestoreDatabaseMetadata> restoreOp;
+    OperationFuture<Database, RestoreDatabaseMetadata> restoreOperation;
     int attempts = 0;
     while (true) {
       try {
         logger.info(
             String.format(
                 "Restoring backup %s to database %s", backup.getId().getBackup(), restoredDb));
-        restoreOp = backup.restore(DatabaseId.of(testHelper.getInstanceId(), restoredDb));
-        restoreOperationName = restoreOp.getName();
+        final Restore restore =
+            dbAdminClient
+                .newRestoreBuilder(backup.getId(), DatabaseId.of(projectId, instanceId, restoredDb))
+                .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
+                .build();
+        restoreOperation = dbAdminClient.restoreDatabase(restore);
+        restoreOperationName = restoreOperation.getName();
         break;
       } catch (ExecutionException e) {
         if (e.getCause() instanceof FailedPreconditionException
@@ -624,7 +665,7 @@ public class ITBackupTest {
     }
     databases.add(restoredDb);
     logger.info(String.format("Restore operation %s running", restoreOperationName));
-    RestoreDatabaseMetadata metadata = restoreOp.getMetadata().get();
+    RestoreDatabaseMetadata metadata = restoreOperation.getMetadata().get();
     assertThat(metadata.getBackupInfo().getBackup()).isEqualTo(backup.getId().getName());
     assertThat(metadata.getSourceType()).isEqualTo(RestoreSourceType.BACKUP);
     assertThat(metadata.getName())
@@ -637,7 +678,7 @@ public class ITBackupTest {
     //    verifyRestoreOperations(backupOp.getName(), restoreOperationName);
 
     // Wait until the restore operation has finished successfully.
-    Database database = restoreOp.get();
+    Database database = restoreOperation.get();
     assertThat(database.getId().getDatabase()).isEqualTo(restoredDb);
 
     // Reloads the database
@@ -646,6 +687,7 @@ public class ITBackupTest {
             Timestamp.fromProto(
                 reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()))
         .isEqualTo(versionTime);
+    testDatabaseEncryption(reloadedDatabase);
 
     // Restoring the backup to an existing database should fail.
     try {

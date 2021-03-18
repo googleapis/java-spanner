@@ -84,7 +84,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void createSession(
       CreateSessionRequest request, StreamObserver<Session> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof Session) {
       requests.add(request);
       responseObserver.onNext(((Session) response));
@@ -96,7 +96,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method CreateSession, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   Session.class.getName(),
                   Exception.class.getName())));
     }
@@ -106,7 +106,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   public void batchCreateSessions(
       BatchCreateSessionsRequest request,
       StreamObserver<BatchCreateSessionsResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof BatchCreateSessionsResponse) {
       requests.add(request);
       responseObserver.onNext(((BatchCreateSessionsResponse) response));
@@ -118,7 +118,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method BatchCreateSessions, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   BatchCreateSessionsResponse.class.getName(),
                   Exception.class.getName())));
     }
@@ -126,7 +126,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void getSession(GetSessionRequest request, StreamObserver<Session> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof Session) {
       requests.add(request);
       responseObserver.onNext(((Session) response));
@@ -138,7 +138,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method GetSession, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   Session.class.getName(),
                   Exception.class.getName())));
     }
@@ -147,7 +147,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void listSessions(
       ListSessionsRequest request, StreamObserver<ListSessionsResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof ListSessionsResponse) {
       requests.add(request);
       responseObserver.onNext(((ListSessionsResponse) response));
@@ -159,7 +159,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method ListSessions, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   ListSessionsResponse.class.getName(),
                   Exception.class.getName())));
     }
@@ -167,7 +167,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void deleteSession(DeleteSessionRequest request, StreamObserver<Empty> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof Empty) {
       requests.add(request);
       responseObserver.onNext(((Empty) response));
@@ -179,7 +179,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method DeleteSession, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   Empty.class.getName(),
                   Exception.class.getName())));
     }
@@ -187,7 +187,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void executeSql(ExecuteSqlRequest request, StreamObserver<ResultSet> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof ResultSet) {
       requests.add(request);
       responseObserver.onNext(((ResultSet) response));
@@ -199,7 +199,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method ExecuteSql, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   ResultSet.class.getName(),
                   Exception.class.getName())));
     }
@@ -208,7 +208,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void executeStreamingSql(
       ExecuteSqlRequest request, StreamObserver<PartialResultSet> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof PartialResultSet) {
       requests.add(request);
       responseObserver.onNext(((PartialResultSet) response));
@@ -220,7 +220,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method ExecuteStreamingSql, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   PartialResultSet.class.getName(),
                   Exception.class.getName())));
     }
@@ -229,7 +229,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void executeBatchDml(
       ExecuteBatchDmlRequest request, StreamObserver<ExecuteBatchDmlResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof ExecuteBatchDmlResponse) {
       requests.add(request);
       responseObserver.onNext(((ExecuteBatchDmlResponse) response));
@@ -241,7 +241,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method ExecuteBatchDml, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   ExecuteBatchDmlResponse.class.getName(),
                   Exception.class.getName())));
     }
@@ -249,7 +249,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void read(ReadRequest request, StreamObserver<ResultSet> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof ResultSet) {
       requests.add(request);
       responseObserver.onNext(((ResultSet) response));
@@ -261,7 +261,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method Read, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   ResultSet.class.getName(),
                   Exception.class.getName())));
     }
@@ -270,7 +270,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void streamingRead(
       ReadRequest request, StreamObserver<PartialResultSet> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof PartialResultSet) {
       requests.add(request);
       responseObserver.onNext(((PartialResultSet) response));
@@ -282,7 +282,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method StreamingRead, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   PartialResultSet.class.getName(),
                   Exception.class.getName())));
     }
@@ -291,7 +291,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof Transaction) {
       requests.add(request);
       responseObserver.onNext(((Transaction) response));
@@ -303,7 +303,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method BeginTransaction, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   Transaction.class.getName(),
                   Exception.class.getName())));
     }
@@ -311,7 +311,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void commit(CommitRequest request, StreamObserver<CommitResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof CommitResponse) {
       requests.add(request);
       responseObserver.onNext(((CommitResponse) response));
@@ -323,7 +323,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method Commit, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   CommitResponse.class.getName(),
                   Exception.class.getName())));
     }
@@ -331,7 +331,7 @@ public class MockSpannerImpl extends SpannerImplBase {
 
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof Empty) {
       requests.add(request);
       responseObserver.onNext(((Empty) response));
@@ -343,7 +343,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method Rollback, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   Empty.class.getName(),
                   Exception.class.getName())));
     }
@@ -352,7 +352,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void partitionQuery(
       PartitionQueryRequest request, StreamObserver<PartitionResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof PartitionResponse) {
       requests.add(request);
       responseObserver.onNext(((PartitionResponse) response));
@@ -364,7 +364,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method PartitionQuery, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   PartitionResponse.class.getName(),
                   Exception.class.getName())));
     }
@@ -373,7 +373,7 @@ public class MockSpannerImpl extends SpannerImplBase {
   @Override
   public void partitionRead(
       PartitionReadRequest request, StreamObserver<PartitionResponse> responseObserver) {
-    Object response = responses.remove();
+    Object response = responses.poll();
     if (response instanceof PartitionResponse) {
       requests.add(request);
       responseObserver.onNext(((PartitionResponse) response));
@@ -385,7 +385,7 @@ public class MockSpannerImpl extends SpannerImplBase {
           new IllegalArgumentException(
               String.format(
                   "Unrecognized response type %s for method PartitionRead, expected %s or %s",
-                  response.getClass().getName(),
+                  response == null ? "null" : response.getClass().getName(),
                   PartitionResponse.class.getName(),
                   Exception.class.getName())));
     }
