@@ -372,8 +372,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                         }
                         span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
                         TraceUtil.endSpanWithFailure(opSpan, e);
-                        onError((SpannerException) e, false);
-                        res.setException(e);
+                        res.setException(onError((SpannerException) e, false));
                       }
                     }
                   }),
@@ -519,7 +518,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public void onError(SpannerException e, boolean withBeginTransaction) {
+    public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
       // If the statement that caused an error was the statement that included a BeginTransaction
       // option, we simulate an aborted transaction to force a retry of the entire transaction. This
       // will cause the retry to execute an explicit BeginTransaction RPC and then the actual
@@ -536,14 +535,33 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
                     "Aborted due to failed initial statement", e, 0, 1)));
       }
+      SpannerException exceptionToThrow;
+      if (withBeginTransaction
+          && e.getErrorCode() == ErrorCode.CANCELLED
+          && e.getMessage().contains("invalidated by a later transaction")) {
+        // If the first statement of a transaction fails because it was invalidated by a later
+        // transaction, then the transaction should be retried with an explicit BeginTransaction
+        // RPC. It could be that this occurred because of a previous transaction that timed out or
+        // was cancelled by the client, but that was sent to Cloud Spanner and that was still active
+        // on the backend.
+        exceptionToThrow =
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED,
+                e.getMessage(),
+                SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+                    "Aborted due to failed initial statement", e, 0, 1));
+      } else {
+        exceptionToThrow = e;
+      }
 
-      if (e.getErrorCode() == ErrorCode.ABORTED) {
+      if (exceptionToThrow.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
-        if (e instanceof AbortedException) {
-          delay = ((AbortedException) e).getRetryDelayInMillis();
+        if (exceptionToThrow instanceof AbortedException) {
+          delay = ((AbortedException) exceptionToThrow).getRetryDelayInMillis();
         }
         if (delay == -1L) {
-          txnLogger.log(Level.FINE, "Retry duration is missing from the exception.", e);
+          txnLogger.log(
+              Level.FINE, "Retry duration is missing from the exception.", exceptionToThrow);
         }
 
         synchronized (lock) {
@@ -551,6 +569,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           aborted = true;
         }
       }
+      return exceptionToThrow;
     }
 
     @Override
@@ -607,8 +626,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
       } catch (Throwable t) {
-        onError(SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
-        throw t;
+        throw onError(
+            SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
       }
     }
 
@@ -661,8 +680,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public Long apply(Throwable input) {
                   SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  onError(e, builder.getTransaction().hasBegin());
-                  throw e;
+                  throw onError(e, builder.getTransaction().hasBegin());
                 }
               },
               MoreExecutors.directExecutor());
@@ -730,8 +748,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         return results;
       } catch (Throwable e) {
-        onError(SpannerExceptionFactory.asSpannerException(e), builder.getTransaction().hasBegin());
-        throw e;
+        throw onError(
+            SpannerExceptionFactory.asSpannerException(e), builder.getTransaction().hasBegin());
       }
     }
 
@@ -788,8 +806,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 @Override
                 public long[] apply(Throwable input) {
                   SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  onError(e, builder.getTransaction().hasBegin());
-                  throw e;
+                  throw onError(e, builder.getTransaction().hasBegin());
                 }
               },
               MoreExecutors.directExecutor());

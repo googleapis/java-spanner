@@ -81,8 +81,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
         throws SpannerException;
 
-    /** Called when the read finishes with an error. */
-    void onError(SpannerException e, boolean withBeginTransaction);
+    /** Called when the read finishes with an error. Returns the error that should be thrown. */
+    SpannerException onError(SpannerException e, boolean withBeginTransaction);
 
     /** Called when the read finishes normally. */
     void onDone(boolean withBeginTransaction);
@@ -159,9 +159,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
-      listener.onError(e, beginTransaction);
+      SpannerException toThrow = listener.onError(e, beginTransaction);
       close();
-      throw e;
+      throw toThrow;
     }
   }
   /**
