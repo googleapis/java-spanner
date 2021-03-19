@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.AfterClass;
@@ -54,9 +55,10 @@ public class EncryptionKeyIT {
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
 
-    String keyLocation = System.getProperty("spanner.test.key.location");
-    String keyRing = System.getProperty("spanner.test.key.ring");
-    String keyName = System.getProperty("spanner.test.key.name");
+    String keyLocation = Preconditions
+        .checkNotNull(System.getProperty("spanner.test.key.location"));
+    String keyRing = Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
+    String keyName = Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
     key = "projects/" + projectId + "/locations/" + keyLocation + "/keyRings/" + keyRing
         + "/cryptoKeys/" + keyName;
   }

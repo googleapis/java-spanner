@@ -102,7 +102,7 @@ public class CreateBackupWithEncryptionKey {
             backup.getProto().getCreateTime().getSeconds(),
             backup.getProto().getCreateTime().getNanos(),
             OffsetDateTime.now().getOffset()),
-        ((CustomerManagedEncryption) backup.getEncryptionConfig()).getKmsKeyName()
+        backup.getEncryptionInfo().getKmsKeyVersion()
     );
 
     return null;
