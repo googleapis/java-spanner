@@ -30,17 +30,17 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for: - {@link CreateDatabaseWithEncryptionKey} - {@link
- * CreateBackupWithEncryptionKey} - {@link RestoreBackupWithEncryptionKey}
+ * Integration tests for: {@link CreateDatabaseWithEncryptionKey}, {@link
+ * CreateBackupWithEncryptionKey} and {@link RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
 public class EncryptionKeyIT {
 
   private static String projectId;
   private static final String instanceId = System.getProperty("spanner.test.instance");
+  private static final List<String> databasesToDrop = new ArrayList<>();
+  private static final List<String> backupsToDrop = new ArrayList<>();
   private static DatabaseAdminClient databaseAdminClient;
-  private static List<String> databasesToDrop;
-  private static List<String> backupsToDrop;
   private static Spanner spanner;
   private static String key;
 
@@ -53,8 +53,6 @@ public class EncryptionKeyIT {
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
-    databasesToDrop = new ArrayList<>();
-    backupsToDrop = new ArrayList<>();
 
     String keyLocation = System.getProperty("spanner.test.key.location");
     String keyRing = System.getProperty("spanner.test.key.ring");
@@ -67,7 +65,7 @@ public class EncryptionKeyIT {
   public static void tearDown() {
     for (String databaseId : databasesToDrop) {
       try {
-        databaseAdminClient.deleteBackup(instanceId, databaseId);
+        databaseAdminClient.dropDatabase(instanceId, databaseId);
       } catch (Exception e) {
         System.out.println("Failed to drop database " + databaseId + ", skipping...");
       }

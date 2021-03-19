@@ -27,11 +27,10 @@ public class DatabaseIdGenerator {
   );
 
   static String generateDatabaseId() {
-    final String databaseId = (
+    return (
         BASE_DATABASE_ID
             + "-"
             + UUID.randomUUID().toString().replaceAll("-", "")
     ).substring(0, DATABASE_NAME_MAX_SIZE);
-    return databaseId;
   }
 }

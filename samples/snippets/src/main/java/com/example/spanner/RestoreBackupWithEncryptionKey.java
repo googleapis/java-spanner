@@ -26,7 +26,6 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.RestoreInfo;
 import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
@@ -43,7 +42,8 @@ public class RestoreBackupWithEncryptionKey {
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupId = "my-backup";
-    String kmsKeyName = "my-key";
+    String kmsKeyName =
+        "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
@@ -75,7 +75,7 @@ public class RestoreBackupWithEncryptionKey {
       database = operation.get(1600, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
-      throw (SpannerException) e.getCause();
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (InterruptedException e) {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.

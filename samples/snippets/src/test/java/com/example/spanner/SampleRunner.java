@@ -20,6 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
+/**
+ * Runs a sample and captures the output as a String.
+ */
 public class SampleRunner {
   public static String runSample(Callable<Void> sample) throws Exception {
     final PrintStream stdOut = System.out;
@@ -29,9 +32,5 @@ public class SampleRunner {
     sample.call();
     System.setOut(stdOut);
     return bout.toString();
-  }
-
-  public interface Sample {
-    void run();
   }
 }

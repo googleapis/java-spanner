@@ -25,7 +25,6 @@ import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
@@ -45,7 +44,8 @@ public class CreateBackupWithEncryptionKey {
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String backupId = "my-backup";
-    String kmsKeyName = "my-key";
+    String kmsKeyName =
+        "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
@@ -81,7 +81,7 @@ public class CreateBackupWithEncryptionKey {
       backup = operation.get(1200, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
-      throw (SpannerException) e.getCause();
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (InterruptedException e) {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.
@@ -91,14 +91,6 @@ public class CreateBackupWithEncryptionKey {
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
 
-    // Waits for the backup to be ready
-    int maxWaitRetries = 10;
-    int currentRetry = 0;
-    while (currentRetry < maxWaitRetries && !backup.isReady()) {
-      System.out.println("Waiting for backup to be ready");
-      Thread.sleep(10_000);
-      currentRetry++;
-    }
     // Reload the metadata of the backup from the server.
     backup = backup.reload();
 
