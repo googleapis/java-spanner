@@ -701,7 +701,9 @@ abstract class AbstractReadContext
   public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
 
   @Override
-  public void onError(SpannerException e, boolean withBeginTransaction) {}
+  public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    return e;
+  }
 
   @Override
   public void onDone(boolean withBeginTransaction) {}
