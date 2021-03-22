@@ -70,6 +70,11 @@ import javax.annotation.concurrent.GuardedBy;
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private static final Tracer tracer = Tracing.getTracer();
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
+  /**
+   * (Part of) the error message that is returned by Cloud Spanner if a transaction is cancelled
+   * because it was invalidated by a later transaction in the same session.
+   */
+  private static final String TRANSACTION_CANCELLED_MESSAGE = "invalidated by a later transaction";
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
@@ -538,7 +543,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       SpannerException exceptionToThrow;
       if (withBeginTransaction
           && e.getErrorCode() == ErrorCode.CANCELLED
-          && e.getMessage().contains("invalidated by a later transaction")) {
+          && e.getMessage().contains(TRANSACTION_CANCELLED_MESSAGE)) {
         // If the first statement of a transaction fails because it was invalidated by a later
         // transaction, then the transaction should be retried with an explicit BeginTransaction
         // RPC. It could be that this occurred because of a previous transaction that timed out or
