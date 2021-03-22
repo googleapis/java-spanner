@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiAsyncFunction;
@@ -1710,6 +1711,88 @@ public class InlineBeginTransactionTest {
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+    }
+
+    @Test
+    public void testInlinedBeginTx_withCancelledOnFirstStatement() {
+      final Statement statement = Statement.of("INSERT INTO FOO (Id) VALUES (1)");
+      mockSpanner.putStatementResult(
+          StatementResult.exception(
+              statement,
+              Status.CANCELLED
+                  .withDescription(
+                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                  .asRuntimeException()));
+
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      long updateCount =
+          client
+              .readWriteTransaction()
+              .run(
+                  new TransactionCallable<Long>() {
+                    int attempt = 0;
+
+                    @Override
+                    public Long run(TransactionContext transaction) throws Exception {
+                      if (attempt > 0) {
+                        mockSpanner.putStatementResult(StatementResult.update(statement, 1L));
+                      }
+                      attempt++;
+                      return transaction.executeUpdate(statement);
+                    }
+                  });
+      assertEquals(1L, updateCount);
+      // The transaction will be retried because the first statement that also tried to include the
+      // BeginTransaction statement failed with the specific CANCELLED error and did not return a
+      // transaction. That forces a retry of the entire transaction with an explicit
+      // BeginTransaction RPC.
+      assertEquals(1, countRequests(BeginTransactionRequest.class));
+      // The update statement will be executed 2 times:
+      assertEquals(2, countRequests(ExecuteSqlRequest.class));
+      // The transaction will attempt to commit once.
+      assertEquals(1, countRequests(CommitRequest.class));
+      // The first update will start a transaction, but then fail the update statement. This will
+      // start a transaction on the mock server, but that transaction will never be returned to the
+      // client.
+      assertEquals(2, countTransactionsStarted());
+    }
+
+    @Test
+    public void testInlinedBeginTx_withStickyCancelledOnFirstStatement() {
+      final Statement statement = Statement.of("INSERT INTO FOO (Id) VALUES (1)");
+      mockSpanner.putStatementResult(
+          StatementResult.exception(
+              statement,
+              Status.CANCELLED
+                  .withDescription(
+                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                  .asRuntimeException()));
+
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      // The CANCELLED error is thrown both on the first and second attempt. The second attempt will
+      // not be retried, as it did not include a BeginTransaction option.
+      try {
+        client
+            .readWriteTransaction()
+            .run(
+                new TransactionCallable<Long>() {
+                  @Override
+                  public Long run(TransactionContext transaction) throws Exception {
+                    return transaction.executeUpdate(statement);
+                  }
+                });
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+      }
+      assertEquals(1, countRequests(BeginTransactionRequest.class));
+      // The update statement will be executed 2 times:
+      assertEquals(2, countRequests(ExecuteSqlRequest.class));
+      // The transaction will never attempt to commit.
+      assertEquals(0, countRequests(CommitRequest.class));
+      assertEquals(2, countTransactionsStarted());
     }
   }
 
