@@ -116,6 +116,22 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
               returnCommitStats_ = input.readBool();
               break;
             }
+          case 50:
+            {
+              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+              if (requestOptions_ != null) {
+                subBuilder = requestOptions_.toBuilder();
+              }
+              requestOptions_ =
+                  input.readMessage(
+                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(requestOptions_);
+                requestOptions_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -462,6 +478,54 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return returnCommitStats_;
   }
 
+  public static final int REQUEST_OPTIONS_FIELD_NUMBER = 6;
+  private com.google.spanner.v1.RequestOptions requestOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+   *
+   * @return Whether the requestOptions field is set.
+   */
+  @java.lang.Override
+  public boolean hasRequestOptions() {
+    return requestOptions_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+   *
+   * @return The requestOptions.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptions getRequestOptions() {
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
+    return getRequestOptions();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -491,6 +555,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (returnCommitStats_ != false) {
       output.writeBool(5, returnCommitStats_);
     }
+    if (requestOptions_ != null) {
+      output.writeMessage(6, getRequestOptions());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -519,6 +586,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (returnCommitStats_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(5, returnCommitStats_);
     }
+    if (requestOptions_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(6, getRequestOptions());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -537,6 +607,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (!getSession().equals(other.getSession())) return false;
     if (!getMutationsList().equals(other.getMutationsList())) return false;
     if (getReturnCommitStats() != other.getReturnCommitStats()) return false;
+    if (hasRequestOptions() != other.hasRequestOptions()) return false;
+    if (hasRequestOptions()) {
+      if (!getRequestOptions().equals(other.getRequestOptions())) return false;
+    }
     if (!getTransactionCase().equals(other.getTransactionCase())) return false;
     switch (transactionCase_) {
       case 2:
@@ -567,6 +641,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + RETURN_COMMIT_STATS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getReturnCommitStats());
+    if (hasRequestOptions()) {
+      hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getRequestOptions().hashCode();
+    }
     switch (transactionCase_) {
       case 2:
         hash = (37 * hash) + TRANSACTION_ID_FIELD_NUMBER;
@@ -735,6 +813,12 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       }
       returnCommitStats_ = false;
 
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = null;
+      } else {
+        requestOptions_ = null;
+        requestOptionsBuilder_ = null;
+      }
       transactionCase_ = 0;
       transaction_ = null;
       return this;
@@ -785,6 +869,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         result.mutations_ = mutationsBuilder_.build();
       }
       result.returnCommitStats_ = returnCommitStats_;
+      if (requestOptionsBuilder_ == null) {
+        result.requestOptions_ = requestOptions_;
+      } else {
+        result.requestOptions_ = requestOptionsBuilder_.build();
+      }
       result.transactionCase_ = transactionCase_;
       onBuilt();
       return result;
@@ -868,6 +957,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.getReturnCommitStats() != false) {
         setReturnCommitStats(other.getReturnCommitStats());
+      }
+      if (other.hasRequestOptions()) {
+        mergeRequestOptions(other.getRequestOptions());
       }
       switch (other.getTransactionCase()) {
         case TRANSACTION_ID:
@@ -1837,6 +1929,191 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       returnCommitStats_ = false;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.v1.RequestOptions requestOptions_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        requestOptionsBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     *
+     * @return Whether the requestOptions field is set.
+     */
+    public boolean hasRequestOptions() {
+      return requestOptionsBuilder_ != null || requestOptions_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     *
+     * @return The requestOptions.
+     */
+    public com.google.spanner.v1.RequestOptions getRequestOptions() {
+      if (requestOptionsBuilder_ == null) {
+        return requestOptions_ == null
+            ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+            : requestOptions_;
+      } else {
+        return requestOptionsBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public Builder setRequestOptions(com.google.spanner.v1.RequestOptions value) {
+      if (requestOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        requestOptions_ = value;
+        onChanged();
+      } else {
+        requestOptionsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = builderForValue.build();
+        onChanged();
+      } else {
+        requestOptionsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
+      if (requestOptionsBuilder_ == null) {
+        if (requestOptions_ != null) {
+          requestOptions_ =
+              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          requestOptions_ = value;
+        }
+        onChanged();
+      } else {
+        requestOptionsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public Builder clearRequestOptions() {
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = null;
+        onChanged();
+      } else {
+        requestOptions_ = null;
+        requestOptionsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
+
+      onChanged();
+      return getRequestOptionsFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
+      if (requestOptionsBuilder_ != null) {
+        return requestOptionsBuilder_.getMessageOrBuilder();
+      } else {
+        return requestOptions_ == null
+            ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+            : requestOptions_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        getRequestOptionsFieldBuilder() {
+      if (requestOptionsBuilder_ == null) {
+        requestOptionsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.RequestOptions,
+                com.google.spanner.v1.RequestOptions.Builder,
+                com.google.spanner.v1.RequestOptionsOrBuilder>(
+                getRequestOptions(), getParentForChildren(), isClean());
+        requestOptions_ = null;
+      }
+      return requestOptionsBuilder_;
     }
 
     @java.lang.Override
