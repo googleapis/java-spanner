@@ -492,8 +492,6 @@ public class ConnectionOptionsTest {
           .contains(
               String.format(
                   "The connection string '%s' contains host 'localhost:1', but no running", uri));
-    } finally {
-      SpannerPool.closeSpannerPool();
     }
   }
 

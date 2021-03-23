@@ -775,7 +775,7 @@ public class ConnectionOptions {
         }
       } catch (UnavailableException e) {
         String msg;
-        if (emulatorHost == null) {
+        if (getHost() != null) {
           msg =
               String.format(
                   "The connection string '%s' contains host '%s', but no running"
