@@ -92,4 +92,51 @@ public interface BeginTransactionRequestOrBuilder
    * </code>
    */
   com.google.spanner.v1.TransactionOptionsOrBuilder getOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * Priority is ignored for this request. Setting the priority in this
+   * request_options struct will not do anything. To set the priority for a
+   * transaction, set it on the reads and writes that are part of this
+   * transaction instead.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
+   *
+   * @return Whether the requestOptions field is set.
+   */
+  boolean hasRequestOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * Priority is ignored for this request. Setting the priority in this
+   * request_options struct will not do anything. To set the priority for a
+   * transaction, set it on the reads and writes that are part of this
+   * transaction instead.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
+   *
+   * @return The requestOptions.
+   */
+  com.google.spanner.v1.RequestOptions getRequestOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * Priority is ignored for this request. Setting the priority in this
+   * request_options struct will not do anything. To set the priority for a
+   * transaction, set it on the reads and writes that are part of this
+   * transaction instead.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
+   */
+  com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
 }

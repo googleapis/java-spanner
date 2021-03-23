@@ -11,8 +11,8 @@
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "e1654206ff59f3a2a226828f9c9f354c253b36e4",
-        "internalRef": "363012458"
+        "sha": "6598bb829c9e9a534be674649ffd1b4671a821f9",
+        "internalRef": "364449524"
       }
     },
     {
@@ -315,6 +315,8 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/QueryPlanProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequestOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RequestOptions.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RequestOptionsOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSet.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadata.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadataOrBuilder.java",

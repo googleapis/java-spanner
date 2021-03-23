@@ -64,6 +64,10 @@ public final class SpannerProto {
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_v1_DeleteSessionRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_v1_RequestOptions_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_v1_RequestOptions_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_v1_ExecuteSqlRequest_fieldAccessorTable;
@@ -188,167 +192,179 @@ public final class SpannerProto {
           + "ns\030\001 \003(\0132\032.google.spanner.v1.Session\022\027\n\017"
           + "next_page_token\030\002 \001(\t\"L\n\024DeleteSessionRe"
           + "quest\0224\n\004name\030\001 \001(\tB&\340A\002\372A \n\036spanner.goo"
-          + "gleapis.com/Session\"\250\005\n\021ExecuteSqlReques"
-          + "t\0227\n\007session\030\001 \001(\tB&\340A\002\372A \n\036spanner.goog"
-          + "leapis.com/Session\022;\n\013transaction\030\002 \001(\0132"
-          + "&.google.spanner.v1.TransactionSelector\022"
-          + "\020\n\003sql\030\003 \001(\tB\003\340A\002\022\'\n\006params\030\004 \001(\0132\027.goog"
-          + "le.protobuf.Struct\022I\n\013param_types\030\005 \003(\0132"
-          + "4.google.spanner.v1.ExecuteSqlRequest.Pa"
-          + "ramTypesEntry\022\024\n\014resume_token\030\006 \001(\014\022B\n\nq"
-          + "uery_mode\030\007 \001(\0162..google.spanner.v1.Exec"
-          + "uteSqlRequest.QueryMode\022\027\n\017partition_tok"
-          + "en\030\010 \001(\014\022\r\n\005seqno\030\t \001(\003\022H\n\rquery_options"
-          + "\030\n \001(\01321.google.spanner.v1.ExecuteSqlReq"
-          + "uest.QueryOptions\032O\n\014QueryOptions\022\031\n\021opt"
-          + "imizer_version\030\001 \001(\t\022$\n\034optimizer_statis"
-          + "tics_package\030\002 \001(\t\032J\n\017ParamTypesEntry\022\013\n"
-          + "\003key\030\001 \001(\t\022&\n\005value\030\002 \001(\0132\027.google.spann"
-          + "er.v1.Type:\0028\001\".\n\tQueryMode\022\n\n\006NORMAL\020\000\022"
-          + "\010\n\004PLAN\020\001\022\013\n\007PROFILE\020\002\"\337\003\n\026ExecuteBatchD"
-          + "mlRequest\0227\n\007session\030\001 \001(\tB&\340A\002\372A \n\036span"
-          + "ner.googleapis.com/Session\022@\n\013transactio"
-          + "n\030\002 \001(\0132&.google.spanner.v1.TransactionS"
-          + "electorB\003\340A\002\022L\n\nstatements\030\003 \003(\01323.googl"
-          + "e.spanner.v1.ExecuteBatchDmlRequest.Stat"
-          + "ementB\003\340A\002\022\022\n\005seqno\030\004 \001(\003B\003\340A\002\032\347\001\n\tState"
-          + "ment\022\013\n\003sql\030\001 \001(\t\022\'\n\006params\030\002 \001(\0132\027.goog"
-          + "le.protobuf.Struct\022X\n\013param_types\030\003 \003(\0132"
-          + "C.google.spanner.v1.ExecuteBatchDmlReque"
-          + "st.Statement.ParamTypesEntry\032J\n\017ParamTyp"
-          + "esEntry\022\013\n\003key\030\001 \001(\t\022&\n\005value\030\002 \001(\0132\027.go"
-          + "ogle.spanner.v1.Type:\0028\001\"p\n\027ExecuteBatch"
-          + "DmlResponse\0221\n\013result_sets\030\001 \003(\0132\034.googl"
-          + "e.spanner.v1.ResultSet\022\"\n\006status\030\002 \001(\0132\022"
-          + ".google.rpc.Status\"H\n\020PartitionOptions\022\034"
-          + "\n\024partition_size_bytes\030\001 \001(\003\022\026\n\016max_part"
-          + "itions\030\002 \001(\003\"\243\003\n\025PartitionQueryRequest\0227"
-          + "\n\007session\030\001 \001(\tB&\340A\002\372A \n\036spanner.googlea"
-          + "pis.com/Session\022;\n\013transaction\030\002 \001(\0132&.g"
-          + "oogle.spanner.v1.TransactionSelector\022\020\n\003"
-          + "sql\030\003 \001(\tB\003\340A\002\022\'\n\006params\030\004 \001(\0132\027.google."
-          + "protobuf.Struct\022M\n\013param_types\030\005 \003(\01328.g"
-          + "oogle.spanner.v1.PartitionQueryRequest.P"
-          + "aramTypesEntry\022>\n\021partition_options\030\006 \001("
-          + "\0132#.google.spanner.v1.PartitionOptions\032J"
-          + "\n\017ParamTypesEntry\022\013\n\003key\030\001 \001(\t\022&\n\005value\030"
-          + "\002 \001(\0132\027.google.spanner.v1.Type:\0028\001\"\261\002\n\024P"
-          + "artitionReadRequest\0227\n\007session\030\001 \001(\tB&\340A"
-          + "\002\372A \n\036spanner.googleapis.com/Session\022;\n\013"
-          + "transaction\030\002 \001(\0132&.google.spanner.v1.Tr"
-          + "ansactionSelector\022\022\n\005table\030\003 \001(\tB\003\340A\002\022\r\n"
-          + "\005index\030\004 \001(\t\022\017\n\007columns\030\005 \003(\t\022/\n\007key_set"
-          + "\030\006 \001(\0132\031.google.spanner.v1.KeySetB\003\340A\002\022>"
-          + "\n\021partition_options\030\t \001(\0132#.google.spann"
-          + "er.v1.PartitionOptions\"$\n\tPartition\022\027\n\017p"
-          + "artition_token\030\001 \001(\014\"z\n\021PartitionRespons"
-          + "e\0220\n\npartitions\030\001 \003(\0132\034.google.spanner.v"
-          + "1.Partition\0223\n\013transaction\030\002 \001(\0132\036.googl"
-          + "e.spanner.v1.Transaction\"\253\002\n\013ReadRequest"
-          + "\0227\n\007session\030\001 \001(\tB&\340A\002\372A \n\036spanner.googl"
-          + "eapis.com/Session\022;\n\013transaction\030\002 \001(\0132&"
-          + ".google.spanner.v1.TransactionSelector\022\022"
-          + "\n\005table\030\003 \001(\tB\003\340A\002\022\r\n\005index\030\004 \001(\t\022\024\n\007col"
-          + "umns\030\005 \003(\tB\003\340A\002\022/\n\007key_set\030\006 \001(\0132\031.googl"
-          + "e.spanner.v1.KeySetB\003\340A\002\022\r\n\005limit\030\010 \001(\003\022"
-          + "\024\n\014resume_token\030\t \001(\014\022\027\n\017partition_token"
-          + "\030\n \001(\014\"\217\001\n\027BeginTransactionRequest\0227\n\007se"
-          + "ssion\030\001 \001(\tB&\340A\002\372A \n\036spanner.googleapis."
-          + "com/Session\022;\n\007options\030\002 \001(\0132%.google.sp"
-          + "anner.v1.TransactionOptionsB\003\340A\002\"\207\002\n\rCom"
-          + "mitRequest\0227\n\007session\030\001 \001(\tB&\340A\002\372A \n\036spa"
-          + "nner.googleapis.com/Session\022\030\n\016transacti"
-          + "on_id\030\002 \001(\014H\000\022G\n\026single_use_transaction\030"
-          + "\003 \001(\0132%.google.spanner.v1.TransactionOpt"
-          + "ionsH\000\022.\n\tmutations\030\004 \003(\0132\033.google.spann"
-          + "er.v1.Mutation\022\033\n\023return_commit_stats\030\005 "
-          + "\001(\010B\r\n\013transaction\"\262\001\n\016CommitResponse\0224\n"
-          + "\020commit_timestamp\030\001 \001(\0132\032.google.protobu"
-          + "f.Timestamp\022C\n\014commit_stats\030\002 \001(\0132-.goog"
-          + "le.spanner.v1.CommitResponse.CommitStats"
-          + "\032%\n\013CommitStats\022\026\n\016mutation_count\030\001 \001(\003\""
-          + "g\n\017RollbackRequest\0227\n\007session\030\001 \001(\tB&\340A\002"
-          + "\372A \n\036spanner.googleapis.com/Session\022\033\n\016t"
-          + "ransaction_id\030\002 \001(\014B\003\340A\0022\300\026\n\007Spanner\022\246\001\n"
-          + "\rCreateSession\022\'.google.spanner.v1.Creat"
-          + "eSessionRequest\032\032.google.spanner.v1.Sess"
-          + "ion\"P\202\323\344\223\002?\":/v1/{database=projects/*/in"
-          + "stances/*/databases/*}/sessions:\001*\332A\010dat"
-          + "abase\022\340\001\n\023BatchCreateSessions\022-.google.s"
-          + "panner.v1.BatchCreateSessionsRequest\032..g"
-          + "oogle.spanner.v1.BatchCreateSessionsResp"
-          + "onse\"j\202\323\344\223\002K\"F/v1/{database=projects/*/i"
-          + "nstances/*/databases/*}/sessions:batchCr"
-          + "eate:\001*\332A\026database,session_count\022\227\001\n\nGet"
-          + "Session\022$.google.spanner.v1.GetSessionRe"
-          + "quest\032\032.google.spanner.v1.Session\"G\202\323\344\223\002"
-          + ":\0228/v1/{name=projects/*/instances/*/data"
-          + "bases/*/sessions/*}\332A\004name\022\256\001\n\014ListSessi"
-          + "ons\022&.google.spanner.v1.ListSessionsRequ"
-          + "est\032\'.google.spanner.v1.ListSessionsResp"
-          + "onse\"M\202\323\344\223\002<\022:/v1/{database=projects/*/i"
-          + "nstances/*/databases/*}/sessions\332A\010datab"
-          + "ase\022\231\001\n\rDeleteSession\022\'.google.spanner.v"
-          + "1.DeleteSessionRequest\032\026.google.protobuf"
-          + ".Empty\"G\202\323\344\223\002:*8/v1/{name=projects/*/ins"
-          + "tances/*/databases/*/sessions/*}\332A\004name\022"
-          + "\243\001\n\nExecuteSql\022$.google.spanner.v1.Execu"
-          + "teSqlRequest\032\034.google.spanner.v1.ResultS"
-          + "et\"Q\202\323\344\223\002K\"F/v1/{session=projects/*/inst"
-          + "ances/*/databases/*/sessions/*}:executeS"
-          + "ql:\001*\022\276\001\n\023ExecuteStreamingSql\022$.google.s"
-          + "panner.v1.ExecuteSqlRequest\032#.google.spa"
-          + "nner.v1.PartialResultSet\"Z\202\323\344\223\002T\"O/v1/{s"
-          + "ession=projects/*/instances/*/databases/"
-          + "*/sessions/*}:executeStreamingSql:\001*0\001\022\300"
-          + "\001\n\017ExecuteBatchDml\022).google.spanner.v1.E"
-          + "xecuteBatchDmlRequest\032*.google.spanner.v"
-          + "1.ExecuteBatchDmlResponse\"V\202\323\344\223\002P\"K/v1/{"
+          + "gleapis.com/Session\"\256\001\n\016RequestOptions\022<"
+          + "\n\010priority\030\001 \001(\0162*.google.spanner.v1.Req"
+          + "uestOptions.Priority\"^\n\010Priority\022\030\n\024PRIO"
+          + "RITY_UNSPECIFIED\020\000\022\020\n\014PRIORITY_LOW\020\001\022\023\n\017"
+          + "PRIORITY_MEDIUM\020\002\022\021\n\rPRIORITY_HIGH\020\003\"\344\005\n"
+          + "\021ExecuteSqlRequest\0227\n\007session\030\001 \001(\tB&\340A\002"
+          + "\372A \n\036spanner.googleapis.com/Session\022;\n\013t"
+          + "ransaction\030\002 \001(\0132&.google.spanner.v1.Tra"
+          + "nsactionSelector\022\020\n\003sql\030\003 \001(\tB\003\340A\002\022\'\n\006pa"
+          + "rams\030\004 \001(\0132\027.google.protobuf.Struct\022I\n\013p"
+          + "aram_types\030\005 \003(\01324.google.spanner.v1.Exe"
+          + "cuteSqlRequest.ParamTypesEntry\022\024\n\014resume"
+          + "_token\030\006 \001(\014\022B\n\nquery_mode\030\007 \001(\0162..googl"
+          + "e.spanner.v1.ExecuteSqlRequest.QueryMode"
+          + "\022\027\n\017partition_token\030\010 \001(\014\022\r\n\005seqno\030\t \001(\003"
+          + "\022H\n\rquery_options\030\n \001(\01321.google.spanner"
+          + ".v1.ExecuteSqlRequest.QueryOptions\022:\n\017re"
+          + "quest_options\030\013 \001(\0132!.google.spanner.v1."
+          + "RequestOptions\032O\n\014QueryOptions\022\031\n\021optimi"
+          + "zer_version\030\001 \001(\t\022$\n\034optimizer_statistic"
+          + "s_package\030\002 \001(\t\032J\n\017ParamTypesEntry\022\013\n\003ke"
+          + "y\030\001 \001(\t\022&\n\005value\030\002 \001(\0132\027.google.spanner."
+          + "v1.Type:\0028\001\".\n\tQueryMode\022\n\n\006NORMAL\020\000\022\010\n\004"
+          + "PLAN\020\001\022\013\n\007PROFILE\020\002\"\233\004\n\026ExecuteBatchDmlR"
+          + "equest\0227\n\007session\030\001 \001(\tB&\340A\002\372A \n\036spanner"
+          + ".googleapis.com/Session\022@\n\013transaction\030\002"
+          + " \001(\0132&.google.spanner.v1.TransactionSele"
+          + "ctorB\003\340A\002\022L\n\nstatements\030\003 \003(\01323.google.s"
+          + "panner.v1.ExecuteBatchDmlRequest.Stateme"
+          + "ntB\003\340A\002\022\022\n\005seqno\030\004 \001(\003B\003\340A\002\022:\n\017request_o"
+          + "ptions\030\005 \001(\0132!.google.spanner.v1.Request"
+          + "Options\032\347\001\n\tStatement\022\013\n\003sql\030\001 \001(\t\022\'\n\006pa"
+          + "rams\030\002 \001(\0132\027.google.protobuf.Struct\022X\n\013p"
+          + "aram_types\030\003 \003(\0132C.google.spanner.v1.Exe"
+          + "cuteBatchDmlRequest.Statement.ParamTypes"
+          + "Entry\032J\n\017ParamTypesEntry\022\013\n\003key\030\001 \001(\t\022&\n"
+          + "\005value\030\002 \001(\0132\027.google.spanner.v1.Type:\0028"
+          + "\001\"p\n\027ExecuteBatchDmlResponse\0221\n\013result_s"
+          + "ets\030\001 \003(\0132\034.google.spanner.v1.ResultSet\022"
+          + "\"\n\006status\030\002 \001(\0132\022.google.rpc.Status\"H\n\020P"
+          + "artitionOptions\022\034\n\024partition_size_bytes\030"
+          + "\001 \001(\003\022\026\n\016max_partitions\030\002 \001(\003\"\243\003\n\025Partit"
+          + "ionQueryRequest\0227\n\007session\030\001 \001(\tB&\340A\002\372A "
+          + "\n\036spanner.googleapis.com/Session\022;\n\013tran"
+          + "saction\030\002 \001(\0132&.google.spanner.v1.Transa"
+          + "ctionSelector\022\020\n\003sql\030\003 \001(\tB\003\340A\002\022\'\n\006param"
+          + "s\030\004 \001(\0132\027.google.protobuf.Struct\022M\n\013para"
+          + "m_types\030\005 \003(\01328.google.spanner.v1.Partit"
+          + "ionQueryRequest.ParamTypesEntry\022>\n\021parti"
+          + "tion_options\030\006 \001(\0132#.google.spanner.v1.P"
+          + "artitionOptions\032J\n\017ParamTypesEntry\022\013\n\003ke"
+          + "y\030\001 \001(\t\022&\n\005value\030\002 \001(\0132\027.google.spanner."
+          + "v1.Type:\0028\001\"\261\002\n\024PartitionReadRequest\0227\n\007"
+          + "session\030\001 \001(\tB&\340A\002\372A \n\036spanner.googleapi"
+          + "s.com/Session\022;\n\013transaction\030\002 \001(\0132&.goo"
+          + "gle.spanner.v1.TransactionSelector\022\022\n\005ta"
+          + "ble\030\003 \001(\tB\003\340A\002\022\r\n\005index\030\004 \001(\t\022\017\n\007columns"
+          + "\030\005 \003(\t\022/\n\007key_set\030\006 \001(\0132\031.google.spanner"
+          + ".v1.KeySetB\003\340A\002\022>\n\021partition_options\030\t \001"
+          + "(\0132#.google.spanner.v1.PartitionOptions\""
+          + "$\n\tPartition\022\027\n\017partition_token\030\001 \001(\014\"z\n"
+          + "\021PartitionResponse\0220\n\npartitions\030\001 \003(\0132\034"
+          + ".google.spanner.v1.Partition\0223\n\013transact"
+          + "ion\030\002 \001(\0132\036.google.spanner.v1.Transactio"
+          + "n\"\347\002\n\013ReadRequest\0227\n\007session\030\001 \001(\tB&\340A\002\372"
+          + "A \n\036spanner.googleapis.com/Session\022;\n\013tr"
+          + "ansaction\030\002 \001(\0132&.google.spanner.v1.Tran"
+          + "sactionSelector\022\022\n\005table\030\003 \001(\tB\003\340A\002\022\r\n\005i"
+          + "ndex\030\004 \001(\t\022\024\n\007columns\030\005 \003(\tB\003\340A\002\022/\n\007key_"
+          + "set\030\006 \001(\0132\031.google.spanner.v1.KeySetB\003\340A"
+          + "\002\022\r\n\005limit\030\010 \001(\003\022\024\n\014resume_token\030\t \001(\014\022\027"
+          + "\n\017partition_token\030\n \001(\014\022:\n\017request_optio"
+          + "ns\030\013 \001(\0132!.google.spanner.v1.RequestOpti"
+          + "ons\"\313\001\n\027BeginTransactionRequest\0227\n\007sessi"
+          + "on\030\001 \001(\tB&\340A\002\372A \n\036spanner.googleapis.com"
+          + "/Session\022;\n\007options\030\002 \001(\0132%.google.spann"
+          + "er.v1.TransactionOptionsB\003\340A\002\022:\n\017request"
+          + "_options\030\003 \001(\0132!.google.spanner.v1.Reque"
+          + "stOptions\"\303\002\n\rCommitRequest\0227\n\007session\030\001"
+          + " \001(\tB&\340A\002\372A \n\036spanner.googleapis.com/Ses"
+          + "sion\022\030\n\016transaction_id\030\002 \001(\014H\000\022G\n\026single"
+          + "_use_transaction\030\003 \001(\0132%.google.spanner."
+          + "v1.TransactionOptionsH\000\022.\n\tmutations\030\004 \003"
+          + "(\0132\033.google.spanner.v1.Mutation\022\033\n\023retur"
+          + "n_commit_stats\030\005 \001(\010\022:\n\017request_options\030"
+          + "\006 \001(\0132!.google.spanner.v1.RequestOptions"
+          + "B\r\n\013transaction\"\262\001\n\016CommitResponse\0224\n\020co"
+          + "mmit_timestamp\030\001 \001(\0132\032.google.protobuf.T"
+          + "imestamp\022C\n\014commit_stats\030\002 \001(\0132-.google."
+          + "spanner.v1.CommitResponse.CommitStats\032%\n"
+          + "\013CommitStats\022\026\n\016mutation_count\030\001 \001(\003\"g\n\017"
+          + "RollbackRequest\0227\n\007session\030\001 \001(\tB&\340A\002\372A "
+          + "\n\036spanner.googleapis.com/Session\022\033\n\016tran"
+          + "saction_id\030\002 \001(\014B\003\340A\0022\300\026\n\007Spanner\022\246\001\n\rCr"
+          + "eateSession\022\'.google.spanner.v1.CreateSe"
+          + "ssionRequest\032\032.google.spanner.v1.Session"
+          + "\"P\202\323\344\223\002?\":/v1/{database=projects/*/insta"
+          + "nces/*/databases/*}/sessions:\001*\332A\010databa"
+          + "se\022\340\001\n\023BatchCreateSessions\022-.google.span"
+          + "ner.v1.BatchCreateSessionsRequest\032..goog"
+          + "le.spanner.v1.BatchCreateSessionsRespons"
+          + "e\"j\202\323\344\223\002K\"F/v1/{database=projects/*/inst"
+          + "ances/*/databases/*}/sessions:batchCreat"
+          + "e:\001*\332A\026database,session_count\022\227\001\n\nGetSes"
+          + "sion\022$.google.spanner.v1.GetSessionReque"
+          + "st\032\032.google.spanner.v1.Session\"G\202\323\344\223\002:\0228"
+          + "/v1/{name=projects/*/instances/*/databas"
+          + "es/*/sessions/*}\332A\004name\022\256\001\n\014ListSessions"
+          + "\022&.google.spanner.v1.ListSessionsRequest"
+          + "\032\'.google.spanner.v1.ListSessionsRespons"
+          + "e\"M\202\323\344\223\002<\022:/v1/{database=projects/*/inst"
+          + "ances/*/databases/*}/sessions\332A\010database"
+          + "\022\231\001\n\rDeleteSession\022\'.google.spanner.v1.D"
+          + "eleteSessionRequest\032\026.google.protobuf.Em"
+          + "pty\"G\202\323\344\223\002:*8/v1/{name=projects/*/instan"
+          + "ces/*/databases/*/sessions/*}\332A\004name\022\243\001\n"
+          + "\nExecuteSql\022$.google.spanner.v1.ExecuteS"
+          + "qlRequest\032\034.google.spanner.v1.ResultSet\""
+          + "Q\202\323\344\223\002K\"F/v1/{session=projects/*/instanc"
+          + "es/*/databases/*/sessions/*}:executeSql:"
+          + "\001*\022\276\001\n\023ExecuteStreamingSql\022$.google.span"
+          + "ner.v1.ExecuteSqlRequest\032#.google.spanne"
+          + "r.v1.PartialResultSet\"Z\202\323\344\223\002T\"O/v1/{sess"
+          + "ion=projects/*/instances/*/databases/*/s"
+          + "essions/*}:executeStreamingSql:\001*0\001\022\300\001\n\017"
+          + "ExecuteBatchDml\022).google.spanner.v1.Exec"
+          + "uteBatchDmlRequest\032*.google.spanner.v1.E"
+          + "xecuteBatchDmlResponse\"V\202\323\344\223\002P\"K/v1/{ses"
+          + "sion=projects/*/instances/*/databases/*/"
+          + "sessions/*}:executeBatchDml:\001*\022\221\001\n\004Read\022"
+          + "\036.google.spanner.v1.ReadRequest\032\034.google"
+          + ".spanner.v1.ResultSet\"K\202\323\344\223\002E\"@/v1/{sess"
+          + "ion=projects/*/instances/*/databases/*/s"
+          + "essions/*}:read:\001*\022\254\001\n\rStreamingRead\022\036.g"
+          + "oogle.spanner.v1.ReadRequest\032#.google.sp"
+          + "anner.v1.PartialResultSet\"T\202\323\344\223\002N\"I/v1/{"
           + "session=projects/*/instances/*/databases"
-          + "/*/sessions/*}:executeBatchDml:\001*\022\221\001\n\004Re"
-          + "ad\022\036.google.spanner.v1.ReadRequest\032\034.goo"
-          + "gle.spanner.v1.ResultSet\"K\202\323\344\223\002E\"@/v1/{s"
-          + "ession=projects/*/instances/*/databases/"
-          + "*/sessions/*}:read:\001*\022\254\001\n\rStreamingRead\022"
-          + "\036.google.spanner.v1.ReadRequest\032#.google"
-          + ".spanner.v1.PartialResultSet\"T\202\323\344\223\002N\"I/v"
+          + "/*/sessions/*}:streamingRead:\001*0\001\022\311\001\n\020Be"
+          + "ginTransaction\022*.google.spanner.v1.Begin"
+          + "TransactionRequest\032\036.google.spanner.v1.T"
+          + "ransaction\"i\202\323\344\223\002Q\"L/v1/{session=project"
+          + "s/*/instances/*/databases/*/sessions/*}:"
+          + "beginTransaction:\001*\332A\017session,options\022\353\001"
+          + "\n\006Commit\022 .google.spanner.v1.CommitReque"
+          + "st\032!.google.spanner.v1.CommitResponse\"\233\001"
+          + "\202\323\344\223\002G\"B/v1/{session=projects/*/instance"
+          + "s/*/databases/*/sessions/*}:commit:\001*\332A "
+          + "session,transaction_id,mutations\332A(sessi"
+          + "on,single_use_transaction,mutations\022\260\001\n\010"
+          + "Rollback\022\".google.spanner.v1.RollbackReq"
+          + "uest\032\026.google.protobuf.Empty\"h\202\323\344\223\002I\"D/v"
           + "1/{session=projects/*/instances/*/databa"
-          + "ses/*/sessions/*}:streamingRead:\001*0\001\022\311\001\n"
-          + "\020BeginTransaction\022*.google.spanner.v1.Be"
-          + "ginTransactionRequest\032\036.google.spanner.v"
-          + "1.Transaction\"i\202\323\344\223\002Q\"L/v1/{session=proj"
-          + "ects/*/instances/*/databases/*/sessions/"
-          + "*}:beginTransaction:\001*\332A\017session,options"
-          + "\022\353\001\n\006Commit\022 .google.spanner.v1.CommitRe"
-          + "quest\032!.google.spanner.v1.CommitResponse"
-          + "\"\233\001\202\323\344\223\002G\"B/v1/{session=projects/*/insta"
-          + "nces/*/databases/*/sessions/*}:commit:\001*"
-          + "\332A session,transaction_id,mutations\332A(se"
-          + "ssion,single_use_transaction,mutations\022\260"
-          + "\001\n\010Rollback\022\".google.spanner.v1.Rollback"
-          + "Request\032\026.google.protobuf.Empty\"h\202\323\344\223\002I\""
-          + "D/v1/{session=projects/*/instances/*/dat"
-          + "abases/*/sessions/*}:rollback:\001*\332A\026sessi"
-          + "on,transaction_id\022\267\001\n\016PartitionQuery\022(.g"
-          + "oogle.spanner.v1.PartitionQueryRequest\032$"
-          + ".google.spanner.v1.PartitionResponse\"U\202\323"
-          + "\344\223\002O\"J/v1/{session=projects/*/instances/"
-          + "*/databases/*/sessions/*}:partitionQuery"
-          + ":\001*\022\264\001\n\rPartitionRead\022\'.google.spanner.v"
-          + "1.PartitionReadRequest\032$.google.spanner."
-          + "v1.PartitionResponse\"T\202\323\344\223\002N\"I/v1/{sessi"
-          + "on=projects/*/instances/*/databases/*/se"
-          + "ssions/*}:partitionRead:\001*\032w\312A\026spanner.g"
-          + "oogleapis.com\322A[https://www.googleapis.c"
-          + "om/auth/cloud-platform,https://www.googl"
-          + "eapis.com/auth/spanner.dataB\224\002\n\025com.goog"
-          + "le.spanner.v1B\014SpannerProtoP\001Z8google.go"
-          + "lang.org/genproto/googleapis/spanner/v1;"
-          + "spanner\252\002\027Google.Cloud.Spanner.V1\312\002\027Goog"
-          + "le\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spa"
-          + "nner::V1\352A_\n\037spanner.googleapis.com/Data"
-          + "base\022<projects/{project}/instances/{inst"
-          + "ance}/databases/{database}b\006proto3"
+          + "ses/*/sessions/*}:rollback:\001*\332A\026session,"
+          + "transaction_id\022\267\001\n\016PartitionQuery\022(.goog"
+          + "le.spanner.v1.PartitionQueryRequest\032$.go"
+          + "ogle.spanner.v1.PartitionResponse\"U\202\323\344\223\002"
+          + "O\"J/v1/{session=projects/*/instances/*/d"
+          + "atabases/*/sessions/*}:partitionQuery:\001*"
+          + "\022\264\001\n\rPartitionRead\022\'.google.spanner.v1.P"
+          + "artitionReadRequest\032$.google.spanner.v1."
+          + "PartitionResponse\"T\202\323\344\223\002N\"I/v1/{session="
+          + "projects/*/instances/*/databases/*/sessi"
+          + "ons/*}:partitionRead:\001*\032w\312A\026spanner.goog"
+          + "leapis.com\322A[https://www.googleapis.com/"
+          + "auth/cloud-platform,https://www.googleap"
+          + "is.com/auth/spanner.dataB\224\002\n\025com.google."
+          + "spanner.v1B\014SpannerProtoP\001Z8google.golan"
+          + "g.org/genproto/googleapis/spanner/v1;spa"
+          + "nner\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\"
+          + "Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spanne"
+          + "r::V1\352A_\n\037spanner.googleapis.com/Databas"
+          + "e\022<projects/{project}/instances/{instanc"
+          + "e}/databases/{database}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -440,8 +456,16 @@ public final class SpannerProto {
             new java.lang.String[] {
               "Name",
             });
-    internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor =
+    internal_static_google_spanner_v1_RequestOptions_descriptor =
         getDescriptor().getMessageTypes().get(8);
+    internal_static_google_spanner_v1_RequestOptions_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_v1_RequestOptions_descriptor,
+            new java.lang.String[] {
+              "Priority",
+            });
+    internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor =
+        getDescriptor().getMessageTypes().get(9);
     internal_static_google_spanner_v1_ExecuteSqlRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor,
@@ -456,6 +480,7 @@ public final class SpannerProto {
               "PartitionToken",
               "Seqno",
               "QueryOptions",
+              "RequestOptions",
             });
     internal_static_google_spanner_v1_ExecuteSqlRequest_QueryOptions_descriptor =
         internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor.getNestedTypes().get(0);
@@ -474,12 +499,12 @@ public final class SpannerProto {
               "Key", "Value",
             });
     internal_static_google_spanner_v1_ExecuteBatchDmlRequest_descriptor =
-        getDescriptor().getMessageTypes().get(9);
+        getDescriptor().getMessageTypes().get(10);
     internal_static_google_spanner_v1_ExecuteBatchDmlRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ExecuteBatchDmlRequest_descriptor,
             new java.lang.String[] {
-              "Session", "Transaction", "Statements", "Seqno",
+              "Session", "Transaction", "Statements", "Seqno", "RequestOptions",
             });
     internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_descriptor =
         internal_static_google_spanner_v1_ExecuteBatchDmlRequest_descriptor.getNestedTypes().get(0);
@@ -500,7 +525,7 @@ public final class SpannerProto {
               "Key", "Value",
             });
     internal_static_google_spanner_v1_ExecuteBatchDmlResponse_descriptor =
-        getDescriptor().getMessageTypes().get(10);
+        getDescriptor().getMessageTypes().get(11);
     internal_static_google_spanner_v1_ExecuteBatchDmlResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ExecuteBatchDmlResponse_descriptor,
@@ -508,7 +533,7 @@ public final class SpannerProto {
               "ResultSets", "Status",
             });
     internal_static_google_spanner_v1_PartitionOptions_descriptor =
-        getDescriptor().getMessageTypes().get(11);
+        getDescriptor().getMessageTypes().get(12);
     internal_static_google_spanner_v1_PartitionOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartitionOptions_descriptor,
@@ -516,7 +541,7 @@ public final class SpannerProto {
               "PartitionSizeBytes", "MaxPartitions",
             });
     internal_static_google_spanner_v1_PartitionQueryRequest_descriptor =
-        getDescriptor().getMessageTypes().get(12);
+        getDescriptor().getMessageTypes().get(13);
     internal_static_google_spanner_v1_PartitionQueryRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartitionQueryRequest_descriptor,
@@ -532,7 +557,7 @@ public final class SpannerProto {
               "Key", "Value",
             });
     internal_static_google_spanner_v1_PartitionReadRequest_descriptor =
-        getDescriptor().getMessageTypes().get(13);
+        getDescriptor().getMessageTypes().get(14);
     internal_static_google_spanner_v1_PartitionReadRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartitionReadRequest_descriptor,
@@ -540,7 +565,7 @@ public final class SpannerProto {
               "Session", "Transaction", "Table", "Index", "Columns", "KeySet", "PartitionOptions",
             });
     internal_static_google_spanner_v1_Partition_descriptor =
-        getDescriptor().getMessageTypes().get(14);
+        getDescriptor().getMessageTypes().get(15);
     internal_static_google_spanner_v1_Partition_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Partition_descriptor,
@@ -548,7 +573,7 @@ public final class SpannerProto {
               "PartitionToken",
             });
     internal_static_google_spanner_v1_PartitionResponse_descriptor =
-        getDescriptor().getMessageTypes().get(15);
+        getDescriptor().getMessageTypes().get(16);
     internal_static_google_spanner_v1_PartitionResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_PartitionResponse_descriptor,
@@ -556,7 +581,7 @@ public final class SpannerProto {
               "Partitions", "Transaction",
             });
     internal_static_google_spanner_v1_ReadRequest_descriptor =
-        getDescriptor().getMessageTypes().get(16);
+        getDescriptor().getMessageTypes().get(17);
     internal_static_google_spanner_v1_ReadRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ReadRequest_descriptor,
@@ -570,17 +595,18 @@ public final class SpannerProto {
               "Limit",
               "ResumeToken",
               "PartitionToken",
+              "RequestOptions",
             });
     internal_static_google_spanner_v1_BeginTransactionRequest_descriptor =
-        getDescriptor().getMessageTypes().get(17);
+        getDescriptor().getMessageTypes().get(18);
     internal_static_google_spanner_v1_BeginTransactionRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_BeginTransactionRequest_descriptor,
             new java.lang.String[] {
-              "Session", "Options",
+              "Session", "Options", "RequestOptions",
             });
     internal_static_google_spanner_v1_CommitRequest_descriptor =
-        getDescriptor().getMessageTypes().get(18);
+        getDescriptor().getMessageTypes().get(19);
     internal_static_google_spanner_v1_CommitRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_CommitRequest_descriptor,
@@ -590,10 +616,11 @@ public final class SpannerProto {
               "SingleUseTransaction",
               "Mutations",
               "ReturnCommitStats",
+              "RequestOptions",
               "Transaction",
             });
     internal_static_google_spanner_v1_CommitResponse_descriptor =
-        getDescriptor().getMessageTypes().get(19);
+        getDescriptor().getMessageTypes().get(20);
     internal_static_google_spanner_v1_CommitResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_CommitResponse_descriptor,
@@ -609,7 +636,7 @@ public final class SpannerProto {
               "MutationCount",
             });
     internal_static_google_spanner_v1_RollbackRequest_descriptor =
-        getDescriptor().getMessageTypes().get(20);
+        getDescriptor().getMessageTypes().get(21);
     internal_static_google_spanner_v1_RollbackRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_RollbackRequest_descriptor,
