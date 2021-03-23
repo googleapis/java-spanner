@@ -640,8 +640,6 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
-            final ExecuteSqlRequest.Builder request =
-                getExecuteSqlRequestBuilder(statement, queryMode, options);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }

@@ -46,8 +46,8 @@ import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -1704,7 +1704,7 @@ public class DatabaseClientImplTest {
 
     verify(session).transactionManagerAsync(option);
   }
-  
+
   @Test
   public void testExecuteQueryWithPriority() {
     DatabaseClient client =
@@ -1937,57 +1937,5 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
-  }
-
-  @Test
-  public void testReadWriteTransaction_usesOptions() {
-    SessionPool pool = mock(SessionPool.class);
-    PooledSessionFuture session = mock(PooledSessionFuture.class);
-    when(pool.getSession()).thenReturn(session);
-    TransactionOption option = mock(TransactionOption.class);
-
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.readWriteTransaction(option);
-
-    verify(session).readWriteTransaction(option);
-  }
-
-  @Test
-  public void testTransactionManager_usesOptions() {
-    SessionPool pool = mock(SessionPool.class);
-    PooledSessionFuture session = mock(PooledSessionFuture.class);
-    when(pool.getSession()).thenReturn(session);
-    TransactionOption option = mock(TransactionOption.class);
-
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.transactionManager(option);
-
-    verify(session).transactionManager(option);
-  }
-
-  @Test
-  public void testRunAsync_usesOptions() {
-    SessionPool pool = mock(SessionPool.class);
-    PooledSessionFuture session = mock(PooledSessionFuture.class);
-    when(pool.getSession()).thenReturn(session);
-    TransactionOption option = mock(TransactionOption.class);
-
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.runAsync(option);
-
-    verify(session).runAsync(option);
-  }
-
-  @Test
-  public void testTransactionManagerAsync_usesOptions() {
-    SessionPool pool = mock(SessionPool.class);
-    PooledSessionFuture session = mock(PooledSessionFuture.class);
-    when(pool.getSession()).thenReturn(session);
-    TransactionOption option = mock(TransactionOption.class);
-
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.transactionManagerAsync(option);
-
-    verify(session).transactionManagerAsync(option);
   }
 }

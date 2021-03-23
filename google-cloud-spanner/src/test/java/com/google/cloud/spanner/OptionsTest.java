@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.spanner.v1.RequestOptions.Priority;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -279,7 +280,7 @@ public class OptionsTest {
     Options option2 = Options.fromQueryOptions(Options.prefetchChunks(10));
     assertNotEquals(option2.hashCode(), option1.hashCode());
   }
-  
+
   @Test
   public void testTransactionOptionsPriority() {
     RpcPriority priority = RpcPriority.HIGH;
@@ -310,13 +311,6 @@ public class OptionsTest {
     Options options = Options.fromUpdateOptions(Options.priority(priority));
     assertTrue(options.hasPriority());
     assertEquals("priority: " + priority + " ", options.toString());
-  }
-
-  @Test
-  public void testTransactionOptionsEquality() {
-    Options option1 = Options.fromTransactionOptions();
-    Options option2 = Options.fromTransactionOptions();
-    assertTrue(option1.equals(option2));
   }
 
   @Test
@@ -487,13 +481,13 @@ public class OptionsTest {
     Options options = Options.fromUpdateOptions();
     assertThat(options.toString()).isEqualTo("");
   }
-  
+
   @Test
   public void testTransactionOptions() {
     RpcPriority prio = RpcPriority.HIGH;
     Options opts = Options.fromTransactionOptions(Options.priority(prio));
     assertThat(opts.toString()).isEqualTo("priority: " + prio + " ");
-    assertThat(opts.priority()).isEqualTo(prio.toProto());
+    assertThat(opts.priority()).isEqualTo(Priority.PRIORITY_HIGH);
   }
 
   @Test

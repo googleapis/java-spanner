@@ -176,7 +176,7 @@ public final class Options implements Serializable {
       options.bufferRows = bufferRows;
     }
   }
-  
+
   static final class PriorityOption extends InternalOption
       implements ReadQueryUpdateTransactionOption {
     private final RpcPriority priority;
