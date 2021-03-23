@@ -806,6 +806,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -847,6 +848,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -881,6 +883,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -919,6 +922,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setTransaction(TransactionSelector.newBuilder().build())
    *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
    *           .setSeqno(109325920)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ExecuteBatchDmlResponse response = spannerClient.executeBatchDml(request);
    * }
@@ -955,6 +959,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setTransaction(TransactionSelector.newBuilder().build())
    *           .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
    *           .setSeqno(109325920)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<ExecuteBatchDmlResponse> future =
    *       spannerClient.executeBatchDmlCallable().futureCall(request);
@@ -998,6 +1003,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setLimit(102976443)
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ResultSet response = spannerClient.read(request);
    * }
@@ -1040,6 +1046,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setLimit(102976443)
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
    *   // Do something.
@@ -1074,6 +1081,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setLimit(102976443)
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
    *   for (PartialResultSet response : stream) {
@@ -1157,6 +1165,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSession(
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .setOptions(TransactionOptions.newBuilder().build())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   Transaction response = spannerClient.beginTransaction(request);
    * }
@@ -1184,6 +1193,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSession(
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .setOptions(TransactionOptions.newBuilder().build())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<Transaction> future = spannerClient.beginTransactionCallable().futureCall(request);
    *   // Do something.
@@ -1406,6 +1416,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   CommitResponse response = spannerClient.commit(request);
    * }
@@ -1443,6 +1454,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<CommitResponse> future = spannerClient.commitCallable().futureCall(request);
    *   // Do something.
