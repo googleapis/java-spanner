@@ -25,7 +25,10 @@ import java.util.Objects;
 public final class Options implements Serializable {
   private static final long serialVersionUID = 8067099123096783941L;
 
-  /** Priority for an RPC. */
+  /**
+   * Priority for an RPC invocation. The default priority is {@link #HIGH}. This enum can be used to
+   * set a lower priority for a specific RPC invocation.
+   */
   public enum RpcPriority {
     LOW(Priority.PRIORITY_LOW),
     MEDIUM(Priority.PRIORITY_MEDIUM),

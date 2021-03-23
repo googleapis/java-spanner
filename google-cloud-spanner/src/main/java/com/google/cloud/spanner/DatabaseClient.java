@@ -81,6 +81,16 @@ public interface DatabaseClient {
    *         Options.priority(RpcPriority.HIGH));
    * }</pre>
    *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
+   *
    * @return a response with the timestamp at which the write was committed
    */
   CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
@@ -145,6 +155,16 @@ public interface DatabaseClient {
    *         Collections.singletonList(mutation),
    *         Options.priority(RpcPriority.LOW));
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    *
    * @return a response with the timestamp at which the write was committed
    */
@@ -320,6 +340,8 @@ public interface DatabaseClient {
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
    *       RpcPriority} to use for the commit request of the transaction. The priority will not be
    *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
    * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
@@ -358,6 +380,8 @@ public interface DatabaseClient {
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
    *       RpcPriority} to use for the commit request of the transaction. The priority will not be
    *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
    * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
@@ -399,6 +423,8 @@ public interface DatabaseClient {
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
    *       RpcPriority} to use for the commit request of the transaction. The priority will not be
    *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
    * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
@@ -491,10 +517,14 @@ public interface DatabaseClient {
    *
    * Options for a transaction can include:
    *
+   * <p>Options for a transaction can include:
+   *
    * <ul>
    *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
    *       RpcPriority} to use for the commit request of the transaction. The priority will not be
    *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
    * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);

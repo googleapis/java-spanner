@@ -1709,9 +1709,9 @@ public class DatabaseClientImplTest {
   public void testExecuteQueryWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (ResultSet rs =
+    try (ResultSet resultSet =
         client.singleUse().executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
-      while (rs.next()) {}
+      while (resultSet.next()) {}
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -1725,7 +1725,7 @@ public class DatabaseClientImplTest {
   public void testExecuteReadWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (ResultSet rs =
+    try (ResultSet resultSet =
         client
             .singleUse()
             .read(
@@ -1733,7 +1733,7 @@ public class DatabaseClientImplTest {
                 KeySet.singleKey(Key.of(1L)),
                 READ_COLUMN_NAMES,
                 Options.priority(RpcPriority.HIGH))) {
-      while (rs.next()) {}
+      while (resultSet.next()) {}
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -1752,9 +1752,9 @@ public class DatabaseClientImplTest {
         new TransactionCallable<Void>() {
           @Override
           public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet rs =
+            try (ResultSet resultSet =
                 transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
-              while (rs.next()) {}
+              while (resultSet.next()) {}
             }
             return null;
           }
@@ -1776,13 +1776,13 @@ public class DatabaseClientImplTest {
         new TransactionCallable<Void>() {
           @Override
           public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet rs =
+            try (ResultSet resultSet =
                 transaction.read(
                     READ_TABLE_NAME,
                     KeySet.singleKey(Key.of(1L)),
                     READ_COLUMN_NAMES,
                     Options.priority(RpcPriority.HIGH))) {
-              while (rs.next()) {}
+              while (resultSet.next()) {}
             }
             return null;
           }

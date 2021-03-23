@@ -491,23 +491,23 @@ public class OptionsTest {
   }
 
   @Test
-  public void testTransactionOptionsEquality() {
-    Options o1;
-    Options o2;
-    Options o3;
+  public void testTransactionOptionsDefaultEqual() {
+    Options options1 = Options.fromTransactionOptions();
+    Options options2 = Options.fromTransactionOptions();
+    assertEquals(options1, options2);
+  }
 
-    o1 = Options.fromTransactionOptions();
-    o2 = Options.fromTransactionOptions();
-    assertThat(o1.equals(o2)).isTrue();
+  @Test
+  public void testTransactionOptionsPriorityEquality() {
+    Options options1 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    Options options2 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
+    Options options3 = Options.fromTransactionOptions();
+    Options options4 = Options.fromTransactionOptions(Options.priority(RpcPriority.LOW));
 
-    o2 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
-    assertThat(o1.equals(o2)).isFalse();
-    assertThat(o2.equals(o1)).isFalse();
-
-    o3 = Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
-    assertThat(o2.equals(o3)).isTrue();
-
-    o3 = Options.fromTransactionOptions(Options.priority(RpcPriority.LOW));
-    assertThat(o2.equals(o3)).isFalse();
+    assertEquals(options1, options2);
+    assertNotEquals(options1, options3);
+    assertNotEquals(options1, options4);
+    assertNotEquals(options2, options3);
+    assertNotEquals(options2, options4);
   }
 }
