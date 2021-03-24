@@ -24,7 +24,6 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Restore;
-import com.google.cloud.spanner.RestoreInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -85,15 +84,11 @@ public class RestoreBackupWithEncryptionKey {
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
 
-    // Reload the metadata of the database from the server.
-    database = database.reload();
-    final RestoreInfo restoreInfo = database.getRestoreInfo();
-
     System.out.printf(
         "Database %s restored to %s from backup %s using encryption key %s%n",
-        restoreInfo.getSourceDatabase(),
+        database.getRestoreInfo().getSourceDatabase(),
         database.getId(),
-        restoreInfo.getBackup(),
+        database.getRestoreInfo().getBackup(),
         database.getEncryptionConfig().getKmsKeyName()
     );
     return null;

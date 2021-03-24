@@ -27,7 +27,6 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import java.util.concurrent.ExecutionException;
@@ -90,9 +89,6 @@ public class CreateBackupWithEncryptionKey {
       // If the operation timed out propagates the timeout
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
-
-    // Reload the metadata of the backup from the server.
-    backup = backup.reload();
 
     System.out.printf(
         "Backup %s of size %d bytes was created at %s using encryption key %s%n",
