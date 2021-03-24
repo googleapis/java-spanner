@@ -17,8 +17,10 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import com.google.api.core.ApiClock;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Duration;
@@ -42,6 +44,66 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class SpannerRetryHelperTest {
+  private static class FakeClock implements ApiClock {
+    private long currentTime;
+
+    @Override
+    public long nanoTime() {
+      return TimeUnit.NANOSECONDS.convert(currentTime, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public long millisTime() {
+      return currentTime;
+    }
+  }
+
+  @Test
+  public void testRetryDoesNotTimeoutAfterTenMinutes() {
+    final FakeClock clock = new FakeClock();
+    final AtomicInteger attempts = new AtomicInteger();
+    Callable<Integer> callable =
+        new Callable<Integer>() {
+          @Override
+          public Integer call() {
+            if (attempts.getAndIncrement() == 0) {
+              clock.currentTime += TimeUnit.MILLISECONDS.convert(10L, TimeUnit.MINUTES);
+              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
+            }
+            return 1 + 1;
+          }
+        };
+    assertEquals(
+        2,
+        SpannerRetryHelper.runTxWithRetriesOnAborted(
+                callable, SpannerRetryHelper.txRetrySettings, clock)
+            .intValue());
+  }
+
+  @Test
+  public void testRetryDoesFailAfterMoreThanOneDay() {
+    final FakeClock clock = new FakeClock();
+    final AtomicInteger attempts = new AtomicInteger();
+    Callable<Integer> callable =
+        new Callable<Integer>() {
+          @Override
+          public Integer call() {
+            if (attempts.getAndIncrement() == 0) {
+              clock.currentTime += TimeUnit.MILLISECONDS.convert(25L, TimeUnit.HOURS);
+              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
+            }
+            return 1 + 1;
+          }
+        };
+    try {
+      SpannerRetryHelper.runTxWithRetriesOnAborted(
+          callable, SpannerRetryHelper.txRetrySettings, clock);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.ABORTED, e.getErrorCode());
+      assertEquals(1, attempts.get());
+    }
+  }
 
   @Test
   public void testCancelledContext() {
