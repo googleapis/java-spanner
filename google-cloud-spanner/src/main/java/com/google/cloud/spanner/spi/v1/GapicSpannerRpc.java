@@ -18,6 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
@@ -82,6 +83,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.grpc.gcp.GcpManagedChannelBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -156,7 +158,9 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -248,6 +252,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
   public static final String DEFAULT_USER_AGENT =
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
+  private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
@@ -359,6 +364,24 @@ public class GapicSpannerRpc implements SpannerRpc {
             // Attempts direct access to spanner service over gRPC to improve throughput,
             // whether the attempt is allowed is totally controlled by service owner.
             .setAttemptDirectPath(true);
+    if (options.isUseGrpcGcpExtension() && options.getChannelConfigurator() == null) {
+      // Disables the gax channel pool and uses the channel pool provided by the GCP extension
+      // instead.
+      // TODO: may need to update GcpManagedChannelBuilder so that Spanner could specify the channel
+      // pool size using options.getNumChannels().
+      final File configFile =
+          new File(GapicSpannerRpc.class.getClassLoader().getResource(API_FILE).getFile());
+      ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
+          new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
+            @Override
+            public ManagedChannelBuilder apply(ManagedChannelBuilder channelBuilder) {
+              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
+                  .withApiConfigJsonFile(configFile);
+            }
+          };
+      defaultChannelProviderBuilder =
+          defaultChannelProviderBuilder.setPoolSize(1).setChannelConfigurator(apiFunction);
+    }
 
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(

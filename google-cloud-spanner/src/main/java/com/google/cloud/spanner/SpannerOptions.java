@@ -103,6 +103,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
+  private final boolean useGrpcGcpExtension;
   private final boolean autoThrottleAdministrativeRequests;
   private final boolean trackTransactionStarter;
   /**
@@ -557,6 +558,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
+    this.useGrpcGcpExtension = builder.useGrpcGcpExtension;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
@@ -636,6 +638,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private boolean useGrpcGcpExtension = true;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -683,6 +686,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
+      this.useGrpcGcpExtension = useGrpcGcpExtension;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
@@ -999,6 +1003,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder setUseGrpcGcpExtension(boolean useGrpcGcpExtension) {
+      this.useGrpcGcpExtension = useGrpcGcpExtension;
+      return this;
+    }
+
     /**
      * Sets the host of an emulator to use. By default the value is read from an environment
      * variable. If the environment variable is not set, this will be <code>null</code>.
@@ -1097,6 +1106,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public Duration getPartitionedDmlTimeout() {
     return partitionedDmlTimeout;
+  }
+
+  public boolean isUseGrpcGcpExtension() {
+    return useGrpcGcpExtension;
   }
 
   public boolean isAutoThrottleAdministrativeRequests() {
