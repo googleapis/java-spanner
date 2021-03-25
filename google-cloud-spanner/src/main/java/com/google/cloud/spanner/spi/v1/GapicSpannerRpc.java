@@ -369,8 +369,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       // instead.
       // TODO: may need to update GcpManagedChannelBuilder so that Spanner could specify the channel
       // pool size using options.getNumChannels().
-      // InputStreamReader reader = new
-      // InputStreamReader(GapicSpannerRpc.class.getResourceAsStream(API_FILE));
       InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
       StringBuilder sb = new StringBuilder();
       try {
@@ -385,8 +383,8 @@ public class GapicSpannerRpc implements SpannerRpc {
           new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
             @Override
             public ManagedChannelBuilder apply(ManagedChannelBuilder channelBuilder) {
-              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder);
-                  // .withApiConfigJsonString(jsonApiConfig);
+              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
+                  .withApiConfigJsonString(jsonApiConfig);
             }
           };
       defaultChannelProviderBuilder =
