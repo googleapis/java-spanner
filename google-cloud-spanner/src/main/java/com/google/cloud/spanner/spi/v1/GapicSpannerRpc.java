@@ -160,8 +160,8 @@ import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -369,14 +369,24 @@ public class GapicSpannerRpc implements SpannerRpc {
       // instead.
       // TODO: may need to update GcpManagedChannelBuilder so that Spanner could specify the channel
       // pool size using options.getNumChannels().
-      final File configFile =
-          new File(GapicSpannerRpc.class.getClassLoader().getResource(API_FILE).getFile());
+      // InputStreamReader reader = new
+      // InputStreamReader(GapicSpannerRpc.class.getResourceAsStream(API_FILE));
+      InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
+      StringBuilder sb = new StringBuilder();
+      try {
+        for (int ch; (ch = inputStream.read()) != -1; ) {
+          sb.append((char) ch);
+        }
+      } catch (IOException e) {
+        throw newSpannerException(e);
+      }
+      final String jsonApiConfig = sb.toString();
       ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
           new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
             @Override
             public ManagedChannelBuilder apply(ManagedChannelBuilder channelBuilder) {
-              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
-                  .withApiConfigJsonFile(configFile);
+              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder);
+                  // .withApiConfigJsonString(jsonApiConfig);
             }
           };
       defaultChannelProviderBuilder =

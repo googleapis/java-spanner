@@ -121,8 +121,8 @@
   <dependencies>
 
     <dependency>
-      <groupId>grpc.gcp.testing</groupId>
-      <artifactId>grpc.gcp.testing</artifactId>
+      <groupId>grpc.gcp.extension</groupId>
+      <artifactId>grpc.gcp.extension</artifactId>
       <version>0.0.1</version>
     </dependency>
     <dependency>
