@@ -17,10 +17,6 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.InternalApi;
-import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
-import com.google.api.gax.rpc.UnavailableException;
-import com.google.api.gax.rpc.UnimplementedException;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -34,14 +30,10 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
-import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +43,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
 
 /**
  * Internal connection API for Google Cloud Spanner. This class may introduce breaking changes
@@ -153,6 +144,8 @@ public class ConnectionOptions {
     }
   }
 
+  private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
+      new LocalConnectionChecker();
   private static final boolean DEFAULT_USE_PLAIN_TEXT = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
@@ -741,65 +734,6 @@ public class ConnectionOptions {
   }
 
   /**
-   * Executes a quick check to see if this connection can actually connect to a local emulator host
-   * or other (mock) test server, if the options point to localhost instead of Cloud Spanner.
-   */
-  private void checkLocalConnection() {
-    final String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-    String host = getHost() == null ? emulatorHost : getHost();
-    if (host.startsWith("https://")) {
-      host = host.substring(8);
-    }
-    if (host.startsWith("http://")) {
-      host = host.substring(7);
-    }
-    // Only do the check if the host has been set to localhost.
-    if (host != null && host.startsWith("localhost") && isUsePlainText()) {
-      // Do a quick check to see if anything is actually running on the host.
-      try {
-        InstanceAdminStubSettings.Builder testEmulatorSettings =
-            InstanceAdminStubSettings.newBuilder()
-                .setCredentialsProvider(NoCredentialsProvider.create())
-                .setTransportChannelProvider(
-                    InstantiatingGrpcChannelProvider.newBuilder().setEndpoint(host).build());
-        testEmulatorSettings
-            .listInstanceConfigsSettings()
-            .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
-        try (GrpcInstanceAdminStub stub =
-            GrpcInstanceAdminStub.create(testEmulatorSettings.build())) {
-          stub.listInstanceConfigsCallable()
-              .call(
-                  ListInstanceConfigsRequest.newBuilder()
-                      .setParent(String.format("projects/%s", getProjectId()))
-                      .build());
-        }
-      } catch (UnavailableException e) {
-        String msg;
-        if (getHost() != null) {
-          msg =
-              String.format(
-                  "The connection string '%s' contains host '%s', but no running"
-                      + " emulator or other server could be found at that address.\n"
-                      + "Please check the connection string and/or that the emulator is running.",
-                  getUri(), host);
-        } else {
-          msg =
-              String.format(
-                  "The environment variable SPANNER_EMULATOR_HOST has been set to '%s', but no running"
-                      + " emulator or other server could be found at that address.\n"
-                      + "Please check the environment variable and/or that the emulator is running.",
-                  emulatorHost);
-        }
-        throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNAVAILABLE, msg);
-      } catch (UnimplementedException e) {
-        // Ignore, this is probably a local mock server.
-      } catch (IOException e) {
-        // Ignore, this method is not checking whether valid credentials have been set.
-      }
-    }
-  }
-
-  /**
    * Create a new {@link Connection} from this {@link ConnectionOptions}. Calling this method
    * multiple times for the same {@link ConnectionOptions} will return multiple instances of {@link
    * Connection}s to the same database.
@@ -807,7 +741,7 @@ public class ConnectionOptions {
    * @return a new {@link Connection} to the database referenced by this {@link ConnectionOptions}
    */
   public Connection getConnection() {
-    checkLocalConnection();
+    LOCAL_CONNECTION_CHECKER.checkLocalConnection(this);
     return new ConnectionImpl(this);
   }
 
