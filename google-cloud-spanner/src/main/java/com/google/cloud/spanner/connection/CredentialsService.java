@@ -55,8 +55,18 @@ class CredentialsService {
         return getCredentialsFromUrl(credentialsUrl);
       }
     } catch (IOException e) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "Invalid credentials path specified", e);
+      String msg = "Invalid credentials path specified: ";
+      if (credentialsUrl == null) {
+        msg =
+            msg
+                + "There are no credentials set in the connection string, "
+                + "and the default application credentials are not set or are pointing to an invalid or non-existing file.\n"
+                + "Please check the GOOGLE_APPLICATION_CREDENTIALS environment variable and/or "
+                + "the credentials that have been set using the Google Cloud SDK gcloud auth application-default login command";
+      } else {
+        msg = msg + credentialsUrl;
+      }
+      throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, msg, e);
     }
   }
 
