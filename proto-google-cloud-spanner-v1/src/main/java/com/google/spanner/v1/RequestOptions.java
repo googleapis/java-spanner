@@ -39,6 +39,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
 
   private RequestOptions() {
     priority_ = 0;
+    requestTag_ = "";
+    transactionTag_ = "";
   }
 
   @java.lang.Override
@@ -75,6 +77,20 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
               int rawValue = input.readEnum();
 
               priority_ = rawValue;
+              break;
+            }
+          case 18:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              requestTag_ = s;
+              break;
+            }
+          case 26:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              transactionTag_ = s;
               break;
             }
           default:
@@ -339,6 +355,134 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     return result == null ? com.google.spanner.v1.RequestOptions.Priority.UNRECOGNIZED : result;
   }
 
+  public static final int REQUEST_TAG_FIELD_NUMBER = 2;
+  private volatile java.lang.Object requestTag_;
+  /**
+   *
+   *
+   * <pre>
+   * A per-request tag which can be applied to queries or reads, used for
+   * statistics collection.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (e.g.
+   * CommitRequest).
+   * `request_tag` must be a valid identifier of the form:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * </pre>
+   *
+   * <code>string request_tag = 2;</code>
+   *
+   * @return The requestTag.
+   */
+  @java.lang.Override
+  public java.lang.String getRequestTag() {
+    java.lang.Object ref = requestTag_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      requestTag_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * A per-request tag which can be applied to queries or reads, used for
+   * statistics collection.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (e.g.
+   * CommitRequest).
+   * `request_tag` must be a valid identifier of the form:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * </pre>
+   *
+   * <code>string request_tag = 2;</code>
+   *
+   * @return The bytes for requestTag.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getRequestTagBytes() {
+    java.lang.Object ref = requestTag_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      requestTag_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int TRANSACTION_TAG_FIELD_NUMBER = 3;
+  private volatile java.lang.Object transactionTag_;
+  /**
+   *
+   *
+   * <pre>
+   * A tag used for statistics collection about this transaction.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * The value of transaction_tag should be the same for all requests belonging
+   * to the same transaction.
+   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * ignored.
+   * `transaction_tag` must be a valid identifier of the format:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * </pre>
+   *
+   * <code>string transaction_tag = 3;</code>
+   *
+   * @return The transactionTag.
+   */
+  @java.lang.Override
+  public java.lang.String getTransactionTag() {
+    java.lang.Object ref = transactionTag_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      transactionTag_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * A tag used for statistics collection about this transaction.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * The value of transaction_tag should be the same for all requests belonging
+   * to the same transaction.
+   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * ignored.
+   * `transaction_tag` must be a valid identifier of the format:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * </pre>
+   *
+   * <code>string transaction_tag = 3;</code>
+   *
+   * @return The bytes for transactionTag.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getTransactionTagBytes() {
+    java.lang.Object ref = transactionTag_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      transactionTag_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -357,6 +501,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       output.writeEnum(1, priority_);
     }
+    if (!getRequestTagBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, requestTag_);
+    }
+    if (!getTransactionTagBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, transactionTag_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -369,6 +519,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     if (priority_
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, priority_);
+    }
+    if (!getRequestTagBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, requestTag_);
+    }
+    if (!getTransactionTagBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, transactionTag_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -386,6 +542,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     com.google.spanner.v1.RequestOptions other = (com.google.spanner.v1.RequestOptions) obj;
 
     if (priority_ != other.priority_) return false;
+    if (!getRequestTag().equals(other.getRequestTag())) return false;
+    if (!getTransactionTag().equals(other.getTransactionTag())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -399,6 +557,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + PRIORITY_FIELD_NUMBER;
     hash = (53 * hash) + priority_;
+    hash = (37 * hash) + REQUEST_TAG_FIELD_NUMBER;
+    hash = (53 * hash) + getRequestTag().hashCode();
+    hash = (37 * hash) + TRANSACTION_TAG_FIELD_NUMBER;
+    hash = (53 * hash) + getTransactionTag().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -545,6 +707,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       super.clear();
       priority_ = 0;
 
+      requestTag_ = "";
+
+      transactionTag_ = "";
+
       return this;
     }
 
@@ -572,6 +738,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.v1.RequestOptions buildPartial() {
       com.google.spanner.v1.RequestOptions result = new com.google.spanner.v1.RequestOptions(this);
       result.priority_ = priority_;
+      result.requestTag_ = requestTag_;
+      result.transactionTag_ = transactionTag_;
       onBuilt();
       return result;
     }
@@ -623,6 +791,14 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.v1.RequestOptions.getDefaultInstance()) return this;
       if (other.priority_ != 0) {
         setPriorityValue(other.getPriorityValue());
+      }
+      if (!other.getRequestTag().isEmpty()) {
+        requestTag_ = other.requestTag_;
+        onChanged();
+      }
+      if (!other.getTransactionTag().isEmpty()) {
+        transactionTag_ = other.transactionTag_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -740,6 +916,293 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     public Builder clearPriority() {
 
       priority_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object requestTag_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * A per-request tag which can be applied to queries or reads, used for
+     * statistics collection.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (e.g.
+     * CommitRequest).
+     * `request_tag` must be a valid identifier of the form:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * </pre>
+     *
+     * <code>string request_tag = 2;</code>
+     *
+     * @return The requestTag.
+     */
+    public java.lang.String getRequestTag() {
+      java.lang.Object ref = requestTag_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        requestTag_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A per-request tag which can be applied to queries or reads, used for
+     * statistics collection.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (e.g.
+     * CommitRequest).
+     * `request_tag` must be a valid identifier of the form:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * </pre>
+     *
+     * <code>string request_tag = 2;</code>
+     *
+     * @return The bytes for requestTag.
+     */
+    public com.google.protobuf.ByteString getRequestTagBytes() {
+      java.lang.Object ref = requestTag_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        requestTag_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A per-request tag which can be applied to queries or reads, used for
+     * statistics collection.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (e.g.
+     * CommitRequest).
+     * `request_tag` must be a valid identifier of the form:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * </pre>
+     *
+     * <code>string request_tag = 2;</code>
+     *
+     * @param value The requestTag to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRequestTag(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      requestTag_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A per-request tag which can be applied to queries or reads, used for
+     * statistics collection.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (e.g.
+     * CommitRequest).
+     * `request_tag` must be a valid identifier of the form:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * </pre>
+     *
+     * <code>string request_tag = 2;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearRequestTag() {
+
+      requestTag_ = getDefaultInstance().getRequestTag();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A per-request tag which can be applied to queries or reads, used for
+     * statistics collection.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * This field is ignored for requests where it's not applicable (e.g.
+     * CommitRequest).
+     * `request_tag` must be a valid identifier of the form:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * </pre>
+     *
+     * <code>string request_tag = 2;</code>
+     *
+     * @param value The bytes for requestTag to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRequestTagBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      requestTag_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object transactionTag_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * A tag used for statistics collection about this transaction.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * The value of transaction_tag should be the same for all requests belonging
+     * to the same transaction.
+     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * ignored.
+     * `transaction_tag` must be a valid identifier of the format:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * </pre>
+     *
+     * <code>string transaction_tag = 3;</code>
+     *
+     * @return The transactionTag.
+     */
+    public java.lang.String getTransactionTag() {
+      java.lang.Object ref = transactionTag_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        transactionTag_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A tag used for statistics collection about this transaction.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * The value of transaction_tag should be the same for all requests belonging
+     * to the same transaction.
+     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * ignored.
+     * `transaction_tag` must be a valid identifier of the format:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * </pre>
+     *
+     * <code>string transaction_tag = 3;</code>
+     *
+     * @return The bytes for transactionTag.
+     */
+    public com.google.protobuf.ByteString getTransactionTagBytes() {
+      java.lang.Object ref = transactionTag_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        transactionTag_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A tag used for statistics collection about this transaction.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * The value of transaction_tag should be the same for all requests belonging
+     * to the same transaction.
+     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * ignored.
+     * `transaction_tag` must be a valid identifier of the format:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * </pre>
+     *
+     * <code>string transaction_tag = 3;</code>
+     *
+     * @param value The transactionTag to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTransactionTag(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      transactionTag_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A tag used for statistics collection about this transaction.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * The value of transaction_tag should be the same for all requests belonging
+     * to the same transaction.
+     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * ignored.
+     * `transaction_tag` must be a valid identifier of the format:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * </pre>
+     *
+     * <code>string transaction_tag = 3;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearTransactionTag() {
+
+      transactionTag_ = getDefaultInstance().getTransactionTag();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A tag used for statistics collection about this transaction.
+     * Both request_tag and transaction_tag can be specified for a read or query
+     * that belongs to a transaction.
+     * The value of transaction_tag should be the same for all requests belonging
+     * to the same transaction.
+     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * ignored.
+     * `transaction_tag` must be a valid identifier of the format:
+     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * </pre>
+     *
+     * <code>string transaction_tag = 3;</code>
+     *
+     * @param value The bytes for transactionTag to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTransactionTagBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      transactionTag_ = value;
       onChanged();
       return this;
     }

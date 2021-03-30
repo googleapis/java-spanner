@@ -461,13 +461,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Query optimizer statistics package to use.
+     * An option to control the selection of optimizer statistics package.
      * This parameter allows individual queries to use a different query
-     * optimizer statistics.
+     * optimizer statistics package.
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
-     * statistics package set at the database level options, or latest if
-     * the database option is not set.
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
@@ -475,9 +475,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
      * The list of available statistics packages can be queried from
-     * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
      * Executing a SQL statement with an invalid optimizer statistics package
-     * or with statistics package that allows garbage collection fails with
+     * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -490,13 +490,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Query optimizer statistics package to use.
+     * An option to control the selection of optimizer statistics package.
      * This parameter allows individual queries to use a different query
-     * optimizer statistics.
+     * optimizer statistics package.
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
-     * statistics package set at the database level options, or latest if
-     * the database option is not set.
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
@@ -504,9 +504,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
      * The list of available statistics packages can be queried from
-     * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
      * Executing a SQL statement with an invalid optimizer statistics package
-     * or with statistics package that allows garbage collection fails with
+     * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -702,13 +702,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Query optimizer statistics package to use.
+     * An option to control the selection of optimizer statistics package.
      * This parameter allows individual queries to use a different query
-     * optimizer statistics.
+     * optimizer statistics package.
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
-     * statistics package set at the database level options, or latest if
-     * the database option is not set.
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
@@ -716,9 +716,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
      * The list of available statistics packages can be queried from
-     * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
      * Executing a SQL statement with an invalid optimizer statistics package
-     * or with statistics package that allows garbage collection fails with
+     * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -742,13 +742,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Query optimizer statistics package to use.
+     * An option to control the selection of optimizer statistics package.
      * This parameter allows individual queries to use a different query
-     * optimizer statistics.
+     * optimizer statistics package.
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
-     * statistics package set at the database level options, or latest if
-     * the database option is not set.
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
@@ -756,9 +756,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
      * The list of available statistics packages can be queried from
-     * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
      * Executing a SQL statement with an invalid optimizer statistics package
-     * or with statistics package that allows garbage collection fails with
+     * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
      * </pre>
      *
@@ -1307,13 +1307,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Query optimizer statistics package to use.
+       * An option to control the selection of optimizer statistics package.
        * This parameter allows individual queries to use a different query
-       * optimizer statistics.
+       * optimizer statistics package.
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
-       * statistics package set at the database level options, or latest if
-       * the database option is not set.
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
@@ -1321,9 +1321,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
        * The list of available statistics packages can be queried from
-       * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
        * Executing a SQL statement with an invalid optimizer statistics package
-       * or with statistics package that allows garbage collection fails with
+       * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
        * </pre>
        *
@@ -1346,13 +1346,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Query optimizer statistics package to use.
+       * An option to control the selection of optimizer statistics package.
        * This parameter allows individual queries to use a different query
-       * optimizer statistics.
+       * optimizer statistics package.
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
-       * statistics package set at the database level options, or latest if
-       * the database option is not set.
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
@@ -1360,9 +1360,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
        * The list of available statistics packages can be queried from
-       * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
        * Executing a SQL statement with an invalid optimizer statistics package
-       * or with statistics package that allows garbage collection fails with
+       * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
        * </pre>
        *
@@ -1385,13 +1385,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Query optimizer statistics package to use.
+       * An option to control the selection of optimizer statistics package.
        * This parameter allows individual queries to use a different query
-       * optimizer statistics.
+       * optimizer statistics package.
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
-       * statistics package set at the database level options, or latest if
-       * the database option is not set.
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
@@ -1399,9 +1399,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
        * The list of available statistics packages can be queried from
-       * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
        * Executing a SQL statement with an invalid optimizer statistics package
-       * or with statistics package that allows garbage collection fails with
+       * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
        * </pre>
        *
@@ -1423,13 +1423,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Query optimizer statistics package to use.
+       * An option to control the selection of optimizer statistics package.
        * This parameter allows individual queries to use a different query
-       * optimizer statistics.
+       * optimizer statistics package.
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
-       * statistics package set at the database level options, or latest if
-       * the database option is not set.
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
@@ -1437,9 +1437,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
        * The list of available statistics packages can be queried from
-       * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
        * Executing a SQL statement with an invalid optimizer statistics package
-       * or with statistics package that allows garbage collection fails with
+       * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
        * </pre>
        *
@@ -1457,13 +1457,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        *
        * <pre>
-       * Query optimizer statistics package to use.
+       * An option to control the selection of optimizer statistics package.
        * This parameter allows individual queries to use a different query
-       * optimizer statistics.
+       * optimizer statistics package.
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
-       * statistics package set at the database level options, or latest if
-       * the database option is not set.
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
@@ -1471,9 +1471,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
        * The list of available statistics packages can be queried from
-       * `SPANNER_SYS.OPTIMIZER_STATISTICS_PACKAGES`.
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
        * Executing a SQL statement with an invalid optimizer statistics package
-       * or with statistics package that allows garbage collection fails with
+       * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
        * </pre>
        *
