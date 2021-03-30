@@ -144,6 +144,8 @@ public class ConnectionOptions {
     }
   }
 
+  private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
+      new LocalConnectionChecker();
   private static final boolean DEFAULT_USE_PLAIN_TEXT = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
@@ -739,6 +741,7 @@ public class ConnectionOptions {
    * @return a new {@link Connection} to the database referenced by this {@link ConnectionOptions}
    */
   public Connection getConnection() {
+    LOCAL_CONNECTION_CHECKER.checkLocalConnection(this);
     return new ConnectionImpl(this);
   }
 

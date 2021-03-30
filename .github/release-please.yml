@@ -7,3 +7,7 @@ branches:
 - branch: 4.0.x
   releaseType: java-yoshi
   bumpMinorPreMajor: true
+- branch: 5.2.x
+  releaseType: java-yoshi
+  bumpMinorPreMajor: true
+
