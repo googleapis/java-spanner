@@ -47,4 +47,84 @@ public interface RequestOptionsOrBuilder
    * @return The priority.
    */
   com.google.spanner.v1.RequestOptions.Priority getPriority();
+
+  /**
+   *
+   *
+   * <pre>
+   * A per-request tag which can be applied to queries or reads, used for
+   * statistics collection.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (e.g.
+   * CommitRequest).
+   * `request_tag` must be a valid identifier of the form:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * </pre>
+   *
+   * <code>string request_tag = 2;</code>
+   *
+   * @return The requestTag.
+   */
+  java.lang.String getRequestTag();
+  /**
+   *
+   *
+   * <pre>
+   * A per-request tag which can be applied to queries or reads, used for
+   * statistics collection.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * This field is ignored for requests where it's not applicable (e.g.
+   * CommitRequest).
+   * `request_tag` must be a valid identifier of the form:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * </pre>
+   *
+   * <code>string request_tag = 2;</code>
+   *
+   * @return The bytes for requestTag.
+   */
+  com.google.protobuf.ByteString getRequestTagBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * A tag used for statistics collection about this transaction.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * The value of transaction_tag should be the same for all requests belonging
+   * to the same transaction.
+   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * ignored.
+   * `transaction_tag` must be a valid identifier of the format:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * </pre>
+   *
+   * <code>string transaction_tag = 3;</code>
+   *
+   * @return The transactionTag.
+   */
+  java.lang.String getTransactionTag();
+  /**
+   *
+   *
+   * <pre>
+   * A tag used for statistics collection about this transaction.
+   * Both request_tag and transaction_tag can be specified for a read or query
+   * that belongs to a transaction.
+   * The value of transaction_tag should be the same for all requests belonging
+   * to the same transaction.
+   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * ignored.
+   * `transaction_tag` must be a valid identifier of the format:
+   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * </pre>
+   *
+   * <code>string transaction_tag = 3;</code>
+   *
+   * @return The bytes for transactionTag.
+   */
+  com.google.protobuf.ByteString getTransactionTagBytes();
 }
