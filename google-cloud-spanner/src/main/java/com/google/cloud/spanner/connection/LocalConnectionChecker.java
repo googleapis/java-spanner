@@ -58,7 +58,14 @@ class LocalConnectionChecker {
             InstanceAdminStubSettings.newBuilder()
                 .setCredentialsProvider(NoCredentialsProvider.create())
                 .setTransportChannelProvider(
-                    InstantiatingGrpcChannelProvider.newBuilder().setEndpoint(host).build());
+                    InstantiatingGrpcChannelProvider.newBuilder()
+                        .setEndpoint(host)
+                        .setChannelConfigurator(
+                            input -> {
+                              input.usePlaintext();
+                              return input;
+                            })
+                        .build());
         testEmulatorSettings
             .listInstanceConfigsSettings()
             .setSimpleTimeoutNoRetries(Duration.ofSeconds(10L));
