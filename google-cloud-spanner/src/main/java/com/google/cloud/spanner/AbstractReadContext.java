@@ -47,6 +47,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
@@ -557,6 +558,14 @@ abstract class AbstractReadContext
     return builder.build();
   }
 
+  RequestOptions buildRequestOptions(Options options) {
+    RequestOptions.Builder builder = RequestOptions.newBuilder();
+    if (options.hasPriority()) {
+      builder.setPriority(options.priority());
+    }
+    return builder.build();
+  }
+
   ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
       Statement statement, QueryMode queryMode, Options options, boolean withTransactionSelector) {
     ExecuteSqlRequest.Builder builder =
@@ -580,6 +589,7 @@ abstract class AbstractReadContext
     }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
+    builder.setRequestOptions(buildRequestOptions(options));
     return builder;
   }
 
@@ -610,6 +620,7 @@ abstract class AbstractReadContext
       builder.setTransaction(selector);
     }
     builder.setSeqno(getSeqNo());
+    builder.setRequestOptions(buildRequestOptions(options));
     return builder;
   }
 
@@ -760,6 +771,7 @@ abstract class AbstractReadContext
             if (selector != null) {
               builder.setTransaction(selector);
             }
+            builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
                 rpc.read(builder.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);

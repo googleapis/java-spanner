@@ -43,6 +43,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
@@ -298,6 +299,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           CommitRequest.newBuilder()
               .setSession(session.getName())
               .setReturnCommitStats(options.withCommitStats());
+      if (options.hasPriority()) {
+        builder.setRequestOptions(
+            RequestOptions.newBuilder().setPriority(options.priority()).build());
+      }
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
@@ -343,6 +348,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           } else {
             requestBuilder.setTransactionId(
                 transactionId == null ? transactionIdFuture.get() : transactionId);
+          }
+          if (options.hasPriority()) {
+            requestBuilder.setRequestOptions(
+                RequestOptions.newBuilder().setPriority(options.priority()).build());
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");

@@ -17,12 +17,29 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
 import java.util.Objects;
 
 /** Specifies options for various spanner operations */
 public final class Options implements Serializable {
   private static final long serialVersionUID = 8067099123096783941L;
+
+  /**
+   * Priority for an RPC invocation. The default priority is {@link #HIGH}. This enum can be used to
+   * set a lower priority for a specific RPC invocation.
+   */
+  public enum RpcPriority {
+    LOW(Priority.PRIORITY_LOW),
+    MEDIUM(Priority.PRIORITY_MEDIUM),
+    HIGH(Priority.PRIORITY_HIGH);
+
+    private final Priority proto;
+
+    private RpcPriority(Priority proto) {
+      this.proto = Preconditions.checkNotNull(proto);
+    }
+  }
 
   /** Marker interface to mark options applicable to both Read and Query operations */
   public interface ReadAndQueryOption extends ReadOption, QueryOption {}
@@ -77,6 +94,11 @@ public final class Options implements Serializable {
   public static ReadAndQueryOption bufferRows(int bufferRows) {
     Preconditions.checkArgument(bufferRows > 0, "bufferRows should be greater than 0");
     return new BufferRowsOption(bufferRows);
+  }
+
+  /** Specifies the priority to use for the RPC. */
+  public static ReadQueryUpdateTransactionOption priority(RpcPriority priority) {
+    return new PriorityOption(priority);
   }
 
   /**
@@ -158,6 +180,20 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class PriorityOption extends InternalOption
+      implements ReadQueryUpdateTransactionOption {
+    private final RpcPriority priority;
+
+    PriorityOption(RpcPriority priority) {
+      this.priority = priority;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.priority = priority;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -165,6 +201,7 @@ public final class Options implements Serializable {
   private Integer pageSize;
   private String pageToken;
   private String filter;
+  private RpcPriority priority;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -221,6 +258,14 @@ public final class Options implements Serializable {
     return filter;
   }
 
+  boolean hasPriority() {
+    return priority != null;
+  }
+
+  Priority priority() {
+    return priority == null ? null : priority.proto;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -241,6 +286,9 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       b.append("filter: ").append(filter).append(' ');
+    }
+    if (priority != null) {
+      b.append("priority: ").append(priority).append(' ');
     }
     return b.toString();
   }
@@ -271,7 +319,8 @@ public final class Options implements Serializable {
         && (!hasPageSize() && !that.hasPageSize()
             || hasPageSize() && that.hasPageSize() && Objects.equals(pageSize(), that.pageSize()))
         && Objects.equals(pageToken(), that.pageToken())
-        && Objects.equals(filter(), that.filter());
+        && Objects.equals(filter(), that.filter())
+        && Objects.equals(priority(), that.priority());
   }
 
   @Override
@@ -297,6 +346,9 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       result = 31 * result + filter.hashCode();
+    }
+    if (priority != null) {
+      result = 31 * result + priority.hashCode();
     }
     return result;
   }
