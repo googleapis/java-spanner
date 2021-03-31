@@ -363,12 +363,24 @@ public class StatementParserTest {
   @Test
   public void testIsUpdate_QueryHints() {
     // Valid query hints.
-    assertTrue(parser.isUpdateStatement("@{LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertTrue(parser.isUpdateStatement("@ {LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertTrue(parser.isUpdateStatement("@{ LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertTrue(parser.isUpdateStatement("@{LOCK_SCANNED_RANGES=exclusive } UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertTrue(parser.isUpdateStatement("@{LOCK_SCANNED_RANGES=exclusive}\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertTrue(parser.isUpdateStatement("@{\nLOCK_SCANNED_RANGES =  exclusive   \t}\n\t UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@ {LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{ LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive } UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive}\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{\nLOCK_SCANNED_RANGES =  exclusive   \t}\n\t UPDATE FOO SET NAME='foo' WHERE ID=1"));
     assertTrue(
         parser.isUpdateStatement(
             "@{LOCK_SCANNED_RANGES=exclusive}\n -- Single line comment\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
@@ -382,9 +394,15 @@ public class StatementParserTest {
             "@{LOCK_SCANNED_RANGES=exclusive} @{USE_ADDITIONAL_PARALLELISM=TRUE} UPDATE FOO SET NAME='foo' WHERE ID=1"));
 
     // Invalid query hints.
-    assertFalse(parser.isUpdateStatement("@{LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertFalse(parser.isUpdateStatement("@LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
-    assertFalse(parser.isUpdateStatement("@LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertFalse(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertFalse(
+        parser.isUpdateStatement(
+            "@LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertFalse(
+        parser.isUpdateStatement(
+            "@LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
   }
 
   @Test
