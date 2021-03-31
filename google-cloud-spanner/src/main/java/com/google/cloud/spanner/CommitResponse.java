@@ -25,10 +25,6 @@ public class CommitResponse {
 
   private final com.google.spanner.v1.CommitResponse proto;
 
-  static CommitResponse fromProto(com.google.spanner.v1.CommitResponse proto) {
-    return new CommitResponse(Timestamp.fromProto(proto.getCommitTimestamp()));
-  }
-
   public CommitResponse(Timestamp commitTimestamp) {
     this.proto =
         com.google.spanner.v1.CommitResponse.newBuilder()

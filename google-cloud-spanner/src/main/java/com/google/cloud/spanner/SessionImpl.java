@@ -176,6 +176,7 @@ class SessionImpl implements Session {
     if (commitRequestOptions.hasPriority()) {
       requestBuilder.setRequestOptions(
           RequestOptions.newBuilder().setPriority(commitRequestOptions.priority()).build());
+    }
     Options opts = Options.fromTransactionOptions(transactionOptions);
     if (opts.hasTag()) {
       requestBuilder.setRequestOptions(
