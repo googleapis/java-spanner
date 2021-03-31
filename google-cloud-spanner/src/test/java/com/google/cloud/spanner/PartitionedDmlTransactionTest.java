@@ -67,7 +67,7 @@ public class PartitionedDmlTransactionTest {
   private final ByteString txId = ByteString.copyFromUtf8("tx");
   private final ByteString resumeToken = ByteString.copyFromUtf8("resume");
   private final String sql = "UPDATE FOO SET BAR=1 WHERE TRUE";
-  private final String tag = "tag-1";
+  private final String tag = "app=spanner,env=test";
   private final ExecuteSqlRequest executeRequestWithoutResumeToken =
       ExecuteSqlRequest.newBuilder()
           .setQueryMode(QueryMode.NORMAL)
@@ -382,5 +382,15 @@ public class PartitionedDmlTransactionTest {
             Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
             Options.fromUpdateOptions(Options.priority(RpcPriority.LOW)));
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testRequestWithPriorityAndRequestTag() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
+            Options.fromUpdateOptions(Options.priority(RpcPriority.LOW), Options.tag("tag")));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+    assertEquals("tag", request.getRequestOptions().getRequestTag());
   }
 }

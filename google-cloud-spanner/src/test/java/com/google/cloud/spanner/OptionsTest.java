@@ -518,14 +518,15 @@ public class OptionsTest {
     assertNotEquals(options2, options4);
   }
 
+  @Test
   public void updateOptTest() {
-    String tag = "tag-1";
+    String tag = "app=spanner,env=test";
     Options opts = Options.fromUpdateOptions(Options.tag(tag));
 
     assertThat(opts.toString()).isEqualTo("tag: " + tag + " ");
     assertThat(opts.hasTag()).isTrue();
     assertThat(opts.tag()).isEqualTo(tag);
-    assertThat(opts.hashCode()).isEqualTo(110119551);
+    assertThat(opts.hashCode()).isEqualTo(-2118248262);
   }
 
   @Test
@@ -538,26 +539,26 @@ public class OptionsTest {
     o2 = Options.fromUpdateOptions();
     assertThat(o1.equals(o2)).isTrue();
 
-    o2 = Options.fromUpdateOptions(Options.tag("tag-1"));
+    o2 = Options.fromUpdateOptions(Options.tag("app=spanner,env=test"));
     assertThat(o1.equals(o2)).isFalse();
     assertThat(o2.equals(o1)).isFalse();
 
-    o3 = Options.fromUpdateOptions(Options.tag("tag-1"));
+    o3 = Options.fromUpdateOptions(Options.tag("app=spanner,env=test"));
     assertThat(o2.equals(o3)).isTrue();
 
-    o3 = Options.fromUpdateOptions(Options.tag("tag-2"));
+    o3 = Options.fromUpdateOptions(Options.tag("app=spanner,env=stage"));
     assertThat(o2.equals(o3)).isFalse();
   }
 
   @Test
   public void transactionOptTest() {
-    String tag = "tag-1";
+    String tag = "app=spanner,env=test";
     Options opts = Options.fromTransactionOptions(Options.tag(tag));
 
     assertThat(opts.toString()).isEqualTo("tag: " + tag + " ");
     assertThat(opts.hasTag()).isTrue();
     assertThat(opts.tag()).isEqualTo(tag);
-    assertThat(opts.hashCode()).isEqualTo(110119551);
+    assertThat(opts.hashCode()).isEqualTo(-2118248262);
   }
 
   @Test
@@ -570,14 +571,14 @@ public class OptionsTest {
     o2 = Options.fromTransactionOptions();
     assertThat(o1.equals(o2)).isTrue();
 
-    o2 = Options.fromTransactionOptions(Options.tag("tag-1"));
+    o2 = Options.fromTransactionOptions(Options.tag("app=spanner,env=test"));
     assertThat(o1.equals(o2)).isFalse();
     assertThat(o2.equals(o1)).isFalse();
 
-    o3 = Options.fromTransactionOptions(Options.tag("tag-1"));
+    o3 = Options.fromTransactionOptions(Options.tag("app=spanner,env=test"));
     assertThat(o2.equals(o3)).isTrue();
 
-    o3 = Options.fromTransactionOptions(Options.tag("tag-2"));
+    o3 = Options.fromTransactionOptions(Options.tag("app=spanner,env=stage"));
     assertThat(o2.equals(o3)).isFalse();
   }
 }

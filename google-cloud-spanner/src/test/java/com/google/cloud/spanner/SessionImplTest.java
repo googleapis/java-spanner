@@ -242,7 +242,7 @@ public class SessionImplTest {
 
   @Test
   public void writeAtLeastOnceWithOptions() throws ParseException {
-    String tag = "tag-1";
+    String tag = "app=spanner,env=test";
     String timestampString = "2015-10-01T10:54:20.021Z";
     ArgumentCaptor<CommitRequest> commit = ArgumentCaptor.forClass(CommitRequest.class);
     CommitResponse response =

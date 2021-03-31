@@ -94,7 +94,7 @@ public class AbstractReadContextTest {
     }
 
     String getTransactionTag() {
-      return "transaction-tag";
+      return "app=spanner,env=test";
     }
   }
 
@@ -192,11 +192,12 @@ public class AbstractReadContextTest {
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR").build(),
                 QueryMode.NORMAL,
-                Options.fromUpdateOptions(Options.tag("tag-1")),
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
                 false)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
-    assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("tag-1");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
     assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
   }
 
@@ -218,11 +219,12 @@ public class AbstractReadContextTest {
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR").build(),
                 QueryMode.NORMAL,
-                Options.fromUpdateOptions(Options.tag("tag-1")),
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
                 false)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
-    assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("tag-1");
-    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("transaction-tag");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
   }
 }
