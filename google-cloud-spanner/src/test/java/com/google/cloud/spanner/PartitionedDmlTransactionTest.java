@@ -389,8 +389,9 @@ public class PartitionedDmlTransactionTest {
     ExecuteSqlRequest request =
         tx.newTransactionRequestFrom(
             Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
-            Options.fromUpdateOptions(Options.priority(RpcPriority.LOW), Options.tag("tag")));
+            Options.fromUpdateOptions(
+                Options.priority(RpcPriority.LOW), Options.tag("app=spanner,env=test")));
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
-    assertEquals("tag", request.getRequestOptions().getRequestTag());
+    assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("app=spanner,env=test");
   }
 }

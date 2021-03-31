@@ -286,8 +286,8 @@ public class DatabaseClientImplTest {
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
     assertNotNull(commit.getRequestOptions());
-    assertEquals("app=spanner,env=test", commit.getRequestOptions().getTransactionTag());
-    assertEquals("", commit.getRequestOptions().getRequestTag());
+    assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+    assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
   }
 
   @Test
@@ -305,8 +305,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=query", request.getRequestOptions().getRequestTag());
-    assertEquals("", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
   }
 
   @Test
@@ -328,8 +329,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=read", request.getRequestOptions().getRequestTag());
-    assertEquals("", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=read");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
   }
 
   @Test
@@ -355,9 +357,10 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=query", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=txn", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
   }
 
   @Test
@@ -386,9 +389,10 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ReadRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=read", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=txn", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=read");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
   }
 
   @Test
@@ -409,8 +413,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=update", request.getRequestOptions().getRequestTag());
-    assertEquals("", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=update");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
   }
 
   @Test
@@ -433,9 +438,10 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ExecuteBatchDmlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=batch", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=txn", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=batch");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
   }
 
   @Test
@@ -449,8 +455,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     ExecuteSqlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("app=spanner,env=test,action=dml", request.getRequestOptions().getRequestTag());
-    assertEquals("", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=dml");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
   }
 
   @Test
@@ -472,9 +479,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=commit", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=commit");
   }
 
   @Test
@@ -491,9 +498,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=manager", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=manager");
   }
 
   @Test
@@ -516,9 +523,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals("", request.getRequestOptions().getRequestTag());
-    assertEquals(
-        "app=spanner,env=test,action=runner", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=runner");
   }
 
   @Test
@@ -547,8 +554,9 @@ public class DatabaseClientImplTest {
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
-    assertEquals(
-        "app=spanner,env=test,action=manager", request.getRequestOptions().getTransactionTag());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=manager");
   }
 
   @Test

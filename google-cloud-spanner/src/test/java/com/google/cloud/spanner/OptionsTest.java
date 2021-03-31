@@ -171,13 +171,13 @@ public class OptionsTest {
   @Test
   public void readOptTest() {
     int limit = 3;
-    String tag = "read";
+    String tag = "app=spanner,env=test,action=read";
     Options opts = Options.fromReadOptions(Options.limit(limit), Options.tag(tag));
 
     assertThat(opts.toString())
         .isEqualTo("limit: " + Integer.toString(limit) + " " + "tag: " + tag + " ");
     assertThat(opts.tag()).isEqualTo(tag);
-    assertThat(opts.hashCode()).isEqualTo(3526226);
+    assertThat(opts.hashCode()).isEqualTo(-1111478426);
   }
 
   @Test
@@ -204,13 +204,13 @@ public class OptionsTest {
   @Test
   public void queryOptTest() {
     int chunks = 3;
-    String tag = "query";
+    String tag = "app=spanner,env=test,action=query";
     Options opts = Options.fromQueryOptions(Options.prefetchChunks(chunks), Options.tag(tag));
     assertThat(opts.toString())
         .isEqualTo("prefetchChunks: " + Integer.toString(chunks) + " " + "tag: " + tag + " ");
     assertThat(opts.prefetchChunks()).isEqualTo(chunks);
     assertThat(opts.tag()).isEqualTo(tag);
-    assertThat(opts.hashCode()).isEqualTo(107974020);
+    assertThat(opts.hashCode()).isEqualTo(-97431824);
   }
 
   @Test
