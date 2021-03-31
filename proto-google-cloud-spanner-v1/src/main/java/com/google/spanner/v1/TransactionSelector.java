@@ -42,13 +42,13 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
 
   private TransactionSelector() {}
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new TransactionSelector();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -59,7 +59,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -73,13 +73,15 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             break;
           case 10:
             {
-              TransactionOptions.Builder subBuilder = null;
+              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
               if (selectorCase_ == 1) {
-                subBuilder = ((TransactionOptions) selector_).toBuilder();
+                subBuilder = ((com.google.spanner.v1.TransactionOptions) selector_).toBuilder();
               }
-              selector_ = input.readMessage(TransactionOptions.parser(), extensionRegistry);
+              selector_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((TransactionOptions) selector_);
+                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) selector_);
                 selector_ = subBuilder.buildPartial();
               }
               selectorCase_ = 1;
@@ -93,13 +95,15 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             }
           case 26:
             {
-              TransactionOptions.Builder subBuilder = null;
+              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
               if (selectorCase_ == 3) {
-                subBuilder = ((TransactionOptions) selector_).toBuilder();
+                subBuilder = ((com.google.spanner.v1.TransactionOptions) selector_).toBuilder();
               }
-              selector_ = input.readMessage(TransactionOptions.parser(), extensionRegistry);
+              selector_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((TransactionOptions) selector_);
+                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) selector_);
                 selector_ = subBuilder.buildPartial();
               }
               selectorCase_ = 3;
@@ -125,19 +129,27 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return TransactionProto.internal_static_google_spanner_v1_TransactionSelector_descriptor;
+    return com.google.spanner.v1.TransactionProto
+        .internal_static_google_spanner_v1_TransactionSelector_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return TransactionProto.internal_static_google_spanner_v1_TransactionSelector_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(TransactionSelector.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.TransactionProto
+        .internal_static_google_spanner_v1_TransactionSelector_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.TransactionSelector.class,
+            com.google.spanner.v1.TransactionSelector.Builder.class);
   }
 
   private int selectorCase_ = 0;
-  private Object selector_;
+  private java.lang.Object selector_;
 
-  public enum SelectorCase implements com.google.protobuf.Internal.EnumLite, InternalOneOfEnum {
+  public enum SelectorCase
+      implements
+          com.google.protobuf.Internal.EnumLite,
+          com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     SINGLE_USE(1),
     ID(2),
     BEGIN(3),
@@ -152,7 +164,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * @return The enum associated with the given number.
      * @deprecated Use {@link #forNumber(int)} instead.
      */
-    @Deprecated
+    @java.lang.Deprecated
     public static SelectorCase valueOf(int value) {
       return forNumber(value);
     }
@@ -195,7 +207,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the singleUse field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasSingleUse() {
     return selectorCase_ == 1;
   }
@@ -212,12 +224,12 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The singleUse.
    */
-  @Override
-  public TransactionOptions getSingleUse() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions getSingleUse() {
     if (selectorCase_ == 1) {
-      return (TransactionOptions) selector_;
+      return (com.google.spanner.v1.TransactionOptions) selector_;
     }
-    return TransactionOptions.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
   /**
    *
@@ -230,12 +242,12 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
    */
-  @Override
-  public TransactionOptionsOrBuilder getSingleUseOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseOrBuilder() {
     if (selectorCase_ == 1) {
-      return (TransactionOptions) selector_;
+      return (com.google.spanner.v1.TransactionOptions) selector_;
     }
-    return TransactionOptions.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
 
   public static final int ID_FIELD_NUMBER = 2;
@@ -265,7 +277,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The id.
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ByteString getId() {
     if (selectorCase_ == 2) {
       return (com.google.protobuf.ByteString) selector_;
@@ -287,7 +299,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return Whether the begin field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasBegin() {
     return selectorCase_ == 3;
   }
@@ -304,12 +316,12 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * @return The begin.
    */
-  @Override
-  public TransactionOptions getBegin() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions getBegin() {
     if (selectorCase_ == 3) {
-      return (TransactionOptions) selector_;
+      return (com.google.spanner.v1.TransactionOptions) selector_;
     }
-    return TransactionOptions.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
   /**
    *
@@ -322,17 +334,17 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
    */
-  @Override
-  public TransactionOptionsOrBuilder getBeginOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder() {
     if (selectorCase_ == 3) {
-      return (TransactionOptions) selector_;
+      return (com.google.spanner.v1.TransactionOptions) selector_;
     }
-    return TransactionOptions.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
   }
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -342,21 +354,21 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (selectorCase_ == 1) {
-      output.writeMessage(1, (TransactionOptions) selector_);
+      output.writeMessage(1, (com.google.spanner.v1.TransactionOptions) selector_);
     }
     if (selectorCase_ == 2) {
       output.writeBytes(2, (com.google.protobuf.ByteString) selector_);
     }
     if (selectorCase_ == 3) {
-      output.writeMessage(3, (TransactionOptions) selector_);
+      output.writeMessage(3, (com.google.spanner.v1.TransactionOptions) selector_);
     }
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -365,7 +377,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     if (selectorCase_ == 1) {
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(
-              1, (TransactionOptions) selector_);
+              1, (com.google.spanner.v1.TransactionOptions) selector_);
     }
     if (selectorCase_ == 2) {
       size +=
@@ -375,22 +387,23 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     if (selectorCase_ == 3) {
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(
-              3, (TransactionOptions) selector_);
+              3, (com.google.spanner.v1.TransactionOptions) selector_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TransactionSelector)) {
+    if (!(obj instanceof com.google.spanner.v1.TransactionSelector)) {
       return super.equals(obj);
     }
-    TransactionSelector other = (TransactionSelector) obj;
+    com.google.spanner.v1.TransactionSelector other =
+        (com.google.spanner.v1.TransactionSelector) obj;
 
     if (!getSelectorCase().equals(other.getSelectorCase())) return false;
     switch (selectorCase_) {
@@ -410,7 +423,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -438,70 +451,71 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return hash;
   }
 
-  public static TransactionSelector parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.TransactionSelector parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionSelector parseFrom(
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionSelector parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
+      com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionSelector parseFrom(
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionSelector parseFrom(byte[] data)
+  public static com.google.spanner.v1.TransactionSelector parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionSelector parseFrom(
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionSelector parseFrom(java.io.InputStream input)
+  public static com.google.spanner.v1.TransactionSelector parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static TransactionSelector parseFrom(
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static TransactionSelector parseDelimitedFrom(java.io.InputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.TransactionSelector parseDelimitedFrom(
+      java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static TransactionSelector parseDelimitedFrom(
+  public static com.google.spanner.v1.TransactionSelector parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static TransactionSelector parseFrom(com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static TransactionSelector parseFrom(
+  public static com.google.spanner.v1.TransactionSelector parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -509,7 +523,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -518,17 +532,17 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(TransactionSelector prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.TransactionSelector prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -547,16 +561,20 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.TransactionSelector)
-      TransactionSelectorOrBuilder {
+      com.google.spanner.v1.TransactionSelectorOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TransactionProto.internal_static_google_spanner_v1_TransactionSelector_descriptor;
+      return com.google.spanner.v1.TransactionProto
+          .internal_static_google_spanner_v1_TransactionSelector_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TransactionProto
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionSelector_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(TransactionSelector.class, Builder.class);
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.TransactionSelector.class,
+              com.google.spanner.v1.TransactionSelector.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.TransactionSelector.newBuilder()
@@ -564,7 +582,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -573,7 +591,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       selectorCase_ = 0;
@@ -581,28 +599,30 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return TransactionProto.internal_static_google_spanner_v1_TransactionSelector_descriptor;
+      return com.google.spanner.v1.TransactionProto
+          .internal_static_google_spanner_v1_TransactionSelector_descriptor;
     }
 
-    @Override
-    public TransactionSelector getDefaultInstanceForType() {
-      return TransactionSelector.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionSelector getDefaultInstanceForType() {
+      return com.google.spanner.v1.TransactionSelector.getDefaultInstance();
     }
 
-    @Override
-    public TransactionSelector build() {
-      TransactionSelector result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionSelector build() {
+      com.google.spanner.v1.TransactionSelector result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public TransactionSelector buildPartial() {
-      TransactionSelector result = new TransactionSelector(this);
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionSelector buildPartial() {
+      com.google.spanner.v1.TransactionSelector result =
+          new com.google.spanner.v1.TransactionSelector(this);
       if (selectorCase_ == 1) {
         if (singleUseBuilder_ == null) {
           result.selector_ = selector_;
@@ -625,50 +645,51 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof TransactionSelector) {
-        return mergeFrom((TransactionSelector) other);
+      if (other instanceof com.google.spanner.v1.TransactionSelector) {
+        return mergeFrom((com.google.spanner.v1.TransactionSelector) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(TransactionSelector other) {
-      if (other == TransactionSelector.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.TransactionSelector other) {
+      if (other == com.google.spanner.v1.TransactionSelector.getDefaultInstance()) return this;
       switch (other.getSelectorCase()) {
         case SINGLE_USE:
           {
@@ -695,21 +716,21 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      TransactionSelector parsedMessage = null;
+      com.google.spanner.v1.TransactionSelector parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (TransactionSelector) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.TransactionSelector) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -720,7 +741,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
 
     private int selectorCase_ = 0;
-    private Object selector_;
+    private java.lang.Object selector_;
 
     public SelectorCase getSelectorCase() {
       return SelectorCase.forNumber(selectorCase_);
@@ -734,7 +755,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-            TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>
+            com.google.spanner.v1.TransactionOptions,
+            com.google.spanner.v1.TransactionOptions.Builder,
+            com.google.spanner.v1.TransactionOptionsOrBuilder>
         singleUseBuilder_;
     /**
      *
@@ -749,7 +772,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return Whether the singleUse field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasSingleUse() {
       return selectorCase_ == 1;
     }
@@ -766,18 +789,18 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return The singleUse.
      */
-    @Override
-    public TransactionOptions getSingleUse() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions getSingleUse() {
       if (singleUseBuilder_ == null) {
         if (selectorCase_ == 1) {
-          return (TransactionOptions) selector_;
+          return (com.google.spanner.v1.TransactionOptions) selector_;
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       } else {
         if (selectorCase_ == 1) {
           return singleUseBuilder_.getMessage();
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
     /**
@@ -791,7 +814,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
-    public Builder setSingleUse(TransactionOptions value) {
+    public Builder setSingleUse(com.google.spanner.v1.TransactionOptions value) {
       if (singleUseBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -815,7 +838,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
-    public Builder setSingleUse(TransactionOptions.Builder builderForValue) {
+    public Builder setSingleUse(com.google.spanner.v1.TransactionOptions.Builder builderForValue) {
       if (singleUseBuilder_ == null) {
         selector_ = builderForValue.build();
         onChanged();
@@ -836,11 +859,13 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
-    public Builder mergeSingleUse(TransactionOptions value) {
+    public Builder mergeSingleUse(com.google.spanner.v1.TransactionOptions value) {
       if (singleUseBuilder_ == null) {
-        if (selectorCase_ == 1 && selector_ != TransactionOptions.getDefaultInstance()) {
+        if (selectorCase_ == 1
+            && selector_ != com.google.spanner.v1.TransactionOptions.getDefaultInstance()) {
           selector_ =
-              TransactionOptions.newBuilder((TransactionOptions) selector_)
+              com.google.spanner.v1.TransactionOptions.newBuilder(
+                      (com.google.spanner.v1.TransactionOptions) selector_)
                   .mergeFrom(value)
                   .buildPartial();
         } else {
@@ -894,7 +919,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
-    public TransactionOptions.Builder getSingleUseBuilder() {
+    public com.google.spanner.v1.TransactionOptions.Builder getSingleUseBuilder() {
       return getSingleUseFieldBuilder().getBuilder();
     }
     /**
@@ -908,15 +933,15 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
-    @Override
-    public TransactionOptionsOrBuilder getSingleUseOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseOrBuilder() {
       if ((selectorCase_ == 1) && (singleUseBuilder_ != null)) {
         return singleUseBuilder_.getMessageOrBuilder();
       } else {
         if (selectorCase_ == 1) {
-          return (TransactionOptions) selector_;
+          return (com.google.spanner.v1.TransactionOptions) selector_;
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
     /**
@@ -931,16 +956,22 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>
+            com.google.spanner.v1.TransactionOptions,
+            com.google.spanner.v1.TransactionOptions.Builder,
+            com.google.spanner.v1.TransactionOptionsOrBuilder>
         getSingleUseFieldBuilder() {
       if (singleUseBuilder_ == null) {
         if (!(selectorCase_ == 1)) {
-          selector_ = TransactionOptions.getDefaultInstance();
+          selector_ = com.google.spanner.v1.TransactionOptions.getDefaultInstance();
         }
         singleUseBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>(
-                (TransactionOptions) selector_, getParentForChildren(), isClean());
+                com.google.spanner.v1.TransactionOptions,
+                com.google.spanner.v1.TransactionOptions.Builder,
+                com.google.spanner.v1.TransactionOptionsOrBuilder>(
+                (com.google.spanner.v1.TransactionOptions) selector_,
+                getParentForChildren(),
+                isClean());
         selector_ = null;
       }
       selectorCase_ = 1;
@@ -1022,7 +1053,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-            TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>
+            com.google.spanner.v1.TransactionOptions,
+            com.google.spanner.v1.TransactionOptions.Builder,
+            com.google.spanner.v1.TransactionOptionsOrBuilder>
         beginBuilder_;
     /**
      *
@@ -1037,7 +1070,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return Whether the begin field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasBegin() {
       return selectorCase_ == 3;
     }
@@ -1054,18 +1087,18 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * @return The begin.
      */
-    @Override
-    public TransactionOptions getBegin() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions getBegin() {
       if (beginBuilder_ == null) {
         if (selectorCase_ == 3) {
-          return (TransactionOptions) selector_;
+          return (com.google.spanner.v1.TransactionOptions) selector_;
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       } else {
         if (selectorCase_ == 3) {
           return beginBuilder_.getMessage();
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
     /**
@@ -1079,7 +1112,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
-    public Builder setBegin(TransactionOptions value) {
+    public Builder setBegin(com.google.spanner.v1.TransactionOptions value) {
       if (beginBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1103,7 +1136,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
-    public Builder setBegin(TransactionOptions.Builder builderForValue) {
+    public Builder setBegin(com.google.spanner.v1.TransactionOptions.Builder builderForValue) {
       if (beginBuilder_ == null) {
         selector_ = builderForValue.build();
         onChanged();
@@ -1124,11 +1157,13 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
-    public Builder mergeBegin(TransactionOptions value) {
+    public Builder mergeBegin(com.google.spanner.v1.TransactionOptions value) {
       if (beginBuilder_ == null) {
-        if (selectorCase_ == 3 && selector_ != TransactionOptions.getDefaultInstance()) {
+        if (selectorCase_ == 3
+            && selector_ != com.google.spanner.v1.TransactionOptions.getDefaultInstance()) {
           selector_ =
-              TransactionOptions.newBuilder((TransactionOptions) selector_)
+              com.google.spanner.v1.TransactionOptions.newBuilder(
+                      (com.google.spanner.v1.TransactionOptions) selector_)
                   .mergeFrom(value)
                   .buildPartial();
         } else {
@@ -1182,7 +1217,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
-    public TransactionOptions.Builder getBeginBuilder() {
+    public com.google.spanner.v1.TransactionOptions.Builder getBeginBuilder() {
       return getBeginFieldBuilder().getBuilder();
     }
     /**
@@ -1196,15 +1231,15 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
-    @Override
-    public TransactionOptionsOrBuilder getBeginOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder() {
       if ((selectorCase_ == 3) && (beginBuilder_ != null)) {
         return beginBuilder_.getMessageOrBuilder();
       } else {
         if (selectorCase_ == 3) {
-          return (TransactionOptions) selector_;
+          return (com.google.spanner.v1.TransactionOptions) selector_;
         }
-        return TransactionOptions.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
       }
     }
     /**
@@ -1219,16 +1254,22 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>
+            com.google.spanner.v1.TransactionOptions,
+            com.google.spanner.v1.TransactionOptions.Builder,
+            com.google.spanner.v1.TransactionOptionsOrBuilder>
         getBeginFieldBuilder() {
       if (beginBuilder_ == null) {
         if (!(selectorCase_ == 3)) {
-          selector_ = TransactionOptions.getDefaultInstance();
+          selector_ = com.google.spanner.v1.TransactionOptions.getDefaultInstance();
         }
         beginBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                TransactionOptions, TransactionOptions.Builder, TransactionOptionsOrBuilder>(
-                (TransactionOptions) selector_, getParentForChildren(), isClean());
+                com.google.spanner.v1.TransactionOptions,
+                com.google.spanner.v1.TransactionOptions.Builder,
+                com.google.spanner.v1.TransactionOptionsOrBuilder>(
+                (com.google.spanner.v1.TransactionOptions) selector_,
+                getParentForChildren(),
+                isClean());
         selector_ = null;
       }
       selectorCase_ = 3;
@@ -1237,12 +1278,12 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       return beginBuilder_;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -1252,19 +1293,19 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.TransactionSelector)
-  private static final TransactionSelector DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.TransactionSelector DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new TransactionSelector();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.TransactionSelector();
   }
 
-  public static TransactionSelector getDefaultInstance() {
+  public static com.google.spanner.v1.TransactionSelector getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<TransactionSelector> PARSER =
       new com.google.protobuf.AbstractParser<TransactionSelector>() {
-        @Override
+        @java.lang.Override
         public TransactionSelector parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1277,13 +1318,13 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<TransactionSelector> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public TransactionSelector getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionSelector getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

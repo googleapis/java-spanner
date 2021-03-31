@@ -1103,15 +1103,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(closedSession.writeAtLeastOnceWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-<<<<<<< HEAD
     com.google.cloud.spanner.CommitResponse response =
         mock(com.google.cloud.spanner.CommitResponse.class);
     when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
     when(openSession.writeAtLeastOnceWithOptions(mutations)).thenReturn(response);
-=======
-    when(openSession.writeAtLeastOnceWithOptions(mutations))
-        .thenReturn(new com.google.cloud.spanner.CommitResponse(Timestamp.now()));
->>>>>>> 33eb6e9c (fix: combine boiler plate code)
     doAnswer(
             new Answer<Void>() {
               @Override

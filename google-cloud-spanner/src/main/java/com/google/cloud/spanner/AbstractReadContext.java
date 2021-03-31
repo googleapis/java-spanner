@@ -769,8 +769,6 @@ abstract class AbstractReadContext
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
     }
-    builder.setRequestOptions(buildRequestOptions(readOptions));
-
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =

@@ -99,7 +99,7 @@ public interface KeySetOrBuilder
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  java.util.List<KeyRange> getRangesList();
+  java.util.List<com.google.spanner.v1.KeyRange> getRangesList();
   /**
    *
    *
@@ -110,7 +110,7 @@ public interface KeySetOrBuilder
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  KeyRange getRanges(int index);
+  com.google.spanner.v1.KeyRange getRanges(int index);
   /**
    *
    *
@@ -132,7 +132,7 @@ public interface KeySetOrBuilder
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  java.util.List<? extends KeyRangeOrBuilder> getRangesOrBuilderList();
+  java.util.List<? extends com.google.spanner.v1.KeyRangeOrBuilder> getRangesOrBuilderList();
   /**
    *
    *
@@ -143,7 +143,7 @@ public interface KeySetOrBuilder
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  KeyRangeOrBuilder getRangesOrBuilder(int index);
+  com.google.spanner.v1.KeyRangeOrBuilder getRangesOrBuilder(int index);
 
   /**
    *

@@ -44,13 +44,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     resumeToken_ = com.google.protobuf.ByteString.EMPTY;
   }
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new PartialResultSet();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -61,7 +61,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -76,11 +76,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             break;
           case 10:
             {
-              ResultSetMetadata.Builder subBuilder = null;
+              com.google.spanner.v1.ResultSetMetadata.Builder subBuilder = null;
               if (metadata_ != null) {
                 subBuilder = metadata_.toBuilder();
               }
-              metadata_ = input.readMessage(ResultSetMetadata.parser(), extensionRegistry);
+              metadata_ =
+                  input.readMessage(
+                      com.google.spanner.v1.ResultSetMetadata.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metadata_);
                 metadata_ = subBuilder.buildPartial();
@@ -109,11 +111,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             }
           case 42:
             {
-              ResultSetStats.Builder subBuilder = null;
+              com.google.spanner.v1.ResultSetStats.Builder subBuilder = null;
               if (stats_ != null) {
                 subBuilder = stats_.toBuilder();
               }
-              stats_ = input.readMessage(ResultSetStats.parser(), extensionRegistry);
+              stats_ =
+                  input.readMessage(
+                      com.google.spanner.v1.ResultSetStats.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(stats_);
                 stats_ = subBuilder.buildPartial();
@@ -144,17 +148,22 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return ResultSetProto.internal_static_google_spanner_v1_PartialResultSet_descriptor;
+    return com.google.spanner.v1.ResultSetProto
+        .internal_static_google_spanner_v1_PartialResultSet_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return ResultSetProto.internal_static_google_spanner_v1_PartialResultSet_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(PartialResultSet.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.ResultSetProto
+        .internal_static_google_spanner_v1_PartialResultSet_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.PartialResultSet.class,
+            com.google.spanner.v1.PartialResultSet.Builder.class);
   }
 
   public static final int METADATA_FIELD_NUMBER = 1;
-  private ResultSetMetadata metadata_;
+  private com.google.spanner.v1.ResultSetMetadata metadata_;
   /**
    *
    *
@@ -167,7 +176,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return Whether the metadata field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasMetadata() {
     return metadata_ != null;
   }
@@ -183,9 +192,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The metadata.
    */
-  @Override
-  public ResultSetMetadata getMetadata() {
-    return metadata_ == null ? ResultSetMetadata.getDefaultInstance() : metadata_;
+  @java.lang.Override
+  public com.google.spanner.v1.ResultSetMetadata getMetadata() {
+    return metadata_ == null
+        ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
+        : metadata_;
   }
   /**
    *
@@ -197,8 +208,8 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
    */
-  @Override
-  public ResultSetMetadataOrBuilder getMetadataOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
     return getMetadata();
   }
 
@@ -271,7 +282,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<com.google.protobuf.Value> getValuesList() {
     return values_;
   }
@@ -342,7 +353,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.ValueOrBuilder> getValuesOrBuilderList() {
     return values_;
   }
@@ -413,7 +424,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public int getValuesCount() {
     return values_.size();
   }
@@ -484,7 +495,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Value getValues(int index) {
     return values_.get(index);
   }
@@ -555,7 +566,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>repeated .google.protobuf.Value values = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ValueOrBuilder getValuesOrBuilder(int index) {
     return values_.get(index);
   }
@@ -575,7 +586,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The chunkedValue.
    */
-  @Override
+  @java.lang.Override
   public boolean getChunkedValue() {
     return chunkedValue_;
   }
@@ -597,13 +608,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The resumeToken.
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ByteString getResumeToken() {
     return resumeToken_;
   }
 
   public static final int STATS_FIELD_NUMBER = 5;
-  private ResultSetStats stats_;
+  private com.google.spanner.v1.ResultSetStats stats_;
   /**
    *
    *
@@ -620,7 +631,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return Whether the stats field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasStats() {
     return stats_ != null;
   }
@@ -640,9 +651,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * @return The stats.
    */
-  @Override
-  public ResultSetStats getStats() {
-    return stats_ == null ? ResultSetStats.getDefaultInstance() : stats_;
+  @java.lang.Override
+  public com.google.spanner.v1.ResultSetStats getStats() {
+    return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
   /**
    *
@@ -658,14 +669,14 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *
    * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
    */
-  @Override
-  public ResultSetStatsOrBuilder getStatsOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
     return getStats();
   }
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -675,7 +686,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (metadata_ != null) {
       output.writeMessage(1, getMetadata());
@@ -695,7 +706,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -721,15 +732,15 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof PartialResultSet)) {
+    if (!(obj instanceof com.google.spanner.v1.PartialResultSet)) {
       return super.equals(obj);
     }
-    PartialResultSet other = (PartialResultSet) obj;
+    com.google.spanner.v1.PartialResultSet other = (com.google.spanner.v1.PartialResultSet) obj;
 
     if (hasMetadata() != other.hasMetadata()) return false;
     if (hasMetadata()) {
@@ -746,7 +757,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -774,69 +785,71 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return hash;
   }
 
-  public static PartialResultSet parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.PartialResultSet parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static PartialResultSet parseFrom(
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static PartialResultSet parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
+      com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static PartialResultSet parseFrom(
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static PartialResultSet parseFrom(byte[] data)
+  public static com.google.spanner.v1.PartialResultSet parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static PartialResultSet parseFrom(
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static PartialResultSet parseFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.PartialResultSet parseFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static PartialResultSet parseFrom(
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static PartialResultSet parseDelimitedFrom(java.io.InputStream input)
+  public static com.google.spanner.v1.PartialResultSet parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static PartialResultSet parseDelimitedFrom(
+  public static com.google.spanner.v1.PartialResultSet parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static PartialResultSet parseFrom(com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static PartialResultSet parseFrom(
+  public static com.google.spanner.v1.PartialResultSet parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -844,7 +857,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -853,17 +866,17 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(PartialResultSet prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.PartialResultSet prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -881,15 +894,20 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.PartialResultSet)
-      PartialResultSetOrBuilder {
+      com.google.spanner.v1.PartialResultSetOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return ResultSetProto.internal_static_google_spanner_v1_PartialResultSet_descriptor;
+      return com.google.spanner.v1.ResultSetProto
+          .internal_static_google_spanner_v1_PartialResultSet_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return ResultSetProto.internal_static_google_spanner_v1_PartialResultSet_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(PartialResultSet.class, Builder.class);
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.ResultSetProto
+          .internal_static_google_spanner_v1_PartialResultSet_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.PartialResultSet.class,
+              com.google.spanner.v1.PartialResultSet.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.PartialResultSet.newBuilder()
@@ -897,7 +915,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -908,7 +926,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       }
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       if (metadataBuilder_ == null) {
@@ -936,28 +954,30 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return ResultSetProto.internal_static_google_spanner_v1_PartialResultSet_descriptor;
+      return com.google.spanner.v1.ResultSetProto
+          .internal_static_google_spanner_v1_PartialResultSet_descriptor;
     }
 
-    @Override
-    public PartialResultSet getDefaultInstanceForType() {
-      return PartialResultSet.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.PartialResultSet getDefaultInstanceForType() {
+      return com.google.spanner.v1.PartialResultSet.getDefaultInstance();
     }
 
-    @Override
-    public PartialResultSet build() {
-      PartialResultSet result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.PartialResultSet build() {
+      com.google.spanner.v1.PartialResultSet result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public PartialResultSet buildPartial() {
-      PartialResultSet result = new PartialResultSet(this);
+    @java.lang.Override
+    public com.google.spanner.v1.PartialResultSet buildPartial() {
+      com.google.spanner.v1.PartialResultSet result =
+          new com.google.spanner.v1.PartialResultSet(this);
       int from_bitField0_ = bitField0_;
       if (metadataBuilder_ == null) {
         result.metadata_ = metadata_;
@@ -984,50 +1004,51 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof PartialResultSet) {
-        return mergeFrom((PartialResultSet) other);
+      if (other instanceof com.google.spanner.v1.PartialResultSet) {
+        return mergeFrom((com.google.spanner.v1.PartialResultSet) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(PartialResultSet other) {
-      if (other == PartialResultSet.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.PartialResultSet other) {
+      if (other == com.google.spanner.v1.PartialResultSet.getDefaultInstance()) return this;
       if (other.hasMetadata()) {
         mergeMetadata(other.getMetadata());
       }
@@ -1072,21 +1093,21 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      PartialResultSet parsedMessage = null;
+      com.google.spanner.v1.PartialResultSet parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (PartialResultSet) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.PartialResultSet) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1098,9 +1119,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
 
     private int bitField0_;
 
-    private ResultSetMetadata metadata_;
+    private com.google.spanner.v1.ResultSetMetadata metadata_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            ResultSetMetadata, ResultSetMetadata.Builder, ResultSetMetadataOrBuilder>
+            com.google.spanner.v1.ResultSetMetadata,
+            com.google.spanner.v1.ResultSetMetadata.Builder,
+            com.google.spanner.v1.ResultSetMetadataOrBuilder>
         metadataBuilder_;
     /**
      *
@@ -1129,9 +1152,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The metadata.
      */
-    public ResultSetMetadata getMetadata() {
+    public com.google.spanner.v1.ResultSetMetadata getMetadata() {
       if (metadataBuilder_ == null) {
-        return metadata_ == null ? ResultSetMetadata.getDefaultInstance() : metadata_;
+        return metadata_ == null
+            ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
+            : metadata_;
       } else {
         return metadataBuilder_.getMessage();
       }
@@ -1146,7 +1171,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
-    public Builder setMetadata(ResultSetMetadata value) {
+    public Builder setMetadata(com.google.spanner.v1.ResultSetMetadata value) {
       if (metadataBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1169,7 +1194,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
-    public Builder setMetadata(ResultSetMetadata.Builder builderForValue) {
+    public Builder setMetadata(com.google.spanner.v1.ResultSetMetadata.Builder builderForValue) {
       if (metadataBuilder_ == null) {
         metadata_ = builderForValue.build();
         onChanged();
@@ -1189,10 +1214,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
-    public Builder mergeMetadata(ResultSetMetadata value) {
+    public Builder mergeMetadata(com.google.spanner.v1.ResultSetMetadata value) {
       if (metadataBuilder_ == null) {
         if (metadata_ != null) {
-          metadata_ = ResultSetMetadata.newBuilder(metadata_).mergeFrom(value).buildPartial();
+          metadata_ =
+              com.google.spanner.v1.ResultSetMetadata.newBuilder(metadata_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           metadata_ = value;
         }
@@ -1234,7 +1262,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
-    public ResultSetMetadata.Builder getMetadataBuilder() {
+    public com.google.spanner.v1.ResultSetMetadata.Builder getMetadataBuilder() {
 
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
@@ -1249,11 +1277,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
-    public ResultSetMetadataOrBuilder getMetadataOrBuilder() {
+    public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
         return metadataBuilder_.getMessageOrBuilder();
       } else {
-        return metadata_ == null ? ResultSetMetadata.getDefaultInstance() : metadata_;
+        return metadata_ == null
+            ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
+            : metadata_;
       }
     }
     /**
@@ -1267,12 +1297,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            ResultSetMetadata, ResultSetMetadata.Builder, ResultSetMetadataOrBuilder>
+            com.google.spanner.v1.ResultSetMetadata,
+            com.google.spanner.v1.ResultSetMetadata.Builder,
+            com.google.spanner.v1.ResultSetMetadataOrBuilder>
         getMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                ResultSetMetadata, ResultSetMetadata.Builder, ResultSetMetadataOrBuilder>(
+                com.google.spanner.v1.ResultSetMetadata,
+                com.google.spanner.v1.ResultSetMetadata.Builder,
+                com.google.spanner.v1.ResultSetMetadataOrBuilder>(
                 getMetadata(), getParentForChildren(), isClean());
         metadata_ = null;
       }
@@ -2054,7 +2088,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>repeated .google.protobuf.Value values = 2;</code>
      */
-    public Builder addAllValues(Iterable<? extends com.google.protobuf.Value> values) {
+    public Builder addAllValues(java.lang.Iterable<? extends com.google.protobuf.Value> values) {
       if (valuesBuilder_ == null) {
         ensureValuesIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, values_);
@@ -2679,7 +2713,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The chunkedValue.
      */
-    @Override
+    @java.lang.Override
     public boolean getChunkedValue() {
       return chunkedValue_;
     }
@@ -2739,7 +2773,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The resumeToken.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString getResumeToken() {
       return resumeToken_;
     }
@@ -2790,9 +2824,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       return this;
     }
 
-    private ResultSetStats stats_;
+    private com.google.spanner.v1.ResultSetStats stats_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            ResultSetStats, ResultSetStats.Builder, ResultSetStatsOrBuilder>
+            com.google.spanner.v1.ResultSetStats,
+            com.google.spanner.v1.ResultSetStats.Builder,
+            com.google.spanner.v1.ResultSetStatsOrBuilder>
         statsBuilder_;
     /**
      *
@@ -2829,9 +2865,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * @return The stats.
      */
-    public ResultSetStats getStats() {
+    public com.google.spanner.v1.ResultSetStats getStats() {
       if (statsBuilder_ == null) {
-        return stats_ == null ? ResultSetStats.getDefaultInstance() : stats_;
+        return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
       } else {
         return statsBuilder_.getMessage();
       }
@@ -2850,7 +2886,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
-    public Builder setStats(ResultSetStats value) {
+    public Builder setStats(com.google.spanner.v1.ResultSetStats value) {
       if (statsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2877,7 +2913,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
-    public Builder setStats(ResultSetStats.Builder builderForValue) {
+    public Builder setStats(com.google.spanner.v1.ResultSetStats.Builder builderForValue) {
       if (statsBuilder_ == null) {
         stats_ = builderForValue.build();
         onChanged();
@@ -2901,10 +2937,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
-    public Builder mergeStats(ResultSetStats value) {
+    public Builder mergeStats(com.google.spanner.v1.ResultSetStats value) {
       if (statsBuilder_ == null) {
         if (stats_ != null) {
-          stats_ = ResultSetStats.newBuilder(stats_).mergeFrom(value).buildPartial();
+          stats_ =
+              com.google.spanner.v1.ResultSetStats.newBuilder(stats_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           stats_ = value;
         }
@@ -2954,7 +2993,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
-    public ResultSetStats.Builder getStatsBuilder() {
+    public com.google.spanner.v1.ResultSetStats.Builder getStatsBuilder() {
 
       onChanged();
       return getStatsFieldBuilder().getBuilder();
@@ -2973,11 +3012,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
-    public ResultSetStatsOrBuilder getStatsOrBuilder() {
+    public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
       if (statsBuilder_ != null) {
         return statsBuilder_.getMessageOrBuilder();
       } else {
-        return stats_ == null ? ResultSetStats.getDefaultInstance() : stats_;
+        return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
       }
     }
     /**
@@ -2995,24 +3034,28 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            ResultSetStats, ResultSetStats.Builder, ResultSetStatsOrBuilder>
+            com.google.spanner.v1.ResultSetStats,
+            com.google.spanner.v1.ResultSetStats.Builder,
+            com.google.spanner.v1.ResultSetStatsOrBuilder>
         getStatsFieldBuilder() {
       if (statsBuilder_ == null) {
         statsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                ResultSetStats, ResultSetStats.Builder, ResultSetStatsOrBuilder>(
+                com.google.spanner.v1.ResultSetStats,
+                com.google.spanner.v1.ResultSetStats.Builder,
+                com.google.spanner.v1.ResultSetStatsOrBuilder>(
                 getStats(), getParentForChildren(), isClean());
         stats_ = null;
       }
       return statsBuilder_;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -3022,19 +3065,19 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.PartialResultSet)
-  private static final PartialResultSet DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.PartialResultSet DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new PartialResultSet();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.PartialResultSet();
   }
 
-  public static PartialResultSet getDefaultInstance() {
+  public static com.google.spanner.v1.PartialResultSet getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<PartialResultSet> PARSER =
       new com.google.protobuf.AbstractParser<PartialResultSet>() {
-        @Override
+        @java.lang.Override
         public PartialResultSet parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3047,13 +3090,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<PartialResultSet> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public PartialResultSet getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.PartialResultSet getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

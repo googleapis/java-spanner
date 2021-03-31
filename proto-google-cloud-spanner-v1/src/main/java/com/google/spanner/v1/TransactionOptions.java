@@ -254,13 +254,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
   private TransactionOptions() {}
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new TransactionOptions();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -271,7 +271,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -285,13 +285,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
             break;
           case 10:
             {
-              ReadWrite.Builder subBuilder = null;
+              com.google.spanner.v1.TransactionOptions.ReadWrite.Builder subBuilder = null;
               if (modeCase_ == 1) {
-                subBuilder = ((ReadWrite) mode_).toBuilder();
+                subBuilder =
+                    ((com.google.spanner.v1.TransactionOptions.ReadWrite) mode_).toBuilder();
               }
-              mode_ = input.readMessage(ReadWrite.parser(), extensionRegistry);
+              mode_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionOptions.ReadWrite.parser(),
+                      extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((ReadWrite) mode_);
+                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions.ReadWrite) mode_);
                 mode_ = subBuilder.buildPartial();
               }
               modeCase_ = 1;
@@ -299,13 +303,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
             }
           case 18:
             {
-              ReadOnly.Builder subBuilder = null;
+              com.google.spanner.v1.TransactionOptions.ReadOnly.Builder subBuilder = null;
               if (modeCase_ == 2) {
-                subBuilder = ((ReadOnly) mode_).toBuilder();
+                subBuilder =
+                    ((com.google.spanner.v1.TransactionOptions.ReadOnly) mode_).toBuilder();
               }
-              mode_ = input.readMessage(ReadOnly.parser(), extensionRegistry);
+              mode_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionOptions.ReadOnly.parser(),
+                      extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((ReadOnly) mode_);
+                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions.ReadOnly) mode_);
                 mode_ = subBuilder.buildPartial();
               }
               modeCase_ = 2;
@@ -313,13 +321,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
             }
           case 26:
             {
-              PartitionedDml.Builder subBuilder = null;
+              com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder subBuilder = null;
               if (modeCase_ == 3) {
-                subBuilder = ((PartitionedDml) mode_).toBuilder();
+                subBuilder =
+                    ((com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_).toBuilder();
               }
-              mode_ = input.readMessage(PartitionedDml.parser(), extensionRegistry);
+              mode_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionOptions.PartitionedDml.parser(),
+                      extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((PartitionedDml) mode_);
+                subBuilder.mergeFrom(
+                    (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
                 mode_ = subBuilder.buildPartial();
               }
               modeCase_ = 3;
@@ -345,13 +358,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return TransactionProto.internal_static_google_spanner_v1_TransactionOptions_descriptor;
+    return com.google.spanner.v1.TransactionProto
+        .internal_static_google_spanner_v1_TransactionOptions_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return TransactionProto.internal_static_google_spanner_v1_TransactionOptions_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(TransactionOptions.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.TransactionProto
+        .internal_static_google_spanner_v1_TransactionOptions_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.TransactionOptions.class,
+            com.google.spanner.v1.TransactionOptions.Builder.class);
   }
 
   public interface ReadWriteOrBuilder
@@ -380,13 +398,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     private ReadWrite() {}
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(UnusedPrivateParameter unused) {
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new ReadWrite();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
@@ -397,7 +415,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -429,20 +447,23 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TransactionProto
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TransactionProto
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_ReadWrite_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(ReadWrite.class, Builder.class);
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.TransactionOptions.ReadWrite.class,
+              com.google.spanner.v1.TransactionOptions.ReadWrite.Builder.class);
     }
 
     private byte memoizedIsInitialized = -1;
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -452,12 +473,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -468,21 +489,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
         return true;
       }
-      if (!(obj instanceof ReadWrite)) {
+      if (!(obj instanceof com.google.spanner.v1.TransactionOptions.ReadWrite)) {
         return super.equals(obj);
       }
-      ReadWrite other = (ReadWrite) obj;
+      com.google.spanner.v1.TransactionOptions.ReadWrite other =
+          (com.google.spanner.v1.TransactionOptions.ReadWrite) obj;
 
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -494,69 +516,71 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return hash;
     }
 
-    public static ReadWrite parseFrom(java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
+        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadWrite parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
         java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadWrite parseFrom(com.google.protobuf.ByteString data)
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
+        com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadWrite parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadWrite parseFrom(byte[] data)
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadWrite parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
         byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadWrite parseFrom(java.io.InputStream input) throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static ReadWrite parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static ReadWrite parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static ReadWrite parseDelimitedFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseDelimitedFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static ReadWrite parseFrom(com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static ReadWrite parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -564,7 +588,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
@@ -573,17 +597,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public static Builder newBuilder(ReadWrite prototype) {
+    public static Builder newBuilder(com.google.spanner.v1.TransactionOptions.ReadWrite prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
-    protected Builder newBuilderForType(BuilderParent parent) {
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -601,17 +626,20 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:google.spanner.v1.TransactionOptions.ReadWrite)
-        ReadWriteOrBuilder {
+        com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return TransactionProto
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadWrite_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(ReadWrite.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.TransactionOptions.ReadWrite.class,
+                com.google.spanner.v1.TransactionOptions.ReadWrite.Builder.class);
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.ReadWrite.newBuilder()
@@ -619,7 +647,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         maybeForceBuilderInitialization();
       }
 
-      private Builder(BuilderParent parent) {
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -628,103 +656,109 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadWrite_descriptor;
       }
 
-      @Override
-      public ReadWrite getDefaultInstanceForType() {
-        return ReadWrite.getDefaultInstance();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadWrite getDefaultInstanceForType() {
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
       }
 
-      @Override
-      public ReadWrite build() {
-        ReadWrite result = buildPartial();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadWrite build() {
+        com.google.spanner.v1.TransactionOptions.ReadWrite result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public ReadWrite buildPartial() {
-        ReadWrite result = new ReadWrite(this);
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadWrite buildPartial() {
+        com.google.spanner.v1.TransactionOptions.ReadWrite result =
+            new com.google.spanner.v1.TransactionOptions.ReadWrite(this);
         onBuilt();
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
 
-      @Override
-      public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.setField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
 
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof ReadWrite) {
-          return mergeFrom((ReadWrite) other);
+        if (other instanceof com.google.spanner.v1.TransactionOptions.ReadWrite) {
+          return mergeFrom((com.google.spanner.v1.TransactionOptions.ReadWrite) other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(ReadWrite other) {
-        if (other == ReadWrite.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.ReadWrite other) {
+        if (other == com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance())
+          return this;
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        ReadWrite parsedMessage = null;
+        com.google.spanner.v1.TransactionOptions.ReadWrite parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (ReadWrite) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.google.spanner.v1.TransactionOptions.ReadWrite) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -734,13 +768,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -750,19 +784,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     // @@protoc_insertion_point(class_scope:google.spanner.v1.TransactionOptions.ReadWrite)
-    private static final ReadWrite DEFAULT_INSTANCE;
+    private static final com.google.spanner.v1.TransactionOptions.ReadWrite DEFAULT_INSTANCE;
 
     static {
-      DEFAULT_INSTANCE = new ReadWrite();
+      DEFAULT_INSTANCE = new com.google.spanner.v1.TransactionOptions.ReadWrite();
     }
 
-    public static ReadWrite getDefaultInstance() {
+    public static com.google.spanner.v1.TransactionOptions.ReadWrite getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<ReadWrite> PARSER =
         new com.google.protobuf.AbstractParser<ReadWrite>() {
-          @Override
+          @java.lang.Override
           public ReadWrite parsePartialFrom(
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -775,13 +809,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ReadWrite> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public ReadWrite getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadWrite getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
   }
@@ -811,13 +845,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     private PartitionedDml() {}
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(UnusedPrivateParameter unused) {
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new PartitionedDml();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
@@ -828,7 +862,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -860,20 +894,23 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TransactionProto
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TransactionProto
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(PartitionedDml.class, Builder.class);
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.TransactionOptions.PartitionedDml.class,
+              com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder.class);
     }
 
     private byte memoizedIsInitialized = -1;
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -883,12 +920,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -899,21 +936,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
         return true;
       }
-      if (!(obj instanceof PartitionedDml)) {
+      if (!(obj instanceof com.google.spanner.v1.TransactionOptions.PartitionedDml)) {
         return super.equals(obj);
       }
-      PartitionedDml other = (PartitionedDml) obj;
+      com.google.spanner.v1.TransactionOptions.PartitionedDml other =
+          (com.google.spanner.v1.TransactionOptions.PartitionedDml) obj;
 
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -925,69 +963,71 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return hash;
     }
 
-    public static PartitionedDml parseFrom(java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
+        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static PartitionedDml parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
         java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static PartitionedDml parseFrom(com.google.protobuf.ByteString data)
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
+        com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static PartitionedDml parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static PartitionedDml parseFrom(byte[] data)
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static PartitionedDml parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
         byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static PartitionedDml parseFrom(java.io.InputStream input) throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static PartitionedDml parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static PartitionedDml parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static PartitionedDml parseDelimitedFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseDelimitedFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static PartitionedDml parseFrom(com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static PartitionedDml parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -995,7 +1035,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
@@ -1004,17 +1044,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public static Builder newBuilder(PartitionedDml prototype) {
+    public static Builder newBuilder(
+        com.google.spanner.v1.TransactionOptions.PartitionedDml prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
-    protected Builder newBuilderForType(BuilderParent parent) {
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1031,17 +1073,20 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:google.spanner.v1.TransactionOptions.PartitionedDml)
-        PartitionedDmlOrBuilder {
+        com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return TransactionProto
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(PartitionedDml.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.TransactionOptions.PartitionedDml.class,
+                com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder.class);
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.PartitionedDml.newBuilder()
@@ -1049,7 +1094,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         maybeForceBuilderInitialization();
       }
 
-      private Builder(BuilderParent parent) {
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1058,103 +1103,109 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor;
       }
 
-      @Override
-      public PartitionedDml getDefaultInstanceForType() {
-        return PartitionedDml.getDefaultInstance();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.PartitionedDml getDefaultInstanceForType() {
+        return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
       }
 
-      @Override
-      public PartitionedDml build() {
-        PartitionedDml result = buildPartial();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.PartitionedDml build() {
+        com.google.spanner.v1.TransactionOptions.PartitionedDml result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public PartitionedDml buildPartial() {
-        PartitionedDml result = new PartitionedDml(this);
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.PartitionedDml buildPartial() {
+        com.google.spanner.v1.TransactionOptions.PartitionedDml result =
+            new com.google.spanner.v1.TransactionOptions.PartitionedDml(this);
         onBuilt();
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
 
-      @Override
-      public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.setField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
 
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PartitionedDml) {
-          return mergeFrom((PartitionedDml) other);
+        if (other instanceof com.google.spanner.v1.TransactionOptions.PartitionedDml) {
+          return mergeFrom((com.google.spanner.v1.TransactionOptions.PartitionedDml) other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PartitionedDml other) {
-        if (other == PartitionedDml.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.PartitionedDml other) {
+        if (other == com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance())
+          return this;
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        PartitionedDml parsedMessage = null;
+        com.google.spanner.v1.TransactionOptions.PartitionedDml parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (PartitionedDml) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.google.spanner.v1.TransactionOptions.PartitionedDml) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1164,13 +1215,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1180,19 +1231,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     // @@protoc_insertion_point(class_scope:google.spanner.v1.TransactionOptions.PartitionedDml)
-    private static final PartitionedDml DEFAULT_INSTANCE;
+    private static final com.google.spanner.v1.TransactionOptions.PartitionedDml DEFAULT_INSTANCE;
 
     static {
-      DEFAULT_INSTANCE = new PartitionedDml();
+      DEFAULT_INSTANCE = new com.google.spanner.v1.TransactionOptions.PartitionedDml();
     }
 
-    public static PartitionedDml getDefaultInstance() {
+    public static com.google.spanner.v1.TransactionOptions.PartitionedDml getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<PartitionedDml> PARSER =
         new com.google.protobuf.AbstractParser<PartitionedDml>() {
-          @Override
+          @java.lang.Override
           public PartitionedDml parsePartialFrom(
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1205,13 +1256,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PartitionedDml> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public PartitionedDml getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.PartitionedDml getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
   }
@@ -1501,7 +1552,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      */
     boolean getReturnReadTimestamp();
 
-    public ReadOnly.TimestampBoundCase getTimestampBoundCase();
+    public com.google.spanner.v1.TransactionOptions.ReadOnly.TimestampBoundCase
+        getTimestampBoundCase();
   }
   /**
    *
@@ -1524,13 +1576,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     private ReadOnly() {}
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(UnusedPrivateParameter unused) {
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new ReadOnly();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
@@ -1541,7 +1593,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1644,22 +1696,27 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TransactionProto
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TransactionProto
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(ReadOnly.class, Builder.class);
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.TransactionOptions.ReadOnly.class,
+              com.google.spanner.v1.TransactionOptions.ReadOnly.Builder.class);
     }
 
     private int timestampBoundCase_ = 0;
-    private Object timestampBound_;
+    private java.lang.Object timestampBound_;
 
     public enum TimestampBoundCase
-        implements com.google.protobuf.Internal.EnumLite, InternalOneOfEnum {
+        implements
+            com.google.protobuf.Internal.EnumLite,
+            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
       STRONG(1),
       MIN_READ_TIMESTAMP(2),
       MAX_STALENESS(3),
@@ -1676,7 +1733,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return The enum associated with the given number.
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static TimestampBoundCase valueOf(int value) {
         return forNumber(value);
       }
@@ -1738,10 +1795,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The strong.
      */
-    @Override
+    @java.lang.Override
     public boolean getStrong() {
       if (timestampBoundCase_ == 1) {
-        return (Boolean) timestampBound_;
+        return (java.lang.Boolean) timestampBound_;
       }
       return false;
     }
@@ -1764,7 +1821,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the minReadTimestamp field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasMinReadTimestamp() {
       return timestampBoundCase_ == 2;
     }
@@ -1785,7 +1842,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The minReadTimestamp.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Timestamp getMinReadTimestamp() {
       if (timestampBoundCase_ == 2) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1807,7 +1864,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Timestamp min_read_timestamp = 2;</code>
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.TimestampOrBuilder getMinReadTimestampOrBuilder() {
       if (timestampBoundCase_ == 2) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1837,7 +1894,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the maxStaleness field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasMaxStaleness() {
       return timestampBoundCase_ == 3;
     }
@@ -1862,7 +1919,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The maxStaleness.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Duration getMaxStaleness() {
       if (timestampBoundCase_ == 3) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -1888,7 +1945,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Duration max_staleness = 3;</code>
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.DurationOrBuilder getMaxStalenessOrBuilder() {
       if (timestampBoundCase_ == 3) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -1917,7 +1974,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readTimestamp field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasReadTimestamp() {
       return timestampBoundCase_ == 4;
     }
@@ -1941,7 +1998,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readTimestamp.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Timestamp getReadTimestamp() {
       if (timestampBoundCase_ == 4) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1966,7 +2023,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Timestamp read_timestamp = 4;</code>
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
       if (timestampBoundCase_ == 4) {
         return (com.google.protobuf.Timestamp) timestampBound_;
@@ -1994,7 +2051,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the exactStaleness field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasExactStaleness() {
       return timestampBoundCase_ == 5;
     }
@@ -2017,7 +2074,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The exactStaleness.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Duration getExactStaleness() {
       if (timestampBoundCase_ == 5) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -2041,7 +2098,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.protobuf.Duration exact_staleness = 5;</code>
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.DurationOrBuilder getExactStalenessOrBuilder() {
       if (timestampBoundCase_ == 5) {
         return (com.google.protobuf.Duration) timestampBound_;
@@ -2063,14 +2120,14 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The returnReadTimestamp.
      */
-    @Override
+    @java.lang.Override
     public boolean getReturnReadTimestamp() {
       return returnReadTimestamp_;
     }
 
     private byte memoizedIsInitialized = -1;
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2080,10 +2137,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
       if (timestampBoundCase_ == 1) {
-        output.writeBool(1, (boolean) ((Boolean) timestampBound_));
+        output.writeBool(1, (boolean) ((java.lang.Boolean) timestampBound_));
       }
       if (timestampBoundCase_ == 2) {
         output.writeMessage(2, (com.google.protobuf.Timestamp) timestampBound_);
@@ -2103,7 +2160,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2112,7 +2169,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (timestampBoundCase_ == 1) {
         size +=
             com.google.protobuf.CodedOutputStream.computeBoolSize(
-                1, (boolean) ((Boolean) timestampBound_));
+                1, (boolean) ((java.lang.Boolean) timestampBound_));
       }
       if (timestampBoundCase_ == 2) {
         size +=
@@ -2142,15 +2199,16 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
         return true;
       }
-      if (!(obj instanceof ReadOnly)) {
+      if (!(obj instanceof com.google.spanner.v1.TransactionOptions.ReadOnly)) {
         return super.equals(obj);
       }
-      ReadOnly other = (ReadOnly) obj;
+      com.google.spanner.v1.TransactionOptions.ReadOnly other =
+          (com.google.spanner.v1.TransactionOptions.ReadOnly) obj;
 
       if (getReturnReadTimestamp() != other.getReturnReadTimestamp()) return false;
       if (!getTimestampBoundCase().equals(other.getTimestampBoundCase())) return false;
@@ -2177,7 +2235,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2215,69 +2273,71 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return hash;
     }
 
-    public static ReadOnly parseFrom(java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
+        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadOnly parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
         java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadOnly parseFrom(com.google.protobuf.ByteString data)
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
+        com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadOnly parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadOnly parseFrom(byte[] data)
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static ReadOnly parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
         byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static ReadOnly parseFrom(java.io.InputStream input) throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static ReadOnly parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static ReadOnly parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static ReadOnly parseDelimitedFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseDelimitedFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static ReadOnly parseFrom(com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static ReadOnly parseFrom(
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2285,7 +2345,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
@@ -2294,17 +2354,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public static Builder newBuilder(ReadOnly prototype) {
+    public static Builder newBuilder(com.google.spanner.v1.TransactionOptions.ReadOnly prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
-    protected Builder newBuilderForType(BuilderParent parent) {
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2321,17 +2382,20 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:google.spanner.v1.TransactionOptions.ReadOnly)
-        ReadOnlyOrBuilder {
+        com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return TransactionProto
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(ReadOnly.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.TransactionOptions.ReadOnly.class,
+                com.google.spanner.v1.TransactionOptions.ReadOnly.Builder.class);
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.ReadOnly.newBuilder()
@@ -2339,7 +2403,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         maybeForceBuilderInitialization();
       }
 
-      private Builder(BuilderParent parent) {
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2348,7 +2412,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         returnReadTimestamp_ = false;
@@ -2358,29 +2422,30 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-        return TransactionProto
+        return com.google.spanner.v1.TransactionProto
             .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor;
       }
 
-      @Override
-      public ReadOnly getDefaultInstanceForType() {
-        return ReadOnly.getDefaultInstance();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadOnly getDefaultInstanceForType() {
+        return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
       }
 
-      @Override
-      public ReadOnly build() {
-        ReadOnly result = buildPartial();
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadOnly build() {
+        com.google.spanner.v1.TransactionOptions.ReadOnly result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public ReadOnly buildPartial() {
-        ReadOnly result = new ReadOnly(this);
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadOnly buildPartial() {
+        com.google.spanner.v1.TransactionOptions.ReadOnly result =
+            new com.google.spanner.v1.TransactionOptions.ReadOnly(this);
         if (timestampBoundCase_ == 1) {
           result.timestampBound_ = timestampBound_;
         }
@@ -2418,50 +2483,54 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
 
-      @Override
-      public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.setField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
 
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof ReadOnly) {
-          return mergeFrom((ReadOnly) other);
+        if (other instanceof com.google.spanner.v1.TransactionOptions.ReadOnly) {
+          return mergeFrom((com.google.spanner.v1.TransactionOptions.ReadOnly) other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(ReadOnly other) {
-        if (other == ReadOnly.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.ReadOnly other) {
+        if (other == com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance())
+          return this;
         if (other.getReturnReadTimestamp() != false) {
           setReturnReadTimestamp(other.getReturnReadTimestamp());
         }
@@ -2501,21 +2570,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        ReadOnly parsedMessage = null;
+        com.google.spanner.v1.TransactionOptions.ReadOnly parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (ReadOnly) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.google.spanner.v1.TransactionOptions.ReadOnly) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2526,7 +2596,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
 
       private int timestampBoundCase_ = 0;
-      private Object timestampBound_;
+      private java.lang.Object timestampBound_;
 
       public TimestampBoundCase getTimestampBoundCase() {
         return TimestampBoundCase.forNumber(timestampBoundCase_);
@@ -2568,7 +2638,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        */
       public boolean getStrong() {
         if (timestampBoundCase_ == 1) {
-          return (Boolean) timestampBound_;
+          return (java.lang.Boolean) timestampBound_;
         }
         return false;
       }
@@ -2634,7 +2704,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the minReadTimestamp field is set.
        */
-      @Override
+      @java.lang.Override
       public boolean hasMinReadTimestamp() {
         return timestampBoundCase_ == 2;
       }
@@ -2655,7 +2725,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The minReadTimestamp.
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Timestamp getMinReadTimestamp() {
         if (minReadTimestampBuilder_ == null) {
           if (timestampBoundCase_ == 2) {
@@ -2823,7 +2893,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Timestamp min_read_timestamp = 2;</code>
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.TimestampOrBuilder getMinReadTimestampOrBuilder() {
         if ((timestampBoundCase_ == 2) && (minReadTimestampBuilder_ != null)) {
           return minReadTimestampBuilder_.getMessageOrBuilder();
@@ -2900,7 +2970,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the maxStaleness field is set.
        */
-      @Override
+      @java.lang.Override
       public boolean hasMaxStaleness() {
         return timestampBoundCase_ == 3;
       }
@@ -2925,7 +2995,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The maxStaleness.
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Duration getMaxStaleness() {
         if (maxStalenessBuilder_ == null) {
           if (timestampBoundCase_ == 3) {
@@ -3117,7 +3187,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Duration max_staleness = 3;</code>
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.DurationOrBuilder getMaxStalenessOrBuilder() {
         if ((timestampBoundCase_ == 3) && (maxStalenessBuilder_ != null)) {
           return maxStalenessBuilder_.getMessageOrBuilder();
@@ -3197,7 +3267,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the readTimestamp field is set.
        */
-      @Override
+      @java.lang.Override
       public boolean hasReadTimestamp() {
         return timestampBoundCase_ == 4;
       }
@@ -3221,7 +3291,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The readTimestamp.
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Timestamp getReadTimestamp() {
         if (readTimestampBuilder_ == null) {
           if (timestampBoundCase_ == 4) {
@@ -3407,7 +3477,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Timestamp read_timestamp = 4;</code>
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
         if ((timestampBoundCase_ == 4) && (readTimestampBuilder_ != null)) {
           return readTimestampBuilder_.getMessageOrBuilder();
@@ -3485,7 +3555,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return Whether the exactStaleness field is set.
        */
-      @Override
+      @java.lang.Override
       public boolean hasExactStaleness() {
         return timestampBoundCase_ == 5;
       }
@@ -3508,7 +3578,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The exactStaleness.
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Duration getExactStaleness() {
         if (exactStalenessBuilder_ == null) {
           if (timestampBoundCase_ == 5) {
@@ -3688,7 +3758,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <code>.google.protobuf.Duration exact_staleness = 5;</code>
        */
-      @Override
+      @java.lang.Override
       public com.google.protobuf.DurationOrBuilder getExactStalenessOrBuilder() {
         if ((timestampBoundCase_ == 5) && (exactStalenessBuilder_ != null)) {
           return exactStalenessBuilder_.getMessageOrBuilder();
@@ -3754,7 +3824,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * @return The returnReadTimestamp.
        */
-      @Override
+      @java.lang.Override
       public boolean getReturnReadTimestamp() {
         return returnReadTimestamp_;
       }
@@ -3796,13 +3866,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3812,19 +3882,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     // @@protoc_insertion_point(class_scope:google.spanner.v1.TransactionOptions.ReadOnly)
-    private static final ReadOnly DEFAULT_INSTANCE;
+    private static final com.google.spanner.v1.TransactionOptions.ReadOnly DEFAULT_INSTANCE;
 
     static {
-      DEFAULT_INSTANCE = new ReadOnly();
+      DEFAULT_INSTANCE = new com.google.spanner.v1.TransactionOptions.ReadOnly();
     }
 
-    public static ReadOnly getDefaultInstance() {
+    public static com.google.spanner.v1.TransactionOptions.ReadOnly getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<ReadOnly> PARSER =
         new com.google.protobuf.AbstractParser<ReadOnly>() {
-          @Override
+          @java.lang.Override
           public ReadOnly parsePartialFrom(
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3837,21 +3907,24 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ReadOnly> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public ReadOnly getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadOnly getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
   }
 
   private int modeCase_ = 0;
-  private Object mode_;
+  private java.lang.Object mode_;
 
-  public enum ModeCase implements com.google.protobuf.Internal.EnumLite, InternalOneOfEnum {
+  public enum ModeCase
+      implements
+          com.google.protobuf.Internal.EnumLite,
+          com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     READ_WRITE(1),
     PARTITIONED_DML(3),
     READ_ONLY(2),
@@ -3866,7 +3939,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * @return The enum associated with the given number.
      * @deprecated Use {@link #forNumber(int)} instead.
      */
-    @Deprecated
+    @java.lang.Deprecated
     public static ModeCase valueOf(int value) {
       return forNumber(value);
     }
@@ -3910,7 +3983,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the readWrite field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasReadWrite() {
     return modeCase_ == 1;
   }
@@ -3928,12 +4001,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The readWrite.
    */
-  @Override
-  public ReadWrite getReadWrite() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite() {
     if (modeCase_ == 1) {
-      return (ReadWrite) mode_;
+      return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
     }
-    return ReadWrite.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
   }
   /**
    *
@@ -3947,12 +4020,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
    */
-  @Override
-  public ReadWriteOrBuilder getReadWriteOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder() {
     if (modeCase_ == 1) {
-      return (ReadWrite) mode_;
+      return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
     }
-    return ReadWrite.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
   }
 
   public static final int PARTITIONED_DML_FIELD_NUMBER = 3;
@@ -3970,7 +4043,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the partitionedDml field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasPartitionedDml() {
     return modeCase_ == 3;
   }
@@ -3988,12 +4061,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The partitionedDml.
    */
-  @Override
-  public PartitionedDml getPartitionedDml() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml() {
     if (modeCase_ == 3) {
-      return (PartitionedDml) mode_;
+      return (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_;
     }
-    return PartitionedDml.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
   }
   /**
    *
@@ -4007,12 +4080,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
    */
-  @Override
-  public PartitionedDmlOrBuilder getPartitionedDmlOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder
+      getPartitionedDmlOrBuilder() {
     if (modeCase_ == 3) {
-      return (PartitionedDml) mode_;
+      return (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_;
     }
-    return PartitionedDml.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
   }
 
   public static final int READ_ONLY_FIELD_NUMBER = 2;
@@ -4030,7 +4104,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return Whether the readOnly field is set.
    */
-  @Override
+  @java.lang.Override
   public boolean hasReadOnly() {
     return modeCase_ == 2;
   }
@@ -4048,12 +4122,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * @return The readOnly.
    */
-  @Override
-  public ReadOnly getReadOnly() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly() {
     if (modeCase_ == 2) {
-      return (ReadOnly) mode_;
+      return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
     }
-    return ReadOnly.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
   }
   /**
    *
@@ -4067,17 +4141,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
    */
-  @Override
-  public ReadOnlyOrBuilder getReadOnlyOrBuilder() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder() {
     if (modeCase_ == 2) {
-      return (ReadOnly) mode_;
+      return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
     }
-    return ReadOnly.getDefaultInstance();
+    return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
   }
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -4087,49 +4161,55 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (modeCase_ == 1) {
-      output.writeMessage(1, (ReadWrite) mode_);
+      output.writeMessage(1, (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_);
     }
     if (modeCase_ == 2) {
-      output.writeMessage(2, (ReadOnly) mode_);
+      output.writeMessage(2, (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_);
     }
     if (modeCase_ == 3) {
-      output.writeMessage(3, (PartitionedDml) mode_);
+      output.writeMessage(3, (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
     }
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
 
     size = 0;
     if (modeCase_ == 1) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, (ReadWrite) mode_);
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              1, (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_);
     }
     if (modeCase_ == 2) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, (ReadOnly) mode_);
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              2, (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_);
     }
     if (modeCase_ == 3) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, (PartitionedDml) mode_);
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              3, (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TransactionOptions)) {
+    if (!(obj instanceof com.google.spanner.v1.TransactionOptions)) {
       return super.equals(obj);
     }
-    TransactionOptions other = (TransactionOptions) obj;
+    com.google.spanner.v1.TransactionOptions other = (com.google.spanner.v1.TransactionOptions) obj;
 
     if (!getModeCase().equals(other.getModeCase())) return false;
     switch (modeCase_) {
@@ -4149,7 +4229,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -4177,69 +4257,71 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return hash;
   }
 
-  public static TransactionOptions parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.TransactionOptions parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionOptions parseFrom(
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionOptions parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
+      com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionOptions parseFrom(
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionOptions parseFrom(byte[] data)
+  public static com.google.spanner.v1.TransactionOptions parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static TransactionOptions parseFrom(
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static TransactionOptions parseFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.TransactionOptions parseFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static TransactionOptions parseFrom(
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static TransactionOptions parseDelimitedFrom(java.io.InputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.TransactionOptions parseDelimitedFrom(
+      java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static TransactionOptions parseDelimitedFrom(
+  public static com.google.spanner.v1.TransactionOptions parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static TransactionOptions parseFrom(com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static TransactionOptions parseFrom(
+  public static com.google.spanner.v1.TransactionOptions parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -4247,7 +4329,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -4256,17 +4338,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(TransactionOptions prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.TransactionOptions prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -4497,16 +4579,20 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.TransactionOptions)
-      TransactionOptionsOrBuilder {
+      com.google.spanner.v1.TransactionOptionsOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TransactionProto.internal_static_google_spanner_v1_TransactionOptions_descriptor;
+      return com.google.spanner.v1.TransactionProto
+          .internal_static_google_spanner_v1_TransactionOptions_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TransactionProto
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(TransactionOptions.class, Builder.class);
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.TransactionOptions.class,
+              com.google.spanner.v1.TransactionOptions.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.TransactionOptions.newBuilder()
@@ -4514,7 +4600,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -4523,7 +4609,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       modeCase_ = 0;
@@ -4531,28 +4617,30 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return TransactionProto.internal_static_google_spanner_v1_TransactionOptions_descriptor;
+      return com.google.spanner.v1.TransactionProto
+          .internal_static_google_spanner_v1_TransactionOptions_descriptor;
     }
 
-    @Override
-    public TransactionOptions getDefaultInstanceForType() {
-      return TransactionOptions.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions getDefaultInstanceForType() {
+      return com.google.spanner.v1.TransactionOptions.getDefaultInstance();
     }
 
-    @Override
-    public TransactionOptions build() {
-      TransactionOptions result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions build() {
+      com.google.spanner.v1.TransactionOptions result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public TransactionOptions buildPartial() {
-      TransactionOptions result = new TransactionOptions(this);
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions buildPartial() {
+      com.google.spanner.v1.TransactionOptions result =
+          new com.google.spanner.v1.TransactionOptions(this);
       if (modeCase_ == 1) {
         if (readWriteBuilder_ == null) {
           result.mode_ = mode_;
@@ -4579,50 +4667,51 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof TransactionOptions) {
-        return mergeFrom((TransactionOptions) other);
+      if (other instanceof com.google.spanner.v1.TransactionOptions) {
+        return mergeFrom((com.google.spanner.v1.TransactionOptions) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(TransactionOptions other) {
-      if (other == TransactionOptions.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.TransactionOptions other) {
+      if (other == com.google.spanner.v1.TransactionOptions.getDefaultInstance()) return this;
       switch (other.getModeCase()) {
         case READ_WRITE:
           {
@@ -4649,21 +4738,21 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      TransactionOptions parsedMessage = null;
+      com.google.spanner.v1.TransactionOptions parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (TransactionOptions) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.TransactionOptions) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -4674,7 +4763,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     private int modeCase_ = 0;
-    private Object mode_;
+    private java.lang.Object mode_;
 
     public ModeCase getModeCase() {
       return ModeCase.forNumber(modeCase_);
@@ -4688,7 +4777,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-            ReadWrite, ReadWrite.Builder, ReadWriteOrBuilder>
+            com.google.spanner.v1.TransactionOptions.ReadWrite,
+            com.google.spanner.v1.TransactionOptions.ReadWrite.Builder,
+            com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder>
         readWriteBuilder_;
     /**
      *
@@ -4704,7 +4795,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readWrite field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasReadWrite() {
       return modeCase_ == 1;
     }
@@ -4722,18 +4813,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readWrite.
      */
-    @Override
-    public ReadWrite getReadWrite() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadWrite getReadWrite() {
       if (readWriteBuilder_ == null) {
         if (modeCase_ == 1) {
-          return (ReadWrite) mode_;
+          return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
         }
-        return ReadWrite.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
       } else {
         if (modeCase_ == 1) {
           return readWriteBuilder_.getMessage();
         }
-        return ReadWrite.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
       }
     }
     /**
@@ -4748,7 +4839,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
-    public Builder setReadWrite(ReadWrite value) {
+    public Builder setReadWrite(com.google.spanner.v1.TransactionOptions.ReadWrite value) {
       if (readWriteBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -4773,7 +4864,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
-    public Builder setReadWrite(ReadWrite.Builder builderForValue) {
+    public Builder setReadWrite(
+        com.google.spanner.v1.TransactionOptions.ReadWrite.Builder builderForValue) {
       if (readWriteBuilder_ == null) {
         mode_ = builderForValue.build();
         onChanged();
@@ -4795,10 +4887,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
-    public Builder mergeReadWrite(ReadWrite value) {
+    public Builder mergeReadWrite(com.google.spanner.v1.TransactionOptions.ReadWrite value) {
       if (readWriteBuilder_ == null) {
-        if (modeCase_ == 1 && mode_ != ReadWrite.getDefaultInstance()) {
-          mode_ = ReadWrite.newBuilder((ReadWrite) mode_).mergeFrom(value).buildPartial();
+        if (modeCase_ == 1
+            && mode_ != com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance()) {
+          mode_ =
+              com.google.spanner.v1.TransactionOptions.ReadWrite.newBuilder(
+                      (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           mode_ = value;
         }
@@ -4852,7 +4949,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
-    public ReadWrite.Builder getReadWriteBuilder() {
+    public com.google.spanner.v1.TransactionOptions.ReadWrite.Builder getReadWriteBuilder() {
       return getReadWriteFieldBuilder().getBuilder();
     }
     /**
@@ -4867,15 +4964,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
-    @Override
-    public ReadWriteOrBuilder getReadWriteOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder getReadWriteOrBuilder() {
       if ((modeCase_ == 1) && (readWriteBuilder_ != null)) {
         return readWriteBuilder_.getMessageOrBuilder();
       } else {
         if (modeCase_ == 1) {
-          return (ReadWrite) mode_;
+          return (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_;
         }
-        return ReadWrite.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
       }
     }
     /**
@@ -4891,16 +4988,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <code>.google.spanner.v1.TransactionOptions.ReadWrite read_write = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            ReadWrite, ReadWrite.Builder, ReadWriteOrBuilder>
+            com.google.spanner.v1.TransactionOptions.ReadWrite,
+            com.google.spanner.v1.TransactionOptions.ReadWrite.Builder,
+            com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder>
         getReadWriteFieldBuilder() {
       if (readWriteBuilder_ == null) {
         if (!(modeCase_ == 1)) {
-          mode_ = ReadWrite.getDefaultInstance();
+          mode_ = com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance();
         }
         readWriteBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                ReadWrite, ReadWrite.Builder, ReadWriteOrBuilder>(
-                (ReadWrite) mode_, getParentForChildren(), isClean());
+                com.google.spanner.v1.TransactionOptions.ReadWrite,
+                com.google.spanner.v1.TransactionOptions.ReadWrite.Builder,
+                com.google.spanner.v1.TransactionOptions.ReadWriteOrBuilder>(
+                (com.google.spanner.v1.TransactionOptions.ReadWrite) mode_,
+                getParentForChildren(),
+                isClean());
         mode_ = null;
       }
       modeCase_ = 1;
@@ -4910,7 +5013,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-            PartitionedDml, PartitionedDml.Builder, PartitionedDmlOrBuilder>
+            com.google.spanner.v1.TransactionOptions.PartitionedDml,
+            com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder,
+            com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder>
         partitionedDmlBuilder_;
     /**
      *
@@ -4926,7 +5031,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the partitionedDml field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasPartitionedDml() {
       return modeCase_ == 3;
     }
@@ -4944,18 +5049,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The partitionedDml.
      */
-    @Override
-    public PartitionedDml getPartitionedDml() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.PartitionedDml getPartitionedDml() {
       if (partitionedDmlBuilder_ == null) {
         if (modeCase_ == 3) {
-          return (PartitionedDml) mode_;
+          return (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_;
         }
-        return PartitionedDml.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
       } else {
         if (modeCase_ == 3) {
           return partitionedDmlBuilder_.getMessage();
         }
-        return PartitionedDml.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
       }
     }
     /**
@@ -4970,7 +5075,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
-    public Builder setPartitionedDml(PartitionedDml value) {
+    public Builder setPartitionedDml(
+        com.google.spanner.v1.TransactionOptions.PartitionedDml value) {
       if (partitionedDmlBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -4995,7 +5101,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
-    public Builder setPartitionedDml(PartitionedDml.Builder builderForValue) {
+    public Builder setPartitionedDml(
+        com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder builderForValue) {
       if (partitionedDmlBuilder_ == null) {
         mode_ = builderForValue.build();
         onChanged();
@@ -5017,10 +5124,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
-    public Builder mergePartitionedDml(PartitionedDml value) {
+    public Builder mergePartitionedDml(
+        com.google.spanner.v1.TransactionOptions.PartitionedDml value) {
       if (partitionedDmlBuilder_ == null) {
-        if (modeCase_ == 3 && mode_ != PartitionedDml.getDefaultInstance()) {
-          mode_ = PartitionedDml.newBuilder((PartitionedDml) mode_).mergeFrom(value).buildPartial();
+        if (modeCase_ == 3
+            && mode_
+                != com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance()) {
+          mode_ =
+              com.google.spanner.v1.TransactionOptions.PartitionedDml.newBuilder(
+                      (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           mode_ = value;
         }
@@ -5074,7 +5188,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
-    public PartitionedDml.Builder getPartitionedDmlBuilder() {
+    public com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder
+        getPartitionedDmlBuilder() {
       return getPartitionedDmlFieldBuilder().getBuilder();
     }
     /**
@@ -5089,15 +5204,16 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
-    @Override
-    public PartitionedDmlOrBuilder getPartitionedDmlOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder
+        getPartitionedDmlOrBuilder() {
       if ((modeCase_ == 3) && (partitionedDmlBuilder_ != null)) {
         return partitionedDmlBuilder_.getMessageOrBuilder();
       } else {
         if (modeCase_ == 3) {
-          return (PartitionedDml) mode_;
+          return (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_;
         }
-        return PartitionedDml.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
       }
     }
     /**
@@ -5113,16 +5229,22 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <code>.google.spanner.v1.TransactionOptions.PartitionedDml partitioned_dml = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            PartitionedDml, PartitionedDml.Builder, PartitionedDmlOrBuilder>
+            com.google.spanner.v1.TransactionOptions.PartitionedDml,
+            com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder,
+            com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder>
         getPartitionedDmlFieldBuilder() {
       if (partitionedDmlBuilder_ == null) {
         if (!(modeCase_ == 3)) {
-          mode_ = PartitionedDml.getDefaultInstance();
+          mode_ = com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance();
         }
         partitionedDmlBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                PartitionedDml, PartitionedDml.Builder, PartitionedDmlOrBuilder>(
-                (PartitionedDml) mode_, getParentForChildren(), isClean());
+                com.google.spanner.v1.TransactionOptions.PartitionedDml,
+                com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder,
+                com.google.spanner.v1.TransactionOptions.PartitionedDmlOrBuilder>(
+                (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_,
+                getParentForChildren(),
+                isClean());
         mode_ = null;
       }
       modeCase_ = 3;
@@ -5131,7 +5253,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return partitionedDmlBuilder_;
     }
 
-    private com.google.protobuf.SingleFieldBuilderV3<ReadOnly, ReadOnly.Builder, ReadOnlyOrBuilder>
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.TransactionOptions.ReadOnly,
+            com.google.spanner.v1.TransactionOptions.ReadOnly.Builder,
+            com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder>
         readOnlyBuilder_;
     /**
      *
@@ -5147,7 +5272,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return Whether the readOnly field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasReadOnly() {
       return modeCase_ == 2;
     }
@@ -5165,18 +5290,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * @return The readOnly.
      */
-    @Override
-    public ReadOnly getReadOnly() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadOnly getReadOnly() {
       if (readOnlyBuilder_ == null) {
         if (modeCase_ == 2) {
-          return (ReadOnly) mode_;
+          return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
         }
-        return ReadOnly.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
       } else {
         if (modeCase_ == 2) {
           return readOnlyBuilder_.getMessage();
         }
-        return ReadOnly.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
       }
     }
     /**
@@ -5191,7 +5316,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    public Builder setReadOnly(ReadOnly value) {
+    public Builder setReadOnly(com.google.spanner.v1.TransactionOptions.ReadOnly value) {
       if (readOnlyBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -5216,7 +5341,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    public Builder setReadOnly(ReadOnly.Builder builderForValue) {
+    public Builder setReadOnly(
+        com.google.spanner.v1.TransactionOptions.ReadOnly.Builder builderForValue) {
       if (readOnlyBuilder_ == null) {
         mode_ = builderForValue.build();
         onChanged();
@@ -5238,10 +5364,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    public Builder mergeReadOnly(ReadOnly value) {
+    public Builder mergeReadOnly(com.google.spanner.v1.TransactionOptions.ReadOnly value) {
       if (readOnlyBuilder_ == null) {
-        if (modeCase_ == 2 && mode_ != ReadOnly.getDefaultInstance()) {
-          mode_ = ReadOnly.newBuilder((ReadOnly) mode_).mergeFrom(value).buildPartial();
+        if (modeCase_ == 2
+            && mode_ != com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance()) {
+          mode_ =
+              com.google.spanner.v1.TransactionOptions.ReadOnly.newBuilder(
+                      (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           mode_ = value;
         }
@@ -5295,7 +5426,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    public ReadOnly.Builder getReadOnlyBuilder() {
+    public com.google.spanner.v1.TransactionOptions.ReadOnly.Builder getReadOnlyBuilder() {
       return getReadOnlyFieldBuilder().getBuilder();
     }
     /**
@@ -5310,15 +5441,15 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    @Override
-    public ReadOnlyOrBuilder getReadOnlyOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder() {
       if ((modeCase_ == 2) && (readOnlyBuilder_ != null)) {
         return readOnlyBuilder_.getMessageOrBuilder();
       } else {
         if (modeCase_ == 2) {
-          return (ReadOnly) mode_;
+          return (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_;
         }
-        return ReadOnly.getDefaultInstance();
+        return com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
       }
     }
     /**
@@ -5333,16 +5464,23 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <code>.google.spanner.v1.TransactionOptions.ReadOnly read_only = 2;</code>
      */
-    private com.google.protobuf.SingleFieldBuilderV3<ReadOnly, ReadOnly.Builder, ReadOnlyOrBuilder>
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.TransactionOptions.ReadOnly,
+            com.google.spanner.v1.TransactionOptions.ReadOnly.Builder,
+            com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder>
         getReadOnlyFieldBuilder() {
       if (readOnlyBuilder_ == null) {
         if (!(modeCase_ == 2)) {
-          mode_ = ReadOnly.getDefaultInstance();
+          mode_ = com.google.spanner.v1.TransactionOptions.ReadOnly.getDefaultInstance();
         }
         readOnlyBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
-                ReadOnly, ReadOnly.Builder, ReadOnlyOrBuilder>(
-                (ReadOnly) mode_, getParentForChildren(), isClean());
+                com.google.spanner.v1.TransactionOptions.ReadOnly,
+                com.google.spanner.v1.TransactionOptions.ReadOnly.Builder,
+                com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder>(
+                (com.google.spanner.v1.TransactionOptions.ReadOnly) mode_,
+                getParentForChildren(),
+                isClean());
         mode_ = null;
       }
       modeCase_ = 2;
@@ -5351,12 +5489,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return readOnlyBuilder_;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -5366,19 +5504,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.TransactionOptions)
-  private static final TransactionOptions DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.TransactionOptions DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new TransactionOptions();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.TransactionOptions();
   }
 
-  public static TransactionOptions getDefaultInstance() {
+  public static com.google.spanner.v1.TransactionOptions getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<TransactionOptions> PARSER =
       new com.google.protobuf.AbstractParser<TransactionOptions>() {
-        @Override
+        @java.lang.Override
         public TransactionOptions parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5391,13 +5529,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<TransactionOptions> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public TransactionOptions getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.TransactionOptions getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

@@ -47,13 +47,13 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     ranges_ = java.util.Collections.emptyList();
   }
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new KeySet();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -64,7 +64,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -90,10 +90,11 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
           case 18:
             {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                ranges_ = new java.util.ArrayList<KeyRange>();
+                ranges_ = new java.util.ArrayList<com.google.spanner.v1.KeyRange>();
                 mutable_bitField0_ |= 0x00000002;
               }
-              ranges_.add(input.readMessage(KeyRange.parser(), extensionRegistry));
+              ranges_.add(
+                  input.readMessage(com.google.spanner.v1.KeyRange.parser(), extensionRegistry));
               break;
             }
           case 24:
@@ -127,13 +128,16 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
+    return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return KeysProto.internal_static_google_spanner_v1_KeySet_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(KeySet.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.KeysProto
+        .internal_static_google_spanner_v1_KeySet_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.KeySet.class, com.google.spanner.v1.KeySet.Builder.class);
   }
 
   public static final int KEYS_FIELD_NUMBER = 1;
@@ -150,7 +154,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<com.google.protobuf.ListValue> getKeysList() {
     return keys_;
   }
@@ -166,7 +170,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> getKeysOrBuilderList() {
     return keys_;
   }
@@ -182,7 +186,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public int getKeysCount() {
     return keys_.size();
   }
@@ -198,7 +202,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ListValue getKeys(int index) {
     return keys_.get(index);
   }
@@ -214,13 +218,13 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.protobuf.ListValue keys = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ListValueOrBuilder getKeysOrBuilder(int index) {
     return keys_.get(index);
   }
 
   public static final int RANGES_FIELD_NUMBER = 2;
-  private java.util.List<KeyRange> ranges_;
+  private java.util.List<com.google.spanner.v1.KeyRange> ranges_;
   /**
    *
    *
@@ -231,8 +235,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  @Override
-  public java.util.List<KeyRange> getRangesList() {
+  @java.lang.Override
+  public java.util.List<com.google.spanner.v1.KeyRange> getRangesList() {
     return ranges_;
   }
   /**
@@ -245,8 +249,9 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  @Override
-  public java.util.List<? extends KeyRangeOrBuilder> getRangesOrBuilderList() {
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.v1.KeyRangeOrBuilder>
+      getRangesOrBuilderList() {
     return ranges_;
   }
   /**
@@ -259,7 +264,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public int getRangesCount() {
     return ranges_.size();
   }
@@ -273,8 +278,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  @Override
-  public KeyRange getRanges(int index) {
+  @java.lang.Override
+  public com.google.spanner.v1.KeyRange getRanges(int index) {
     return ranges_.get(index);
   }
   /**
@@ -287,8 +292,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
    */
-  @Override
-  public KeyRangeOrBuilder getRangesOrBuilder(int index) {
+  @java.lang.Override
+  public com.google.spanner.v1.KeyRangeOrBuilder getRangesOrBuilder(int index) {
     return ranges_.get(index);
   }
 
@@ -307,14 +312,14 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    *
    * @return The all.
    */
-  @Override
+  @java.lang.Override
   public boolean getAll() {
     return all_;
   }
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -324,7 +329,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     for (int i = 0; i < keys_.size(); i++) {
       output.writeMessage(1, keys_.get(i));
@@ -338,7 +343,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -358,15 +363,15 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof KeySet)) {
+    if (!(obj instanceof com.google.spanner.v1.KeySet)) {
       return super.equals(obj);
     }
-    KeySet other = (KeySet) obj;
+    com.google.spanner.v1.KeySet other = (com.google.spanner.v1.KeySet) obj;
 
     if (!getKeysList().equals(other.getKeysList())) return false;
     if (!getRangesList().equals(other.getRangesList())) return false;
@@ -375,7 +380,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -397,68 +402,70 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return hash;
   }
 
-  public static KeySet parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.KeySet parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static KeySet parseFrom(
+  public static com.google.spanner.v1.KeySet parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static KeySet parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.KeySet parseFrom(com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static KeySet parseFrom(
+  public static com.google.spanner.v1.KeySet parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static KeySet parseFrom(byte[] data)
+  public static com.google.spanner.v1.KeySet parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static KeySet parseFrom(
+  public static com.google.spanner.v1.KeySet parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static KeySet parseFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.KeySet parseFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static KeySet parseFrom(
+  public static com.google.spanner.v1.KeySet parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static KeySet parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.KeySet parseDelimitedFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static KeySet parseDelimitedFrom(
+  public static com.google.spanner.v1.KeySet parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static KeySet parseFrom(com.google.protobuf.CodedInputStream input)
+  public static com.google.spanner.v1.KeySet parseFrom(com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static KeySet parseFrom(
+  public static com.google.spanner.v1.KeySet parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -466,7 +473,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -475,17 +482,17 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(KeySet prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.KeySet prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -506,15 +513,18 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.KeySet)
-      KeySetOrBuilder {
+      com.google.spanner.v1.KeySetOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
+      return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return KeysProto.internal_static_google_spanner_v1_KeySet_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(KeySet.class, Builder.class);
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.KeysProto
+          .internal_static_google_spanner_v1_KeySet_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.KeySet.class, com.google.spanner.v1.KeySet.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.KeySet.newBuilder()
@@ -522,7 +532,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -534,7 +544,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       }
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       if (keysBuilder_ == null) {
@@ -554,28 +564,28 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
+      return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
     }
 
-    @Override
-    public KeySet getDefaultInstanceForType() {
-      return KeySet.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.KeySet getDefaultInstanceForType() {
+      return com.google.spanner.v1.KeySet.getDefaultInstance();
     }
 
-    @Override
-    public KeySet build() {
-      KeySet result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.KeySet build() {
+      com.google.spanner.v1.KeySet result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public KeySet buildPartial() {
-      KeySet result = new KeySet(this);
+    @java.lang.Override
+    public com.google.spanner.v1.KeySet buildPartial() {
+      com.google.spanner.v1.KeySet result = new com.google.spanner.v1.KeySet(this);
       int from_bitField0_ = bitField0_;
       if (keysBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
@@ -600,50 +610,51 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof KeySet) {
-        return mergeFrom((KeySet) other);
+      if (other instanceof com.google.spanner.v1.KeySet) {
+        return mergeFrom((com.google.spanner.v1.KeySet) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(KeySet other) {
-      if (other == KeySet.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.KeySet other) {
+      if (other == com.google.spanner.v1.KeySet.getDefaultInstance()) return this;
       if (keysBuilder_ == null) {
         if (!other.keys_.isEmpty()) {
           if (keys_.isEmpty()) {
@@ -706,21 +717,21 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      KeySet parsedMessage = null;
+      com.google.spanner.v1.KeySet parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (KeySet) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.KeySet) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -957,7 +968,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.protobuf.ListValue keys = 1;</code>
      */
-    public Builder addAllKeys(Iterable<? extends com.google.protobuf.ListValue> values) {
+    public Builder addAllKeys(java.lang.Iterable<? extends com.google.protobuf.ListValue> values) {
       if (keysBuilder_ == null) {
         ensureKeysIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, keys_);
@@ -1128,17 +1139,20 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       return keysBuilder_;
     }
 
-    private java.util.List<KeyRange> ranges_ = java.util.Collections.emptyList();
+    private java.util.List<com.google.spanner.v1.KeyRange> ranges_ =
+        java.util.Collections.emptyList();
 
     private void ensureRangesIsMutable() {
       if (!((bitField0_ & 0x00000002) != 0)) {
-        ranges_ = new java.util.ArrayList<KeyRange>(ranges_);
+        ranges_ = new java.util.ArrayList<com.google.spanner.v1.KeyRange>(ranges_);
         bitField0_ |= 0x00000002;
       }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            KeyRange, KeyRange.Builder, KeyRangeOrBuilder>
+            com.google.spanner.v1.KeyRange,
+            com.google.spanner.v1.KeyRange.Builder,
+            com.google.spanner.v1.KeyRangeOrBuilder>
         rangesBuilder_;
 
     /**
@@ -1151,7 +1165,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public java.util.List<KeyRange> getRangesList() {
+    public java.util.List<com.google.spanner.v1.KeyRange> getRangesList() {
       if (rangesBuilder_ == null) {
         return java.util.Collections.unmodifiableList(ranges_);
       } else {
@@ -1185,7 +1199,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public KeyRange getRanges(int index) {
+    public com.google.spanner.v1.KeyRange getRanges(int index) {
       if (rangesBuilder_ == null) {
         return ranges_.get(index);
       } else {
@@ -1202,7 +1216,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder setRanges(int index, KeyRange value) {
+    public Builder setRanges(int index, com.google.spanner.v1.KeyRange value) {
       if (rangesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1225,7 +1239,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder setRanges(int index, KeyRange.Builder builderForValue) {
+    public Builder setRanges(int index, com.google.spanner.v1.KeyRange.Builder builderForValue) {
       if (rangesBuilder_ == null) {
         ensureRangesIsMutable();
         ranges_.set(index, builderForValue.build());
@@ -1245,7 +1259,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder addRanges(KeyRange value) {
+    public Builder addRanges(com.google.spanner.v1.KeyRange value) {
       if (rangesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1268,7 +1282,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder addRanges(int index, KeyRange value) {
+    public Builder addRanges(int index, com.google.spanner.v1.KeyRange value) {
       if (rangesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1291,7 +1305,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder addRanges(KeyRange.Builder builderForValue) {
+    public Builder addRanges(com.google.spanner.v1.KeyRange.Builder builderForValue) {
       if (rangesBuilder_ == null) {
         ensureRangesIsMutable();
         ranges_.add(builderForValue.build());
@@ -1311,7 +1325,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder addRanges(int index, KeyRange.Builder builderForValue) {
+    public Builder addRanges(int index, com.google.spanner.v1.KeyRange.Builder builderForValue) {
       if (rangesBuilder_ == null) {
         ensureRangesIsMutable();
         ranges_.add(index, builderForValue.build());
@@ -1331,7 +1345,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public Builder addAllRanges(Iterable<? extends KeyRange> values) {
+    public Builder addAllRanges(
+        java.lang.Iterable<? extends com.google.spanner.v1.KeyRange> values) {
       if (rangesBuilder_ == null) {
         ensureRangesIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, ranges_);
@@ -1391,7 +1406,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public KeyRange.Builder getRangesBuilder(int index) {
+    public com.google.spanner.v1.KeyRange.Builder getRangesBuilder(int index) {
       return getRangesFieldBuilder().getBuilder(index);
     }
     /**
@@ -1404,7 +1419,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public KeyRangeOrBuilder getRangesOrBuilder(int index) {
+    public com.google.spanner.v1.KeyRangeOrBuilder getRangesOrBuilder(int index) {
       if (rangesBuilder_ == null) {
         return ranges_.get(index);
       } else {
@@ -1421,7 +1436,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public java.util.List<? extends KeyRangeOrBuilder> getRangesOrBuilderList() {
+    public java.util.List<? extends com.google.spanner.v1.KeyRangeOrBuilder>
+        getRangesOrBuilderList() {
       if (rangesBuilder_ != null) {
         return rangesBuilder_.getMessageOrBuilderList();
       } else {
@@ -1438,8 +1454,9 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public KeyRange.Builder addRangesBuilder() {
-      return getRangesFieldBuilder().addBuilder(KeyRange.getDefaultInstance());
+    public com.google.spanner.v1.KeyRange.Builder addRangesBuilder() {
+      return getRangesFieldBuilder()
+          .addBuilder(com.google.spanner.v1.KeyRange.getDefaultInstance());
     }
     /**
      *
@@ -1451,8 +1468,9 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public KeyRange.Builder addRangesBuilder(int index) {
-      return getRangesFieldBuilder().addBuilder(index, KeyRange.getDefaultInstance());
+    public com.google.spanner.v1.KeyRange.Builder addRangesBuilder(int index) {
+      return getRangesFieldBuilder()
+          .addBuilder(index, com.google.spanner.v1.KeyRange.getDefaultInstance());
     }
     /**
      *
@@ -1464,17 +1482,21 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.KeyRange ranges = 2;</code>
      */
-    public java.util.List<KeyRange.Builder> getRangesBuilderList() {
+    public java.util.List<com.google.spanner.v1.KeyRange.Builder> getRangesBuilderList() {
       return getRangesFieldBuilder().getBuilderList();
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            KeyRange, KeyRange.Builder, KeyRangeOrBuilder>
+            com.google.spanner.v1.KeyRange,
+            com.google.spanner.v1.KeyRange.Builder,
+            com.google.spanner.v1.KeyRangeOrBuilder>
         getRangesFieldBuilder() {
       if (rangesBuilder_ == null) {
         rangesBuilder_ =
             new com.google.protobuf.RepeatedFieldBuilderV3<
-                KeyRange, KeyRange.Builder, KeyRangeOrBuilder>(
+                com.google.spanner.v1.KeyRange,
+                com.google.spanner.v1.KeyRange.Builder,
+                com.google.spanner.v1.KeyRangeOrBuilder>(
                 ranges_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
         ranges_ = null;
       }
@@ -1495,7 +1517,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The all.
      */
-    @Override
+    @java.lang.Override
     public boolean getAll() {
       return all_;
     }
@@ -1539,12 +1561,12 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -1554,19 +1576,19 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.KeySet)
-  private static final KeySet DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.KeySet DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new KeySet();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.KeySet();
   }
 
-  public static KeySet getDefaultInstance() {
+  public static com.google.spanner.v1.KeySet getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<KeySet> PARSER =
       new com.google.protobuf.AbstractParser<KeySet>() {
-        @Override
+        @java.lang.Override
         public KeySet parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1579,13 +1601,13 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<KeySet> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public KeySet getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.KeySet getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

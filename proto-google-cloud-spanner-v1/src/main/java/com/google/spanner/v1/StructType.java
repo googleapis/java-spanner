@@ -41,13 +41,13 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     fields_ = java.util.Collections.emptyList();
   }
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new StructType();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -58,7 +58,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -74,10 +74,12 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
           case 10:
             {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                fields_ = new java.util.ArrayList<Field>();
+                fields_ = new java.util.ArrayList<com.google.spanner.v1.StructType.Field>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              fields_.add(input.readMessage(Field.parser(), extensionRegistry));
+              fields_.add(
+                  input.readMessage(
+                      com.google.spanner.v1.StructType.Field.parser(), extensionRegistry));
               break;
             }
           default:
@@ -103,13 +105,16 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return TypeProto.internal_static_google_spanner_v1_StructType_descriptor;
+    return com.google.spanner.v1.TypeProto.internal_static_google_spanner_v1_StructType_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return TypeProto.internal_static_google_spanner_v1_StructType_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(StructType.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.TypeProto
+        .internal_static_google_spanner_v1_StructType_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.StructType.class, com.google.spanner.v1.StructType.Builder.class);
   }
 
   public interface FieldOrBuilder
@@ -134,7 +139,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The name.
      */
-    String getName();
+    java.lang.String getName();
     /**
      *
      *
@@ -177,7 +182,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The type.
      */
-    Type getType();
+    com.google.spanner.v1.Type getType();
     /**
      *
      *
@@ -187,7 +192,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Type type = 2;</code>
      */
-    TypeOrBuilder getTypeOrBuilder();
+    com.google.spanner.v1.TypeOrBuilder getTypeOrBuilder();
   }
   /**
    *
@@ -212,13 +217,13 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       name_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(UnusedPrivateParameter unused) {
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new Field();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
@@ -229,7 +234,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -243,18 +248,18 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
               break;
             case 10:
               {
-                String s = input.readStringRequireUtf8();
+                java.lang.String s = input.readStringRequireUtf8();
 
                 name_ = s;
                 break;
               }
             case 18:
               {
-                Type.Builder subBuilder = null;
+                com.google.spanner.v1.Type.Builder subBuilder = null;
                 if (type_ != null) {
                   subBuilder = type_.toBuilder();
                 }
-                type_ = input.readMessage(Type.parser(), extensionRegistry);
+                type_ = input.readMessage(com.google.spanner.v1.Type.parser(), extensionRegistry);
                 if (subBuilder != null) {
                   subBuilder.mergeFrom(type_);
                   type_ = subBuilder.buildPartial();
@@ -282,17 +287,22 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TypeProto.internal_static_google_spanner_v1_StructType_Field_descriptor;
+      return com.google.spanner.v1.TypeProto
+          .internal_static_google_spanner_v1_StructType_Field_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TypeProto.internal_static_google_spanner_v1_StructType_Field_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(Field.class, Builder.class);
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TypeProto
+          .internal_static_google_spanner_v1_StructType_Field_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.StructType.Field.class,
+              com.google.spanner.v1.StructType.Field.Builder.class);
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile Object name_;
+    private volatile java.lang.Object name_;
     /**
      *
      *
@@ -310,14 +320,14 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The name.
      */
-    @Override
-    public String getName() {
-      Object ref = name_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         name_ = s;
         return s;
       }
@@ -339,12 +349,12 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The bytes for name.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString getNameBytes() {
-      Object ref = name_;
-      if (ref instanceof String) {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         name_ = b;
         return b;
       } else {
@@ -353,7 +363,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int TYPE_FIELD_NUMBER = 2;
-    private Type type_;
+    private com.google.spanner.v1.Type type_;
     /**
      *
      *
@@ -365,7 +375,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return Whether the type field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasType() {
       return type_ != null;
     }
@@ -380,9 +390,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * @return The type.
      */
-    @Override
-    public Type getType() {
-      return type_ == null ? Type.getDefaultInstance() : type_;
+    @java.lang.Override
+    public com.google.spanner.v1.Type getType() {
+      return type_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : type_;
     }
     /**
      *
@@ -393,14 +403,14 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>.google.spanner.v1.Type type = 2;</code>
      */
-    @Override
-    public TypeOrBuilder getTypeOrBuilder() {
+    @java.lang.Override
+    public com.google.spanner.v1.TypeOrBuilder getTypeOrBuilder() {
       return getType();
     }
 
     private byte memoizedIsInitialized = -1;
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -410,7 +420,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
       if (!getNameBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
@@ -421,7 +431,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -438,15 +448,15 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
         return true;
       }
-      if (!(obj instanceof Field)) {
+      if (!(obj instanceof com.google.spanner.v1.StructType.Field)) {
         return super.equals(obj);
       }
-      Field other = (Field) obj;
+      com.google.spanner.v1.StructType.Field other = (com.google.spanner.v1.StructType.Field) obj;
 
       if (!getName().equals(other.getName())) return false;
       if (hasType() != other.hasType()) return false;
@@ -457,7 +467,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -475,68 +485,71 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return hash;
     }
 
-    public static Field parseFrom(java.nio.ByteBuffer data)
+    public static com.google.spanner.v1.StructType.Field parseFrom(java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static Field parseFrom(
+    public static com.google.spanner.v1.StructType.Field parseFrom(
         java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Field parseFrom(com.google.protobuf.ByteString data)
+    public static com.google.spanner.v1.StructType.Field parseFrom(
+        com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static Field parseFrom(
+    public static com.google.spanner.v1.StructType.Field parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Field parseFrom(byte[] data)
+    public static com.google.spanner.v1.StructType.Field parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
-    public static Field parseFrom(
+    public static com.google.spanner.v1.StructType.Field parseFrom(
         byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Field parseFrom(java.io.InputStream input) throws java.io.IOException {
+    public static com.google.spanner.v1.StructType.Field parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static Field parseFrom(
+    public static com.google.spanner.v1.StructType.Field parseFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static Field parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+    public static com.google.spanner.v1.StructType.Field parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static Field parseDelimitedFrom(
+    public static com.google.spanner.v1.StructType.Field parseDelimitedFrom(
         java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
           PARSER, input, extensionRegistry);
     }
 
-    public static Field parseFrom(com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+    public static com.google.spanner.v1.StructType.Field parseFrom(
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static Field parseFrom(
+    public static com.google.spanner.v1.StructType.Field parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -544,7 +557,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
           PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
@@ -553,17 +566,18 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public static Builder newBuilder(Field prototype) {
+    public static Builder newBuilder(com.google.spanner.v1.StructType.Field prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
-    protected Builder newBuilderForType(BuilderParent parent) {
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -580,15 +594,20 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:google.spanner.v1.StructType.Field)
-        FieldOrBuilder {
+        com.google.spanner.v1.StructType.FieldOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-        return TypeProto.internal_static_google_spanner_v1_StructType_Field_descriptor;
+        return com.google.spanner.v1.TypeProto
+            .internal_static_google_spanner_v1_StructType_Field_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return TypeProto.internal_static_google_spanner_v1_StructType_Field_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(Field.class, Builder.class);
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.google.spanner.v1.TypeProto
+            .internal_static_google_spanner_v1_StructType_Field_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.google.spanner.v1.StructType.Field.class,
+                com.google.spanner.v1.StructType.Field.Builder.class);
       }
 
       // Construct using com.google.spanner.v1.StructType.Field.newBuilder()
@@ -596,7 +615,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         maybeForceBuilderInitialization();
       }
 
-      private Builder(BuilderParent parent) {
+      private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -605,7 +624,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -619,28 +638,30 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-        return TypeProto.internal_static_google_spanner_v1_StructType_Field_descriptor;
+        return com.google.spanner.v1.TypeProto
+            .internal_static_google_spanner_v1_StructType_Field_descriptor;
       }
 
-      @Override
-      public Field getDefaultInstanceForType() {
-        return Field.getDefaultInstance();
+      @java.lang.Override
+      public com.google.spanner.v1.StructType.Field getDefaultInstanceForType() {
+        return com.google.spanner.v1.StructType.Field.getDefaultInstance();
       }
 
-      @Override
-      public Field build() {
-        Field result = buildPartial();
+      @java.lang.Override
+      public com.google.spanner.v1.StructType.Field build() {
+        com.google.spanner.v1.StructType.Field result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public Field buildPartial() {
-        Field result = new Field(this);
+      @java.lang.Override
+      public com.google.spanner.v1.StructType.Field buildPartial() {
+        com.google.spanner.v1.StructType.Field result =
+            new com.google.spanner.v1.StructType.Field(this);
         result.name_ = name_;
         if (typeBuilder_ == null) {
           result.type_ = type_;
@@ -651,50 +672,53 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
 
-      @Override
-      public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.setField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
 
-      @Override
+      @java.lang.Override
       public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
 
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof Field) {
-          return mergeFrom((Field) other);
+        if (other instanceof com.google.spanner.v1.StructType.Field) {
+          return mergeFrom((com.google.spanner.v1.StructType.Field) other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(Field other) {
-        if (other == Field.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.google.spanner.v1.StructType.Field other) {
+        if (other == com.google.spanner.v1.StructType.Field.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
           onChanged();
@@ -707,21 +731,21 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        Field parsedMessage = null;
+        com.google.spanner.v1.StructType.Field parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (Field) e.getUnfinishedMessage();
+          parsedMessage = (com.google.spanner.v1.StructType.Field) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -731,7 +755,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         return this;
       }
 
-      private Object name_ = "";
+      private java.lang.Object name_ = "";
       /**
        *
        *
@@ -749,15 +773,15 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * @return The name.
        */
-      public String getName() {
-        Object ref = name_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           name_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -778,10 +802,10 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * @return The bytes for name.
        */
       public com.google.protobuf.ByteString getNameBytes() {
-        Object ref = name_;
+        java.lang.Object ref = name_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
-              com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
           name_ = b;
           return b;
         } else {
@@ -806,7 +830,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * @param value The name to set.
        * @return This builder for chaining.
        */
-      public Builder setName(String value) {
+      public Builder setName(java.lang.String value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -867,8 +891,11 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         return this;
       }
 
-      private Type type_;
-      private com.google.protobuf.SingleFieldBuilderV3<Type, Type.Builder, TypeOrBuilder>
+      private com.google.spanner.v1.Type type_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.v1.Type,
+              com.google.spanner.v1.Type.Builder,
+              com.google.spanner.v1.TypeOrBuilder>
           typeBuilder_;
       /**
        *
@@ -895,9 +922,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * @return The type.
        */
-      public Type getType() {
+      public com.google.spanner.v1.Type getType() {
         if (typeBuilder_ == null) {
-          return type_ == null ? Type.getDefaultInstance() : type_;
+          return type_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : type_;
         } else {
           return typeBuilder_.getMessage();
         }
@@ -911,7 +938,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      public Builder setType(Type value) {
+      public Builder setType(com.google.spanner.v1.Type value) {
         if (typeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -933,7 +960,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      public Builder setType(Type.Builder builderForValue) {
+      public Builder setType(com.google.spanner.v1.Type.Builder builderForValue) {
         if (typeBuilder_ == null) {
           type_ = builderForValue.build();
           onChanged();
@@ -952,10 +979,10 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      public Builder mergeType(Type value) {
+      public Builder mergeType(com.google.spanner.v1.Type value) {
         if (typeBuilder_ == null) {
           if (type_ != null) {
-            type_ = Type.newBuilder(type_).mergeFrom(value).buildPartial();
+            type_ = com.google.spanner.v1.Type.newBuilder(type_).mergeFrom(value).buildPartial();
           } else {
             type_ = value;
           }
@@ -995,7 +1022,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      public Type.Builder getTypeBuilder() {
+      public com.google.spanner.v1.Type.Builder getTypeBuilder() {
 
         onChanged();
         return getTypeFieldBuilder().getBuilder();
@@ -1009,11 +1036,11 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      public TypeOrBuilder getTypeOrBuilder() {
+      public com.google.spanner.v1.TypeOrBuilder getTypeOrBuilder() {
         if (typeBuilder_ != null) {
           return typeBuilder_.getMessageOrBuilder();
         } else {
-          return type_ == null ? Type.getDefaultInstance() : type_;
+          return type_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : type_;
         }
       }
       /**
@@ -1025,24 +1052,30 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        *
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
-      private com.google.protobuf.SingleFieldBuilderV3<Type, Type.Builder, TypeOrBuilder>
+      private com.google.protobuf.SingleFieldBuilderV3<
+              com.google.spanner.v1.Type,
+              com.google.spanner.v1.Type.Builder,
+              com.google.spanner.v1.TypeOrBuilder>
           getTypeFieldBuilder() {
         if (typeBuilder_ == null) {
           typeBuilder_ =
-              new com.google.protobuf.SingleFieldBuilderV3<Type, Type.Builder, TypeOrBuilder>(
+              new com.google.protobuf.SingleFieldBuilderV3<
+                  com.google.spanner.v1.Type,
+                  com.google.spanner.v1.Type.Builder,
+                  com.google.spanner.v1.TypeOrBuilder>(
                   getType(), getParentForChildren(), isClean());
           type_ = null;
         }
         return typeBuilder_;
       }
 
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1052,19 +1085,19 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     }
 
     // @@protoc_insertion_point(class_scope:google.spanner.v1.StructType.Field)
-    private static final Field DEFAULT_INSTANCE;
+    private static final com.google.spanner.v1.StructType.Field DEFAULT_INSTANCE;
 
     static {
-      DEFAULT_INSTANCE = new Field();
+      DEFAULT_INSTANCE = new com.google.spanner.v1.StructType.Field();
     }
 
-    public static Field getDefaultInstance() {
+    public static com.google.spanner.v1.StructType.Field getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<Field> PARSER =
         new com.google.protobuf.AbstractParser<Field>() {
-          @Override
+          @java.lang.Override
           public Field parsePartialFrom(
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1077,19 +1110,19 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Field> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public Field getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.google.spanner.v1.StructType.Field getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
   }
 
   public static final int FIELDS_FIELD_NUMBER = 1;
-  private java.util.List<Field> fields_;
+  private java.util.List<com.google.spanner.v1.StructType.Field> fields_;
   /**
    *
    *
@@ -1104,8 +1137,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  @Override
-  public java.util.List<Field> getFieldsList() {
+  @java.lang.Override
+  public java.util.List<com.google.spanner.v1.StructType.Field> getFieldsList() {
     return fields_;
   }
   /**
@@ -1122,8 +1155,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  @Override
-  public java.util.List<? extends FieldOrBuilder> getFieldsOrBuilderList() {
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.v1.StructType.FieldOrBuilder>
+      getFieldsOrBuilderList() {
     return fields_;
   }
   /**
@@ -1140,7 +1174,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  @Override
+  @java.lang.Override
   public int getFieldsCount() {
     return fields_.size();
   }
@@ -1158,8 +1192,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  @Override
-  public Field getFields(int index) {
+  @java.lang.Override
+  public com.google.spanner.v1.StructType.Field getFields(int index) {
     return fields_.get(index);
   }
   /**
@@ -1176,14 +1210,14 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
    *
    * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
    */
-  @Override
-  public FieldOrBuilder getFieldsOrBuilder(int index) {
+  @java.lang.Override
+  public com.google.spanner.v1.StructType.FieldOrBuilder getFieldsOrBuilder(int index) {
     return fields_.get(index);
   }
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -1193,7 +1227,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     for (int i = 0; i < fields_.size(); i++) {
       output.writeMessage(1, fields_.get(i));
@@ -1201,7 +1235,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -1215,22 +1249,22 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof StructType)) {
+    if (!(obj instanceof com.google.spanner.v1.StructType)) {
       return super.equals(obj);
     }
-    StructType other = (StructType) obj;
+    com.google.spanner.v1.StructType other = (com.google.spanner.v1.StructType) obj;
 
     if (!getFieldsList().equals(other.getFieldsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -1246,69 +1280,70 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     return hash;
   }
 
-  public static StructType parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.StructType parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static StructType parseFrom(
+  public static com.google.spanner.v1.StructType parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static StructType parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.StructType parseFrom(com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static StructType parseFrom(
+  public static com.google.spanner.v1.StructType parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static StructType parseFrom(byte[] data)
+  public static com.google.spanner.v1.StructType parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static StructType parseFrom(
+  public static com.google.spanner.v1.StructType parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static StructType parseFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.StructType parseFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static StructType parseFrom(
+  public static com.google.spanner.v1.StructType parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static StructType parseDelimitedFrom(java.io.InputStream input)
+  public static com.google.spanner.v1.StructType parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static StructType parseDelimitedFrom(
+  public static com.google.spanner.v1.StructType parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static StructType parseFrom(com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.StructType parseFrom(
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static StructType parseFrom(
+  public static com.google.spanner.v1.StructType parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -1316,7 +1351,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -1325,17 +1360,17 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(StructType prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.StructType prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -1351,15 +1386,20 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.StructType)
-      StructTypeOrBuilder {
+      com.google.spanner.v1.StructTypeOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return TypeProto.internal_static_google_spanner_v1_StructType_descriptor;
+      return com.google.spanner.v1.TypeProto
+          .internal_static_google_spanner_v1_StructType_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return TypeProto.internal_static_google_spanner_v1_StructType_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(StructType.class, Builder.class);
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.TypeProto
+          .internal_static_google_spanner_v1_StructType_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.StructType.class,
+              com.google.spanner.v1.StructType.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.StructType.newBuilder()
@@ -1367,7 +1407,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -1378,7 +1418,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       }
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       if (fieldsBuilder_ == null) {
@@ -1390,28 +1430,29 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return TypeProto.internal_static_google_spanner_v1_StructType_descriptor;
+      return com.google.spanner.v1.TypeProto
+          .internal_static_google_spanner_v1_StructType_descriptor;
     }
 
-    @Override
-    public StructType getDefaultInstanceForType() {
-      return StructType.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.StructType getDefaultInstanceForType() {
+      return com.google.spanner.v1.StructType.getDefaultInstance();
     }
 
-    @Override
-    public StructType build() {
-      StructType result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.StructType build() {
+      com.google.spanner.v1.StructType result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public StructType buildPartial() {
-      StructType result = new StructType(this);
+    @java.lang.Override
+    public com.google.spanner.v1.StructType buildPartial() {
+      com.google.spanner.v1.StructType result = new com.google.spanner.v1.StructType(this);
       int from_bitField0_ = bitField0_;
       if (fieldsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
@@ -1426,50 +1467,51 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof StructType) {
-        return mergeFrom((StructType) other);
+      if (other instanceof com.google.spanner.v1.StructType) {
+        return mergeFrom((com.google.spanner.v1.StructType) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(StructType other) {
-      if (other == StructType.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.StructType other) {
+      if (other == com.google.spanner.v1.StructType.getDefaultInstance()) return this;
       if (fieldsBuilder_ == null) {
         if (!other.fields_.isEmpty()) {
           if (fields_.isEmpty()) {
@@ -1502,21 +1544,21 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      StructType parsedMessage = null;
+      com.google.spanner.v1.StructType parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (StructType) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.StructType) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1528,16 +1570,20 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
 
     private int bitField0_;
 
-    private java.util.List<Field> fields_ = java.util.Collections.emptyList();
+    private java.util.List<com.google.spanner.v1.StructType.Field> fields_ =
+        java.util.Collections.emptyList();
 
     private void ensureFieldsIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        fields_ = new java.util.ArrayList<Field>(fields_);
+        fields_ = new java.util.ArrayList<com.google.spanner.v1.StructType.Field>(fields_);
         bitField0_ |= 0x00000001;
       }
     }
 
-    private com.google.protobuf.RepeatedFieldBuilderV3<Field, Field.Builder, FieldOrBuilder>
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.v1.StructType.Field,
+            com.google.spanner.v1.StructType.Field.Builder,
+            com.google.spanner.v1.StructType.FieldOrBuilder>
         fieldsBuilder_;
 
     /**
@@ -1554,7 +1600,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public java.util.List<Field> getFieldsList() {
+    public java.util.List<com.google.spanner.v1.StructType.Field> getFieldsList() {
       if (fieldsBuilder_ == null) {
         return java.util.Collections.unmodifiableList(fields_);
       } else {
@@ -1596,7 +1642,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Field getFields(int index) {
+    public com.google.spanner.v1.StructType.Field getFields(int index) {
       if (fieldsBuilder_ == null) {
         return fields_.get(index);
       } else {
@@ -1617,7 +1663,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder setFields(int index, Field value) {
+    public Builder setFields(int index, com.google.spanner.v1.StructType.Field value) {
       if (fieldsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1644,7 +1690,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder setFields(int index, Field.Builder builderForValue) {
+    public Builder setFields(
+        int index, com.google.spanner.v1.StructType.Field.Builder builderForValue) {
       if (fieldsBuilder_ == null) {
         ensureFieldsIsMutable();
         fields_.set(index, builderForValue.build());
@@ -1668,7 +1715,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder addFields(Field value) {
+    public Builder addFields(com.google.spanner.v1.StructType.Field value) {
       if (fieldsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1695,7 +1742,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder addFields(int index, Field value) {
+    public Builder addFields(int index, com.google.spanner.v1.StructType.Field value) {
       if (fieldsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1722,7 +1769,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder addFields(Field.Builder builderForValue) {
+    public Builder addFields(com.google.spanner.v1.StructType.Field.Builder builderForValue) {
       if (fieldsBuilder_ == null) {
         ensureFieldsIsMutable();
         fields_.add(builderForValue.build());
@@ -1746,7 +1793,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder addFields(int index, Field.Builder builderForValue) {
+    public Builder addFields(
+        int index, com.google.spanner.v1.StructType.Field.Builder builderForValue) {
       if (fieldsBuilder_ == null) {
         ensureFieldsIsMutable();
         fields_.add(index, builderForValue.build());
@@ -1770,7 +1818,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Builder addAllFields(Iterable<? extends Field> values) {
+    public Builder addAllFields(
+        java.lang.Iterable<? extends com.google.spanner.v1.StructType.Field> values) {
       if (fieldsBuilder_ == null) {
         ensureFieldsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, fields_);
@@ -1842,7 +1891,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Field.Builder getFieldsBuilder(int index) {
+    public com.google.spanner.v1.StructType.Field.Builder getFieldsBuilder(int index) {
       return getFieldsFieldBuilder().getBuilder(index);
     }
     /**
@@ -1859,7 +1908,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public FieldOrBuilder getFieldsOrBuilder(int index) {
+    public com.google.spanner.v1.StructType.FieldOrBuilder getFieldsOrBuilder(int index) {
       if (fieldsBuilder_ == null) {
         return fields_.get(index);
       } else {
@@ -1880,7 +1929,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public java.util.List<? extends FieldOrBuilder> getFieldsOrBuilderList() {
+    public java.util.List<? extends com.google.spanner.v1.StructType.FieldOrBuilder>
+        getFieldsOrBuilderList() {
       if (fieldsBuilder_ != null) {
         return fieldsBuilder_.getMessageOrBuilderList();
       } else {
@@ -1901,8 +1951,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Field.Builder addFieldsBuilder() {
-      return getFieldsFieldBuilder().addBuilder(Field.getDefaultInstance());
+    public com.google.spanner.v1.StructType.Field.Builder addFieldsBuilder() {
+      return getFieldsFieldBuilder()
+          .addBuilder(com.google.spanner.v1.StructType.Field.getDefaultInstance());
     }
     /**
      *
@@ -1918,8 +1969,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public Field.Builder addFieldsBuilder(int index) {
-      return getFieldsFieldBuilder().addBuilder(index, Field.getDefaultInstance());
+    public com.google.spanner.v1.StructType.Field.Builder addFieldsBuilder(int index) {
+      return getFieldsFieldBuilder()
+          .addBuilder(index, com.google.spanner.v1.StructType.Field.getDefaultInstance());
     }
     /**
      *
@@ -1935,27 +1987,33 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      *
      * <code>repeated .google.spanner.v1.StructType.Field fields = 1;</code>
      */
-    public java.util.List<Field.Builder> getFieldsBuilderList() {
+    public java.util.List<com.google.spanner.v1.StructType.Field.Builder> getFieldsBuilderList() {
       return getFieldsFieldBuilder().getBuilderList();
     }
 
-    private com.google.protobuf.RepeatedFieldBuilderV3<Field, Field.Builder, FieldOrBuilder>
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.v1.StructType.Field,
+            com.google.spanner.v1.StructType.Field.Builder,
+            com.google.spanner.v1.StructType.FieldOrBuilder>
         getFieldsFieldBuilder() {
       if (fieldsBuilder_ == null) {
         fieldsBuilder_ =
-            new com.google.protobuf.RepeatedFieldBuilderV3<Field, Field.Builder, FieldOrBuilder>(
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.v1.StructType.Field,
+                com.google.spanner.v1.StructType.Field.Builder,
+                com.google.spanner.v1.StructType.FieldOrBuilder>(
                 fields_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
         fields_ = null;
       }
       return fieldsBuilder_;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -1965,19 +2023,19 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.StructType)
-  private static final StructType DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.StructType DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new StructType();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.StructType();
   }
 
-  public static StructType getDefaultInstance() {
+  public static com.google.spanner.v1.StructType getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<StructType> PARSER =
       new com.google.protobuf.AbstractParser<StructType>() {
-        @Override
+        @java.lang.Override
         public StructType parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1990,13 +2048,13 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<StructType> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public StructType getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.StructType getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

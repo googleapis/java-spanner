@@ -48,7 +48,7 @@ public interface MutationOrBuilder
    *
    * @return The insert.
    */
-  Mutation.Write getInsert();
+  com.google.spanner.v1.Mutation.Write getInsert();
   /**
    *
    *
@@ -59,7 +59,7 @@ public interface MutationOrBuilder
    *
    * <code>.google.spanner.v1.Mutation.Write insert = 1;</code>
    */
-  Mutation.WriteOrBuilder getInsertOrBuilder();
+  com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrBuilder();
 
   /**
    *
@@ -86,7 +86,7 @@ public interface MutationOrBuilder
    *
    * @return The update.
    */
-  Mutation.Write getUpdate();
+  com.google.spanner.v1.Mutation.Write getUpdate();
   /**
    *
    *
@@ -97,7 +97,7 @@ public interface MutationOrBuilder
    *
    * <code>.google.spanner.v1.Mutation.Write update = 2;</code>
    */
-  Mutation.WriteOrBuilder getUpdateOrBuilder();
+  com.google.spanner.v1.Mutation.WriteOrBuilder getUpdateOrBuilder();
 
   /**
    *
@@ -132,7 +132,7 @@ public interface MutationOrBuilder
    *
    * @return The insertOrUpdate.
    */
-  Mutation.Write getInsertOrUpdate();
+  com.google.spanner.v1.Mutation.Write getInsertOrUpdate();
   /**
    *
    *
@@ -147,7 +147,7 @@ public interface MutationOrBuilder
    *
    * <code>.google.spanner.v1.Mutation.Write insert_or_update = 3;</code>
    */
-  Mutation.WriteOrBuilder getInsertOrUpdateOrBuilder();
+  com.google.spanner.v1.Mutation.WriteOrBuilder getInsertOrUpdateOrBuilder();
 
   /**
    *
@@ -186,7 +186,7 @@ public interface MutationOrBuilder
    *
    * @return The replace.
    */
-  Mutation.Write getReplace();
+  com.google.spanner.v1.Mutation.Write getReplace();
   /**
    *
    *
@@ -203,7 +203,7 @@ public interface MutationOrBuilder
    *
    * <code>.google.spanner.v1.Mutation.Write replace = 4;</code>
    */
-  Mutation.WriteOrBuilder getReplaceOrBuilder();
+  com.google.spanner.v1.Mutation.WriteOrBuilder getReplaceOrBuilder();
 
   /**
    *
@@ -230,7 +230,7 @@ public interface MutationOrBuilder
    *
    * @return The delete.
    */
-  Mutation.Delete getDelete();
+  com.google.spanner.v1.Mutation.Delete getDelete();
   /**
    *
    *
@@ -241,7 +241,7 @@ public interface MutationOrBuilder
    *
    * <code>.google.spanner.v1.Mutation.Delete delete = 5;</code>
    */
-  Mutation.DeleteOrBuilder getDeleteOrBuilder();
+  com.google.spanner.v1.Mutation.DeleteOrBuilder getDeleteOrBuilder();
 
-  public Mutation.OperationCase getOperationCase();
+  public com.google.spanner.v1.Mutation.OperationCase getOperationCase();
 }

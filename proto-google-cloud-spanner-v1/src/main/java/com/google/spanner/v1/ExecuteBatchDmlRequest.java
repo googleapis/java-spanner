@@ -73,70 +73,70 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             done = true;
             break;
           case 10:
-          {
-            java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            session_ = s;
-            break;
-          }
+              session_ = s;
+              break;
+            }
           case 18:
-          {
-            com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-            if (transaction_ != null) {
-              subBuilder = transaction_.toBuilder();
-            }
-            transaction_ =
-                input.readMessage(
-                    com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(transaction_);
-              transaction_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
+              if (transaction_ != null) {
+                subBuilder = transaction_.toBuilder();
+              }
+              transaction_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(transaction_);
+                transaction_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
+              break;
+            }
           case 26:
-          {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              statements_ =
-                  new java.util.ArrayList<
-                      com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>();
-              mutable_bitField0_ |= 0x00000001;
+            {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                statements_ =
+                    new java.util.ArrayList<
+                        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              statements_.add(
+                  input.readMessage(
+                      com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.parser(),
+                      extensionRegistry));
+              break;
             }
-            statements_.add(
-                input.readMessage(
-                    com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.parser(),
-                    extensionRegistry));
-            break;
-          }
           case 32:
-          {
-            seqno_ = input.readInt64();
-            break;
-          }
+            {
+              seqno_ = input.readInt64();
+              break;
+            }
           case 42:
-          {
-            com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-            if (requestOptions_ != null) {
-              subBuilder = requestOptions_.toBuilder();
-            }
-            requestOptions_ =
-                input.readMessage(
-                    com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(requestOptions_);
-              requestOptions_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+              if (requestOptions_ != null) {
+                subBuilder = requestOptions_.toBuilder();
+              }
+              requestOptions_ =
+                  input.readMessage(
+                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(requestOptions_);
+                requestOptions_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
-          default:
-          {
-            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+              break;
             }
-            break;
-          }
+          default:
+            {
+              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -159,7 +159,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -392,49 +392,49 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
               done = true;
               break;
             case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
+              {
+                java.lang.String s = input.readStringRequireUtf8();
 
-              sql_ = s;
-              break;
-            }
+                sql_ = s;
+                break;
+              }
             case 18:
-            {
-              com.google.protobuf.Struct.Builder subBuilder = null;
-              if (params_ != null) {
-                subBuilder = params_.toBuilder();
-              }
-              params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(params_);
-                params_ = subBuilder.buildPartial();
-              }
+              {
+                com.google.protobuf.Struct.Builder subBuilder = null;
+                if (params_ != null) {
+                  subBuilder = params_.toBuilder();
+                }
+                params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(params_);
+                  params_ = subBuilder.buildPartial();
+                }
 
-              break;
-            }
+                break;
+              }
             case 26:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                paramTypes_ =
-                    com.google.protobuf.MapField.newMapField(
-                        ParamTypesDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
+              {
+                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                  paramTypes_ =
+                      com.google.protobuf.MapField.newMapField(
+                          ParamTypesDefaultEntryHolder.defaultEntry);
+                  mutable_bitField0_ |= 0x00000001;
+                }
+                com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
+                    paramTypes__ =
+                        input.readMessage(
+                            ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
+                            extensionRegistry);
+                paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
+                break;
               }
-              com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
-                  paramTypes__ =
-                  input.readMessage(
-                      ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
-                      extensionRegistry);
-              paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
-              break;
-            }
             default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
               }
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -465,7 +465,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -594,20 +594,20 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     private static final class ParamTypesDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
           defaultEntry =
-          com.google.protobuf.MapEntry
-              .<java.lang.String, com.google.spanner.v1.Type>newDefaultInstance(
-                  com.google.spanner.v1.SpannerProto
-                      .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_ParamTypesEntry_descriptor,
-                  com.google.protobuf.WireFormat.FieldType.STRING,
-                  "",
-                  com.google.protobuf.WireFormat.FieldType.MESSAGE,
-                  com.google.spanner.v1.Type.getDefaultInstance());
+              com.google.protobuf.MapEntry
+                  .<java.lang.String, com.google.spanner.v1.Type>newDefaultInstance(
+                      com.google.spanner.v1.SpannerProto
+                          .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_ParamTypesEntry_descriptor,
+                      com.google.protobuf.WireFormat.FieldType.STRING,
+                      "",
+                      com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                      com.google.spanner.v1.Type.getDefaultInstance());
     }
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type> paramTypes_;
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-    internalGetParamTypes() {
+        internalGetParamTypes() {
       if (paramTypes_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
             ParamTypesDefaultEntryHolder.defaultEntry);
@@ -951,7 +951,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+          internalGetFieldAccessorTable() {
         return com.google.spanner.v1.SpannerProto
             .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1221,9 +1221,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
       private com.google.protobuf.Struct params_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.google.protobuf.Struct,
-          com.google.protobuf.Struct.Builder,
-          com.google.protobuf.StructOrBuilder>
+              com.google.protobuf.Struct,
+              com.google.protobuf.Struct.Builder,
+              com.google.protobuf.StructOrBuilder>
           paramsBuilder_;
       /**
        *
@@ -1445,10 +1445,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <code>.google.protobuf.Struct params = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.google.protobuf.Struct,
-          com.google.protobuf.Struct.Builder,
-          com.google.protobuf.StructOrBuilder>
-      getParamsFieldBuilder() {
+              com.google.protobuf.Struct,
+              com.google.protobuf.Struct.Builder,
+              com.google.protobuf.StructOrBuilder>
+          getParamsFieldBuilder() {
         if (paramsBuilder_ == null) {
           paramsBuilder_ =
               new com.google.protobuf.SingleFieldBuilderV3<
@@ -1465,7 +1465,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           paramTypes_;
 
       private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-      internalGetParamTypes() {
+          internalGetParamTypes() {
         if (paramTypes_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
               ParamTypesDefaultEntryHolder.defaultEntry);
@@ -1474,7 +1474,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
 
       private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
-      internalGetMutableParamTypes() {
+          internalGetMutableParamTypes() {
         onChanged();
         ;
         if (paramTypes_ == null) {
@@ -1854,7 +1854,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>
-  getStatementsList() {
+      getStatementsList() {
     return statements_;
   }
   /**
@@ -1874,7 +1874,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public java.util.List<? extends com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
-  getStatementsOrBuilderList() {
+      getStatementsOrBuilderList() {
     return statements_;
   }
   /**
@@ -2235,7 +2235,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2571,9 +2571,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     private com.google.spanner.v1.TransactionSelector transaction_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.TransactionSelector,
-        com.google.spanner.v1.TransactionSelector.Builder,
-        com.google.spanner.v1.TransactionSelectorOrBuilder>
+            com.google.spanner.v1.TransactionSelector,
+            com.google.spanner.v1.TransactionSelector.Builder,
+            com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
     /**
      *
@@ -2784,10 +2784,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.TransactionSelector,
-        com.google.spanner.v1.TransactionSelector.Builder,
-        com.google.spanner.v1.TransactionSelectorOrBuilder>
-    getTransactionFieldBuilder() {
+            com.google.spanner.v1.TransactionSelector,
+            com.google.spanner.v1.TransactionSelector.Builder,
+            com.google.spanner.v1.TransactionSelectorOrBuilder>
+        getTransactionFieldBuilder() {
       if (transactionBuilder_ == null) {
         transactionBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -2813,9 +2813,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement,
-        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder,
-        com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
+            com.google.spanner.v1.ExecuteBatchDmlRequest.Statement,
+            com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder,
+            com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
         statementsBuilder_;
 
     /**
@@ -2834,7 +2834,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>
-    getStatementsList() {
+        getStatementsList() {
       if (statementsBuilder_ == null) {
         return java.util.Collections.unmodifiableList(statements_);
       } else {
@@ -3184,7 +3184,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public java.util.List<? extends com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
-    getStatementsOrBuilderList() {
+        getStatementsOrBuilderList() {
       if (statementsBuilder_ != null) {
         return statementsBuilder_.getMessageOrBuilderList();
       } else {
@@ -3247,15 +3247,15 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder>
-    getStatementsBuilderList() {
+        getStatementsBuilderList() {
       return getStatementsFieldBuilder().getBuilderList();
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement,
-        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder,
-        com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
-    getStatementsFieldBuilder() {
+            com.google.spanner.v1.ExecuteBatchDmlRequest.Statement,
+            com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder,
+            com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
+        getStatementsFieldBuilder() {
       if (statementsBuilder_ == null) {
         statementsBuilder_ =
             new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -3340,9 +3340,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.RequestOptions,
-        com.google.spanner.v1.RequestOptions.Builder,
-        com.google.spanner.v1.RequestOptionsOrBuilder>
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
     /**
      *
@@ -3507,10 +3507,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>.google.spanner.v1.RequestOptions request_options = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.RequestOptions,
-        com.google.spanner.v1.RequestOptions.Builder,
-        com.google.spanner.v1.RequestOptionsOrBuilder>
-    getRequestOptionsFieldBuilder() {
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        getRequestOptionsFieldBuilder() {
       if (requestOptionsBuilder_ == null) {
         requestOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<

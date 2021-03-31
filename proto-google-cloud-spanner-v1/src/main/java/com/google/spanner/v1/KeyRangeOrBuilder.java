@@ -175,7 +175,7 @@ public interface KeyRangeOrBuilder
    */
   com.google.protobuf.ListValueOrBuilder getEndOpenOrBuilder();
 
-  public KeyRange.StartKeyTypeCase getStartKeyTypeCase();
+  public com.google.spanner.v1.KeyRange.StartKeyTypeCase getStartKeyTypeCase();
 
-  public KeyRange.EndKeyTypeCase getEndKeyTypeCase();
+  public com.google.spanner.v1.KeyRange.EndKeyTypeCase getEndKeyTypeCase();
 }

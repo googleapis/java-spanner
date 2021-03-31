@@ -58,7 +58,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * @return The rowType.
    */
-  StructType getRowType();
+  com.google.spanner.v1.StructType getRowType();
   /**
    *
    *
@@ -74,7 +74,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * <code>.google.spanner.v1.StructType row_type = 1;</code>
    */
-  StructTypeOrBuilder getRowTypeOrBuilder();
+  com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder();
 
   /**
    *
@@ -101,7 +101,7 @@ public interface ResultSetMetadataOrBuilder
    *
    * @return The transaction.
    */
-  Transaction getTransaction();
+  com.google.spanner.v1.Transaction getTransaction();
   /**
    *
    *
@@ -112,5 +112,5 @@ public interface ResultSetMetadataOrBuilder
    *
    * <code>.google.spanner.v1.Transaction transaction = 2;</code>
    */
-  TransactionOrBuilder getTransactionOrBuilder();
+  com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder();
 }

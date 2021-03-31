@@ -46,7 +46,7 @@ public interface ResultSetOrBuilder
    *
    * @return The metadata.
    */
-  ResultSetMetadata getMetadata();
+  com.google.spanner.v1.ResultSetMetadata getMetadata();
   /**
    *
    *
@@ -56,7 +56,7 @@ public interface ResultSetOrBuilder
    *
    * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
    */
-  ResultSetMetadataOrBuilder getMetadataOrBuilder();
+  com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder();
 
   /**
    *
@@ -171,7 +171,7 @@ public interface ResultSetOrBuilder
    *
    * @return The stats.
    */
-  ResultSetStats getStats();
+  com.google.spanner.v1.ResultSetStats getStats();
   /**
    *
    *
@@ -188,5 +188,5 @@ public interface ResultSetOrBuilder
    *
    * <code>.google.spanner.v1.ResultSetStats stats = 3;</code>
    */
-  ResultSetStatsOrBuilder getStatsOrBuilder();
+  com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder();
 }

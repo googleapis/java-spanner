@@ -69,43 +69,43 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             done = true;
             break;
           case 10:
-          {
-            com.google.protobuf.Timestamp.Builder subBuilder = null;
-            if (commitTimestamp_ != null) {
-              subBuilder = commitTimestamp_.toBuilder();
-            }
-            commitTimestamp_ =
-                input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(commitTimestamp_);
-              commitTimestamp_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (commitTimestamp_ != null) {
+                subBuilder = commitTimestamp_.toBuilder();
+              }
+              commitTimestamp_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(commitTimestamp_);
+                commitTimestamp_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
+              break;
+            }
           case 18:
-          {
-            com.google.spanner.v1.CommitResponse.CommitStats.Builder subBuilder = null;
-            if (commitStats_ != null) {
-              subBuilder = commitStats_.toBuilder();
-            }
-            commitStats_ =
-                input.readMessage(
-                    com.google.spanner.v1.CommitResponse.CommitStats.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(commitStats_);
-              commitStats_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.CommitResponse.CommitStats.Builder subBuilder = null;
+              if (commitStats_ != null) {
+                subBuilder = commitStats_.toBuilder();
+              }
+              commitStats_ =
+                  input.readMessage(
+                      com.google.spanner.v1.CommitResponse.CommitStats.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(commitStats_);
+                commitStats_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
-          default:
-          {
-            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+              break;
             }
-            break;
-          }
+          default:
+            {
+              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -125,7 +125,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_CommitResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -208,17 +208,17 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
               done = true;
               break;
             case 8:
-            {
-              mutationCount_ = input.readInt64();
-              break;
-            }
-            default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
+              {
+                mutationCount_ = input.readInt64();
+                break;
               }
-              break;
-            }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -238,7 +238,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_CommitResponse_CommitStats_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -451,7 +451,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+          internalGetFieldAccessorTable() {
         return com.google.spanner.v1.SpannerProto
             .internal_static_google_spanner_v1_CommitResponse_CommitStats_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1011,7 +1011,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_CommitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1170,9 +1170,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.protobuf.Timestamp commitTimestamp_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.protobuf.Timestamp,
-        com.google.protobuf.Timestamp.Builder,
-        com.google.protobuf.TimestampOrBuilder>
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
         commitTimestampBuilder_;
     /**
      *
@@ -1337,10 +1337,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp commit_timestamp = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.protobuf.Timestamp,
-        com.google.protobuf.Timestamp.Builder,
-        com.google.protobuf.TimestampOrBuilder>
-    getCommitTimestampFieldBuilder() {
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getCommitTimestampFieldBuilder() {
       if (commitTimestampBuilder_ == null) {
         commitTimestampBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -1355,9 +1355,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.spanner.v1.CommitResponse.CommitStats commitStats_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.CommitResponse.CommitStats,
-        com.google.spanner.v1.CommitResponse.CommitStats.Builder,
-        com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
+            com.google.spanner.v1.CommitResponse.CommitStats,
+            com.google.spanner.v1.CommitResponse.CommitStats.Builder,
+            com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
         commitStatsBuilder_;
     /**
      *
@@ -1541,10 +1541,10 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.CommitResponse.CommitStats,
-        com.google.spanner.v1.CommitResponse.CommitStats.Builder,
-        com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
-    getCommitStatsFieldBuilder() {
+            com.google.spanner.v1.CommitResponse.CommitStats,
+            com.google.spanner.v1.CommitResponse.CommitStats.Builder,
+            com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder>
+        getCommitStatsFieldBuilder() {
       if (commitStatsBuilder_ == null) {
         commitStatsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<

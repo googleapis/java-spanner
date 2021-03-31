@@ -36,7 +36,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    * @return The session.
    */
-  String getSession();
+  java.lang.String getSession();
   /**
    *
    *
@@ -85,7 +85,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    * @return The transaction.
    */
-  TransactionSelector getTransaction();
+  com.google.spanner.v1.TransactionSelector getTransaction();
   /**
    *
    *
@@ -100,7 +100,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * .google.spanner.v1.TransactionSelector transaction = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
-  TransactionSelectorOrBuilder getTransactionOrBuilder();
+  com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder();
 
   /**
    *
@@ -117,7 +117,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
-  java.util.List<ExecuteBatchDmlRequest.Statement> getStatementsList();
+  java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement> getStatementsList();
   /**
    *
    *
@@ -133,7 +133,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
-  ExecuteBatchDmlRequest.Statement getStatements(int index);
+  com.google.spanner.v1.ExecuteBatchDmlRequest.Statement getStatements(int index);
   /**
    *
    *
@@ -165,7 +165,8 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
-  java.util.List<? extends ExecuteBatchDmlRequest.StatementOrBuilder> getStatementsOrBuilderList();
+  java.util.List<? extends com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>
+      getStatementsOrBuilderList();
   /**
    *
    *
@@ -181,7 +182,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * repeated .google.spanner.v1.ExecuteBatchDmlRequest.Statement statements = 3 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
-  ExecuteBatchDmlRequest.StatementOrBuilder getStatementsOrBuilder(int index);
+  com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder getStatementsOrBuilder(int index);
 
   /**
    *

@@ -192,7 +192,8 @@ public class AbstractReadContextTest {
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR").build(),
                 QueryMode.NORMAL,
-                Options.fromUpdateOptions(Options.tag("tag-1")), false)
+                Options.fromUpdateOptions(Options.tag("tag-1")),
+                false)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("tag-1");
@@ -217,7 +218,8 @@ public class AbstractReadContextTest {
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR").build(),
                 QueryMode.NORMAL,
-                Options.fromUpdateOptions(Options.tag("tag-1")), false)
+                Options.fromUpdateOptions(Options.tag("tag-1")),
+                false)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("tag-1");

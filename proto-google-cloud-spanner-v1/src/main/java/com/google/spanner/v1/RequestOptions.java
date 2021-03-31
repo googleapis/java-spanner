@@ -680,7 +680,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_RequestOptions_fieldAccessorTable
           .ensureFieldAccessorsInitialized(

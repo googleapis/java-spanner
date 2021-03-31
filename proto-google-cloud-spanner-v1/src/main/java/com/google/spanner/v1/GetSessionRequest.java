@@ -41,13 +41,13 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     name_ = "";
   }
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(UnusedPrivateParameter unused) {
+  protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new GetSessionRequest();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
@@ -58,7 +58,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -72,7 +72,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
             break;
           case 10:
             {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               name_ = s;
               break;
@@ -97,17 +97,22 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return SpannerProto.internal_static_google_spanner_v1_GetSessionRequest_descriptor;
+    return com.google.spanner.v1.SpannerProto
+        .internal_static_google_spanner_v1_GetSessionRequest_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    return SpannerProto.internal_static_google_spanner_v1_GetSessionRequest_fieldAccessorTable
-        .ensureFieldAccessorsInitialized(GetSessionRequest.class, Builder.class);
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internalGetFieldAccessorTable() {
+    return com.google.spanner.v1.SpannerProto
+        .internal_static_google_spanner_v1_GetSessionRequest_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            com.google.spanner.v1.GetSessionRequest.class,
+            com.google.spanner.v1.GetSessionRequest.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile Object name_;
+  private volatile java.lang.Object name_;
   /**
    *
    *
@@ -121,14 +126,14 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The name.
    */
-  @Override
-  public String getName() {
-    Object ref = name_;
-    if (ref instanceof String) {
-      return (String) ref;
+  @java.lang.Override
+  public java.lang.String getName() {
+    java.lang.Object ref = name_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
+      java.lang.String s = bs.toStringUtf8();
       name_ = s;
       return s;
     }
@@ -146,11 +151,12 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
    *
    * @return The bytes for name.
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ByteString getNameBytes() {
-    Object ref = name_;
-    if (ref instanceof String) {
-      com.google.protobuf.ByteString b = com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+    java.lang.Object ref = name_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       name_ = b;
       return b;
     } else {
@@ -160,7 +166,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
 
   private byte memoizedIsInitialized = -1;
 
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -170,7 +176,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (!getNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
@@ -178,7 +184,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -192,22 +198,22 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof GetSessionRequest)) {
+    if (!(obj instanceof com.google.spanner.v1.GetSessionRequest)) {
       return super.equals(obj);
     }
-    GetSessionRequest other = (GetSessionRequest) obj;
+    com.google.spanner.v1.GetSessionRequest other = (com.google.spanner.v1.GetSessionRequest) obj;
 
     if (!getName().equals(other.getName())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -221,69 +227,71 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     return hash;
   }
 
-  public static GetSessionRequest parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static GetSessionRequest parseFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static GetSessionRequest parseFrom(com.google.protobuf.ByteString data)
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
+      com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static GetSessionRequest parseFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static GetSessionRequest parseFrom(byte[] data)
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static GetSessionRequest parseFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static GetSessionRequest parseFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(java.io.InputStream input)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static GetSessionRequest parseFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static GetSessionRequest parseDelimitedFrom(java.io.InputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.GetSessionRequest parseDelimitedFrom(
+      java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static GetSessionRequest parseDelimitedFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static GetSessionRequest parseFrom(com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static GetSessionRequest parseFrom(
+  public static com.google.spanner.v1.GetSessionRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -291,7 +299,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
         PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() {
     return newBuilder();
   }
@@ -300,17 +308,17 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(GetSessionRequest prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.GetSessionRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
-  protected Builder newBuilderForType(BuilderParent parent) {
+  @java.lang.Override
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -326,15 +334,20 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
       // @@protoc_insertion_point(builder_implements:google.spanner.v1.GetSessionRequest)
-      GetSessionRequestOrBuilder {
+      com.google.spanner.v1.GetSessionRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return SpannerProto.internal_static_google_spanner_v1_GetSessionRequest_descriptor;
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_GetSessionRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      return SpannerProto.internal_static_google_spanner_v1_GetSessionRequest_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(GetSessionRequest.class, Builder.class);
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_GetSessionRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.google.spanner.v1.GetSessionRequest.class,
+              com.google.spanner.v1.GetSessionRequest.Builder.class);
     }
 
     // Construct using com.google.spanner.v1.GetSessionRequest.newBuilder()
@@ -342,7 +355,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       maybeForceBuilderInitialization();
     }
 
-    private Builder(BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -351,7 +364,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       name_ = "";
@@ -359,77 +372,80 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return SpannerProto.internal_static_google_spanner_v1_GetSessionRequest_descriptor;
+      return com.google.spanner.v1.SpannerProto
+          .internal_static_google_spanner_v1_GetSessionRequest_descriptor;
     }
 
-    @Override
-    public GetSessionRequest getDefaultInstanceForType() {
-      return GetSessionRequest.getDefaultInstance();
+    @java.lang.Override
+    public com.google.spanner.v1.GetSessionRequest getDefaultInstanceForType() {
+      return com.google.spanner.v1.GetSessionRequest.getDefaultInstance();
     }
 
-    @Override
-    public GetSessionRequest build() {
-      GetSessionRequest result = buildPartial();
+    @java.lang.Override
+    public com.google.spanner.v1.GetSessionRequest build() {
+      com.google.spanner.v1.GetSessionRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public GetSessionRequest buildPartial() {
-      GetSessionRequest result = new GetSessionRequest(this);
+    @java.lang.Override
+    public com.google.spanner.v1.GetSessionRequest buildPartial() {
+      com.google.spanner.v1.GetSessionRequest result =
+          new com.google.spanner.v1.GetSessionRequest(this);
       result.name_ = name_;
       onBuilt();
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
 
-    @Override
-    public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.setField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
 
-    @Override
+    @java.lang.Override
     public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
 
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof GetSessionRequest) {
-        return mergeFrom((GetSessionRequest) other);
+      if (other instanceof com.google.spanner.v1.GetSessionRequest) {
+        return mergeFrom((com.google.spanner.v1.GetSessionRequest) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(GetSessionRequest other) {
-      if (other == GetSessionRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.GetSessionRequest other) {
+      if (other == com.google.spanner.v1.GetSessionRequest.getDefaultInstance()) return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
         onChanged();
@@ -439,21 +455,21 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      GetSessionRequest parsedMessage = null;
+      com.google.spanner.v1.GetSessionRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (GetSessionRequest) e.getUnfinishedMessage();
+        parsedMessage = (com.google.spanner.v1.GetSessionRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -463,7 +479,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       return this;
     }
 
-    private Object name_ = "";
+    private java.lang.Object name_ = "";
     /**
      *
      *
@@ -477,15 +493,15 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
      *
      * @return The name.
      */
-    public String getName() {
-      Object ref = name_;
-      if (!(ref instanceof String)) {
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         name_ = s;
         return s;
       } else {
-        return (String) ref;
+        return (java.lang.String) ref;
       }
     }
     /**
@@ -502,10 +518,10 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString getNameBytes() {
-      Object ref = name_;
+      java.lang.Object ref = name_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         name_ = b;
         return b;
       } else {
@@ -526,7 +542,7 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
      * @param value The name to set.
      * @return This builder for chaining.
      */
-    public Builder setName(String value) {
+    public Builder setName(java.lang.String value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -579,12 +595,12 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -594,19 +610,19 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
   }
 
   // @@protoc_insertion_point(class_scope:google.spanner.v1.GetSessionRequest)
-  private static final GetSessionRequest DEFAULT_INSTANCE;
+  private static final com.google.spanner.v1.GetSessionRequest DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new GetSessionRequest();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.GetSessionRequest();
   }
 
-  public static GetSessionRequest getDefaultInstance() {
+  public static com.google.spanner.v1.GetSessionRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<GetSessionRequest> PARSER =
       new com.google.protobuf.AbstractParser<GetSessionRequest>() {
-        @Override
+        @java.lang.Override
         public GetSessionRequest parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -619,13 +635,13 @@ public final class GetSessionRequest extends com.google.protobuf.GeneratedMessag
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<GetSessionRequest> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public GetSessionRequest getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.google.spanner.v1.GetSessionRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

@@ -50,7 +50,7 @@ public interface TransactionSelectorOrBuilder
    *
    * @return The singleUse.
    */
-  TransactionOptions getSingleUse();
+  com.google.spanner.v1.TransactionOptions getSingleUse();
   /**
    *
    *
@@ -62,7 +62,7 @@ public interface TransactionSelectorOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions single_use = 1;</code>
    */
-  TransactionOptionsOrBuilder getSingleUseOrBuilder();
+  com.google.spanner.v1.TransactionOptionsOrBuilder getSingleUseOrBuilder();
 
   /**
    *
@@ -116,7 +116,7 @@ public interface TransactionSelectorOrBuilder
    *
    * @return The begin.
    */
-  TransactionOptions getBegin();
+  com.google.spanner.v1.TransactionOptions getBegin();
   /**
    *
    *
@@ -128,7 +128,7 @@ public interface TransactionSelectorOrBuilder
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
    */
-  TransactionOptionsOrBuilder getBeginOrBuilder();
+  com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder();
 
-  public TransactionSelector.SelectorCase getSelectorCase();
+  public com.google.spanner.v1.TransactionSelector.SelectorCase getSelectorCase();
 }

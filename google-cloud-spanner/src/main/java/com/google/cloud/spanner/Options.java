@@ -215,7 +215,6 @@ public final class Options implements Serializable {
     }
   }
 
-
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;

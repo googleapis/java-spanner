@@ -36,7 +36,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The session.
    */
-  String getSession();
+  java.lang.String getSession();
   /**
    *
    *
@@ -77,7 +77,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The transaction.
    */
-  TransactionSelector getTransaction();
+  com.google.spanner.v1.TransactionSelector getTransaction();
   /**
    *
    *
@@ -88,7 +88,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
    */
-  TransactionSelectorOrBuilder getTransactionOrBuilder();
+  com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder();
 
   /**
    *
@@ -101,7 +101,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The table.
    */
-  String getTable();
+  java.lang.String getTable();
   /**
    *
    *
@@ -128,7 +128,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The index.
    */
-  String getIndex();
+  java.lang.String getIndex();
   /**
    *
    *
@@ -156,7 +156,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return A list containing the columns.
    */
-  java.util.List<String> getColumnsList();
+  java.util.List<java.lang.String> getColumnsList();
   /**
    *
    *
@@ -183,7 +183,7 @@ public interface PartitionReadRequestOrBuilder
    * @param index The index of the element to return.
    * @return The columns at the given index.
    */
-  String getColumns(int index);
+  java.lang.String getColumns(int index);
   /**
    *
    *
@@ -232,7 +232,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The keySet.
    */
-  KeySet getKeySet();
+  com.google.spanner.v1.KeySet getKeySet();
   /**
    *
    *
@@ -247,7 +247,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  KeySetOrBuilder getKeySetOrBuilder();
+  com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder();
 
   /**
    *
@@ -272,7 +272,7 @@ public interface PartitionReadRequestOrBuilder
    *
    * @return The partitionOptions.
    */
-  PartitionOptions getPartitionOptions();
+  com.google.spanner.v1.PartitionOptions getPartitionOptions();
   /**
    *
    *
@@ -282,5 +282,5 @@ public interface PartitionReadRequestOrBuilder
    *
    * <code>.google.spanner.v1.PartitionOptions partition_options = 9;</code>
    */
-  PartitionOptionsOrBuilder getPartitionOptionsOrBuilder();
+  com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder();
 }

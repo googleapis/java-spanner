@@ -34,7 +34,7 @@ public interface SessionOrBuilder
    *
    * @return The name.
    */
-  String getName();
+  java.lang.String getName();
   /**
    *
    *
@@ -79,10 +79,10 @@ public interface SessionOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  boolean containsLabels(String key);
+  boolean containsLabels(java.lang.String key);
   /** Use {@link #getLabelsMap()} instead. */
-  @Deprecated
-  java.util.Map<String, String> getLabels();
+  @java.lang.Deprecated
+  java.util.Map<java.lang.String, java.lang.String> getLabels();
   /**
    *
    *
@@ -98,7 +98,7 @@ public interface SessionOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  java.util.Map<String, String> getLabelsMap();
+  java.util.Map<java.lang.String, java.lang.String> getLabelsMap();
   /**
    *
    *
@@ -114,7 +114,7 @@ public interface SessionOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  String getLabelsOrDefault(String key, String defaultValue);
+  java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue);
   /**
    *
    *
@@ -130,7 +130,7 @@ public interface SessionOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  String getLabelsOrThrow(String key);
+  java.lang.String getLabelsOrThrow(java.lang.String key);
 
   /**
    *

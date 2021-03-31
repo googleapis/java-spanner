@@ -36,7 +36,7 @@ public interface GetSessionRequestOrBuilder
    *
    * @return The name.
    */
-  String getName();
+  java.lang.String getName();
   /**
    *
    *

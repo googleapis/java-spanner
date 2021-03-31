@@ -78,104 +78,104 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             done = true;
             break;
           case 10:
-          {
-            java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            session_ = s;
-            break;
-          }
+              session_ = s;
+              break;
+            }
           case 18:
-          {
-            com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-            if (transaction_ != null) {
-              subBuilder = transaction_.toBuilder();
-            }
-            transaction_ =
-                input.readMessage(
-                    com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(transaction_);
-              transaction_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
+              if (transaction_ != null) {
+                subBuilder = transaction_.toBuilder();
+              }
+              transaction_ =
+                  input.readMessage(
+                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(transaction_);
+                transaction_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
+              break;
+            }
           case 26:
-          {
-            java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            table_ = s;
-            break;
-          }
+              table_ = s;
+              break;
+            }
           case 34:
-          {
-            java.lang.String s = input.readStringRequireUtf8();
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            index_ = s;
-            break;
-          }
+              index_ = s;
+              break;
+            }
           case 42:
-          {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              columns_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000001;
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                columns_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              columns_.add(s);
+              break;
             }
-            columns_.add(s);
-            break;
-          }
           case 50:
-          {
-            com.google.spanner.v1.KeySet.Builder subBuilder = null;
-            if (keySet_ != null) {
-              subBuilder = keySet_.toBuilder();
-            }
-            keySet_ = input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(keySet_);
-              keySet_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.KeySet.Builder subBuilder = null;
+              if (keySet_ != null) {
+                subBuilder = keySet_.toBuilder();
+              }
+              keySet_ = input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(keySet_);
+                keySet_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
+              break;
+            }
           case 64:
-          {
-            limit_ = input.readInt64();
-            break;
-          }
+            {
+              limit_ = input.readInt64();
+              break;
+            }
           case 74:
-          {
-            resumeToken_ = input.readBytes();
-            break;
-          }
+            {
+              resumeToken_ = input.readBytes();
+              break;
+            }
           case 82:
-          {
-            partitionToken_ = input.readBytes();
-            break;
-          }
+            {
+              partitionToken_ = input.readBytes();
+              break;
+            }
           case 90:
-          {
-            com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-            if (requestOptions_ != null) {
-              subBuilder = requestOptions_.toBuilder();
-            }
-            requestOptions_ =
-                input.readMessage(
-                    com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(requestOptions_);
-              requestOptions_ = subBuilder.buildPartial();
-            }
+            {
+              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+              if (requestOptions_ != null) {
+                subBuilder = requestOptions_.toBuilder();
+              }
+              requestOptions_ =
+                  input.readMessage(
+                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(requestOptions_);
+                requestOptions_ = subBuilder.buildPartial();
+              }
 
-            break;
-          }
-          default:
-          {
-            if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+              break;
             }
-            break;
-          }
+          default:
+            {
+              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -198,7 +198,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ReadRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -943,7 +943,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ReadRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1291,9 +1291,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.spanner.v1.TransactionSelector transaction_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.TransactionSelector,
-        com.google.spanner.v1.TransactionSelector.Builder,
-        com.google.spanner.v1.TransactionSelectorOrBuilder>
+            com.google.spanner.v1.TransactionSelector,
+            com.google.spanner.v1.TransactionSelector.Builder,
+            com.google.spanner.v1.TransactionSelectorOrBuilder>
         transactionBuilder_;
     /**
      *
@@ -1468,10 +1468,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.TransactionSelector,
-        com.google.spanner.v1.TransactionSelector.Builder,
-        com.google.spanner.v1.TransactionSelectorOrBuilder>
-    getTransactionFieldBuilder() {
+            com.google.spanner.v1.TransactionSelector,
+            com.google.spanner.v1.TransactionSelector.Builder,
+            com.google.spanner.v1.TransactionSelectorOrBuilder>
+        getTransactionFieldBuilder() {
       if (transactionBuilder_ == null) {
         transactionBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -1885,9 +1885,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.spanner.v1.KeySet keySet_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.KeySet,
-        com.google.spanner.v1.KeySet.Builder,
-        com.google.spanner.v1.KeySetOrBuilder>
+            com.google.spanner.v1.KeySet,
+            com.google.spanner.v1.KeySet.Builder,
+            com.google.spanner.v1.KeySetOrBuilder>
         keySetBuilder_;
     /**
      *
@@ -2127,10 +2127,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.KeySet,
-        com.google.spanner.v1.KeySet.Builder,
-        com.google.spanner.v1.KeySetOrBuilder>
-    getKeySetFieldBuilder() {
+            com.google.spanner.v1.KeySet,
+            com.google.spanner.v1.KeySet.Builder,
+            com.google.spanner.v1.KeySetOrBuilder>
+        getKeySetFieldBuilder() {
       if (keySetBuilder_ == null) {
         keySetBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
@@ -2337,9 +2337,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.RequestOptions,
-        com.google.spanner.v1.RequestOptions.Builder,
-        com.google.spanner.v1.RequestOptionsOrBuilder>
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
         requestOptionsBuilder_;
     /**
      *
@@ -2504,10 +2504,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.v1.RequestOptions,
-        com.google.spanner.v1.RequestOptions.Builder,
-        com.google.spanner.v1.RequestOptionsOrBuilder>
-    getRequestOptionsFieldBuilder() {
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        getRequestOptionsFieldBuilder() {
       if (requestOptionsBuilder_ == null) {
         requestOptionsBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
