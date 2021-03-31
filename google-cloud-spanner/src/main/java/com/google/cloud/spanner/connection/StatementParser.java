@@ -315,6 +315,10 @@ public class StatementParser {
    */
   @InternalApi
   public boolean isUpdateStatement(String sql) {
+    // Skip any query hints at the beginning of the query.
+    if (sql.startsWith("@")) {
+      sql = removeStatementHint(sql);
+    }
     return statementStartsWith(sql, dmlStatements);
   }
 
@@ -459,6 +463,12 @@ public class StatementParser {
     for (String keyword : selectStatements) {
       startQueryIndex = upperCaseSql.indexOf(keyword);
       if (startQueryIndex > -1) break;
+    }
+    if (startQueryIndex <= -1) {
+      for (String keyword : dmlStatements) {
+        startQueryIndex = upperCaseSql.indexOf(keyword);
+        if (startQueryIndex > -1) break;
+      }
     }
     if (startQueryIndex > -1) {
       int endStatementHintIndex = sql.substring(0, startQueryIndex).lastIndexOf('}');
