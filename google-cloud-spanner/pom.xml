@@ -123,7 +123,7 @@
     <dependency>
       <groupId>grpc.gcp.extension</groupId>
       <artifactId>grpc.gcp.extension</artifactId>
-      <version>0.0.1</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>

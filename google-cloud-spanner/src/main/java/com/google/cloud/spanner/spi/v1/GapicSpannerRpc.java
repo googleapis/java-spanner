@@ -365,10 +365,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             // whether the attempt is allowed is totally controlled by service owner.
             .setAttemptDirectPath(true);
     if (options.isUseGrpcGcpExtension() && options.getChannelConfigurator() == null) {
-      // Disables the gax channel pool and uses the channel pool provided by the GCP extension
+      // Disables the gax channel pool and uses the channel pool provided by the gRPC-GCP extension
       // instead.
-      // TODO: may need to update GcpManagedChannelBuilder so that Spanner could specify the channel
-      // pool size using options.getNumChannels().
       InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
       StringBuilder sb = new StringBuilder();
       try {
@@ -384,7 +382,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             @Override
             public ManagedChannelBuilder apply(ManagedChannelBuilder channelBuilder) {
               return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
-                  .withApiConfigJsonString(jsonApiConfig);
+                  .withApiConfigJsonString(jsonApiConfig)
+                  .setPoolSize(options.getNumChannels());
             }
           };
       defaultChannelProviderBuilder =

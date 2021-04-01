@@ -558,7 +558,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
-    this.useGrpcGcpExtension = builder.useGrpcGcpExtension;
+    useGrpcGcpExtension = builder.useGrpcGcpExtension;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
