@@ -19,13 +19,11 @@ package com.google.cloud.spanner.connection;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.UnavailableException;
-import com.google.api.gax.rpc.UnimplementedException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
-import java.io.IOException;
 import org.threeten.bp.Duration;
 
 /**
@@ -95,10 +93,9 @@ class LocalConnectionChecker {
                   emulatorHost);
         }
         throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNAVAILABLE, msg);
-      } catch (UnimplementedException e) {
-        // Ignore, this is probably a local mock server.
-      } catch (IOException e) {
-        // Ignore, this method is not checking whether valid credentials have been set.
+      } catch (Throwable t) {
+        // Ignore, any other exceptions should also be thrown when connecting to the remote
+        // server and should not be treated here.
       }
     }
   }
