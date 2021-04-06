@@ -91,6 +91,7 @@ public class OptionsTest {
     assertThat(options.hasFilter()).isFalse();
     assertThat(options.hasPageToken()).isFalse();
     assertThat(options.hasPriority()).isFalse();
+    assertThat(options.hasTag()).isFalse();
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
@@ -100,15 +101,15 @@ public class OptionsTest {
   }
 
   @Test
-  public void listOptTest() {
+  public void listOptionsTest() {
     int pageSize = 3;
     String pageToken = "ptok";
     String filter = "env";
-    Options opts =
+    Options options =
         Options.fromListOptions(
             Options.pageSize(pageSize), Options.pageToken(pageToken), Options.filter(filter));
 
-    assertThat(opts.toString())
+    assertThat(options.toString())
         .isEqualTo(
             "pageSize: "
                 + Integer.toString(pageSize)
@@ -118,14 +119,14 @@ public class OptionsTest {
                 + filter
                 + " ");
 
-    assertThat(opts.hasPageSize()).isTrue();
-    assertThat(opts.hasPageToken()).isTrue();
-    assertThat(opts.hasFilter()).isTrue();
+    assertThat(options.hasPageSize()).isTrue();
+    assertThat(options.hasPageToken()).isTrue();
+    assertThat(options.hasFilter()).isTrue();
 
-    assertThat(opts.pageSize()).isEqualTo(pageSize);
-    assertThat(opts.pageToken()).isEqualTo(pageToken);
-    assertThat(opts.filter()).isEqualTo(filter);
-    assertThat(opts.hashCode()).isEqualTo(108027089);
+    assertThat(options.pageSize()).isEqualTo(pageSize);
+    assertThat(options.pageToken()).isEqualTo(pageToken);
+    assertThat(options.filter()).isEqualTo(filter);
+    assertThat(options.hashCode()).isEqualTo(108027089);
   }
 
   @Test
@@ -168,12 +169,15 @@ public class OptionsTest {
   }
 
   @Test
-  public void readOptTest() {
+  public void readOptionsTest() {
     int limit = 3;
-    Options opts = Options.fromReadOptions(Options.limit(limit));
+    String tag = "app=spanner,env=test,action=read";
+    Options options = Options.fromReadOptions(Options.limit(limit), Options.tag(tag));
 
-    assertThat(opts.toString()).isEqualTo("limit: " + Integer.toString(limit) + " ");
-    assertThat(opts.hashCode()).isEqualTo(964);
+    assertThat(options.toString())
+        .isEqualTo("limit: " + Integer.toString(limit) + " " + "tag: " + tag + " ");
+    assertThat(options.tag()).isEqualTo(tag);
+    assertThat(options.hashCode()).isEqualTo(-1111478426);
   }
 
   @Test
@@ -198,12 +202,15 @@ public class OptionsTest {
   }
 
   @Test
-  public void queryOptTest() {
+  public void queryOptionsTest() {
     int chunks = 3;
-    Options opts = Options.fromQueryOptions(Options.prefetchChunks(chunks));
-    assertThat(opts.toString()).isEqualTo("prefetchChunks: " + Integer.toString(chunks) + " ");
-    assertThat(opts.prefetchChunks()).isEqualTo(chunks);
-    assertThat(opts.hashCode()).isEqualTo(964);
+    String tag = "app=spanner,env=test,action=query";
+    Options options = Options.fromQueryOptions(Options.prefetchChunks(chunks), Options.tag(tag));
+    assertThat(options.toString())
+        .isEqualTo("prefetchChunks: " + Integer.toString(chunks) + " " + "tag: " + tag + " ");
+    assertThat(options.prefetchChunks()).isEqualTo(chunks);
+    assertThat(options.tag()).isEqualTo(tag);
+    assertThat(options.hashCode()).isEqualTo(-97431824);
   }
 
   @Test
@@ -229,8 +236,8 @@ public class OptionsTest {
 
   @Test
   public void testFromTransactionOptions_toStringNoOptions() {
-    Options opts = Options.fromTransactionOptions();
-    assertThat(opts.toString()).isEqualTo("");
+    Options options = Options.fromTransactionOptions();
+    assertThat(options.toString()).isEqualTo("");
   }
 
   @Test
@@ -485,9 +492,9 @@ public class OptionsTest {
   @Test
   public void testTransactionOptions() {
     RpcPriority prio = RpcPriority.HIGH;
-    Options opts = Options.fromTransactionOptions(Options.priority(prio));
-    assertThat(opts.toString()).isEqualTo("priority: " + prio + " ");
-    assertThat(opts.priority()).isEqualTo(Priority.PRIORITY_HIGH);
+    Options options = Options.fromTransactionOptions(Options.priority(prio));
+    assertThat(options.toString()).isEqualTo("priority: " + prio + " ");
+    assertThat(options.priority()).isEqualTo(Priority.PRIORITY_HIGH);
   }
 
   @Test
@@ -509,5 +516,69 @@ public class OptionsTest {
     assertNotEquals(options1, options4);
     assertNotEquals(options2, options3);
     assertNotEquals(options2, options4);
+  }
+
+  @Test
+  public void updateOptionsTest() {
+    String tag = "app=spanner,env=test";
+    Options options = Options.fromUpdateOptions(Options.tag(tag));
+
+    assertEquals("tag: " + tag + " ", options.toString());
+    assertTrue(options.hasTag());
+    assertThat(options.tag()).isEqualTo(tag);
+    assertThat(options.hashCode()).isEqualTo(-2118248262);
+  }
+
+  @Test
+  public void updateEquality() {
+    Options o1;
+    Options o2;
+    Options o3;
+
+    o1 = Options.fromUpdateOptions();
+    o2 = Options.fromUpdateOptions();
+    assertThat(o1.equals(o2)).isTrue();
+
+    o2 = Options.fromUpdateOptions(Options.tag("app=spanner,env=test"));
+    assertThat(o1.equals(o2)).isFalse();
+    assertThat(o2.equals(o1)).isFalse();
+
+    o3 = Options.fromUpdateOptions(Options.tag("app=spanner,env=test"));
+    assertThat(o2.equals(o3)).isTrue();
+
+    o3 = Options.fromUpdateOptions(Options.tag("app=spanner,env=stage"));
+    assertThat(o2.equals(o3)).isFalse();
+  }
+
+  @Test
+  public void transactionOptionsTest() {
+    String tag = "app=spanner,env=test";
+    Options options = Options.fromTransactionOptions(Options.tag(tag));
+
+    assertEquals("tag: " + tag + " ", options.toString());
+    assertTrue(options.hasTag());
+    assertThat(options.tag()).isEqualTo(tag);
+    assertThat(options.hashCode()).isEqualTo(-2118248262);
+  }
+
+  @Test
+  public void transactionEquality() {
+    Options o1;
+    Options o2;
+    Options o3;
+
+    o1 = Options.fromTransactionOptions();
+    o2 = Options.fromTransactionOptions();
+    assertThat(o1.equals(o2)).isTrue();
+
+    o2 = Options.fromTransactionOptions(Options.tag("app=spanner,env=test"));
+    assertThat(o1.equals(o2)).isFalse();
+    assertThat(o2.equals(o1)).isFalse();
+
+    o3 = Options.fromTransactionOptions(Options.tag("app=spanner,env=test"));
+    assertThat(o2.equals(o3)).isTrue();
+
+    o3 = Options.fromTransactionOptions(Options.tag("app=spanner,env=stage"));
+    assertThat(o2.equals(o3)).isFalse();
   }
 }

@@ -64,6 +64,14 @@ public class AbstractReadContextTest {
     }
   }
 
+  class TestReadContextWithTagBuilder
+      extends AbstractReadContext.Builder<TestReadContextWithTagBuilder, TestReadContextWithTag> {
+    @Override
+    TestReadContextWithTag build() {
+      return new TestReadContextWithTag(this);
+    }
+  }
+
   private final class TestReadContext extends AbstractReadContext {
     TestReadContext(TestReadContextBuilder builder) {
       super(builder);
@@ -72,6 +80,21 @@ public class AbstractReadContextTest {
     @Override
     TransactionSelector getTransactionSelector() {
       return TransactionSelector.getDefaultInstance();
+    }
+  }
+
+  private final class TestReadContextWithTag extends AbstractReadContext {
+    TestReadContextWithTag(TestReadContextWithTagBuilder builder) {
+      super(builder);
+    }
+
+    @Override
+    TransactionSelector getTransactionSelector() {
+      return TransactionSelector.getDefaultInstance();
+    }
+
+    String getTransactionTag() {
+      return "app=spanner,env=test";
     }
   }
 
@@ -161,5 +184,47 @@ public class AbstractReadContextTest {
             Collections.singleton(Statement.of("SELECT * FROM FOO")),
             Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  public void executeSqlRequestBuilderWithRequestOptions() {
+    ExecuteSqlRequest request =
+        context
+            .getExecuteSqlRequestBuilder(
+                Statement.newBuilder("SELECT FOO FROM BAR").build(),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
+                false)
+            .build();
+    assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void executeSqlRequestBuilderWithRequestOptionsWithTxnTag() {
+    SessionImpl session = mock(SessionImpl.class);
+    when(session.getName()).thenReturn("session-1");
+    TestReadContextWithTagBuilder builder = new TestReadContextWithTagBuilder();
+    TestReadContextWithTag contextWithTag =
+        builder
+            .setSession(session)
+            .setRpc(mock(SpannerRpc.class))
+            .setDefaultQueryOptions(defaultQueryOptions)
+            .setExecutorProvider(mock(ExecutorProvider.class))
+            .build();
+
+    ExecuteSqlRequest request =
+        contextWithTag
+            .getExecuteSqlRequestBuilder(
+                Statement.newBuilder("SELECT FOO FROM BAR").build(),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
+                false)
+            .build();
+    assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
   }
 }

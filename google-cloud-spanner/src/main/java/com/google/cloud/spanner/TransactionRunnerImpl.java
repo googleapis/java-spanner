@@ -299,9 +299,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           CommitRequest.newBuilder()
               .setSession(session.getName())
               .setReturnCommitStats(options.withCommitStats());
-      if (options.hasPriority()) {
-        builder.setRequestOptions(
-            RequestOptions.newBuilder().setPriority(options.priority()).build());
+      if (options.hasPriority() || getTransactionTag() != null) {
+        RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+        if (options.hasPriority()) {
+          requestOptionsBuilder.setPriority(options.priority());
+        }
+        if (getTransactionTag() != null) {
+          requestOptionsBuilder.setTransactionTag(getTransactionTag());
+        }
+        builder.setRequestOptions(requestOptionsBuilder.build());
       }
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
@@ -349,9 +355,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             requestBuilder.setTransactionId(
                 transactionId == null ? transactionIdFuture.get() : transactionId);
           }
-          if (options.hasPriority()) {
-            requestBuilder.setRequestOptions(
-                RequestOptions.newBuilder().setPriority(options.priority()).build());
+          if (options.hasPriority() || getTransactionTag() != null) {
+            RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+            if (options.hasPriority()) {
+              requestOptionsBuilder.setPriority(options.priority());
+            }
+            if (getTransactionTag() != null) {
+              requestOptionsBuilder.setTransactionTag(getTransactionTag());
+            }
+            requestBuilder.setRequestOptions(requestOptionsBuilder.build());
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
@@ -529,6 +541,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       }
+    }
+
+    @Nullable
+    String getTransactionTag() {
+      if (this.options.hasTag()) return this.options.tag();
+      return null;
     }
 
     @Override

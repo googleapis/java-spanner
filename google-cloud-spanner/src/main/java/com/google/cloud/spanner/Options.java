@@ -102,6 +102,14 @@ public final class Options implements Serializable {
   }
 
   /**
+   * Specifying this will cause the reads, queries, updates and writes operations statistics
+   * collection to be grouped by tag.
+   */
+  public static ReadQueryUpdateTransactionOption tag(String name) {
+    return new TagOption(name);
+  }
+
+  /**
    * Specifying this will cause the list operations to fetch at most this many records in a page.
    */
   public static ListOption pageSize(int pageSize) {
@@ -194,6 +202,19 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class TagOption extends InternalOption implements ReadQueryUpdateTransactionOption {
+    private final String tag;
+
+    TagOption(String tag) {
+      this.tag = tag;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.tag = tag;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -202,6 +223,7 @@ public final class Options implements Serializable {
   private String pageToken;
   private String filter;
   private RpcPriority priority;
+  private String tag;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -266,6 +288,14 @@ public final class Options implements Serializable {
     return priority == null ? null : priority.proto;
   }
 
+  boolean hasTag() {
+    return tag != null;
+  }
+
+  String tag() {
+    return tag;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -289,6 +319,9 @@ public final class Options implements Serializable {
     }
     if (priority != null) {
       b.append("priority: ").append(priority).append(' ');
+    }
+    if (tag != null) {
+      b.append("tag: ").append(tag).append(' ');
     }
     return b.toString();
   }
@@ -320,7 +353,8 @@ public final class Options implements Serializable {
             || hasPageSize() && that.hasPageSize() && Objects.equals(pageSize(), that.pageSize()))
         && Objects.equals(pageToken(), that.pageToken())
         && Objects.equals(filter(), that.filter())
-        && Objects.equals(priority(), that.priority());
+        && Objects.equals(priority(), that.priority())
+        && Objects.equals(tag(), that.tag());
   }
 
   @Override
@@ -349,6 +383,9 @@ public final class Options implements Serializable {
     }
     if (priority != null) {
       result = 31 * result + priority.hashCode();
+    }
+    if (tag != null) {
+      result = 31 * result + tag.hashCode();
     }
     return result;
   }

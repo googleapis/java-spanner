@@ -181,11 +181,16 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
     builder.setResumeToken(ByteString.EMPTY);
 
-    if (options.hasPriority()) {
-      builder.setRequestOptions(
-          RequestOptions.newBuilder().setPriority(options.priority()).build());
+    if (options.hasPriority() || options.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (options.hasPriority()) {
+        requestOptionsBuilder.setPriority(options.priority());
+      }
+      if (options.hasTag()) {
+        requestOptionsBuilder.setRequestTag(options.tag());
+      }
+      builder.setRequestOptions(requestOptionsBuilder.build());
     }
-
     return builder.build();
   }
 

@@ -173,9 +173,15 @@ class SessionImpl implements Session {
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    if (commitRequestOptions.hasPriority()) {
-      requestBuilder.setRequestOptions(
-          RequestOptions.newBuilder().setPriority(commitRequestOptions.priority()).build());
+    if (commitRequestOptions.hasPriority() || commitRequestOptions.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (commitRequestOptions.hasPriority()) {
+        requestOptionsBuilder.setPriority(commitRequestOptions.priority());
+      }
+      if (commitRequestOptions.hasTag()) {
+        requestOptionsBuilder.setTransactionTag(commitRequestOptions.tag());
+      }
+      requestBuilder.setRequestOptions(requestOptionsBuilder.build());
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {

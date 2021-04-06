@@ -563,6 +563,12 @@ abstract class AbstractReadContext
     if (options.hasPriority()) {
       builder.setPriority(options.priority());
     }
+    if (options.hasTag()) {
+      builder.setRequestTag(options.tag());
+    }
+    if (getTransactionTag() != null) {
+      builder.setTransactionTag(getTransactionTag());
+    }
     return builder.build();
   }
 
@@ -706,6 +712,15 @@ abstract class AbstractReadContext
    */
   @Nullable
   abstract TransactionSelector getTransactionSelector();
+
+  /**
+   * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
+   * {@link AbstractReadContext} does not have a transaction tag.
+   */
+  @Nullable
+  String getTransactionTag() {
+    return null;
+  }
 
   /** This method is called when a statement returned a new transaction as part of its results. */
   @Override

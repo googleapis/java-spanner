@@ -272,6 +272,294 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void writeAtLeastOnceWithTagOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnceWithOptions(
+        Arrays.asList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.tag("app=spanner,env=test"));
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertNotNull(commit.getRequestOptions());
+    assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+    assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testExecuteQueryWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testExecuteReadWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.tag("app=spanner,env=test,action=read"))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=read");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testReadWriteExecuteQueryWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            try (ResultSet resultSet =
+                transaction.executeQuery(
+                    SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
+              while (resultSet.next()) {}
+            }
+            return null;
+          }
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
+  }
+
+  @Test
+  public void testReadWriteExecuteReadWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            try (ResultSet resultSet =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.tag("app=spanner,env=test,action=read"))) {
+              while (resultSet.next()) {}
+            }
+            return null;
+          }
+        });
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=read");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
+  }
+
+  @Test
+  public void testExecuteUpdateWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        new TransactionCallable<Long>() {
+          @Override
+          public Long run(TransactionContext transaction) throws Exception {
+            return transaction.executeUpdate(
+                UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=update"));
+          }
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=update");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testBatchUpdateWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
+    runner.run(
+        new TransactionCallable<long[]>() {
+          @Override
+          public long[] run(TransactionContext transaction) throws Exception {
+            return transaction.batchUpdate(
+                Arrays.asList(UPDATE_STATEMENT), Options.tag("app=spanner,env=test,action=batch"));
+          }
+        });
+
+    List<ExecuteBatchDmlRequest> requests =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteBatchDmlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=batch");
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=txn");
+  }
+
+  @Test
+  public void testPartitionedDMLWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.executePartitionedUpdate(
+        UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=dml"));
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=dml");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testCommitWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.tag("app=spanner,env=test,action=commit"));
+    runner.run(
+        new TransactionCallable<Void>() {
+          @Override
+          public Void run(TransactionContext transaction) throws Exception {
+            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+            return null;
+          }
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=commit");
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionManager manager =
+        client.transactionManager(Options.tag("app=spanner,env=test,action=manager"));
+    TransactionContext transaction = manager.begin();
+    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+    manager.commit();
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=manager");
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.tag("app=spanner,env=test,action=runner"));
+    get(
+        runner.runAsync(
+            new AsyncWork<Void>() {
+              @Override
+              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
+                txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                return ApiFutures.immediateFuture(null);
+              }
+            },
+            executor));
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=runner");
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithTag() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.tag("app=spanner,env=test,action=manager"))) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  new AsyncTransactionFunction<Void, Void>() {
+                    @Override
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
+                        throws Exception {
+                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                      return ApiFutures.immediateFuture(null);
+                    }
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertThat(request.getRequestOptions().getTransactionTag())
+        .isEqualTo("app=spanner,env=test,action=manager");
+  }
+
+  @Test
   public void singleUse() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
