@@ -77,8 +77,11 @@ public class LocalConnectionCheckerTest {
 
   @Test
   public void testNoRunningEmulator() {
+    final int port = server.getPort() - 1;
     final String uri =
-        "cloudspanner://localhost:42424/projects/proj/instances/inst/databases/db?usePlainText=true";
+        String.format(
+            "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?usePlainText=true",
+            port);
     final ConnectionOptions connectionOptions = ConnectionOptions.newBuilder().setUri(uri).build();
 
     try {
@@ -88,7 +91,9 @@ public class LocalConnectionCheckerTest {
       assertEquals(
           "UNAVAILABLE: The connection string '"
               + uri
-              + "' contains host 'localhost:42424', but no running emulator or other server could be found at that address.\n"
+              + "' contains host 'localhost:"
+              + port
+              + "', but no running emulator or other server could be found at that address.\n"
               + "Please check the connection string and/or that the emulator is running.",
           e.getMessage());
     }
