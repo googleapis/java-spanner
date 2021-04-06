@@ -24,6 +24,7 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collections;
 import java.util.Objects;
@@ -315,6 +316,10 @@ public class StatementParser {
    */
   @InternalApi
   public boolean isUpdateStatement(String sql) {
+    // Skip any query hints at the beginning of the query.
+    if (sql.startsWith("@")) {
+      sql = removeStatementHint(sql);
+    }
     return statementStartsWith(sql, dmlStatements);
   }
 
@@ -453,12 +458,16 @@ public class StatementParser {
     // searching for the first occurrence of a keyword that should be preceded by a closing curly
     // brace at the end of the statement hint.
     int startStatementHintIndex = sql.indexOf('{');
-    // Statement hints are only allowed for queries.
+    // Statement hints are allowed for both queries and DML statements.
     int startQueryIndex = -1;
     String upperCaseSql = sql.toUpperCase();
-    for (String keyword : selectStatements) {
+    Set<String> selectAndDmlStatements =
+        Sets.union(selectStatements, dmlStatements).immutableCopy();
+    for (String keyword : selectAndDmlStatements) {
       startQueryIndex = upperCaseSql.indexOf(keyword);
-      if (startQueryIndex > -1) break;
+      if (startQueryIndex > -1) {
+        break;
+      }
     }
     if (startQueryIndex > -1) {
       int endStatementHintIndex = sql.substring(0, startQueryIndex).lastIndexOf('}');
