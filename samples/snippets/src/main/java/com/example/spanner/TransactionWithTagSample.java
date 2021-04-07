@@ -53,7 +53,7 @@ public class TransactionWithTagSample {
     String sql =
         "SELECT t.REQUEST_TAG, t.AVG_LATENCY_SECONDS, t.AVG_CPU_SECONDS "
             + "FROM SPANNER_SYS.QUERY_STATS_TOP_MINUTE";
-    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(Statement.of(sql)) {
+    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(Statement.of(sql))) {
       while (resultSet.next()) {
         System.out.printf(
             "%s %d %d\n", resultSet.getString(0), resultSet.getLong(1), resultSet.getLong(2));
