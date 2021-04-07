@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.2.0](https://www.github.com/googleapis/java-spanner/compare/v6.1.0...v6.2.0) (2021-04-07)
+
+
+### Features
+
+* add support for tagging ([#576](https://www.github.com/googleapis/java-spanner/issues/576)) ([2a9086f](https://www.github.com/googleapis/java-spanner/commit/2a9086fcc7e8caae55f71bf5616b2d0db18681d3))
+* Support query hints for DML statements ([#1030](https://www.github.com/googleapis/java-spanner/issues/1030)) ([6a58433](https://www.github.com/googleapis/java-spanner/commit/6a58433919d9f69e91639a1b52cbbc1151ca6804))
+
+
+### Bug Fixes
+
+* local connection checker ignores exceptions ([#1036](https://www.github.com/googleapis/java-spanner/issues/1036)) ([2d61bc4](https://www.github.com/googleapis/java-spanner/commit/2d61bc410b7c680169129725bcc11069c2390505))
+
 ## [6.1.0](https://www.github.com/googleapis/java-spanner/compare/v6.0.0...v6.1.0) (2021-03-31)
 
 
