@@ -52,7 +52,7 @@ public class TransactionWithTagSample {
     // see: https://cloud.google.com/spanner/docs/introspection/query-statistics, for more details.
     String sql =
         "SELECT t.REQUEST_TAG, t.AVG_LATENCY_SECONDS, t.AVG_CPU_SECONDS "
-            + "FROM SPANNER_SYS.QUERY_STATS_TOP_HOUR";
+            + "FROM SPANNER_SYS.QUERY_STATS_TOP_MINUTE";
     try (ResultSet resultSet = databaseClient.singleUse().executeQuery(Statement.of(sql)) {
       while (resultSet.next()) {
         System.out.printf(
