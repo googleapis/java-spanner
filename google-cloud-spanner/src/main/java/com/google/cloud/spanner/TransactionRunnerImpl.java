@@ -43,6 +43,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
@@ -298,6 +299,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           CommitRequest.newBuilder()
               .setSession(session.getName())
               .setReturnCommitStats(options.withCommitStats());
+      if (options.hasPriority() || getTransactionTag() != null) {
+        RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+        if (options.hasPriority()) {
+          requestOptionsBuilder.setPriority(options.priority());
+        }
+        if (getTransactionTag() != null) {
+          requestOptionsBuilder.setTransactionTag(getTransactionTag());
+        }
+        builder.setRequestOptions(requestOptionsBuilder.build());
+      }
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
@@ -343,6 +354,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           } else {
             requestBuilder.setTransactionId(
                 transactionId == null ? transactionIdFuture.get() : transactionId);
+          }
+          if (options.hasPriority() || getTransactionTag() != null) {
+            RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+            if (options.hasPriority()) {
+              requestOptionsBuilder.setPriority(options.priority());
+            }
+            if (getTransactionTag() != null) {
+              requestOptionsBuilder.setTransactionTag(getTransactionTag());
+            }
+            requestBuilder.setRequestOptions(requestOptionsBuilder.build());
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
@@ -520,6 +541,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       }
+    }
+
+    @Nullable
+    String getTransactionTag() {
+      if (this.options.hasTag()) return this.options.tag();
+      return null;
     }
 
     @Override

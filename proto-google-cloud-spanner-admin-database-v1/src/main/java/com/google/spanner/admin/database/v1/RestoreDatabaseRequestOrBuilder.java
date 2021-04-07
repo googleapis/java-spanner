@@ -140,7 +140,7 @@ public interface RestoreDatabaseRequestOrBuilder
    * to. If this field is not specified, the restored database will use the same
    * encryption configuration as the backup by default, namely
    * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_DATABASE_ENCRYPTION`.
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -159,7 +159,7 @@ public interface RestoreDatabaseRequestOrBuilder
    * to. If this field is not specified, the restored database will use the same
    * encryption configuration as the backup by default, namely
    * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_DATABASE_ENCRYPTION`.
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -178,7 +178,7 @@ public interface RestoreDatabaseRequestOrBuilder
    * to. If this field is not specified, the restored database will use the same
    * encryption configuration as the backup by default, namely
    * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_DATABASE_ENCRYPTION`.
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>

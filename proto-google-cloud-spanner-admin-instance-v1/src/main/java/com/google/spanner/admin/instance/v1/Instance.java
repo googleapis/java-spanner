@@ -538,7 +538,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The enum numeric value on the wire for state.
    */
@@ -557,7 +559,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The state.
    */
@@ -1684,7 +1688,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The enum numeric value on the wire for state.
      */
@@ -1703,7 +1709,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
@@ -1725,7 +1733,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The state.
      */
@@ -1749,7 +1759,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The state to set.
      * @return This builder for chaining.
@@ -1774,7 +1786,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return This builder for chaining.
      */

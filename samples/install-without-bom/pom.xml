@@ -14,7 +14,7 @@
   <parent>
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
-    <version>1.0.21</version>
+    <version>1.0.22</version>
   </parent>
 
   <properties>
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.0.0</version>
+      <version>6.1.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -143,6 +143,9 @@
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>spanner-testing</spanner.test.instance>
+            <spanner.test.key.location>us-central1</spanner.test.key.location>
+            <spanner.test.key.ring>spanner-test-keyring</spanner.test.key.ring>
+            <spanner.test.key.name>spanner-test-key</spanner.test.key.name>
             <spanner.sample.database>mysample</spanner.sample.database>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>

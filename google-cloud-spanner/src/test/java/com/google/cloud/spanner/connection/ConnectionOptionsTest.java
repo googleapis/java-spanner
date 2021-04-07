@@ -24,6 +24,8 @@ import static org.junit.Assert.fail;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
 import org.junit.Test;
@@ -475,5 +477,35 @@ public class ConnectionOptionsTest {
             .build();
     assertThat(options.getMaxSessions()).isEqualTo(4000);
     assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
+
+  @Test
+  public void testLocalConnectionError() {
+    String uri =
+        "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    try (Connection connection = options.getConnection()) {
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
+      assertThat(e.getMessage())
+          .contains(
+              String.format(
+                  "The connection string '%s' contains host 'localhost:1', but no running", uri));
+    }
+  }
+
+  @Test
+  public void testInvalidCredentials() {
+    String uri =
+        "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=/some/non/existing/path";
+    try {
+      ConnectionOptions.newBuilder().setUri(uri).build();
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertThat(e.getMessage())
+          .contains("Invalid credentials path specified: /some/non/existing/path");
+    }
   }
 }
