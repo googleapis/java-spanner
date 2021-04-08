@@ -122,7 +122,7 @@
 
     <dependency>
       <groupId>grpc.gcp.extension</groupId>
-      <artifactId>grpc.gcp.extension</artifactId>
+      <artifactId>grpc-gcp-extension</artifactId>
       <version>1.0.0</version>
     </dependency>
     <dependency>
