@@ -245,7 +245,7 @@ public class ITBackupTest {
                 .build()));
 
     // Verifies that the database encryption has been properly set
-    testDatabaseEncryption(db1, keyName);
+    testDatabaseEncryption(db1);
 
     // Create two backups in parallel.
     String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
@@ -314,7 +314,7 @@ public class ITBackupTest {
     // Verifies that backup version time is the specified one
     testBackupVersionTime(backup1, versionTime);
     // Verifies that backup encryption has been properly set
-    testBackupEncryption(backup1, keyName);
+    testBackupEncryption(backup1);
 
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
@@ -374,7 +374,7 @@ public class ITBackupTest {
     testGetBackup(db2, backupId2, expireTime);
     testUpdateBackup(backup1);
     testCreateInvalidExpirationDate(db1);
-    testRestore(backup1, versionTime, keyName);
+    testRestore(backup1, op1, versionTime);
 
     testDelete(backupId2);
     testCancelBackupOperation(db1);
@@ -447,17 +447,17 @@ public class ITBackupTest {
     logger.info("Done verifying backup version time for " + backup.getId());
   }
 
-  private void testDatabaseEncryption(Database database, String expectedKey) {
+  private void testDatabaseEncryption(Database database) {
     logger.info("Verifying database encryption for " + database.getId());
     assertThat(database.getEncryptionConfig()).isNotNull();
-    assertThat(database.getEncryptionConfig().getKmsKeyName()).isEqualTo(expectedKey);
+    assertThat(database.getEncryptionConfig().getKmsKeyName()).isEqualTo(keyName);
     logger.info("Done verifying database encryption for " + database.getId());
   }
 
-  private void testBackupEncryption(Backup backup, String expectedKey) {
+  private void testBackupEncryption(Backup backup) {
     logger.info("Verifying backup encryption for " + backup.getId());
     assertThat(backup.getEncryptionInfo()).isNotNull();
-    assertThat(backup.getEncryptionInfo().getKmsKeyVersion()).contains(expectedKey);
+    assertThat(backup.getEncryptionInfo().getKmsKeyVersion()).isNotNull();
     logger.info("Done verifying backup encryption for " + backup.getId());
   }
 
@@ -620,7 +620,8 @@ public class ITBackupTest {
     logger.info("Finished delete tests");
   }
 
-  private void testRestore(Backup backup, Timestamp versionTime, String expectedKey)
+  private void testRestore(
+      Backup backup, OperationFuture<Backup, CreateBackupMetadata> backupOp, Timestamp versionTime)
       throws InterruptedException, ExecutionException {
     // Restore the backup to a new database.
     String restoredDb = testHelper.getUniqueDatabaseId();
@@ -635,7 +636,7 @@ public class ITBackupTest {
         final Restore restore =
             dbAdminClient
                 .newRestoreBuilder(backup.getId(), DatabaseId.of(projectId, instanceId, restoredDb))
-                .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(expectedKey))
+                .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
                 .build();
         restoreOperation = dbAdminClient.restoreDatabase(restore);
         restoreOperationName = restoreOperation.getName();
@@ -686,7 +687,7 @@ public class ITBackupTest {
             Timestamp.fromProto(
                 reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()))
         .isEqualTo(versionTime);
-    testDatabaseEncryption(reloadedDatabase, expectedKey);
+    testDatabaseEncryption(reloadedDatabase);
 
     // Restoring the backup to an existing database should fail.
     try {
