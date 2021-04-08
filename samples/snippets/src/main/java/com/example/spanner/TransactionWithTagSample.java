@@ -23,23 +23,39 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 
-/** Sample showing how to add and query tags to Cloud Spanner operations. */
+/**
+ * Sample showing how to add and query tags to Cloud Spanner operations.
+ */
 public class TransactionWithTagSample {
 
   // [START spanner_set_transaction_and_request_tags]
   static void taggedTransaction(DatabaseClient databaseClient) {
+    // The request below would have transaction_tag set as "app=spanner,env=test".
     databaseClient
         .readWriteTransaction(Options.tag("app=spanner,env=test"))
         .run(
             new TransactionCallable<Void>() {
               @Override
               public Void run(TransactionContext transaction) throws Exception {
-                String sql =
-                    "INSERT Singers (SingerId, FirstName, LastName)\n"
-                        + "VALUES (20, 'George', 'Washington')";
-                long rowCount = transaction.executeUpdate(Statement.of(sql),
-                    Options.tag("app=spanner,env=test,action=update"));
-                System.out.printf("%d record inserted.%n", rowCount);
+                // The request below would have request_tag set as
+                // "app=spanner,env=test,action=select".
+                ResultSet queryResultSet = transaction
+                    .executeQuery(
+                        Statement.of("SELECT SingerId, FirstName, LastName FROM " + table),
+                        Options.tag("app=spanner,env=test,action=select"));
+                while (queryResultSet.next()) {
+                  System.out.printf(
+                      "%d %s %s\n",
+                      queryResultSet.getLong(0), queryResultSet.getString(1),
+                      queryResultSet.getString(2));
+                }
+
+                transaction
+                    .buffer(Mutation.newInsertOrUpdateBuilder("Singers")
+                        .set("SingerId").to(100)
+                        .set("FirstName").to("George")
+                        .set("LastName").to("Washington")
+                        .build());
                 return null;
               }
             });
