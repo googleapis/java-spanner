@@ -8,6 +8,9 @@ Java idiomatic client for [Cloud Spanner][product-docs].
 - [Product Documentation][product-docs]
 - [Client Library Documentation][javadocs]
 
+
+
+
 ## Quickstart
 
 If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
@@ -38,7 +41,7 @@ If you are using Maven without BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.0.0</version>
+  <version>6.2.0</version>
 </dependency>
 
 ```
@@ -51,12 +54,12 @@ compile 'com.google.cloud:google-cloud-spanner'
 ```
 If you are using Gradle without BOM, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:google-cloud-spanner:6.1.0'
+compile 'com.google.cloud:google-cloud-spanner:6.2.0'
 ```
 
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.1.0"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.2.0"
 ```
 
 ## Authentication
