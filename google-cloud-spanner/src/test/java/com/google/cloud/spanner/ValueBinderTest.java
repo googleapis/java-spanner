@@ -110,6 +110,10 @@ public class ValueBinderTest {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
           Value expected = (Value) method.invoke(Value.class, (Object) null);
+          // Special case for json as it maps to ValueBinder.to(String)
+          if (method.getName().toLowerCase().equals("json")) {
+            expected = Value.string(null);
+          }
           assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
 
@@ -118,6 +122,11 @@ public class ValueBinderTest {
         }        // Test unary non-null.
         Object defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
         Value expected = (Value) method.invoke(Value.class, defaultObject);
+        // Special case for json as it maps to ValueBinder.to(String)
+        if (method.getName().toLowerCase().equals("json")) {
+          defaultObject = DefaultValues.defaultJson();
+          expected = Value.string(defaultObject.toString());
+        }
         assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
 
