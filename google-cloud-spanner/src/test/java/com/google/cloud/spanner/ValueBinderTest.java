@@ -115,8 +115,7 @@ public class ValueBinderTest {
 
           assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
-        }
-        // Test unary non-null.
+        }        // Test unary non-null.
         Object defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
         Value expected = (Value) method.invoke(Value.class, defaultObject);
         assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
@@ -193,8 +192,8 @@ public class ValueBinderTest {
       return "x";
     }
 
-    public static Json defaultJson() {
-      return new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    public static String defaultJson() {
+      return "{\"color\":\"red\",\"value\":\"#f00\"}";
     }
 
     public static ByteArray defaultByteArray() {
@@ -241,9 +240,8 @@ public class ValueBinderTest {
       return Arrays.asList("a", "b");
     }
 
-    public static Iterable<Json> defaultJsonIterable() {
-      return Arrays.asList(
-          new Json("{}"), new Json("[]"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    public static Iterable<String> defaultJsonIterable() {
+      return Arrays.asList("{}", "[]", "{\"color\":\"red\",\"value\":\"#f00\"}");
     }
 
     public static Iterable<ByteArray> defaultByteArrayIterable() {

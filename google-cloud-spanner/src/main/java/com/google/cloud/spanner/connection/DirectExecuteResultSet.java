@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -197,13 +196,13 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public Json getJson(int columnIndex) {
+  public String getJson(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getJson(columnIndex);
   }
 
   @Override
-  public Json getJson(String columnName) {
+  public String getJson(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getJson(columnName);
   }
@@ -341,13 +340,13 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public List<Json> getJsonList(int columnIndex) {
+  public List<String> getJsonList(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getJsonList(columnIndex);
   }
 
   @Override
-  public List<Json> getJsonList(String columnName) {
+  public List<String> getJsonList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getJsonList(columnName);
   }

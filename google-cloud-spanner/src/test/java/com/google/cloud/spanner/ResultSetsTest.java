@@ -51,7 +51,7 @@ public class ResultSetsTest {
     double doubleVal = 1.2;
     BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
-    Json jsonVal = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    String jsonVal = "{\"color\":\"red\",\"value\":\"#f00\"}";
     String byteVal = "101";
     long usecs = 32343;
     int year = 2018;
@@ -79,8 +79,7 @@ public class ResultSetsTest {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
     String[] stringArray = {"abc", "def", "ghi"};
-    Json[] jsonArray = {
-      new Json("{}"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"), new Json("[]")
+    String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"
     };
 
     Type type =

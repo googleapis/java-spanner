@@ -268,7 +268,7 @@ public class ValueTest {
 
   @Test
   public void numericPrecisionAndScale() {
-    for (long s : new long[] {1L, -1L}) {
+    for (long s : new long[]{1L, -1L}) {
       BigDecimal sign = new BigDecimal(s);
       assertThat(Value.numeric(new BigDecimal(Strings.repeat("9", 29)).multiply(sign)).toString())
           .isEqualTo((s == -1L ? "-" : "") + Strings.repeat("9", 29));
@@ -395,7 +395,7 @@ public class ValueTest {
 
   @Test
   public void json() {
-    Json json = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
     Value v = Value.json(json);
     assertThat(v.getType()).isEqualTo(Type.json());
     assertThat(v.isNull()).isFalse();
@@ -418,32 +418,28 @@ public class ValueTest {
 
   @Test
   public void jsonEmpty() {
-    Json json = new Json("{}");
+    String json = "{}";
     Value v = Value.json(json);
     assertThat(v.getJson()).isEqualTo(json);
   }
 
   @Test
   public void jsonWithEmptyArray() {
-    Json json = new Json("[]");
+    String json = "[]";
     Value v = Value.json(json);
     assertThat(v.getJson()).isEqualTo(json);
   }
 
   @Test
   public void jsonWithArray() {
-    Json json =
-        new Json(
-            "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]");
+    String json = "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]";
     Value v = Value.json(json);
     assertThat(v.getJson()).isEqualTo(json);
   }
 
   @Test
   public void jsonNested() {
-    Json json =
-        new Json(
-            "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]");
+    String json = "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
     Value v = Value.json(json);
     assertThat(v.getJson()).isEqualTo(json);
   }
@@ -460,7 +456,7 @@ public class ValueTest {
 
   @Test
   public void bytesUnprintable() {
-    ByteArray bytes = ByteArray.copyFrom(new byte[] {'a', 0, 15, -1, 'e'});
+    ByteArray bytes = ByteArray.copyFrom(new byte[]{'a', 0, 15, -1, 'e'});
     Value v = Value.bytes(bytes);
     assertThat(v.getBytes()).isSameInstanceAs(bytes);
     assertThat(v.toString()).isEqualTo(bytes.toString());
@@ -554,7 +550,7 @@ public class ValueTest {
 
   @Test
   public void boolArray() {
-    Value v = Value.boolArray(new boolean[] {true, false});
+    Value v = Value.boolArray(new boolean[]{true, false});
     assertThat(v.isNull()).isFalse();
     assertThat(v.getBoolArray()).containsExactly(true, false).inOrder();
     assertThat(v.toString()).isEqualTo("[true,false]");
@@ -562,7 +558,7 @@ public class ValueTest {
 
   @Test
   public void boolArrayRange() {
-    Value v = Value.boolArray(new boolean[] {true, false, false, true, false}, 1, 3);
+    Value v = Value.boolArray(new boolean[]{true, false, false, true, false}, 1, 3);
     assertThat(v.isNull()).isFalse();
     assertThat(v.getBoolArray()).containsExactly(false, false, true).inOrder();
     assertThat(v.toString()).isEqualTo("[false,false,true]");
@@ -632,7 +628,7 @@ public class ValueTest {
 
   @Test
   public void int64Array() {
-    Value v = Value.int64Array(new long[] {1, 2});
+    Value v = Value.int64Array(new long[]{1, 2});
     assertThat(v.isNull()).isFalse();
     assertThat(v.getInt64Array()).containsExactly(1L, 2L).inOrder();
     assertThat(v.toString()).isEqualTo("[1,2]");
@@ -640,7 +636,7 @@ public class ValueTest {
 
   @Test
   public void int64ArrayRange() {
-    Value v = Value.int64Array(new long[] {1, 2, 3, 4, 5}, 1, 3);
+    Value v = Value.int64Array(new long[]{1, 2, 3, 4, 5}, 1, 3);
     assertThat(v.isNull()).isFalse();
     assertThat(v.getInt64Array()).containsExactly(2L, 3L, 4L).inOrder();
     assertThat(v.toString()).isEqualTo("[2,3,4]");
@@ -704,7 +700,7 @@ public class ValueTest {
 
   @Test
   public void float64Array() {
-    Value v = Value.float64Array(new double[] {.1, .2});
+    Value v = Value.float64Array(new double[]{.1, .2});
     assertThat(v.isNull()).isFalse();
     assertThat(v.getFloat64Array()).containsExactly(.1d, .2d).inOrder();
     assertThat(v.toString()).isEqualTo("[0.1,0.2]");
@@ -712,7 +708,7 @@ public class ValueTest {
 
   @Test
   public void float64ArrayRange() {
-    Value v = Value.float64Array(new double[] {.1, .2, .3, .4, .5}, 1, 3);
+    Value v = Value.float64Array(new double[]{.1, .2, .3, .4, .5}, 1, 3);
     assertThat(v.isNull()).isFalse();
     assertThat(v.getFloat64Array()).containsExactly(.2d, .3d, .4d).inOrder();
     assertThat(v.toString()).isEqualTo("[0.2,0.3,0.4]");
@@ -834,9 +830,9 @@ public class ValueTest {
 
   @Test
   public void jsonArray() {
-    Json one = new Json("{}");
-    Json two = null;
-    Json three = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    String one = "{}";
+    String two = null;
+    String three = "{\"color\":\"red\",\"value\":\"#f00\"}";
     Value v = Value.jsonArray(Arrays.asList(one, two, three));
     assertThat(v.isNull()).isFalse();
     assertThat(v.getJsonArray()).containsExactly(one, two, three).inOrder();
@@ -858,7 +854,7 @@ public class ValueTest {
 
   @Test
   public void jsonArrayTryGetBytesArray() {
-    Value value = Value.jsonArray(Arrays.asList(new Json("{}")));
+    Value value = Value.jsonArray(Arrays.asList("{}"));
     try {
       value.getBytesArray();
       fail("Expected exception");
@@ -869,7 +865,7 @@ public class ValueTest {
 
   @Test
   public void jsonArrayTryGetStringArray() {
-    Value value = Value.jsonArray(Arrays.asList(new Json("{}")));
+    Value value = Value.jsonArray(Arrays.asList("{}"));
     try {
       value.getStringArray();
       fail("Expected exception");
@@ -1128,8 +1124,8 @@ public class ValueTest {
   @Test
   public void testEqualsHashCode() {
     EqualsTester tester = new EqualsTester();
-    Json emptyJson = new Json("{}");
-    Json simpleJson = new Json("{\"color\":\"red\",\"value\":\"#f00\"}");
+    String emptyJson = "{}";
+    String simpleJson = "{\"color\":\"red\",\"value\":\"#f00\"}";
 
     tester.addEqualityGroup(Value.bool(true), Value.bool(Boolean.TRUE));
     tester.addEqualityGroup(Value.bool(false));
@@ -1153,8 +1149,8 @@ public class ValueTest {
     tester.addEqualityGroup(Value.string(null));
 
     tester.addEqualityGroup(Value.json(simpleJson), Value.json(simpleJson));
-    tester.addEqualityGroup(Value.json(new Json("{}")));
-    tester.addEqualityGroup(Value.json(new Json("[]")));
+    tester.addEqualityGroup(Value.json("{}"));
+    tester.addEqualityGroup(Value.json("[]"));
     tester.addEqualityGroup(Value.json(null));
 
     tester.addEqualityGroup(Value.bytes(newByteArray("abc")), Value.bytes(newByteArray("abc")));
@@ -1186,24 +1182,24 @@ public class ValueTest {
 
     tester.addEqualityGroup(
         Value.boolArray(Arrays.asList(false, true)),
-        Value.boolArray(new boolean[] {false, true}),
-        Value.boolArray(new boolean[] {true, false, true, false}, 1, 2),
+        Value.boolArray(new boolean[]{false, true}),
+        Value.boolArray(new boolean[]{true, false, true, false}, 1, 2),
         Value.boolArray(plainIterable(false, true)));
     tester.addEqualityGroup(Value.boolArray(Arrays.asList(false)));
     tester.addEqualityGroup(Value.boolArray((Iterable<Boolean>) null));
 
     tester.addEqualityGroup(
         Value.int64Array(Arrays.asList(1L, 2L)),
-        Value.int64Array(new long[] {1L, 2L}),
-        Value.int64Array(new long[] {0L, 1L, 2L, 3L}, 1, 2),
+        Value.int64Array(new long[]{1L, 2L}),
+        Value.int64Array(new long[]{0L, 1L, 2L, 3L}, 1, 2),
         Value.int64Array(plainIterable(1L, 2L)));
     tester.addEqualityGroup(Value.int64Array(Arrays.asList(3L)));
     tester.addEqualityGroup(Value.int64Array((Iterable<Long>) null));
 
     tester.addEqualityGroup(
         Value.float64Array(Arrays.asList(.1, .2)),
-        Value.float64Array(new double[] {.1, .2}),
-        Value.float64Array(new double[] {.0, .1, .2, .3}, 1, 2),
+        Value.float64Array(new double[]{.1, .2}),
+        Value.float64Array(new double[]{.0, .1, .2, .3}, 1, 2),
         Value.float64Array(plainIterable(.1, .2)));
     tester.addEqualityGroup(Value.float64Array(Arrays.asList(.3)));
     tester.addEqualityGroup(Value.float64Array((Iterable<Double>) null));
@@ -1221,7 +1217,7 @@ public class ValueTest {
     tester.addEqualityGroup(
         Value.jsonArray(Arrays.asList(emptyJson, simpleJson)),
         Value.jsonArray(Arrays.asList(emptyJson, simpleJson)));
-    tester.addEqualityGroup(Value.jsonArray(Arrays.asList(new Json("[]"))));
+    tester.addEqualityGroup(Value.jsonArray(Arrays.asList("[]")));
     tester.addEqualityGroup(Value.jsonArray(null));
 
     tester.addEqualityGroup(
@@ -1274,7 +1270,7 @@ public class ValueTest {
     reserializeAndAssert(Value.string("abc"));
     reserializeAndAssert(Value.string(null));
 
-    reserializeAndAssert(Value.json(new Json("{\"color\":\"red\",\"value\":\"#f00\"}")));
+    reserializeAndAssert(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"));
     reserializeAndAssert(Value.json(null));
 
     reserializeAndAssert(Value.bytes(newByteArray("abc")));
@@ -1290,15 +1286,15 @@ public class ValueTest {
                     Type.StructField.of("b", Type.int64()))),
             null));
 
-    reserializeAndAssert(Value.boolArray(new boolean[] {false, true}));
+    reserializeAndAssert(Value.boolArray(new boolean[]{false, true}));
     reserializeAndAssert(Value.boolArray(BrokenSerializationList.of(true, false)));
     reserializeAndAssert(Value.boolArray((Iterable<Boolean>) null));
 
     reserializeAndAssert(Value.int64Array(BrokenSerializationList.of(1L, 2L)));
-    reserializeAndAssert(Value.int64Array(new long[] {1L, 2L}));
+    reserializeAndAssert(Value.int64Array(new long[]{1L, 2L}));
     reserializeAndAssert(Value.int64Array((Iterable<Long>) null));
 
-    reserializeAndAssert(Value.float64Array(new double[] {.1, .2}));
+    reserializeAndAssert(Value.float64Array(new double[]{.1, .2}));
     reserializeAndAssert(Value.float64Array(BrokenSerializationList.of(.1, .2, .3)));
     reserializeAndAssert(Value.float64Array((Iterable<Double>) null));
 
@@ -1324,9 +1320,7 @@ public class ValueTest {
     reserializeAndAssert(Value.stringArray(of));
     reserializeAndAssert(Value.stringArray(null));
 
-    BrokenSerializationList<Json> json =
-        BrokenSerializationList.of(
-            new Json("{}"), new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    BrokenSerializationList<String> json = BrokenSerializationList.of("{}", "{\"color\":\"red\",\"value\":\"#f00\"}");
     reserializeAndAssert(Value.jsonArray(json));
     reserializeAndAssert(Value.jsonArray(null));
 

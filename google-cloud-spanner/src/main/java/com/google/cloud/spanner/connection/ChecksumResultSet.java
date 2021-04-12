@@ -20,7 +20,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
-import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -184,7 +183,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     }
   }
 
-  /** Calculates and keeps the current checksum of a {@link ChecksumResultSet} */
+  /**
+   * Calculates and keeps the current checksum of a {@link ChecksumResultSet}
+   */
   private static final class ChecksumCalculator {
     private static final HashFunction SHA256_FUNCTION = Hashing.sha256();
     private HashCode currentChecksum;
@@ -306,7 +307,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           break;
         case JSON:
           into.putInt(row.getJsonList(columnIndex).size());
-          for (Json value : row.getJsonList(columnIndex)) {
+          for (String value : row.getJsonList(columnIndex)) {
             funnelValue(Code.JSON, value, into);
           }
           break;
@@ -360,14 +361,10 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putLong((Long) value);
             break;
           case STRING:
+          case JSON:
             String stringValue = (String) value;
             into.putInt(stringValue.length());
             into.putUnencodedChars(stringValue);
-            break;
-          case JSON:
-            Json json = (Json) value;
-            into.putInt(json.value.length());
-            into.putUnencodedChars(json.value);
             break;
           case TIMESTAMP:
             Timestamp timestamp = (Timestamp) value;

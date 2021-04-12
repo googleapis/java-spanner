@@ -193,7 +193,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected Json getJsonInternal(int columnIndex) {
+    protected String getJsonInternal(int columnIndex) {
       return values.get(columnIndex).getJson();
     }
 
@@ -258,7 +258,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected List<Json> getJsonListInternal(int columnIndex) {
+    protected List<String> getJsonListInternal(int columnIndex) {
       return values.get(columnIndex).getJsonArray();
     }
 

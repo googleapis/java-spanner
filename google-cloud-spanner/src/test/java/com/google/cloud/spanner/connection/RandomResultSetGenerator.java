@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.api.client.util.Base64;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Json;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
@@ -39,52 +38,52 @@ import java.util.Random;
  */
 public class RandomResultSetGenerator {
   private static final Type TYPES[] =
-      new Type[] {
-        Type.newBuilder().setCode(TypeCode.BOOL).build(),
-        Type.newBuilder().setCode(TypeCode.INT64).build(),
-        Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
-        Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
-        Type.newBuilder().setCode(TypeCode.STRING).build(),
-        Type.newBuilder().setCode(TypeCode.JSON).build(),
-        Type.newBuilder().setCode(TypeCode.BYTES).build(),
-        Type.newBuilder().setCode(TypeCode.DATE).build(),
-        Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.NUMERIC))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.JSON))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
-            .build(),
+      new Type[]{
+          Type.newBuilder().setCode(TypeCode.BOOL).build(),
+          Type.newBuilder().setCode(TypeCode.INT64).build(),
+          Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
+          Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
+          Type.newBuilder().setCode(TypeCode.STRING).build(),
+          Type.newBuilder().setCode(TypeCode.JSON).build(),
+          Type.newBuilder().setCode(TypeCode.BYTES).build(),
+          Type.newBuilder().setCode(TypeCode.DATE).build(),
+          Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.NUMERIC))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.JSON))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+              .build(),
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
+              .build(),
       };
 
   private static final ResultSetMetadata generateMetadata() {
@@ -146,9 +145,7 @@ public class RandomResultSetGenerator {
           builder.setStringValue(Base64.encodeBase64String(bytes));
           break;
         case JSON:
-          builder.setStringValue(
-              new Json("\"" + random.nextInt(200) + "\":\"" + random.nextInt(200) + "\"")
-                  .toString());
+          builder.setStringValue("\"" + random.nextInt(200) + "\":\"" + random.nextInt(200) + "\"");
           break;
         case DATE:
           Date date =

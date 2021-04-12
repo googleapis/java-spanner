@@ -20,7 +20,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.Json;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -197,13 +196,13 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
-  public Json getJson(int columnIndex) {
+  public String getJson(int columnIndex) {
     checkClosed();
     return delegate.getJson(columnIndex);
   }
 
   @Override
-  public Json getJson(String columnName) {
+  public String getJson(String columnName) {
     checkClosed();
     return delegate.getJson(columnName);
   }
@@ -341,13 +340,13 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
-  public List<Json> getJsonList(int columnIndex) {
+  public List<String> getJsonList(int columnIndex) {
     checkClosed();
     return delegate.getJsonList(columnIndex);
   }
 
   @Override
-  public List<Json> getJsonList(String columnName) {
+  public List<String> getJsonList(String columnName) {
     checkClosed();
     return delegate.getJsonList(columnName);
   }

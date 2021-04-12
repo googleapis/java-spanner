@@ -167,11 +167,11 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns a {@code JSON} value.
+   * Returns a {@code STRING} value.
    *
    * @param v the value, which may be null
    */
-  public static Value json(@Nullable Json v) {
+  public static Value json(@Nullable String v) {
     return new JsonImpl(v == null, v);
   }
 
@@ -349,12 +349,12 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns an {@code ARRAY<JSON>} value.
+   * Returns an {@code ARRAY<STRING>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
    *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
    */
-  public static Value jsonArray(@Nullable Iterable<Json> v) {
+  public static Value jsonArray(@Nullable Iterable<String> v) {
     return new JsonArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
@@ -461,11 +461,12 @@ public abstract class Value implements Serializable {
   public abstract String getString();
 
   /**
-   * Returns the value of a {@code JSON}-typed instance.
+   * Returns the value of a {@code STRING}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   * @return
    */
-  public abstract Json getJson();
+  public abstract String getJson();
 
   /**
    * Returns the value of a {@code BYTES}-typed instance.
@@ -540,12 +541,12 @@ public abstract class Value implements Serializable {
   public abstract List<String> getStringArray();
 
   /**
-   * Returns the value of an {@code ARRAY<JSON>}-typed instance. While the returned list itself will
+   * Returns the value of an {@code ARRAY<STRING>}-typed instance. While the returned list itself will
    * never be {@code null}, elements of that list may be null.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  public abstract List<Json> getJsonArray();
+  public abstract List<String> getJsonArray();
 
   /**
    * Returns the value of an {@code ARRAY<BYTES>}-typed instance. While the returned list itself
@@ -755,7 +756,7 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public Json getJson() {
+    public String getJson() {
       throw defaultGetter(Type.json());
     }
 
@@ -809,7 +810,7 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public List<Json> getJsonArray() {
+    public List<String> getJsonArray() {
       throw defaultGetter(Type.array(Type.json()));
     }
 
@@ -1100,14 +1101,14 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class JsonImpl extends AbstractObjectValue<Json> {
+  private static class JsonImpl extends AbstractObjectValue<String> {
 
-    private JsonImpl(boolean isNull, @Nullable Json value) {
+    private JsonImpl(boolean isNull, @Nullable String value) {
       super(isNull, Type.json(), value);
     }
 
     @Override
-    public Json getJson() {
+    public String getJson() {
       checkType(Type.json());
       checkNotNull();
       return value;
@@ -1115,10 +1116,10 @@ public abstract class Value implements Serializable {
 
     @Override
     void valueToString(StringBuilder b) {
-      if (value.value.length() > MAX_DEBUG_STRING_LENGTH) {
-        b.append(value.value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
+      if (value.length() > MAX_DEBUG_STRING_LENGTH) {
+        b.append(value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
       } else {
-        b.append(value.value);
+        b.append(value);
       }
     }
   }
@@ -1477,21 +1478,21 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class JsonArrayImpl extends AbstractArrayValue<Json> {
+  private static class JsonArrayImpl extends AbstractArrayValue<String> {
 
-    private JsonArrayImpl(boolean isNull, @Nullable List<Json> values) {
+    private JsonArrayImpl(boolean isNull, @Nullable List<String> values) {
       super(isNull, Type.json(), values);
     }
 
     @Override
-    public List<Json> getJsonArray() {
+    public List<String> getJsonArray() {
       checkType(getType());
       checkNotNull();
       return value;
     }
 
     @Override
-    void appendElement(StringBuilder b, Json element) {
+    void appendElement(StringBuilder b, String element) {
       b.append(element);
     }
   }

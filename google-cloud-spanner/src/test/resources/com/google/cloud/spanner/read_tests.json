@@ -86,7 +86,7 @@
     "name": "String Array Chunking Test With One Large String"
   },
   {
-    "result": {"value": [[["{\"color\":\"red\",\"value\":\"#f00\"}", "{}"]]]},
+    "result": {"value": [[["{}", "{\"color\":\"red\",\"value\":\"#f00\"}"]]]},
     "chunks": [
       "{\n  \"metadata\": {\n    \"rowType\": {\n      \"fields\": [{\n        \"name\": \"f1\",\n        \"type\": {\n          \"code\": \"ARRAY\",\n          \"arrayElementType\": {\n            \"code\": \"JSON\"\n          }\n        }\n      }]\n    }\n  },\n  \"values\": [[\"{}\", \"{\\\"color\\\":\\\"red\\\"\"]],\n  \"chunkedValue\": true\n}",
       "{\n  \"values\": [[\",\\\"value\\\":\\\"#f00\\\"}\"]],\n  \"chunkedValue\": false\n}"

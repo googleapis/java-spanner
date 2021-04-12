@@ -244,12 +244,12 @@ public final class ResultSets {
     }
 
     @Override
-    public Json getJson(int columnIndex) {
+    public String getJson(int columnIndex) {
       return getCurrentRowAsStruct().getJson(columnIndex);
     }
 
     @Override
-    public Json getJson(String columnName) {
+    public String getJson(String columnName) {
       return getCurrentRowAsStruct().getJson(columnName);
     }
 
@@ -364,12 +364,12 @@ public final class ResultSets {
     }
 
     @Override
-    public List<Json> getJsonList(int columnIndex) {
+    public List<String> getJsonList(int columnIndex) {
       return getCurrentRowAsStruct().getJsonList(columnIndex);
     }
 
     @Override
-    public List<Json> getJsonList(String columnName) {
+    public List<String> getJsonList(String columnName) {
       return getCurrentRowAsStruct().getJsonList(columnName);
     }
 

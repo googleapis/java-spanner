@@ -95,11 +95,6 @@ public abstract class ValueBinder<R> {
     return handle(Value.string(value));
   }
 
-  /** Binds to {@code Value.json(value)} */
-  public R to(@Nullable Json json) {
-    return handle(Value.json(json));
-  }
-
   /** Binds to {@code Value.bytes(value)} */
   public R to(@Nullable ByteArray value) {
     return handle(Value.bytes(value));
@@ -184,7 +179,7 @@ public abstract class ValueBinder<R> {
   }
 
   /** Binds to {@code Value.jsonArray(values)} */
-  public R toJsonArray(@Nullable Iterable<Json> values) {
+  public R toJsonArray(@Nullable Iterable<String> values) {
     return handle(Value.jsonArray(values));
   }
 

@@ -157,13 +157,13 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public Json getJson(int columnIndex) {
+  public String getJson(int columnIndex) {
     checkValidState();
     return delegate.get().getJson(columnIndex);
   }
 
   @Override
-  public Json getJson(String columnName) {
+  public String getJson(String columnName) {
     checkValidState();
     return delegate.get().getJson(columnName);
   }
@@ -299,13 +299,13 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public List<Json> getJsonList(int columnIndex) {
+  public List<String> getJsonList(int columnIndex) {
     checkValidState();
     return delegate.get().getJsonList(columnIndex);
   }
 
   @Override
-  public List<Json> getJsonList(String columnName) {
+  public List<String> getJsonList(String columnName) {
     checkValidState();
     return delegate.get().getJsonList(columnName);
   }

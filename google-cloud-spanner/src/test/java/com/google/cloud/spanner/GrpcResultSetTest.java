@@ -769,18 +769,18 @@ public class GrpcResultSetTest {
     consumer.onPartialResultSet(
         PartialResultSet.newBuilder()
             .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.json()))))
-            .addValues(Value.json(new Json("{\"color\":\"red\",\"value\":\"#f00\"}")).toProto())
-            .addValues(Value.json(new Json("{}")).toProto())
-            .addValues(Value.json(new Json("[]")).toProto())
+            .addValues(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}").toProto())
+            .addValues(Value.json("{}").toProto())
+            .addValues(Value.json("[]").toProto())
             .build());
     consumer.onCompleted();
 
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0).toString()).isEqualTo("{\"color\":\"red\",\"value\":\"#f00\"}");
+    assertThat(resultSet.getJson(0)).isEqualTo("{\"color\":\"red\",\"value\":\"#f00\"}");
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0).toString()).isEqualTo("{}");
+    assertThat(resultSet.getJson(0)).isEqualTo("{}");
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0).toString()).isEqualTo("[]");
+    assertThat(resultSet.getJson(0)).isEqualTo("[]");
   }
 
   @Test
@@ -889,10 +889,10 @@ public class GrpcResultSetTest {
 
   @Test
   public void getJsonList() {
-    List<Json> jsonList = new ArrayList<>();
-    jsonList.add(new Json("{\"color\":\"red\",\"value\":\"#f00\"}"));
-    jsonList.add(new Json("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}"));
-    jsonList.add(new Json("[]"));
+    List<String> jsonList = new ArrayList<>();
+    jsonList.add("{\"color\":\"red\",\"value\":\"#f00\"}");
+    jsonList.add("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}");
+    jsonList.add("[]");
 
     consumer.onPartialResultSet(
         PartialResultSet.newBuilder()

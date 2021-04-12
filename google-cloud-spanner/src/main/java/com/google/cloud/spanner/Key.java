@@ -146,11 +146,6 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
-    /** Appends a {@code JSON} value to the key. */
-    public Builder append(@Nullable Json value) {
-      buffer.add(value);
-      return this;
-    }
     /** Appends a {@code BYTES} value to the key. */
     public Builder append(@Nullable ByteArray value) {
       buffer.add(value);
@@ -191,8 +186,6 @@ public final class Key implements Serializable {
         append((BigDecimal) value);
       } else if (value instanceof String) {
         append((String) value);
-      } else if (value instanceof Json) {
-        append((Json) value);
       } else if (value instanceof ByteArray) {
         append((ByteArray) value);
       } else if (value instanceof Timestamp) {
@@ -301,8 +294,6 @@ public final class Key implements Serializable {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof String) {
         builder.addValuesBuilder().setStringValue((String) part);
-      } else if (part instanceof Json) {
-        builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof ByteArray) {
         builder.addValuesBuilder().setStringValue(((ByteArray) part).toBase64());
       } else if (part instanceof Timestamp) {
