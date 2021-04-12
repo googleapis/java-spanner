@@ -565,10 +565,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           {
             ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
             for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : value.getStringValue());
+              list.add(value.getKindCase() == KindCase.NULL_VALUE ? null : value.getStringValue());
             }
             return list;
           }
@@ -1138,8 +1135,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               + " \"Infinity\", \"-Infinity\", or \"NaN\" but was "
               + proto.getKindCase()
               + (proto.getKindCase() == KindCase.STRING_VALUE
-              ? " with value \"" + proto.getStringValue() + "\""
-              : ""));
+                  ? " with value \"" + proto.getStringValue() + "\""
+                  : ""));
     }
     return proto.getNumberValue();
   }

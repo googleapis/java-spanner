@@ -40,9 +40,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
-/**
- * Unit tests for {@link AbstractStructReader} that cover all type combinations.
- */
+/** Unit tests for {@link AbstractStructReader} that cover all type combinations. */
 @RunWith(Parameterized.class)
 public class AbstractStructReaderTypesTest {
   private static class TestStructReader extends AbstractStructReader {
@@ -173,132 +171,131 @@ public class AbstractStructReaderTypesTest {
   @Parameterized.Parameters(name = "{index}: {0}: {3}()={4}")
   public static Collection<Object[]> parameters() {
     return Arrays.asList(
-        new Object[][]{
-            {Type.bool(), "getBooleanInternal", false, "getBoolean", null},
-            {Type.int64(), "getLongInternal", 123L, "getLong", null},
-            {Type.float64(), "getDoubleInternal", 2.0, "getDouble", null},
-            {
-                Type.numeric(),
-                "getBigDecimalInternal",
-                BigDecimal.valueOf(21, 1),
-                "getBigDecimal",
-                null
-            },
-            {Type.string(), "getStringInternal", "a", "getString", null},
-            {
-                Type.json(),
-                "getJsonInternal",
-                "{\"color\":\"red\",\"value\":\"#f00\"}",
-                "getJson",
-                null
-            },
-            {Type.bytes(), "getBytesInternal", ByteArray.copyFrom(new byte[]{0}), "getBytes", null},
-            {
-                Type.timestamp(),
-                "getTimestampInternal",
+        new Object[][] {
+          {Type.bool(), "getBooleanInternal", false, "getBoolean", null},
+          {Type.int64(), "getLongInternal", 123L, "getLong", null},
+          {Type.float64(), "getDoubleInternal", 2.0, "getDouble", null},
+          {
+            Type.numeric(),
+            "getBigDecimalInternal",
+            BigDecimal.valueOf(21, 1),
+            "getBigDecimal",
+            null
+          },
+          {Type.string(), "getStringInternal", "a", "getString", null},
+          {
+            Type.json(),
+            "getJsonInternal",
+            "{\"color\":\"red\",\"value\":\"#f00\"}",
+            "getJson",
+            null
+          },
+          {Type.bytes(), "getBytesInternal", ByteArray.copyFrom(new byte[] {0}), "getBytes", null},
+          {
+            Type.timestamp(),
+            "getTimestampInternal",
+            Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
+            "getTimestamp",
+            null
+          },
+          {Type.date(), "getDateInternal", Date.parseDate("2015-09-15"), "getDate", null},
+          {
+            Type.array(Type.bool()),
+            "getBooleanArrayInternal",
+            new boolean[] {true, false},
+            "getBooleanArray",
+            Arrays.asList("getBooleanList")
+          },
+          {
+            Type.array(Type.bool()),
+            "getBooleanListInternal",
+            Arrays.asList(false, true),
+            "getBooleanList",
+            Arrays.asList("getBooleanArray")
+          },
+          {
+            Type.array(Type.int64()),
+            "getLongArrayInternal",
+            new long[] {1, 2},
+            "getLongArray",
+            Arrays.asList("getLongList")
+          },
+          {
+            Type.array(Type.int64()),
+            "getLongListInternal",
+            Arrays.asList(3L, 4L),
+            "getLongList",
+            Arrays.asList("getLongArray")
+          },
+          {
+            Type.array(Type.float64()),
+            "getDoubleArrayInternal",
+            new double[] {1.0, 2.0},
+            "getDoubleArray",
+            Arrays.asList("getDoubleList")
+          },
+          {
+            Type.array(Type.float64()),
+            "getDoubleListInternal",
+            Arrays.asList(2.0, 4.0),
+            "getDoubleList",
+            Arrays.asList("getDoubleArray")
+          },
+          {
+            Type.array(Type.numeric()),
+            "getBigDecimalListInternal",
+            Arrays.asList(BigDecimal.valueOf(21, 1), BigDecimal.valueOf(41, 1)),
+            "getBigDecimalList",
+            null
+          },
+          {
+            Type.array(Type.string()),
+            "getStringListInternal",
+            Arrays.asList("a", "b", "c"),
+            "getStringList",
+            null
+          },
+          {
+            Type.array(Type.json()),
+            "getJsonListInternal",
+            Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
+            "getJsonList",
+            null
+          },
+          {
+            Type.array(Type.bytes()),
+            "getBytesListInternal",
+            Arrays.asList(
+                ByteArray.copyFrom("a"), ByteArray.copyFrom("b"), ByteArray.copyFrom("c")),
+            "getBytesList",
+            null
+          },
+          {
+            Type.array(Type.timestamp()),
+            "getTimestampListInternal",
+            Arrays.asList(
                 Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
-                "getTimestamp",
-                null
-            },
-            {Type.date(), "getDateInternal", Date.parseDate("2015-09-15"), "getDate", null},
-            {
-                Type.array(Type.bool()),
-                "getBooleanArrayInternal",
-                new boolean[]{true, false},
-                "getBooleanArray",
-                Arrays.asList("getBooleanList")
-            },
-            {
-                Type.array(Type.bool()),
-                "getBooleanListInternal",
-                Arrays.asList(false, true),
-                "getBooleanList",
-                Arrays.asList("getBooleanArray")
-            },
-            {
-                Type.array(Type.int64()),
-                "getLongArrayInternal",
-                new long[]{1, 2},
-                "getLongArray",
-                Arrays.asList("getLongList")
-            },
-            {
-                Type.array(Type.int64()),
-                "getLongListInternal",
-                Arrays.asList(3L, 4L),
-                "getLongList",
-                Arrays.asList("getLongArray")
-            },
-            {
-                Type.array(Type.float64()),
-                "getDoubleArrayInternal",
-                new double[]{1.0, 2.0},
-                "getDoubleArray",
-                Arrays.asList("getDoubleList")
-            },
-            {
-                Type.array(Type.float64()),
-                "getDoubleListInternal",
-                Arrays.asList(2.0, 4.0),
-                "getDoubleList",
-                Arrays.asList("getDoubleArray")
-            },
-            {
-                Type.array(Type.numeric()),
-                "getBigDecimalListInternal",
-                Arrays.asList(BigDecimal.valueOf(21, 1), BigDecimal.valueOf(41, 1)),
-                "getBigDecimalList",
-                null
-            },
-            {
-                Type.array(Type.string()),
-                "getStringListInternal",
-                Arrays.asList("a", "b", "c"),
-                "getStringList",
-                null
-            },
-            {
-                Type.array(Type.json()),
-                "getJsonListInternal",
-                Arrays.asList(
-                    "{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
-                "getJsonList",
-                null
-            },
-            {
-                Type.array(Type.bytes()),
-                "getBytesListInternal",
-                Arrays.asList(
-                    ByteArray.copyFrom("a"), ByteArray.copyFrom("b"), ByteArray.copyFrom("c")),
-                "getBytesList",
-                null
-            },
-            {
-                Type.array(Type.timestamp()),
-                "getTimestampListInternal",
-                Arrays.asList(
-                    Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
-                    Timestamp.parseTimestamp("2015-09-14T00:00:00Z")),
-                "getTimestampList",
-                null,
-            },
-            {
-                Type.array(Type.date()),
-                "getDateListInternal",
-                Arrays.asList(Date.parseDate("2015-09-15"), Date.parseDate("2015-09-14")),
-                "getDateList",
-                null,
-            },
-            {
-                Type.array(Type.struct(StructField.of("f1", Type.int64()))),
-                "getStructListInternal",
-                Arrays.asList(
-                    Struct.newBuilder().set("f1").to(1).build(),
-                    Struct.newBuilder().set("f1").to(2).build(),
-                    Struct.newBuilder().set("f1").to(3).build()),
-                "getStructList",
-                null
-            }
+                Timestamp.parseTimestamp("2015-09-14T00:00:00Z")),
+            "getTimestampList",
+            null,
+          },
+          {
+            Type.array(Type.date()),
+            "getDateListInternal",
+            Arrays.asList(Date.parseDate("2015-09-15"), Date.parseDate("2015-09-14")),
+            "getDateList",
+            null,
+          },
+          {
+            Type.array(Type.struct(StructField.of("f1", Type.int64()))),
+            "getStructListInternal",
+            Arrays.asList(
+                Struct.newBuilder().set("f1").to(1).build(),
+                Struct.newBuilder().set("f1").to(2).build(),
+                Struct.newBuilder().set("f1").to(3).build()),
+            "getStructList",
+            null
+          }
         });
   }
 
@@ -370,10 +367,10 @@ public class AbstractStructReaderTypesTest {
     int columnIndex = 1;
     Mockito.when(reader.isNull(columnIndex)).thenReturn(false);
     Mockito.when(
-        reader
-            .getClass()
-            .getDeclaredMethod(implMethodName, int.class)
-            .invoke(reader, columnIndex))
+            reader
+                .getClass()
+                .getDeclaredMethod(implMethodName, int.class)
+                .invoke(reader, columnIndex))
         .thenReturn(value);
     assertThat(getterByIndex(columnIndex)).isEqualTo(value);
     assertThat(getterByName("F1")).isEqualTo(value);

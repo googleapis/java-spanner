@@ -183,9 +183,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     }
   }
 
-  /**
-   * Calculates and keeps the current checksum of a {@link ChecksumResultSet}
-   */
+  /** Calculates and keeps the current checksum of a {@link ChecksumResultSet} */
   private static final class ChecksumCalculator {
     private static final HashFunction SHA256_FUNCTION = Hashing.sha256();
     private HashCode currentChecksum;

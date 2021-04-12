@@ -119,7 +119,7 @@ public class ValueBinderTest {
 
           assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
-        }        // Test unary non-null.
+        } // Test unary non-null.
         Object defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
         Value expected = (Value) method.invoke(Value.class, defaultObject);
         // Special case for json as it maps to ValueBinder.to(String)

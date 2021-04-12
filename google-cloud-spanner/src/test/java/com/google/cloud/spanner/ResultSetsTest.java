@@ -79,8 +79,7 @@ public class ResultSetsTest {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
     String[] stringArray = {"abc", "def", "ghi"};
-    String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"
-    };
+    String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"};
 
     Type type =
         Type.struct(
