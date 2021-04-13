@@ -44,6 +44,7 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
@@ -139,6 +140,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
+    this.txManager = dbClient.transactionManager(extractOptions(builder));
+  }
+
+  private TransactionOption[] extractOptions(Builder builder) {
     int numOptions = 0;
     if (builder.returnCommitStats) {
       numOptions++;
@@ -154,7 +159,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.transactionTag != null) {
       options[index++] = Options.tag(this.transactionTag);
     }
-    this.txManager = dbClient.transactionManager(options);
+    return options;
   }
 
   @Override
@@ -162,6 +167,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return new StringBuilder()
         .append("ReadWriteTransaction - ID: ")
         .append(transactionId)
+        .append("; Tag: ")
+        .append(Strings.nullToEmpty(transactionTag))
         .append("; Status: ")
         .append(internalGetStateName())
         .append("; Started: ")
@@ -776,8 +783,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               ErrorCode.CANCELLED, "The statement was cancelled");
         }
         try {
-          TransactionContext context = txManager.resetForRetry();
-          txContextFuture = ApiFutures.immediateFuture(context);
+          txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
           // Inform listeners about the transaction retry that is about to start.
           invokeTransactionRetryListenersOnStart();
           // Then retry all transaction statements.

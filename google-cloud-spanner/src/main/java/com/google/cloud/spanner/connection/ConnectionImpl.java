@@ -537,6 +537,9 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isTransactionStarted(),
         "The transaction tag cannot be set after the transaction has started");
+    ConnectionPreconditions.checkState(
+        getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
+        "Transaction tag can only be set for a read/write transaction");
 
     this.transactionBeginMarked = true;
     this.transactionTag = tag;

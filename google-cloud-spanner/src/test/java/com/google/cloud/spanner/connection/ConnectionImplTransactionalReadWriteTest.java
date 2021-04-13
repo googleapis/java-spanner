@@ -86,6 +86,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return true;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -229,6 +234,11 @@ public class ConnectionImplTransactionalReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return false;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -382,6 +392,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -525,6 +540,11 @@ public class ConnectionImplTransactionalReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return true;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
       return true;
     }
 
@@ -681,6 +701,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return true;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -827,6 +852,11 @@ public class ConnectionImplTransactionalReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return true;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
       return true;
     }
 
@@ -980,6 +1010,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return true;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -1122,6 +1157,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return true;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -1274,6 +1314,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return true;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -1419,6 +1464,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return false;
     }
@@ -1560,6 +1610,11 @@ public class ConnectionImplTransactionalReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return false;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -1710,6 +1765,11 @@ public class ConnectionImplTransactionalReadWriteTest {
     }
 
     @Override
+    boolean isSetTransactionTagAllowed() {
+      return true;
+    }
+
+    @Override
     boolean isGetTransactionModeAllowed() {
       return true;
     }
@@ -1850,6 +1910,11 @@ public class ConnectionImplTransactionalReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return true;
+    }
+
+    @Override
+    boolean isSetTransactionTagAllowed() {
       return true;
     }
 

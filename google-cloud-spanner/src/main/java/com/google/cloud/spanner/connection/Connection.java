@@ -328,8 +328,7 @@ public interface Connection extends AutoCloseable {
 
   /**
    * Sets the transaction tag to use for the current transaction. This method may only be called
-   * when in a transaction, and before the transaction is actually started, i.e. before any
-   * statements have been executed in the transaction.
+   * when in a transaction and before any statements have been executed in the transaction.
    *
    * <p>The tag will be set as the transaction tag of all statements during the transaction, and as
    * the transaction tag of the commit.
@@ -344,9 +343,9 @@ public interface Connection extends AutoCloseable {
   String getTransactionTag();
 
   /**
-   * Sets the statement tag to use for the next statement that will be executed. The tag is
-   * automatically cleared after the statement is executed. Statement tags can be used both with
-   * autocommit=true and autocommit=false, and can be used for partitioned DML.
+   * Sets the statement tag to use for the next statement that is executed. The tag is automatically
+   * cleared after the statement is executed. Statement tags can be used both with autocommit=true
+   * and autocommit=false, and can be used for partitioned DML.
    *
    * <p>Statement tags are not allowed before COMMIT and ROLLBACK statements.
    *

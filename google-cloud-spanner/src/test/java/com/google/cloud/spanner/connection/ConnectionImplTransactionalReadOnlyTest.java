@@ -85,6 +85,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return true;
@@ -227,6 +231,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -378,6 +386,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return true;
@@ -522,6 +534,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // connection is in read-only mode
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -674,6 +690,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return true;
@@ -821,6 +841,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -971,6 +995,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return true;
@@ -1112,6 +1140,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override

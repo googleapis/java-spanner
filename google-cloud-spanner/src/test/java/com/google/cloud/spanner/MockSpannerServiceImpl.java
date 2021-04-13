@@ -1932,13 +1932,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return numSessionsCreated.get();
   }
 
-  public void clearRequests() {
-    this.requests.clear();
-  }
-
   @Override
   public List<AbstractMessage> getRequests() {
     return new ArrayList<>(this.requests);
+  }
+
+  public void clearRequests() {
+    this.requests.clear();
   }
 
   @SuppressWarnings("unchecked")

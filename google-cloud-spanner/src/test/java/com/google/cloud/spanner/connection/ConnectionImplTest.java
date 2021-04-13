@@ -23,11 +23,11 @@ import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.exp
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -1417,27 +1417,27 @@ public class ConnectionImplTest {
             return unitOfWork;
           }
         }) {
-      assertThat(connection.isAutocommit(), is(true));
+      assertTrue(connection.isAutocommit());
 
-      assertThat(connection.getStatementTag(), is(nullValue()));
+      assertNull(connection.getStatementTag());
       connection.setStatementTag("tag");
-      assertThat(connection.getStatementTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getStatementTag());
       connection.setStatementTag(null);
-      assertThat(connection.getStatementTag(), is(nullValue()));
+      assertNull(connection.getStatementTag());
 
       connection.setAutocommit(false);
 
       connection.setStatementTag("tag");
-      assertThat(connection.getStatementTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getStatementTag());
       connection.setStatementTag(null);
-      assertThat(connection.getStatementTag(), is(nullValue()));
+      assertNull(connection.getStatementTag());
 
       // Start a transaction
       connection.execute(Statement.of("SELECT FOO FROM BAR"));
       connection.setStatementTag("tag");
-      assertThat(connection.getStatementTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getStatementTag());
       connection.setStatementTag(null);
-      assertThat(connection.getStatementTag(), is(nullValue()));
+      assertNull(connection.getStatementTag());
     }
   }
 
@@ -1450,34 +1450,34 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
-      assertThat(connection.isAutocommit(), is(false));
+      assertFalse(connection.isAutocommit());
 
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
       connection.setTransactionTag("tag");
-      assertThat(connection.getTransactionTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getTransactionTag());
       connection.setTransactionTag(null);
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
 
       // Committing or rolling back a transaction should clear the transaction tag for the next
       // transaction.
       connection.setTransactionTag("tag");
-      assertThat(connection.getTransactionTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getTransactionTag());
       connection.commit();
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
 
       connection.setTransactionTag("tag");
-      assertThat(connection.getTransactionTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getTransactionTag());
       connection.rollback();
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
 
       // Temporary transactions should also allow transaction tags.
       connection.setAutocommit(false);
       connection.beginTransaction();
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
       connection.setTransactionTag("tag");
-      assertThat(connection.getTransactionTag(), is(equalTo("tag")));
+      assertEquals("tag", connection.getTransactionTag());
       connection.commit();
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
     }
   }
 
@@ -1490,13 +1490,13 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
-      assertThat(connection.isAutocommit(), is(true));
+      assertTrue(connection.isAutocommit());
 
       try {
         connection.setTransactionTag("tag");
         fail("missing expected exception");
       } catch (SpannerException e) {
-        assertThat(e.getErrorCode(), is(ErrorCode.FAILED_PRECONDITION));
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }
     }
   }
@@ -1528,9 +1528,9 @@ public class ConnectionImplTest {
         connection.setTransactionTag("tag");
         fail("missing expected exception");
       } catch (SpannerException e) {
-        assertThat(e.getErrorCode(), is(ErrorCode.FAILED_PRECONDITION));
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }
-      assertThat(connection.getTransactionTag(), is(nullValue()));
+      assertNull(connection.getTransactionTag());
     }
   }
 }
