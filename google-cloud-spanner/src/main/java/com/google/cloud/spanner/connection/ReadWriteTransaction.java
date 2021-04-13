@@ -32,6 +32,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -72,7 +73,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final int MAX_INTERNAL_RETRIES = 50;
   private final long transactionId;
   private final DatabaseClient dbClient;
-  private TransactionManager txManager;
+  private final TransactionManager txManager;
   private final boolean retryAbortsInternally;
   private int transactionRetryAttempts;
   private int successfulRetries;
@@ -138,10 +139,22 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
-    this.txManager =
-        builder.returnCommitStats
-            ? dbClient.transactionManager(Options.commitStats())
-            : dbClient.transactionManager();
+    int numOptions = 0;
+    if (builder.returnCommitStats) {
+      numOptions++;
+    }
+    if (this.transactionTag != null) {
+      numOptions++;
+    }
+    TransactionOption[] options = new TransactionOption[numOptions];
+    int index = 0;
+    if (builder.returnCommitStats) {
+      options[index++] = Options.commitStats();
+    }
+    if (this.transactionTag != null) {
+      options[index++] = Options.tag(this.transactionTag);
+    }
+    this.txManager = dbClient.transactionManager(options);
   }
 
   @Override
@@ -192,11 +205,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               new Callable<TransactionContext>() {
                 @Override
                 public TransactionContext call() throws Exception {
-                  TransactionContext context = txManager.begin();
-                  if (transactionTag != null) {
-                    context.withTransactionTag(transactionTag);
-                  }
-                  return context;
+                  return txManager.begin();
                 }
               },
               SpannerGrpc.getBeginTransactionMethod());
@@ -768,9 +777,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         }
         try {
           TransactionContext context = txManager.resetForRetry();
-          if (transactionTag != null) {
-            context.withTransactionTag(transactionTag);
-          }
           txContextFuture = ApiFutures.immediateFuture(context);
           // Inform listeners about the transaction retry that is about to start.
           invokeTransactionRetryListenersOnStart();

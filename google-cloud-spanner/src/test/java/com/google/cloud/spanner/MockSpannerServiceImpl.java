@@ -1941,10 +1941,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return new ArrayList<>(this.requests);
   }
 
-  public void clearRequests() {
-    this.requests.clear();
-  }
-
   @SuppressWarnings("unchecked")
   public <T extends AbstractMessage> List<T> getRequestsOfType(Class<T> type) {
     List<T> result = new ArrayList<>();
@@ -1972,17 +1968,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
     }
     return c;
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends AbstractMessage> List<T> getRequestsOfType(Class<T> type) {
-    List<T> res = new ArrayList<>();
-    for (AbstractMessage m : this.requests) {
-      if (m.getClass().equals(type)) {
-        res.add((T) m);
-      }
-    }
-    return res;
   }
 
   public void waitForLastRequestToBe(Class<? extends AbstractMessage> type, long timeoutMillis)

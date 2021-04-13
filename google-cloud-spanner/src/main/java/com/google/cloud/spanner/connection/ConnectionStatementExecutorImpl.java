@@ -246,7 +246,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return resultSet(
         "RETURN_COMMIT_STATS", getConnection().isReturnCommitStats(), SHOW_RETURN_COMMIT_STATS);
   }
-  
+
   @Override
   public StatementResult statementSetStatementTag(String tag) {
     getConnection().setStatementTag("".equals(tag) ? null : tag);

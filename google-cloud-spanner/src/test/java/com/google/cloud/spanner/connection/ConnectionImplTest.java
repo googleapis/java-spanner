@@ -1514,6 +1514,7 @@ public class ConnectionImplTest {
     when(unitOfWork.executeQueryAsync(
             any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
           @Override
@@ -1521,7 +1522,6 @@ public class ConnectionImplTest {
             return unitOfWork;
           }
         }) {
-
       // Start a transaction
       connection.execute(Statement.of("SELECT FOO FROM BAR"));
       try {
