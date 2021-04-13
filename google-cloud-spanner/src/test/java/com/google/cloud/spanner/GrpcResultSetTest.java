@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
@@ -775,12 +777,12 @@ public class GrpcResultSetTest {
             .build());
     consumer.onCompleted();
 
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0)).isEqualTo("{\"color\":\"red\",\"value\":\"#f00\"}");
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0)).isEqualTo("{}");
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJson(0)).isEqualTo("[]");
+    assertTrue(resultSet.next());
+    assertEquals("{\"color\":\"red\",\"value\":\"#f00\"}", resultSet.getJson(0));
+    assertTrue(resultSet.next());
+    assertEquals("{}", resultSet.getJson(0));
+    assertTrue(resultSet.next());
+    assertEquals("[]", resultSet.getJson(0));
   }
 
   @Test
@@ -902,7 +904,7 @@ public class GrpcResultSetTest {
             .build());
     consumer.onCompleted();
 
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getJsonList(0)).isEqualTo(jsonList);
+    assertTrue(resultSet.next());
+    assertEquals(jsonList, resultSet.getJsonList(0));
   }
 }

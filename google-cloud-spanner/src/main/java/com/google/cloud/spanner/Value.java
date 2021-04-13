@@ -461,10 +461,9 @@ public abstract class Value implements Serializable {
   public abstract String getString();
 
   /**
-   * Returns the value of a {@code STRING}-typed instance.
+   * Returns the value of a {@code JSON}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
-   * @return
    */
   public abstract String getJson();
 
@@ -541,7 +540,7 @@ public abstract class Value implements Serializable {
   public abstract List<String> getStringArray();
 
   /**
-   * Returns the value of an {@code ARRAY<STRING>}-typed instance. While the returned list itself
+   * Returns the value of an {@code ARRAY<JSON>}-typed instance. While the returned list itself
    * will never be {@code null}, elements of that list may be null.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type

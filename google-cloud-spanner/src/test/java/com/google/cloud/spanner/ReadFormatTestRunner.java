@@ -157,7 +157,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
             assertThat(actualRow.getString(i)).isEqualTo(expectedRow.getString(i));
             break;
           case JSON:
-            assertThat(actualRow.getJson(i).toString()).isEqualTo(expectedRow.getString(i));
+            assertThat(actualRow.getJson(i)).isEqualTo(expectedRow.getString(i));
             break;
           case INT64:
             assertThat(actualRow.getLong(i)).isEqualTo(expectedRow.getLong(i));

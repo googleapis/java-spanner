@@ -553,6 +553,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             return list;
           }
         case STRING:
+        case JSON:
           return Lists.transform(
               listValue.getValuesList(),
               new Function<com.google.protobuf.Value, String>() {
@@ -561,14 +562,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                   return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue();
                 }
               });
-        case JSON:
-          {
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(value.getKindCase() == KindCase.NULL_VALUE ? null : value.getStringValue());
-            }
-            return list;
-          }
         case BYTES:
           {
             // Materialize list: element conversion is expensive and should happen only once.
@@ -755,7 +748,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<JSON>.
+    @SuppressWarnings("unchecked") // We know ARRAY<String> produces a List<String>.
     protected List<String> getJsonListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
     }
