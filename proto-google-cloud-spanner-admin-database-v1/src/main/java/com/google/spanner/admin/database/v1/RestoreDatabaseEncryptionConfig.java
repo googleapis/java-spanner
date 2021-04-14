@@ -146,8 +146,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      * <pre>
      * This is the default option when
-     * [encryption_config][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig]
-     * is not specified.
+     * [encryption_config][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig] is not specified.
      * </pre>
      *
      * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
@@ -192,8 +191,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      * <pre>
      * This is the default option when
-     * [encryption_config][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig]
-     * is not specified.
+     * [encryption_config][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig] is not specified.
      * </pre>
      *
      * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
@@ -359,10 +357,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
    *
    *
    * <pre>
-   * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-   * restored database. This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+   * database. This field should be set only when
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *
@@ -388,10 +386,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
    *
    *
    * <pre>
-   * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-   * restored database. This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+   * database. This field should be set only when
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *
@@ -874,10 +872,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      *
      * <pre>
-     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-     * restored database. This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+     * database. This field should be set only when
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -902,10 +900,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      *
      * <pre>
-     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-     * restored database. This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+     * database. This field should be set only when
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -930,10 +928,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      *
      * <pre>
-     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-     * restored database. This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+     * database. This field should be set only when
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -957,10 +955,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      *
      * <pre>
-     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-     * restored database. This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+     * database. This field should be set only when
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -980,10 +978,10 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
      *
      *
      * <pre>
-     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the
-     * restored database. This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * Optional. The Cloud KMS key that will be used to encrypt/decrypt the restored
+     * database. This field should be set only when
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] is
+     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *

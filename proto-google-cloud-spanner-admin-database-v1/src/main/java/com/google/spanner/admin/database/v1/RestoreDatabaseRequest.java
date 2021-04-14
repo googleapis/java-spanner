@@ -384,12 +384,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Optional. An encryption configuration describing the encryption type and
-   * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-   * to. If this field is not specified, the restored database will use the same
-   * encryption configuration as the backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -406,12 +406,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Optional. An encryption configuration describing the encryption type and
-   * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-   * to. If this field is not specified, the restored database will use the same
-   * encryption configuration as the backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -431,12 +431,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Optional. An encryption configuration describing the encryption type and
-   * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-   * to. If this field is not specified, the restored database will use the same
-   * encryption configuration as the backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -1275,12 +1275,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1296,12 +1296,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1325,12 +1325,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1355,12 +1355,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1383,12 +1383,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1418,12 +1418,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1445,12 +1445,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1467,12 +1467,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1494,12 +1494,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Optional. An encryption configuration describing the encryption type and
-     * key resources in Cloud KMS used to encrypt/decrypt the database to restore
-     * to. If this field is not specified, the restored database will use the same
-     * encryption configuration as the backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type]
-     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
