@@ -337,10 +337,14 @@ public interface Connection extends AutoCloseable {
    *
    * @param tag The tag to use.
    */
-  void setTransactionTag(String tag);
+  default void setTransactionTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
 
   /** @return The transaction tag of the current transaction. */
-  String getTransactionTag();
+  default String getTransactionTag() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Sets the statement tag to use for the next statement that is executed. The tag is automatically
@@ -356,13 +360,17 @@ public interface Connection extends AutoCloseable {
    * @param tag The statement tag to use with the next statement that will be executed on this
    *     connection.
    */
-  void setStatementTag(String tag);
+  default void setStatementTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @return The statement tag that will be used with the next statement that is executed on this
    *     connection.
    */
-  String getStatementTag();
+  default String getStatementTag() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions
