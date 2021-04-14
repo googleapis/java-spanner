@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -47,7 +48,8 @@ public class ValueBinderTest {
   }
 
   @Test
-  public void reflection() throws InvocationTargetException, IllegalAccessException {
+  public void reflection()
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     // Test that every Value factory method has a counterpart in ValueBinder, and that invoking it
     // produces the expected Value.
     for (Method method : Value.class.getMethods()) {
@@ -109,26 +111,32 @@ public class ValueBinderTest {
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
-          Value expected = (Value) method.invoke(Value.class, (Object) null);
-          // Special case for json as it maps to ValueBinder.to(String)
           if (method.getName().toLowerCase().equals("json")) {
-            expected = Value.string(null);
+            // Special case for json to change the method from ValueBinder.to(String) to
+            // ValueBinder.to(Value)
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.json(null))).isEqualTo(lastReturnValue);
+          } else {
+            assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
           }
-          assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
+          Value expected = (Value) method.invoke(Value.class, (Object) null);
           assertThat(lastValue).isEqualTo(expected);
 
           assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
         }
         // Test unary non-null.
-        Object defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
-        Value expected = (Value) method.invoke(Value.class, defaultObject);
-        // Special case for json as it maps to ValueBinder.to(String)
+        Object defaultObject;
         if (method.getName().toLowerCase().equals("json")) {
-          defaultObject = DefaultValues.defaultJson();
-          expected = Value.string(defaultObject.toString());
+          defaultObject = defaultJson();
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))
+              .isEqualTo(lastReturnValue);
+        } else {
+          defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
+          assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
         }
-        assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
+        Value expected = (Value) method.invoke(Value.class, defaultObject);
         assertThat(lastValue).isEqualTo(expected);
 
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
