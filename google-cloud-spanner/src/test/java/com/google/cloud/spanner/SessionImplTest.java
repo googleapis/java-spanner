@@ -28,7 +28,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -124,21 +123,10 @@ public class SessionImplTest {
     session
         .readWriteTransaction()
         .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws SpannerException {
-                session
-                    .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Void>() {
-                          @Override
-                          public Void run(TransactionContext transaction) {
-                            return null;
-                          }
-                        });
+            transaction -> {
+              session.readWriteTransaction().run(transaction1 -> null);
 
-                return null;
-              }
+              return null;
             });
   }
 
@@ -159,13 +147,10 @@ public class SessionImplTest {
       session
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws SpannerException {
-                  session.readOnlyTransaction().getReadTimestamp();
+              transaction -> {
+                session.readOnlyTransaction().getReadTimestamp();
 
-                  return null;
-                }
+                return null;
               });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -180,12 +165,9 @@ public class SessionImplTest {
       session
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws SpannerException {
-                  session.singleUseReadOnlyTransaction();
-                  return null;
-                }
+              transaction -> {
+                session.singleUseReadOnlyTransaction();
+                return null;
               });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -200,12 +182,9 @@ public class SessionImplTest {
         .readWriteTransaction()
         .allowNestedTransaction()
         .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws SpannerException {
-                session.singleUseReadOnlyTransaction();
-                return null;
-              }
+            transaction -> {
+              session.singleUseReadOnlyTransaction();
+              return null;
             });
   }
 
@@ -371,13 +350,9 @@ public class SessionImplTest {
     session.singleUse(TimestampBound.strong());
     try {
       runner.run(
-          new TransactionRunner.TransactionCallable<Void>() {
-            @Nullable
-            @Override
-            public Void run(TransactionContext transaction) throws SpannerException {
-              fail("Unexpected call to transaction body");
-              return null;
-            }
+          transaction -> {
+            fail("Unexpected call to transaction body");
+            return null;
           });
       fail("Expected exception");
     } catch (IllegalStateException ex) {

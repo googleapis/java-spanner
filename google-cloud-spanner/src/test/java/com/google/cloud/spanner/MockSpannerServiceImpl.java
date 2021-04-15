@@ -174,14 +174,9 @@ import org.threeten.bp.Instant;
  * long updateCount =
  *     dbClient
  *         .readWriteTransaction()
- *         .run(
- *             new TransactionCallable<Long>() {
- *               @Override
- *               public Long run(TransactionContext transaction) throws Exception {
- *                 return transaction.executeUpdate(
- *                     Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
- *               }
- *             });
+ *         .run(transaction ->
+ *             transaction.executeUpdate(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"))
+ *          );
  * System.out.println("Update count: " + updateCount);
  * spannerClient.close();
  * }</pre>

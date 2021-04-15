@@ -45,8 +45,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
@@ -437,13 +435,7 @@ public class GapicSpannerRpcTest {
                 timeoutHolder.timeout = Duration.ofNanos(1L);
                 client
                     .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Long>() {
-                          @Override
-                          public Long run(TransactionContext transaction) throws Exception {
-                            return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
-                          }
-                        });
+                    .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
                 fail("missing expected timeout exception");
               } catch (SpannerException e) {
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
@@ -454,13 +446,7 @@ public class GapicSpannerRpcTest {
               Long updateCount =
                   client
                       .readWriteTransaction()
-                      .run(
-                          new TransactionCallable<Long>() {
-                            @Override
-                            public Long run(TransactionContext transaction) throws Exception {
-                              return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
-                            }
-                          });
+                      .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
               assertThat(updateCount).isEqualTo(1L);
             }
           });
