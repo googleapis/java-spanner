@@ -33,7 +33,6 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
@@ -1473,39 +1472,36 @@ public class RetryOnInvalidatedSessionTest {
       final AtomicLong counter = new AtomicLong();
       ApiFuture<Long> count =
           runner.runAsync(
-              new AsyncWork<Long>() {
-                @Override
-                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                  AsyncResultSet rs = readFunction.apply(txn);
-                  ApiFuture<Void> fut =
-                      rs.setCallback(
-                          queryExecutor,
-                          new ReadyCallback() {
-                            @Override
-                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                              while (true) {
-                                switch (resultSet.tryNext()) {
-                                  case OK:
-                                    counter.incrementAndGet();
-                                    break;
-                                  case DONE:
-                                    return CallbackResponse.DONE;
-                                  case NOT_READY:
-                                    return CallbackResponse.CONTINUE;
-                                }
+              txn -> {
+                AsyncResultSet rs = readFunction.apply(txn);
+                ApiFuture<Void> fut =
+                    rs.setCallback(
+                        queryExecutor,
+                        new ReadyCallback() {
+                          @Override
+                          public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                            while (true) {
+                              switch (resultSet.tryNext()) {
+                                case OK:
+                                  counter.incrementAndGet();
+                                  break;
+                                case DONE:
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
                               }
                             }
-                          });
-                  return ApiFutures.transform(
-                      fut,
-                      new ApiFunction<Void, Long>() {
-                        @Override
-                        public Long apply(Void input) {
-                          return counter.get();
-                        }
-                      },
-                      MoreExecutors.directExecutor());
-                }
+                          }
+                        });
+                return ApiFutures.transform(
+                    fut,
+                    new ApiFunction<Void, Long>() {
+                      @Override
+                      public Long apply(Void input) {
+                        return counter.get();
+                      }
+                    },
+                    MoreExecutors.directExecutor());
               },
               executor);
       assertThat(get(count)).isEqualTo(2);
@@ -1523,14 +1519,7 @@ public class RetryOnInvalidatedSessionTest {
     try {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Struct> row =
-          runner.runAsync(
-              new AsyncWork<Struct>() {
-                @Override
-                public ApiFuture<Struct> doWorkAsync(TransactionContext txn) {
-                  return txn.readRowAsync("FOO", Key.of(), Arrays.asList("BAR"));
-                }
-              },
-              executor);
+          runner.runAsync(txn -> txn.readRowAsync("FOO", Key.of(), Arrays.asList("BAR")), executor);
       assertThat(get(row).getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -1545,12 +1534,7 @@ public class RetryOnInvalidatedSessionTest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Struct> row =
           runner.runAsync(
-              new AsyncWork<Struct>() {
-                @Override
-                public ApiFuture<Struct> doWorkAsync(TransactionContext txn) {
-                  return txn.readRowUsingIndexAsync("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
-                }
-              },
+              txn -> txn.readRowUsingIndexAsync("FOO", "IDX", Key.of(), Arrays.asList("BAR")),
               executor);
       assertThat(get(row).getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -1565,14 +1549,7 @@ public class RetryOnInvalidatedSessionTest {
     try {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Long> count =
-          runner.runAsync(
-              new AsyncWork<Long>() {
-                @Override
-                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                  return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                }
-              },
-              executor);
+          runner.runAsync(txn -> txn.executeUpdateAsync(UPDATE_STATEMENT), executor);
       assertThat(get(count)).isEqualTo(UPDATE_COUNT);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -1587,12 +1564,7 @@ public class RetryOnInvalidatedSessionTest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<long[]> count =
           runner.runAsync(
-              new AsyncWork<long[]>() {
-                @Override
-                public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
-                  return txn.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                }
-              },
+              txn -> txn.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
               executor);
       assertThat(get(count)).hasLength(2);
       assertThat(get(count)).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
@@ -1609,12 +1581,9 @@ public class RetryOnInvalidatedSessionTest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Void> res =
           runner.runAsync(
-              new AsyncWork<Void>() {
-                @Override
-                public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                  txn.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
-                  return ApiFutures.immediateFuture(null);
-                }
+              txn -> {
+                txn.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
+                return ApiFutures.immediateFuture(null);
               },
               executor);
       assertThat(get(res)).isNull();
