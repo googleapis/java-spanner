@@ -346,13 +346,10 @@ public class ITReadTest {
     Context.CancellableContext context = Context.current().withCancellation();
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                client
-                    .singleUse(TimestampBound.strong())
-                    .readRow(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
-              }
+            () -> {
+              client
+                  .singleUse(TimestampBound.strong())
+                  .readRow(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
             });
     context.cancel(new RuntimeException("Cancelled by test"));
 
@@ -371,13 +368,10 @@ public class ITReadTest {
         Context.current().withDeadlineAfter(10, TimeUnit.NANOSECONDS, executor);
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                client
-                    .singleUse(TimestampBound.strong())
-                    .readRow(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
-              }
+            () -> {
+              client
+                  .singleUse(TimestampBound.strong())
+                  .readRow(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
             });
 
     try {

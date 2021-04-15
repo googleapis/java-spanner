@@ -154,15 +154,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(mockSession());
-                        }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      for (int i = 0; i < sessionCount; i++) {
+                        consumer.onSessionReady(mockSession());
                       }
                     });
                 return null;
@@ -238,13 +235,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(sessions.pop());
                     });
                 return null;
               }
@@ -270,14 +264,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool(clock);
     final AtomicBoolean stop = new AtomicBoolean(false);
     new Thread(
-            new Runnable() {
-
-              @Override
-              public void run() {
-                // Run in a tight loop.
-                while (!stop.get()) {
-                  runMaintainanceLoop(clock, pool, 1);
-                }
+            () -> {
+              // Run in a tight loop.
+              while (!stop.get()) {
+                runMaintainanceLoop(clock, pool, 1);
               }
             })
         .start();
@@ -296,13 +286,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session1);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session1);
                     });
                 return null;
               }
@@ -354,13 +341,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session1);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session1);
                     });
                 return null;
               }
@@ -446,13 +430,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session);
                     });
                 return null;
               }
@@ -533,13 +514,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(mockSession());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(mockSession());
                     });
                 return null;
               }
@@ -579,13 +557,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(sessions.pop());
                     });
                 return null;
               }
@@ -644,15 +619,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(session);
-                        }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      for (int i = 0; i < sessionCount; i++) {
+                        consumer.onSessionReady(session);
                       }
                     });
                 return null;
@@ -758,13 +730,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -774,13 +743,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -814,13 +780,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -830,13 +793,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -937,13 +897,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 @Override
                 public Void answer(final InvocationOnMock invocation) {
                   executor.submit(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          SessionConsumerImpl consumer =
-                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                          consumer.onSessionReady(closedSession);
-                        }
+                      () -> {
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        consumer.onSessionReady(closedSession);
                       });
                   return null;
                 }
@@ -953,13 +910,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 @Override
                 public Void answer(final InvocationOnMock invocation) {
                   executor.submit(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          SessionConsumerImpl consumer =
-                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                          consumer.onSessionReady(openSession);
-                        }
+                      () -> {
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        consumer.onSessionReady(openSession);
                       });
                   return null;
                 }
@@ -1057,13 +1011,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1073,13 +1024,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1112,13 +1060,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1128,13 +1073,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1163,13 +1105,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1179,13 +1118,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1355,18 +1291,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   private void getSessionAsync(final CountDownLatch latch, final AtomicBoolean failed) {
     new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                try (PooledSessionFuture future = pool.getSession()) {
-                  PooledSession session = future.get();
-                  failed.compareAndSet(false, session == null);
-                  Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
-                } catch (Throwable e) {
-                  failed.compareAndSet(false, true);
-                } finally {
-                  latch.countDown();
-                }
+            () -> {
+              try (PooledSessionFuture future = pool.getSession()) {
+                PooledSession session = future.get();
+                failed.compareAndSet(false, session == null);
+                Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+              } catch (Throwable e) {
+                failed.compareAndSet(false, true);
+              } finally {
+                latch.countDown();
               }
             })
         .start();

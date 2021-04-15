@@ -125,13 +125,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
-        Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                decreaseAsyncOperations();
-              }
-            };
+        Runnable listener = TransactionContextImpl.this::decreaseAsyncOperations;
         try {
           increaseAsynOperations();
           addListener(listener);
@@ -248,30 +242,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       span.addAnnotation("Creating Transaction");
       final ApiFuture<ByteString> fut = session.beginTransactionAsync();
       fut.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                transactionId = fut.get();
-                span.addAnnotation(
-                    "Transaction Creation Done",
-                    ImmutableMap.of(
-                        "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-                txnLogger.log(
-                    Level.FINER,
-                    "Started transaction {0}",
-                    txnLogger.isLoggable(Level.FINER)
-                        ? transactionId.asReadOnlyByteBuffer()
-                        : null);
-                res.set(null);
-              } catch (ExecutionException e) {
-                span.addAnnotation(
-                    "Transaction Creation Failed",
-                    TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
-                res.setException(e.getCause() == null ? e : e.getCause());
-              } catch (InterruptedException e) {
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              }
+          () -> {
+            try {
+              transactionId = fut.get();
+              span.addAnnotation(
+                  "Transaction Creation Done",
+                  ImmutableMap.of(
+                      "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+              txnLogger.log(
+                  Level.FINER,
+                  "Started transaction {0}",
+                  txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+              res.set(null);
+            } catch (ExecutionException e) {
+              span.addAnnotation(
+                  "Transaction Creation Failed",
+                  TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+              res.setException(e.getCause() == null ? e : e.getCause());
+            } catch (InterruptedException e) {
+              res.setException(SpannerExceptionFactory.propagateInterrupt(e));
             }
           },
           MoreExecutors.directExecutor());
@@ -374,32 +363,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           commitFuture.addListener(
               tracer.withSpan(
                   opSpan,
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      try {
-                        com.google.spanner.v1.CommitResponse proto = commitFuture.get();
-                        if (!proto.hasCommitTimestamp()) {
-                          throw newSpannerException(
-                              ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-                        }
-                        span.addAnnotation("Commit Done");
-                        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                        res.set(new CommitResponse(proto));
-                      } catch (Throwable e) {
-                        if (e instanceof ExecutionException) {
-                          e =
-                              SpannerExceptionFactory.newSpannerException(
-                                  e.getCause() == null ? e : e.getCause());
-                        } else if (e instanceof InterruptedException) {
-                          e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
-                        } else {
-                          e = SpannerExceptionFactory.newSpannerException(e);
-                        }
-                        span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-                        TraceUtil.endSpanWithFailure(opSpan, e);
-                        res.setException(onError((SpannerException) e, false));
+                  () -> {
+                    try {
+                      com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+                      if (!proto.hasCommitTimestamp()) {
+                        throw newSpannerException(
+                            ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
                       }
+                      span.addAnnotation("Commit Done");
+                      opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                      res.set(new CommitResponse(proto));
+                    } catch (Throwable e) {
+                      if (e instanceof ExecutionException) {
+                        e =
+                            SpannerExceptionFactory.newSpannerException(
+                                e.getCause() == null ? e : e.getCause());
+                      } else if (e instanceof InterruptedException) {
+                        e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
+                      } else {
+                        e = SpannerExceptionFactory.newSpannerException(e);
+                      }
+                      span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                      TraceUtil.endSpanWithFailure(opSpan, e);
+                      res.setException(onError((SpannerException) e, false));
                     }
                   }),
               MoreExecutors.directExecutor());
@@ -717,21 +703,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               },
               MoreExecutors.directExecutor());
       updateCount.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                if (resultSet.get().getMetadata().hasTransaction()) {
-                  onTransactionMetadata(
-                      resultSet.get().getMetadata().getTransaction(),
-                      builder.getTransaction().hasBegin());
-                }
-              } catch (Throwable e) {
-                // Ignore this error here as it is handled by the future that is returned by the
-                // executeUpdateAsync method.
+          () -> {
+            try {
+              if (resultSet.get().getMetadata().hasTransaction()) {
+                onTransactionMetadata(
+                    resultSet.get().getMetadata().getTransaction(),
+                    builder.getTransaction().hasBegin());
               }
-              decreaseAsyncOperations();
+            } catch (Throwable e) {
+              // Ignore this error here as it is handled by the future that is returned by the
+              // executeUpdateAsync method.
             }
+            decreaseAsyncOperations();
           },
           MoreExecutors.directExecutor());
       return updateCount;
@@ -842,14 +825,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
               },
               MoreExecutors.directExecutor());
-      updateCounts.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              decreaseAsyncOperations();
-            }
-          },
-          MoreExecutors.directExecutor());
+      updateCounts.addListener(this::decreaseAsyncOperations, MoreExecutors.directExecutor());
       return updateCounts;
     }
 

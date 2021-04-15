@@ -128,13 +128,7 @@ public class SpannerRetryHelperTest {
           }
         });
     try {
-      withCancellation.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
-            }
-          });
+      withCancellation.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
       fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.CANCELLED) {
@@ -159,13 +153,7 @@ public class SpannerRetryHelperTest {
     try {
       final CancellableContext withDeadline =
           Context.current().withDeadline(Deadline.after(1L, TimeUnit.MILLISECONDS), service);
-      withDeadline.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
-            }
-          });
+      withDeadline.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
       fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
@@ -258,14 +246,11 @@ public class SpannerRetryHelperTest {
         .setDaemon(true)
         .build()
         .newThread(
-            new Runnable() {
-              @Override
-              public void run() {
-                while (true) {
-                  try {
-                    Thread.sleep(Long.MAX_VALUE);
-                  } catch (InterruptedException e) {
-                  }
+            () -> {
+              while (true) {
+                try {
+                  Thread.sleep(Long.MAX_VALUE);
+                } catch (InterruptedException e) {
                 }
               }
             });

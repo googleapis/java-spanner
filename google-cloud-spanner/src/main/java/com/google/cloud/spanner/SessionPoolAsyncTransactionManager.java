@@ -59,18 +59,15 @@ class SessionPoolAsyncTransactionManager
     this.session = session;
     this.delegate = SettableApiFuture.create();
     this.session.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              delegate.set(
-                  SessionPoolAsyncTransactionManager.this
-                      .session
-                      .get()
-                      .transactionManagerAsync(options));
-            } catch (Throwable t) {
-              delegate.setException(t);
-            }
+        () -> {
+          try {
+            delegate.set(
+                SessionPoolAsyncTransactionManager.this
+                    .session
+                    .get()
+                    .transactionManagerAsync(options));
+          } catch (Throwable t) {
+            delegate.setException(t);
           }
         },
         MoreExecutors.directExecutor());
@@ -234,14 +231,7 @@ class SessionPoolAsyncTransactionManager
           @Override
           public ApiFuture<Void> apply(AsyncTransactionManagerImpl input) throws Exception {
             ApiFuture<Void> res = input.rollbackAsync();
-            res.addListener(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    session.close();
-                  }
-                },
-                MoreExecutors.directExecutor());
+            res.addListener(() -> session.close(), MoreExecutors.directExecutor());
             return res;
           }
         },
