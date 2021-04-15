@@ -23,7 +23,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
@@ -57,16 +56,13 @@ class AsyncRunnerImpl implements AsyncRunner {
 
   private <R> R runTransaction(final AsyncWork<R> work) {
     return delegate.run(
-        new TransactionCallable<R>() {
-          @Override
-          public R run(TransactionContext transaction) throws Exception {
-            try {
-              return work.doWorkAsync(transaction).get();
-            } catch (ExecutionException e) {
-              throw SpannerExceptionFactory.newSpannerException(e.getCause());
-            } catch (InterruptedException e) {
-              throw SpannerExceptionFactory.propagateInterrupt(e);
-            }
+        transaction -> {
+          try {
+            return work.doWorkAsync(transaction).get();
+          } catch (ExecutionException e) {
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
           }
         });
   }

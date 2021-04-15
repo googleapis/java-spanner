@@ -141,12 +141,9 @@ class SessionImpl implements Session {
             ? (Collection<Mutation>) mutations
             : Lists.newArrayList(mutations);
     runner.run(
-        new TransactionRunner.TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext ctx) {
-            ctx.buffer(finalMutations);
-            return null;
-          }
+        ctx -> {
+          ctx.buffer(finalMutations);
+          return null;
         });
     return runner.getCommitResponse();
   }

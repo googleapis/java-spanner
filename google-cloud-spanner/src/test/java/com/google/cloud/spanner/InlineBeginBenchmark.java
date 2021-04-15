@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -189,13 +188,8 @@ public class InlineBeginBenchmark {
                 Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                 TransactionRunner runner = server.client.readWriteTransaction();
                 return runner.run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) throws Exception {
-                        return transaction.executeUpdate(
-                            StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                      }
-                    });
+                    transaction ->
+                        transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
               }));
     }
     Futures.allAsList(futures).get();
@@ -222,13 +216,8 @@ public class InlineBeginBenchmark {
                 Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                 TransactionRunner runner = server.client.readWriteTransaction();
                 return runner.run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) throws Exception {
-                        return transaction.executeUpdate(
-                            StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                      }
-                    });
+                    transaction ->
+                        transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
               }));
     }
     for (int i = 0; i < totalReads; i++) {

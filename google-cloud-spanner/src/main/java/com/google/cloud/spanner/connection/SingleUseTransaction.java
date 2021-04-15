@@ -34,9 +34,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.base.Function;
@@ -349,12 +347,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             writeTransaction = createWriteTransaction();
             Long res =
                 writeTransaction.run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) throws Exception {
-                        return transaction.executeUpdate(update.getStatement());
-                      }
-                    });
+                    transaction -> transaction.executeUpdate(update.getStatement()));
             state = UnitOfWorkState.COMMITTED;
             return res;
           } catch (Throwable t) {
@@ -390,31 +383,28 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         () -> {
           writeTransaction = createWriteTransaction();
           return writeTransaction.run(
-              new TransactionCallable<long[]>() {
-                @Override
-                public long[] run(TransactionContext transaction) throws Exception {
-                  try {
-                    long[] res =
-                        transaction.batchUpdate(
-                            Iterables.transform(
-                                updates,
-                                new Function<ParsedStatement, Statement>() {
-                                  @Override
-                                  public Statement apply(ParsedStatement input) {
-                                    return input.getStatement();
-                                  }
-                                }));
+              transaction -> {
+                try {
+                  long[] res =
+                      transaction.batchUpdate(
+                          Iterables.transform(
+                              updates,
+                              new Function<ParsedStatement, Statement>() {
+                                @Override
+                                public Statement apply(ParsedStatement input) {
+                                  return input.getStatement();
+                                }
+                              }));
+                  state = UnitOfWorkState.COMMITTED;
+                  return res;
+                } catch (Throwable t) {
+                  if (t instanceof SpannerBatchUpdateException) {
+                    // Batch update exceptions does not cause a rollback.
                     state = UnitOfWorkState.COMMITTED;
-                    return res;
-                  } catch (Throwable t) {
-                    if (t instanceof SpannerBatchUpdateException) {
-                      // Batch update exceptions does not cause a rollback.
-                      state = UnitOfWorkState.COMMITTED;
-                    } else {
-                      state = UnitOfWorkState.COMMIT_FAILED;
-                    }
-                    throw t;
+                  } else {
+                    state = UnitOfWorkState.COMMIT_FAILED;
                   }
+                  throw t;
                 }
               });
         };
@@ -438,12 +428,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             writeTransaction = createWriteTransaction();
             Void res =
                 writeTransaction.run(
-                    new TransactionCallable<Void>() {
-                      @Override
-                      public Void run(TransactionContext transaction) throws Exception {
-                        transaction.buffer(mutations);
-                        return null;
-                      }
+                    transaction -> {
+                      transaction.buffer(mutations);
+                      return null;
                     });
             state = UnitOfWorkState.COMMITTED;
             return res;
