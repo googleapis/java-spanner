@@ -376,8 +376,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder.set(fieldName).to((BigDecimal) value);
             break;
           case STRING:
-          case JSON:
             builder.set(fieldName).to((String) value);
+            break;
+          case JSON:
+            builder.set(fieldName).to(Value.json((String) value));
             break;
           case BYTES:
             builder.set(fieldName).to((ByteArray) value);
