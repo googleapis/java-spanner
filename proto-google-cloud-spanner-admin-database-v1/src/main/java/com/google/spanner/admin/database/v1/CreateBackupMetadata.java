@@ -257,8 +257,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-   * operation.
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -274,8 +273,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-   * operation.
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -293,8 +291,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-   * operation.
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -998,8 +995,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1014,8 +1010,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1036,8 +1031,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1060,8 +1054,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1082,8 +1075,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1110,8 +1102,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1132,8 +1123,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1148,8 +1138,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1168,8 +1157,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
-     * operation.
+     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>

@@ -790,8 +790,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-   * Defaults to 1 hour, if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -817,8 +817,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-   * Defaults to 1 hour, if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+   * if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -2815,8 +2815,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-     * Defaults to 1 hour, if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -2842,8 +2842,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-     * Defaults to 1 hour, if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -2869,8 +2869,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-     * Defaults to 1 hour, if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -2895,8 +2895,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-     * Defaults to 1 hour, if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -2917,8 +2917,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
-     * Defaults to 1 hour, if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
+     * if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];

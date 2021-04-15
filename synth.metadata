@@ -11,8 +11,8 @@
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "94c6e8461bc03382ee475c7b93e954f288c1d1f4",
-        "internalRef": "367675548"
+        "sha": "3b236df084cf9222c529a2890f90e3a4ff0f2dfd",
+        "internalRef": "368426665"
       }
     },
     {
@@ -271,6 +271,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponse.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DatabaseName.java",
@@ -343,6 +344,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeCode.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeProto.java",
+    "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/commit_response.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/keys.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/mutation.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/query_plan.proto",
