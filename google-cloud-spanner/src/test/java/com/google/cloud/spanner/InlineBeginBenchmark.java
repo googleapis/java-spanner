@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -156,17 +155,14 @@ public class InlineBeginBenchmark {
     for (int i = 0; i < totalQueries; i++) {
       futures.add(
           service.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  try (ResultSet rs =
-                      server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
-                    while (rs.next()) {
-                      Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
-                    }
-                    return null;
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                try (ResultSet rs =
+                    server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                  while (rs.next()) {
+                    Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                   }
+                  return null;
                 }
               }));
     }
@@ -189,20 +185,17 @@ public class InlineBeginBenchmark {
     for (int i = 0; i < totalWrites; i++) {
       futures.add(
           service.submit(
-              new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = server.client.readWriteTransaction();
-                  return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
-                }
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        return transaction.executeUpdate(
+                            StandardBenchmarkMockServer.UPDATE_STATEMENT);
+                      }
+                    });
               }));
     }
     Futures.allAsList(futures).get();
@@ -225,36 +218,30 @@ public class InlineBeginBenchmark {
     for (int i = 0; i < totalWrites; i++) {
       futures.add(
           service.submit(
-              new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = server.client.readWriteTransaction();
-                  return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
-                }
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    new TransactionCallable<Long>() {
+                      @Override
+                      public Long run(TransactionContext transaction) throws Exception {
+                        return transaction.executeUpdate(
+                            StandardBenchmarkMockServer.UPDATE_STATEMENT);
+                      }
+                    });
               }));
     }
     for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  try (ResultSet rs =
-                      server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
-                    while (rs.next()) {
-                      Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
-                    }
-                    return null;
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                try (ResultSet rs =
+                    server.client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                  while (rs.next()) {
+                    Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                   }
+                  return null;
                 }
               }));
     }

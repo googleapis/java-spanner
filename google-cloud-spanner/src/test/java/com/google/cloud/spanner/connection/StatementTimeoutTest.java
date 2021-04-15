@@ -44,7 +44,6 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -525,19 +524,16 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<Boolean> future =
         executor.submit(
-            new Callable<Boolean>() {
-              @Override
-              public Boolean call() {
-                try (Connection connection = createConnection()) {
-                  consumer.accept(connection);
-                  connection.setStatementTimeout(10000L, TimeUnit.MILLISECONDS);
+            () -> {
+              try (Connection connection = createConnection()) {
+                consumer.accept(connection);
+                connection.setStatementTimeout(10000L, TimeUnit.MILLISECONDS);
 
-                  latch.countDown();
-                  try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
-                  return false;
-                } catch (SpannerException e) {
-                  return e.getErrorCode() == ErrorCode.CANCELLED;
-                }
+                latch.countDown();
+                try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
+                return false;
+              } catch (SpannerException e) {
+                return e.getErrorCode() == ErrorCode.CANCELLED;
               }
             });
     latch.await(10L, TimeUnit.SECONDS);

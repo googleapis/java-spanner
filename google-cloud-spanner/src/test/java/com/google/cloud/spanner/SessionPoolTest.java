@@ -75,7 +75,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -299,16 +298,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session2);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session2);
+                      return null;
                     });
                 return null;
               }
@@ -354,16 +350,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session2);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session2);
+                      return null;
                     });
                 return null;
               }
@@ -394,17 +387,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionCreateFailure(
-                            SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionCreateFailure(
+                          SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
+                      return null;
                     });
                 return null;
               }
@@ -477,15 +467,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionCreateFailure(
-                            SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
-                        return null;
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionCreateFailure(
+                          SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
+                      return null;
                     });
                 return null;
               }
@@ -676,14 +663,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Then try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
         executor.submit(
-            new Callable<Void>() {
-              @Override
-              public Void call() {
-                latch.countDown();
-                PooledSessionFuture session = pool.getSession();
-                session.close();
-                return null;
-              }
+            () -> {
+              latch.countDown();
+              PooledSessionFuture session = pool.getSession();
+              session.close();
+              return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
@@ -1232,14 +1216,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
         executor.submit(
-            new Callable<Void>() {
-              @Override
-              public Void call() {
-                latch.countDown();
-                Session session = pool.getSession();
-                session.close();
-                return null;
-              }
+            () -> {
+              latch.countDown();
+              Session session = pool.getSession();
+              session.close();
+              return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
