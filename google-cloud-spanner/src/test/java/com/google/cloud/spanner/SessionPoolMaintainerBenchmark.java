@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -196,13 +195,8 @@ public class SessionPoolMaintainerBenchmark {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                   TransactionRunner runner = client.readWriteTransaction();
                   return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
+                      transaction ->
+                          transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
                 }
               }));
     }
@@ -235,13 +229,8 @@ public class SessionPoolMaintainerBenchmark {
                   Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
                   TransactionRunner runner = client.readWriteTransaction();
                   return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
+                      transaction ->
+                          transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
                 }
               }));
     }

@@ -30,7 +30,6 @@ import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -197,14 +196,7 @@ public class SpannerGaxRetryTest {
       while (true) {
         try {
           TransactionRunner runner = client.readWriteTransaction();
-          long updateCount =
-              runner.run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) {
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
-                    }
-                  });
+          long updateCount = runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
           assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
           break;
         } catch (SpannerException e) {
@@ -321,13 +313,7 @@ public class SpannerGaxRetryTest {
     mockSpanner.setBeginTransactionExecutionTime(ONE_SECOND);
     try {
       TransactionRunner runner = clientWithTimeout.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) throws Exception {
-              return null;
-            }
-          });
+      runner.run(transaction -> null);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
@@ -339,14 +325,7 @@ public class SpannerGaxRetryTest {
     warmUpSessionPool(client);
     mockSpanner.addException(UNAVAILABLE);
     TransactionRunner runner = client.readWriteTransaction();
-    long updateCount =
-        runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                return transaction.executeUpdate(UPDATE_STATEMENT);
-              }
-            });
+    long updateCount = runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
   }
 
@@ -356,14 +335,11 @@ public class SpannerGaxRetryTest {
     final AtomicInteger attempts = new AtomicInteger();
     long updateCount =
         runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                if (attempts.getAndIncrement() == 0) {
-                  mockSpanner.abortNextStatement();
-                }
-                return transaction.executeUpdate(UPDATE_STATEMENT);
+            transaction -> {
+              if (attempts.getAndIncrement() == 0) {
+                mockSpanner.abortNextStatement();
               }
+              return transaction.executeUpdate(UPDATE_STATEMENT);
             });
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
     assertThat(attempts.get(), is(equalTo(2)));
@@ -375,15 +351,12 @@ public class SpannerGaxRetryTest {
     final AtomicInteger attempts = new AtomicInteger();
     long updateCount =
         runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                long res = transaction.executeUpdate(UPDATE_STATEMENT);
-                if (attempts.getAndIncrement() == 0) {
-                  mockSpanner.abortTransaction(transaction);
-                }
-                return res;
+            transaction -> {
+              long res = transaction.executeUpdate(UPDATE_STATEMENT);
+              if (attempts.getAndIncrement() == 0) {
+                mockSpanner.abortTransaction(transaction);
               }
+              return res;
             });
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
     assertThat(attempts.get(), is(equalTo(2)));
@@ -393,12 +366,9 @@ public class SpannerGaxRetryTest {
   public void readWriteTransactionCheckedException() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            throw new Exception("test");
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          throw new Exception("test");
         });
   }
 
@@ -406,12 +376,9 @@ public class SpannerGaxRetryTest {
   public void readWriteTransactionUncheckedException() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "test");
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "test");
         });
   }
 

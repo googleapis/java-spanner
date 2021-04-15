@@ -51,7 +51,6 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
@@ -341,16 +340,12 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.executeQuery(
-                    SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -370,19 +365,16 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.read(
-                    READ_TABLE_NAME,
-                    KeySet.singleKey(Key.of(1L)),
-                    READ_COLUMN_NAMES,
-                    Options.tag("app=spanner,env=test,action=read"))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.tag("app=spanner,env=test,action=read"))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -401,13 +393,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            return transaction.executeUpdate(
-                UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=update"));
-          }
-        });
+        transaction ->
+            transaction.executeUpdate(
+                UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=update")));
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -425,13 +413,9 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) throws Exception {
-            return transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.tag("app=spanner,env=test,action=batch"));
-          }
-        });
+        transaction ->
+            transaction.batchUpdate(
+                Arrays.asList(UPDATE_STATEMENT), Options.tag("app=spanner,env=test,action=batch")));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -467,12 +451,9 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=commit"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
         });
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -818,12 +799,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          return null;
         });
     assertNotNull(runner.getCommitTimestamp());
   }
@@ -834,12 +812,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
+          return null;
         });
     assertNotNull(runner.getCommitResponse());
     assertNotNull(runner.getCommitResponse().getCommitStats());
@@ -857,12 +832,9 @@ public class DatabaseClientImplTest {
     // transaction.
     mockSpanner.unfreeze();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          return null;
         });
   }
 
@@ -1136,12 +1108,9 @@ public class DatabaseClientImplTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) {
-                    transaction.executeUpdate(UPDATE_STATEMENT);
-                    return null;
-                  }
+                transaction -> {
+                  transaction.executeUpdate(UPDATE_STATEMENT);
+                  return null;
                 });
         fail("expected DEADLINE_EXCEEDED");
       } catch (SpannerException e) {
@@ -1184,13 +1153,7 @@ public class DatabaseClientImplTest {
       long updateCount =
           client
               .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) {
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
-                    }
-                  });
+              .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     }
   }
@@ -1234,13 +1197,7 @@ public class DatabaseClientImplTest {
       try {
         client
             .readWriteTransaction()
-            .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    return transaction.executeUpdate(UPDATE_STATEMENT);
-                  }
-                });
+            .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
         fail("missing expected DEADLINE_EXCEEDED exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
@@ -1442,15 +1399,7 @@ public class DatabaseClientImplTest {
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
         }
         try {
-          dbClient
-              .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) {
-                      return null;
-                    }
-                  });
+          dbClient.readWriteTransaction().run(transaction -> null);
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
         }
@@ -1467,15 +1416,7 @@ public class DatabaseClientImplTest {
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
         }
         try {
-          dbClient
-              .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) {
-                      return null;
-                    }
-                  });
+          dbClient.readWriteTransaction().run(transaction -> null);
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
         }
@@ -1517,12 +1458,9 @@ public class DatabaseClientImplTest {
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
-                    return transaction.executeUpdate(UPDATE_STATEMENT);
-                  }
+                transaction -> {
+                  assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  return transaction.executeUpdate(UPDATE_STATEMENT);
                 });
     assertThat(res).isEqualTo(UPDATE_COUNT);
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
@@ -1552,39 +1490,33 @@ public class DatabaseClientImplTest {
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    // Client1 should have 1 session checked out.
-                    // Client2 should have 0 sessions checked out.
-                    assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
-                    assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
-                    Long add =
-                        client2
-                            .readWriteTransaction()
-                            .run(
-                                new TransactionCallable<Long>() {
-                                  @Override
-                                  public Long run(TransactionContext transaction) {
-                                    // Both clients should now have 1 session checked out.
-                                    assertThat(client1.pool.getNumberOfSessionsInPool())
-                                        .isEqualTo(minSessions - 1);
-                                    assertThat(client2.pool.getNumberOfSessionsInPool())
-                                        .isEqualTo(minSessions - 1);
-                                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                                      if (rs.next()) {
-                                        return rs.getLong(0);
-                                      }
-                                      return 0L;
-                                    }
+                transaction -> {
+                  // Client1 should have 1 session checked out.
+                  // Client2 should have 0 sessions checked out.
+                  assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+                  Long add =
+                      client2
+                          .readWriteTransaction()
+                          .run(
+                              transaction1 -> {
+                                // Both clients should now have 1 session checked out.
+                                assertThat(client1.pool.getNumberOfSessionsInPool())
+                                    .isEqualTo(minSessions - 1);
+                                assertThat(client2.pool.getNumberOfSessionsInPool())
+                                    .isEqualTo(minSessions - 1);
+                                try (ResultSet rs = transaction1.executeQuery(SELECT1)) {
+                                  if (rs.next()) {
+                                    return rs.getLong(0);
                                   }
-                                });
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      if (rs.next()) {
-                        return add + rs.getLong(0);
-                      }
-                      return add + 0L;
+                                  return 0L;
+                                }
+                              });
+                  try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                    if (rs.next()) {
+                      return add + rs.getLong(0);
                     }
+                    return add + 0L;
                   }
                 });
     assertThat(res).isEqualTo(2L);
@@ -1903,13 +1835,7 @@ public class DatabaseClientImplTest {
                 // Update should succeed.
                 client
                     .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Long>() {
-                          @Override
-                          public Long run(TransactionContext transaction) throws Exception {
-                            return transaction.executeUpdate(UPDATE_STATEMENT);
-                          }
-                        });
+                    .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
               }
             });
   }
@@ -2037,15 +1963,12 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -2061,19 +1984,16 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.read(
-                    READ_TABLE_NAME,
-                    KeySet.singleKey(Key.of(1L)),
-                    READ_COLUMN_NAMES,
-                    Options.priority(RpcPriority.HIGH))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -2089,12 +2009,8 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            return transaction.executeUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH));
-          }
-        });
+        transaction ->
+            transaction.executeUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH)));
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -2109,13 +2025,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) throws Exception {
-            return transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH));
-          }
-        });
+        transaction ->
+            transaction.batchUpdate(
+                Arrays.asList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH)));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -2144,12 +2056,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.priority(RpcPriority.HIGH));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
         });
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);

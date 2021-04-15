@@ -598,17 +598,14 @@ public class RetryOnInvalidatedSessionTest {
       TransactionRunner runner = client.readWriteTransaction();
       int count =
           runner.run(
-              new TransactionCallable<Integer>() {
-                @Override
-                public Integer run(TransactionContext transaction) {
-                  int count = 0;
-                  try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-                    while (rs.next()) {
-                      count++;
-                    }
+              transaction -> {
+                int count1 = 0;
+                try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                  while (rs.next()) {
+                    count1++;
                   }
-                  return count;
                 }
+                return count1;
               });
       assertThat(count).isEqualTo(2);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -624,17 +621,14 @@ public class RetryOnInvalidatedSessionTest {
       TransactionRunner runner = client.readWriteTransaction();
       int count =
           runner.run(
-              new TransactionCallable<Integer>() {
-                @Override
-                public Integer run(TransactionContext transaction) {
-                  int count = 0;
-                  try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-                    while (rs.next()) {
-                      count++;
-                    }
+              transaction -> {
+                int count1 = 0;
+                try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                  while (rs.next()) {
+                    count1++;
                   }
-                  return count;
                 }
+                return count1;
               });
       assertThat(count).isEqualTo(2);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -650,17 +644,14 @@ public class RetryOnInvalidatedSessionTest {
       TransactionRunner runner = client.readWriteTransaction();
       int count =
           runner.run(
-              new TransactionCallable<Integer>() {
-                @Override
-                public Integer run(TransactionContext transaction) {
-                  int count = 0;
-                  try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
-                    while (rs.next()) {
-                      count++;
-                    }
+              transaction -> {
+                int count1 = 0;
+                try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+                  while (rs.next()) {
+                    count1++;
                   }
-                  return count;
                 }
+                return count1;
               });
       assertThat(count).isEqualTo(2);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -676,19 +667,15 @@ public class RetryOnInvalidatedSessionTest {
       TransactionRunner runner = client.readWriteTransaction();
       int count =
           runner.run(
-              new TransactionCallable<Integer>() {
-                @Override
-                public Integer run(TransactionContext transaction) {
-                  int count = 0;
-                  try (ResultSet rs =
-                      transaction.readUsingIndex(
-                          "FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
-                    while (rs.next()) {
-                      count++;
-                    }
+              transaction -> {
+                int count1 = 0;
+                try (ResultSet rs =
+                    transaction.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+                  while (rs.next()) {
+                    count1++;
                   }
-                  return count;
                 }
+                return count1;
               });
       assertThat(count).isEqualTo(2);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -703,13 +690,7 @@ public class RetryOnInvalidatedSessionTest {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       Struct row =
-          runner.run(
-              new TransactionCallable<Struct>() {
-                @Override
-                public Struct run(TransactionContext transaction) {
-                  return transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
-                }
-              });
+          runner.run(transaction -> transaction.readRow("FOO", Key.of(), Arrays.asList("BAR")));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -724,13 +705,8 @@ public class RetryOnInvalidatedSessionTest {
       TransactionRunner runner = client.readWriteTransaction();
       Struct row =
           runner.run(
-              new TransactionCallable<Struct>() {
-                @Override
-                public Struct run(TransactionContext transaction) {
-                  return transaction.readRowUsingIndex(
-                      "FOO", "IDX", Key.of(), Arrays.asList("BAR"));
-                }
-              });
+              transaction ->
+                  transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR")));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -743,14 +719,7 @@ public class RetryOnInvalidatedSessionTest {
     invalidateSessionPool();
     try {
       TransactionRunner runner = client.readWriteTransaction();
-      long count =
-          runner.run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) {
-                  return transaction.executeUpdate(UPDATE_STATEMENT);
-                }
-              });
+      long count = runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
       assertThat(count).isEqualTo(UPDATE_COUNT);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -764,13 +733,7 @@ public class RetryOnInvalidatedSessionTest {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       long[] count =
-          runner.run(
-              new TransactionCallable<long[]>() {
-                @Override
-                public long[] run(TransactionContext transaction) {
-                  return transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
-                }
-              });
+          runner.run(transaction -> transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT)));
       assertThat(count.length).isEqualTo(1);
       assertThat(count[0]).isEqualTo(UPDATE_COUNT);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -785,12 +748,9 @@ public class RetryOnInvalidatedSessionTest {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              transaction.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
-              return null;
-            }
+          transaction -> {
+            transaction.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
+            return null;
           });
       assertThat(runner.getCommitTimestamp()).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
