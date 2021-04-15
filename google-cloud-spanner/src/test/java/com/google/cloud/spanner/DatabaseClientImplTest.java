@@ -41,7 +41,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -510,12 +509,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.tag("app=spanner,env=test,action=runner"));
     get(
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                return ApiFutures.immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
             },
             executor));
 
@@ -874,13 +870,7 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> result =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
-              }
-            },
-            executor);
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT)), executor);
     assertEquals(UPDATE_COUNT, result.get().longValue());
     assertNotNull(runner.getCommitTimestamp().get());
     executor.shutdown();
@@ -894,12 +884,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.commitStats());
     ApiFuture<Void> result =
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("FOO", Key.of("foo")));
-                return ApiFutures.<Void>immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("FOO", Key.of("foo")));
+              return ApiFutures.<Void>immediateFuture(null);
             },
             executor);
     assertNull(get(result));
@@ -919,13 +906,7 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
-              }
-            },
-            executor);
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT)), executor);
     mockSpanner.unfreeze();
     assertThat(fut.get()).isEqualTo(UPDATE_COUNT);
     executor.shutdown();
@@ -939,12 +920,7 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT));
-              }
-            },
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT)),
             executor);
     try {
       fut.get();
@@ -2182,12 +2158,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.priority(RpcPriority.HIGH));
     get(
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                return ApiFutures.immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
             },
             executor));
 

@@ -31,7 +31,6 @@ import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
@@ -299,16 +298,13 @@ public class ITAsyncAPITest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Long> res =
           runner.runAsync(
-              new AsyncWork<Long>() {
-                @Override
-                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                  // The error returned by this update statement will not bubble up and fail the
-                  // transaction.
-                  txn.executeUpdateAsync(Statement.of("UPDATE BadTableName SET FOO=1 WHERE ID=2"));
-                  return txn.executeUpdateAsync(
-                      Statement.of(
-                          "INSERT INTO TestTable (Key, StringValue) VALUES ('k999', 'v999')"));
-                }
+              txn -> {
+                // The error returned by this update statement will not bubble up and fail the
+                // transaction.
+                txn.executeUpdateAsync(Statement.of("UPDATE BadTableName SET FOO=1 WHERE ID=2"));
+                return txn.executeUpdateAsync(
+                    Statement.of(
+                        "INSERT INTO TestTable (Key, StringValue) VALUES ('k999', 'v999')"));
               },
               executor);
       assertThat(res.get()).isEqualTo(1L);
@@ -324,18 +320,15 @@ public class ITAsyncAPITest {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     AsyncRunner runner = client.runAsync(Options.commitStats());
     runner.runAsync(
-        new AsyncWork<Void>() {
-          @Override
-          public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
-            transaction.buffer(
-                Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
-                    .set("Key")
-                    .to("k_commit_stats")
-                    .set("StringValue")
-                    .to("Should return commit stats")
-                    .build());
-            return ApiFutures.immediateFuture(null);
-          }
+        transaction -> {
+          transaction.buffer(
+              Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                  .set("Key")
+                  .to("k_commit_stats")
+                  .set("StringValue")
+                  .to("Should return commit stats")
+                  .build());
+          return ApiFutures.immediateFuture(null);
         },
         executor);
     assertNotNull(get(runner.getCommitResponse()).getCommitStats());

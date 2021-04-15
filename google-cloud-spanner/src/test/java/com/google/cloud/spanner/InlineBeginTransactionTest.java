@@ -28,7 +28,6 @@ import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
@@ -218,16 +217,7 @@ public class InlineBeginTransactionTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       ApiFuture<Long> updateCount =
-          client
-              .runAsync()
-              .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                    }
-                  },
-                  executor);
+          client.runAsync().runAsync(txn -> txn.executeUpdateAsync(UPDATE_STATEMENT), executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
@@ -242,15 +232,12 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      ApiFuture<Long> res = txn.executeUpdateAsync(UPDATE_STATEMENT);
-                      if (firstAttempt.getAndSet(false)) {
-                        mockSpanner.abortTransaction(txn);
-                      }
-                      return res;
+                  txn -> {
+                    ApiFuture<Long> res = txn.executeUpdateAsync(UPDATE_STATEMENT);
+                    if (firstAttempt.getAndSet(false)) {
+                      mockSpanner.abortTransaction(txn);
                     }
+                    return res;
                   },
                   executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
@@ -268,31 +255,28 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      final SettableApiFuture<Long> res = SettableApiFuture.create();
-                      try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
-                        rs.setCallback(
-                            executor,
-                            new ReadyCallback() {
-                              @Override
-                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                switch (resultSet.tryNext()) {
-                                  case DONE:
-                                    return CallbackResponse.DONE;
-                                  case NOT_READY:
-                                    return CallbackResponse.CONTINUE;
-                                  case OK:
-                                    res.set(resultSet.getLong(0));
-                                  default:
-                                    throw new IllegalStateException();
-                                }
+                  txn -> {
+                    final SettableApiFuture<Long> res = SettableApiFuture.create();
+                    try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                      rs.setCallback(
+                          executor,
+                          new ReadyCallback() {
+                            @Override
+                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                              switch (resultSet.tryNext()) {
+                                case DONE:
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
+                                case OK:
+                                  res.set(resultSet.getLong(0));
+                                default:
+                                  throw new IllegalStateException();
                               }
-                            });
-                      }
-                      return res;
+                            }
+                          });
                     }
+                    return res;
                   },
                   queryExecutor);
       assertThat(updateCount.get()).isEqualTo(1L);
@@ -310,13 +294,9 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<long[]>() {
-                    @Override
-                    public ApiFuture<long[]> doWorkAsync(TransactionContext transaction) {
-                      return transaction.batchUpdateAsync(
-                          Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                    }
-                  },
+                  transaction ->
+                      transaction.batchUpdateAsync(
+                          Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
                   executor);
       assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -331,12 +311,9 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext transaction) {
-                      transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
-                      return transaction.executeUpdateAsync(UPDATE_STATEMENT);
-                    }
+                  transaction -> {
+                    transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                    return transaction.executeUpdateAsync(UPDATE_STATEMENT);
                   },
                   executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
@@ -357,12 +334,9 @@ public class InlineBeginTransactionTest {
       client
           .runAsync()
           .runAsync(
-              new AsyncWork<Void>() {
-                @Override
-                public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
-                  transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-                  return ApiFutures.immediateFuture(null);
-                }
+              transaction -> {
+                transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                return ApiFutures.immediateFuture(null);
               },
               executor)
           .get();
@@ -1251,47 +1225,44 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(final TransactionContext txn) {
-                      List<ApiFuture<Long>> futures = new ArrayList<>(numQueries);
-                      for (int i = 0; i < numQueries; i++) {
-                        final SettableApiFuture<Long> res = SettableApiFuture.create();
-                        try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
-                          rs.setCallback(
-                              executor,
-                              new ReadyCallback() {
-                                @Override
-                                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                  switch (resultSet.tryNext()) {
-                                    case DONE:
-                                      return CallbackResponse.DONE;
-                                    case NOT_READY:
-                                      return CallbackResponse.CONTINUE;
-                                    case OK:
-                                      res.set(resultSet.getLong(0));
-                                    default:
-                                      throw new IllegalStateException();
-                                  }
+                  txn -> {
+                    List<ApiFuture<Long>> futures = new ArrayList<>(numQueries);
+                    for (int i = 0; i < numQueries; i++) {
+                      final SettableApiFuture<Long> res = SettableApiFuture.create();
+                      try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                        rs.setCallback(
+                            executor,
+                            new ReadyCallback() {
+                              @Override
+                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                                switch (resultSet.tryNext()) {
+                                  case DONE:
+                                    return CallbackResponse.DONE;
+                                  case NOT_READY:
+                                    return CallbackResponse.CONTINUE;
+                                  case OK:
+                                    res.set(resultSet.getLong(0));
+                                  default:
+                                    throw new IllegalStateException();
                                 }
-                              });
-                        }
-                        futures.add(res);
-                      }
-                      return ApiFutures.transformAsync(
-                          ApiFutures.allAsList(futures),
-                          new ApiAsyncFunction<List<Long>, Long>() {
-                            @Override
-                            public ApiFuture<Long> apply(List<Long> input) throws Exception {
-                              long sum = 0L;
-                              for (Long l : input) {
-                                sum += l;
                               }
-                              return ApiFutures.immediateFuture(sum);
-                            }
-                          },
-                          MoreExecutors.directExecutor());
+                            });
+                      }
+                      futures.add(res);
                     }
+                    return ApiFutures.transformAsync(
+                        ApiFutures.allAsList(futures),
+                        new ApiAsyncFunction<List<Long>, Long>() {
+                          @Override
+                          public ApiFuture<Long> apply(List<Long> input) throws Exception {
+                            long sum = 0L;
+                            for (Long l : input) {
+                              sum += l;
+                            }
+                            return ApiFutures.immediateFuture(sum);
+                          }
+                        },
+                        MoreExecutors.directExecutor());
                   },
                   executor);
       assertThat(updateCount.get()).isEqualTo(1L * numQueries);

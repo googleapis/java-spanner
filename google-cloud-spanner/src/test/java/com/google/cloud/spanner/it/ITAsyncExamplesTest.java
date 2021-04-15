@@ -27,7 +27,6 @@ import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -41,7 +40,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.StructReader;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -244,35 +242,28 @@ public class ITAsyncExamplesTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> insertCount =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                // Even though this is a shoot-and-forget asynchronous DML statement, it is
-                // guaranteed to be executed within the transaction before the commit is executed.
-                return txn.executeUpdateAsync(
-                    Statement.newBuilder(
-                            "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
-                        .bind("key")
-                        .to("k999")
-                        .bind("value")
-                        .to("v999")
-                        .build());
-              }
+            txn -> {
+              // Even though this is a shoot-and-forget asynchronous DML statement, it is
+              // guaranteed to be executed within the transaction before the commit is executed.
+              return txn.executeUpdateAsync(
+                  Statement.newBuilder(
+                          "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
+                      .bind("key")
+                      .to("k999")
+                      .bind("value")
+                      .to("v999")
+                      .build());
             },
             executor);
     assertThat(insertCount.get()).isEqualTo(1L);
     ApiFuture<Long> deleteCount =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return txn.executeUpdateAsync(
+            txn ->
+                txn.executeUpdateAsync(
                     Statement.newBuilder("DELETE FROM TestTable WHERE Key=@key")
                         .bind("key")
                         .to("k999")
-                        .build());
-              }
-            },
+                        .build()),
             executor);
     assertThat(deleteCount.get()).isEqualTo(1L);
   }
@@ -282,44 +273,39 @@ public class ITAsyncExamplesTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<long[]> insertCount =
         runner.runAsync(
-            new AsyncWork<long[]>() {
-              @Override
-              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
-                // Even though this is a shoot-and-forget asynchronous DML statement, it is
-                // guaranteed to be executed within the transaction before the commit is executed.
-                return txn.batchUpdateAsync(
-                    ImmutableList.of(
-                        Statement.newBuilder(
-                                "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
-                            .bind("key")
-                            .to("k997")
-                            .bind("value")
-                            .to("v997")
-                            .build(),
-                        Statement.newBuilder(
-                                "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
-                            .bind("key")
-                            .to("k998")
-                            .bind("value")
-                            .to("v998")
-                            .build(),
-                        Statement.newBuilder(
-                                "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
-                            .bind("key")
-                            .to("k999")
-                            .bind("value")
-                            .to("v999")
-                            .build()));
-              }
+            txn -> {
+              // Even though this is a shoot-and-forget asynchronous DML statement, it is
+              // guaranteed to be executed within the transaction before the commit is executed.
+              return txn.batchUpdateAsync(
+                  ImmutableList.of(
+                      Statement.newBuilder(
+                              "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
+                          .bind("key")
+                          .to("k997")
+                          .bind("value")
+                          .to("v997")
+                          .build(),
+                      Statement.newBuilder(
+                              "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
+                          .bind("key")
+                          .to("k998")
+                          .bind("value")
+                          .to("v998")
+                          .build(),
+                      Statement.newBuilder(
+                              "INSERT INTO TestTable (Key, StringValue) VALUES (@key, @value)")
+                          .bind("key")
+                          .to("k999")
+                          .bind("value")
+                          .to("v999")
+                          .build()));
             },
             executor);
     assertThat(insertCount.get()).asList().containsExactly(1L, 1L, 1L);
     ApiFuture<long[]> deleteCount =
         runner.runAsync(
-            new AsyncWork<long[]>() {
-              @Override
-              public ApiFuture<long[]> doWorkAsync(TransactionContext txn) {
-                return txn.batchUpdateAsync(
+            txn ->
+                txn.batchUpdateAsync(
                     ImmutableList.of(
                         Statement.newBuilder("DELETE FROM TestTable WHERE Key=@key")
                             .bind("key")
@@ -332,9 +318,7 @@ public class ITAsyncExamplesTest {
                         Statement.newBuilder("DELETE FROM TestTable WHERE Key=@key")
                             .bind("key")
                             .to("k999")
-                            .build()));
-              }
-            },
+                            .build())),
             executor);
     assertThat(deleteCount.get()).asList().containsExactly(1L, 1L, 1L);
   }

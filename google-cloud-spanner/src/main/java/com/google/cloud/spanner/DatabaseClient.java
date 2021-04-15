@@ -398,21 +398,18 @@ public interface DatabaseClient {
    * AsyncRunner runner = client.runAsync();
    * ApiFuture<Long> rowCount =
    *     runner.runAsync(
-   *         new AsyncWork<Long>() {
-   *           @Override
-   *           public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-   *             String column = "FirstName";
-   *             Struct row =
-   *                 txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
-   *             String name = row.getString("Name");
-   *             return txn.executeUpdateAsync(
-   *                 Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
-   *                     .bind("id")
-   *                     .to(singerId)
-   *                     .bind("name")
-   *                     .to(name.toUpperCase())
-   *                     .build());
-   *           }
+   *         () -> {
+   *           String column = "FirstName";
+   *           Struct row =
+   *               txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
+   *           String name = row.getString("Name");
+   *           return txn.executeUpdateAsync(
+   *               Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
+   *                   .bind("id")
+   *                   .to(singerId)
+   *                   .bind("name")
+   *                   .to(name.toUpperCase())
+   *                   .build());
    *         },
    *         executor);
    * </code></pre>
