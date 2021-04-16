@@ -58,7 +58,7 @@ public interface TransactionRetryListener {
      * An unexpected error occurred during transaction retry, the transaction cannot continue and
      * will throw an exception.
      */
-    RETRY_ERROR;
+    RETRY_ERROR
   }
 
   /**

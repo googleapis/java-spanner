@@ -230,7 +230,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private enum StatementResultType {
       RESULT_SET,
       UPDATE_COUNT,
-      EXCEPTION;
+      EXCEPTION
     }
 
     private final StatementResultType type;

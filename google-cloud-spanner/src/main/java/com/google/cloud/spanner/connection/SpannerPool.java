@@ -96,7 +96,7 @@ public class SpannerPool {
   @VisibleForTesting
   enum CheckAndCloseSpannersMode {
     WARN,
-    ERROR;
+    ERROR
   }
 
   private final class CloseSpannerRunnable implements Runnable {

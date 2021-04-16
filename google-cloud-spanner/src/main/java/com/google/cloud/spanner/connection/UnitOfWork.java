@@ -37,7 +37,7 @@ interface UnitOfWork {
   /** A unit of work can be either a transaction or a DDL/DML batch. */
   enum Type {
     TRANSACTION,
-    BATCH;
+    BATCH
   }
 
   enum UnitOfWorkState {

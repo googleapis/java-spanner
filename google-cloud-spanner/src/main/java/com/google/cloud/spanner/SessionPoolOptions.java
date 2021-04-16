@@ -189,12 +189,12 @@ public class SessionPoolOptions {
 
   private enum ActionOnSessionNotFound {
     RETRY,
-    FAIL;
+    FAIL
   }
 
   private enum ActionOnSessionLeak {
     WARN,
-    FAIL;
+    FAIL
   }
 
   /** Builder for creating SessionPoolOptions. */

@@ -71,7 +71,7 @@ public class ReadWriteTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   private static class SimpleTransactionManager implements TransactionManager {
@@ -417,7 +417,7 @@ public class ReadWriteTransactionTest {
 
   private enum RetryResults {
     SAME,
-    DIFFERENT;
+    DIFFERENT
   }
 
   @Test

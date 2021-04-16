@@ -83,7 +83,7 @@ public class SingleUseTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   /** Creates a {@link StatementTimeout} that will never timeout. */

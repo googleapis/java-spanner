@@ -43,7 +43,7 @@ public interface StatementResult {
      * DDL statements and client side statements that set the state of a connection return no
      * result.
      */
-    NO_RESULT;
+    NO_RESULT
   }
 
   /** The type of client side statement that was executed. */
@@ -74,7 +74,7 @@ public interface StatementResult {
     START_BATCH_DDL,
     START_BATCH_DML,
     RUN_BATCH,
-    ABORT_BATCH;
+    ABORT_BATCH
   }
 
   /**

@@ -1751,7 +1751,7 @@ class SessionPool {
 
   private enum Position {
     FIRST,
-    RANDOM;
+    RANDOM
   }
 
   private final SessionPoolOptions options;

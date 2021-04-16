@@ -263,7 +263,7 @@ public class SessionClientTest {
   private enum AddRemoveSetException {
     SET,
     ADD,
-    REMOVE;
+    REMOVE
   }
 
   @SuppressWarnings("unchecked")

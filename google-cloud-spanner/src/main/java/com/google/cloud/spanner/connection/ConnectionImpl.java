@@ -119,7 +119,7 @@ class ConnectionImpl implements Connection {
   enum BatchMode {
     NONE,
     DDL,
-    DML;
+    DML
   }
 
   /**

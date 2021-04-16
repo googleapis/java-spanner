@@ -50,7 +50,7 @@ public class StatementParser {
     DDL,
     QUERY,
     UPDATE,
-    UNKNOWN;
+    UNKNOWN
   }
 
   /** A statement that has been parsed */

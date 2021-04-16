@@ -801,7 +801,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     UPDATE,
     BATCH_UPDATE,
     WRITE,
-    EXCEPTION;
+    EXCEPTION
   }
 
   @SuppressWarnings("unchecked")
