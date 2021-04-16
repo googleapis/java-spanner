@@ -484,8 +484,7 @@ public class SpannerPool {
         // Check whether the last connection was closed more than
         // closeSpannerAfterMillisecondsUnused milliseconds ago.
         if (closedAt != null
-            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS)
-                    - closedAt.longValue()))
+            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS) - closedAt))
                 > closeSpannerAfterMillisecondsUnused) {
           Spanner spanner = spanners.get(entry.getKey());
           if (spanner != null) {

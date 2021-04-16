@@ -1595,7 +1595,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private boolean isPartitionedDmlTransaction(ByteString transactionId) {
     return transactionId != null
         && isPartitionedDmlTransaction.get(transactionId) != null
-        && isPartitionedDmlTransaction.get(transactionId).booleanValue();
+        && isPartitionedDmlTransaction.get(transactionId);
   }
 
   private boolean isReadWriteTransaction(ByteString transactionId) {
