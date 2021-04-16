@@ -36,7 +36,7 @@ public final class Options implements Serializable {
 
     private final Priority proto;
 
-    private RpcPriority(Priority proto) {
+    RpcPriority(Priority proto) {
       this.proto = Preconditions.checkNotNull(proto);
     }
   }

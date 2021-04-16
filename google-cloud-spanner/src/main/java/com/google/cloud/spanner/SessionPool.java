@@ -1749,7 +1749,7 @@ class SessionPool {
     }
   }
 
-  private static enum Position {
+  private enum Position {
     FIRST,
     RANDOM;
   }

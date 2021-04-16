@@ -62,11 +62,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     /** Does this state mean that the result set should permanently stop producing rows. */
     private final boolean shouldStop;
 
-    private State() {
+    State() {
       shouldStop = false;
     }
 
-    private State(boolean shouldStop) {
+    State(boolean shouldStop) {
       this.shouldStop = shouldStop;
     }
   }

@@ -99,7 +99,7 @@ public class InstanceAdminGaxTest {
         1000L);
   }
 
-  public static enum ExceptionType {
+  public enum ExceptionType {
     RETRYABLE {
       @Override
       public Exception getException() {

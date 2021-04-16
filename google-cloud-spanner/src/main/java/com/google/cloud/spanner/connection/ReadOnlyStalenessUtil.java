@@ -61,7 +61,7 @@ public class ReadOnlyStalenessUtil {
     private final String abbreviation;
     private final TimeUnit unit;
 
-    private TimeUnitAbbreviation(String abbreviation, TimeUnit unit) {
+    TimeUnitAbbreviation(String abbreviation, TimeUnit unit) {
       this.abbreviation = abbreviation;
       this.unit = unit;
     }

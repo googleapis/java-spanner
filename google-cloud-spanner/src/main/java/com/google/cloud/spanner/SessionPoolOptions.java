@@ -182,17 +182,17 @@ public class SessionPoolOptions {
     return new Builder();
   }
 
-  private static enum ActionOnExhaustion {
+  private enum ActionOnExhaustion {
     BLOCK,
     FAIL,
   }
 
-  private static enum ActionOnSessionNotFound {
+  private enum ActionOnSessionNotFound {
     RETRY,
     FAIL;
   }
 
-  private static enum ActionOnSessionLeak {
+  private enum ActionOnSessionLeak {
     WARN,
     FAIL;
   }
