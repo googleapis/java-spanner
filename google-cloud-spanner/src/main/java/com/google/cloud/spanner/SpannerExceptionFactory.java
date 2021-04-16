@@ -270,12 +270,13 @@ public final class SpannerExceptionFactory {
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
         if (resourceInfo != null) {
-          if (resourceInfo.getResourceType().equals(SESSION_RESOURCE_TYPE)) {
-            return new SessionNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(DATABASE_RESOURCE_TYPE)) {
-            return new DatabaseNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(INSTANCE_RESOURCE_TYPE)) {
-            return new InstanceNotFoundException(token, message, resourceInfo, cause);
+          switch (resourceInfo.getResourceType()) {
+            case SESSION_RESOURCE_TYPE:
+              return new SessionNotFoundException(token, message, resourceInfo, cause);
+            case DATABASE_RESOURCE_TYPE:
+              return new DatabaseNotFoundException(token, message, resourceInfo, cause);
+            case INSTANCE_RESOURCE_TYPE:
+              return new InstanceNotFoundException(token, message, resourceInfo, cause);
           }
         }
         // Fall through to the default.
