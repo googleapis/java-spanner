@@ -313,7 +313,7 @@ public abstract class AbstractSqlScriptVerifier {
             } else {
               String value = verifyMatcher.group("value");
               if (value != null) {
-                String parts[] = column.split(",", 2);
+                String[] parts = column.split(",", 2);
                 column = parts[0].trim();
                 value = parts[1].trim();
                 column = column.substring(1, column.length() - 1);

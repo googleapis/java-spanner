@@ -37,7 +37,7 @@ import java.util.Random;
  * of Cloud Spanner filled with random data.
  */
 public class RandomResultSetGenerator {
-  private static final Type TYPES[] =
+  private static final Type[] TYPES =
       new Type[] {
         Type.newBuilder().setCode(TypeCode.BOOL).build(),
         Type.newBuilder().setCode(TypeCode.INT64).build(),

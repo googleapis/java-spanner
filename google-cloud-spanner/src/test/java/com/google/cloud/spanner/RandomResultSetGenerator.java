@@ -32,7 +32,7 @@ import com.google.spanner.v1.TypeCode;
 import java.util.Random;
 
 public class RandomResultSetGenerator {
-  private static final Type TYPES[] =
+  private static final Type[] TYPES =
       new Type[] {
         Type.newBuilder().setCode(TypeCode.BOOL).build(),
         Type.newBuilder().setCode(TypeCode.INT64).build(),
