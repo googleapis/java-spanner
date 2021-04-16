@@ -47,7 +47,6 @@ import com.google.common.base.Strings;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -343,7 +342,7 @@ public class ITVPCNegativeTest {
   }
 
   @Test
-  public void deniedListBackupOperations() throws FileNotFoundException, IOException {
+  public void deniedListBackupOperations() throws IOException {
     try (OperationsClient client =
         OperationsClient.create(
             OperationsSettings.newBuilder()

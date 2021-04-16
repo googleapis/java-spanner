@@ -110,7 +110,7 @@ public class ITDirectPathFallback {
   }
 
   @Before
-  public void setup() throws IOException, Throwable {
+  public void setup() throws Throwable {
     assume()
         .withMessage("DirectPath integration tests can only run against DirectPathEnv")
         .that(Boolean.getBoolean(ATTEMPT_DIRECT_PATH))
