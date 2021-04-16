@@ -430,7 +430,7 @@ public class MutationTest {
                 2.3,
                 ByteArray.fromBase64("abcd"),
                 Timestamp.ofTimeSecondsAndNanos(1, 2),
-                Date.fromYearMonthDay(2017, 04, 17))));
+                Date.fromYearMonthDay(2017, 4, 17))));
     reserializeAndAssert(Mutation.delete("test", KeySet.all()));
     reserializeAndAssert(
         Mutation.delete(
@@ -495,7 +495,7 @@ public class MutationTest {
         .set("timestampNull")
         .to((Timestamp) null)
         .set("date")
-        .to(Date.fromYearMonthDay(2017, 04, 17))
+        .to(Date.fromYearMonthDay(2017, 4, 17))
         .set("dateNull")
         .to((Date) null)
         .set("stringArr")
@@ -509,7 +509,7 @@ public class MutationTest {
         .set("dateArr")
         .toDateArray(
             ImmutableList.of(
-                Date.fromYearMonthDay(2017, 04, 17), Date.fromYearMonthDay(2017, 04, 18)))
+                Date.fromYearMonthDay(2017, 4, 17), Date.fromYearMonthDay(2017, 4, 18)))
         .set("dateArrNull")
         .toDateArray(null);
   }

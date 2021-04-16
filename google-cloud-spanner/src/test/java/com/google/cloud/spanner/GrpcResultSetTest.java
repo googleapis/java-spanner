@@ -589,7 +589,7 @@ public class GrpcResultSetTest {
         Value.bytes(null),
         Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 2)),
         Value.timestamp(null),
-        Value.date(Date.fromYearMonthDay(2017, 04, 17)),
+        Value.date(Date.fromYearMonthDay(2017, 4, 17)),
         Value.date(null),
         Value.stringArray(ImmutableList.of("one", "two")),
         Value.stringArray(null),
