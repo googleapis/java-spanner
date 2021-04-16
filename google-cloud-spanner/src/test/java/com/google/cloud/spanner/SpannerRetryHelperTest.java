@@ -63,15 +63,12 @@ public class SpannerRetryHelperTest {
     final FakeClock clock = new FakeClock();
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() == 0) {
-              clock.currentTime += TimeUnit.MILLISECONDS.convert(10L, TimeUnit.MINUTES);
-              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
-            }
-            return 1 + 1;
+        () -> {
+          if (attempts.getAndIncrement() == 0) {
+            clock.currentTime += TimeUnit.MILLISECONDS.convert(10L, TimeUnit.MINUTES);
+            throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
           }
+          return 1 + 1;
         };
     assertEquals(
         2,
@@ -85,15 +82,12 @@ public class SpannerRetryHelperTest {
     final FakeClock clock = new FakeClock();
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() == 0) {
-              clock.currentTime += TimeUnit.MILLISECONDS.convert(25L, TimeUnit.HOURS);
-              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
-            }
-            return 1 + 1;
+        () -> {
+          if (attempts.getAndIncrement() == 0) {
+            clock.currentTime += TimeUnit.MILLISECONDS.convert(25L, TimeUnit.HOURS);
+            throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
           }
+          return 1 + 1;
         };
     try {
       SpannerRetryHelper.runTxWithRetriesOnAborted(
@@ -110,31 +104,19 @@ public class SpannerRetryHelperTest {
     final CancellableContext withCancellation = Context.current().withCancellation();
     final CountDownLatch latch = new CountDownLatch(1);
     final Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            latch.countDown();
-            throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
-          }
+        () -> {
+          latch.countDown();
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
         };
     ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
     service.submit(
-        new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            latch.await();
-            withCancellation.cancel(new InterruptedException());
-            return null;
-          }
+        () -> {
+          latch.await();
+          withCancellation.cancel(new InterruptedException());
+          return null;
         });
     try {
-      withCancellation.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
-            }
-          });
+      withCancellation.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
       fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.CANCELLED) {
@@ -150,22 +132,13 @@ public class SpannerRetryHelperTest {
   public void testTimedOutContext() {
     ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
     final Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
-          }
+        () -> {
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
         };
     try {
       final CancellableContext withDeadline =
           Context.current().withDeadline(Deadline.after(1L, TimeUnit.MILLISECONDS), service);
-      withDeadline.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
-            }
-          });
+      withDeadline.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
       fail("missing expected exception");
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
@@ -179,24 +152,15 @@ public class SpannerRetryHelperTest {
 
   @Test
   public void noException() {
-    Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            return 1 + 1;
-          }
-        };
+    Callable<Integer> callable = () -> 1 + 1;
     assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
 
   @Test(expected = IllegalStateException.class)
   public void propagateUncheckedException() {
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            throw new IllegalStateException("test");
-          }
+        () -> {
+          throw new IllegalStateException("test");
         };
     SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
   }
@@ -205,14 +169,11 @@ public class SpannerRetryHelperTest {
   public void retryOnAborted() {
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() == 0) {
-              throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
-            }
-            return 1 + 1;
+        () -> {
+          if (attempts.getAndIncrement() == 0) {
+            throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
           }
+          return 1 + 1;
         };
     assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
@@ -221,14 +182,11 @@ public class SpannerRetryHelperTest {
   public void retryMultipleTimesOnAborted() {
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() < 2) {
-              throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1));
-            }
-            return 1 + 1;
+        () -> {
+          if (attempts.getAndIncrement() < 2) {
+            throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1));
           }
+          return 1 + 1;
         };
     assertThat(SpannerRetryHelper.runTxWithRetriesOnAborted(callable)).isEqualTo(2);
   }
@@ -237,14 +195,11 @@ public class SpannerRetryHelperTest {
   public void retryOnAbortedAndThenPropagateUnchecked() {
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() == 0) {
-              throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
-            }
-            throw new IllegalStateException("test");
+        () -> {
+          if (attempts.getAndIncrement() == 0) {
+            throw abortedWithRetryInfo((int) TimeUnit.MILLISECONDS.toNanos(1L));
           }
+          throw new IllegalStateException("test");
         };
     SpannerRetryHelper.runTxWithRetriesOnAborted(callable);
   }
@@ -258,14 +213,11 @@ public class SpannerRetryHelperTest {
         .setDaemon(true)
         .build()
         .newThread(
-            new Runnable() {
-              @Override
-              public void run() {
-                while (true) {
-                  try {
-                    Thread.sleep(Long.MAX_VALUE);
-                  } catch (InterruptedException e) {
-                  }
+            () -> {
+              while (true) {
+                try {
+                  Thread.sleep(Long.MAX_VALUE);
+                } catch (InterruptedException e) {
                 }
               }
             });
@@ -287,14 +239,11 @@ public class SpannerRetryHelperTest {
         SpannerExceptionFactory.newSpannerException(new StatusRuntimeException(status, trailers));
     final AtomicInteger attempts = new AtomicInteger();
     Callable<Integer> callable =
-        new Callable<Integer>() {
-          @Override
-          public Integer call() {
-            if (attempts.getAndIncrement() == 0) {
-              throw e;
-            }
-            return 1 + 1;
+        () -> {
+          if (attempts.getAndIncrement() == 0) {
+            throw e;
           }
+          return 1 + 1;
         };
     // The following call should take at least 100ms, as that is the retry delay specified in the
     // retry info of the exception.

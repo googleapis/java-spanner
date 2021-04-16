@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -988,16 +987,13 @@ public class InlineBeginTransactionTest {
                     for (int i = 0; i < numQueries; i++) {
                       futures.add(
                           executor.submit(
-                              new Callable<Long>() {
-                                @Override
-                                public Long call() throws Exception {
-                                  try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                                    while (rs.next()) {
-                                      return rs.getLong(0);
-                                    }
+                              () -> {
+                                try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                                  while (rs.next()) {
+                                    return rs.getLong(0);
                                   }
-                                  return 0L;
                                 }
+                                return 0L;
                               }));
                     }
                     Long res = 0L;

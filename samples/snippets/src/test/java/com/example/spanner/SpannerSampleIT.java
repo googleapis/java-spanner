@@ -400,18 +400,14 @@ public class SpannerSampleIT {
   public void testCreateInstanceSample() {
     String instanceId = formatForTest("sample-inst");
     String out =
-        runSampleRunnable(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  CreateInstanceExample.createInstance(
-                      dbId.getInstanceId().getProject(), instanceId);
-                } finally {
-                  spanner.getInstanceAdminClient().deleteInstance(instanceId);
-                }
-              }
-            });
+        runSampleRunnable(() -> {
+          try {
+            CreateInstanceExample.createInstance(
+                dbId.getInstanceId().getProject(), instanceId);
+          } finally {
+            spanner.getInstanceAdminClient().deleteInstance(instanceId);
+          }
+        });
     assertThat(out)
         .contains(
             String.format(

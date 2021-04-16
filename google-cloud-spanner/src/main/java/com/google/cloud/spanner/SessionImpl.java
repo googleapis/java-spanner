@@ -319,29 +319,26 @@ class SessionImpl implements Session {
     requestFuture.addListener(
         tracer.withSpan(
             span,
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  Transaction txn = requestFuture.get();
-                  if (txn.getId().isEmpty()) {
-                    throw newSpannerException(
-                        ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-                  }
-                  span.end(TraceUtil.END_SPAN_OPTIONS);
-                  res.set(txn.getId());
-                } catch (ExecutionException e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(
-                      SpannerExceptionFactory.newSpannerException(
-                          e.getCause() == null ? e : e.getCause()));
-                } catch (InterruptedException e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-                } catch (Exception e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(e);
+            () -> {
+              try {
+                Transaction txn = requestFuture.get();
+                if (txn.getId().isEmpty()) {
+                  throw newSpannerException(
+                      ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
                 }
+                span.end(TraceUtil.END_SPAN_OPTIONS);
+                res.set(txn.getId());
+              } catch (ExecutionException e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(
+                    SpannerExceptionFactory.newSpannerException(
+                        e.getCause() == null ? e : e.getCause()));
+              } catch (InterruptedException e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              } catch (Exception e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(e);
               }
             }),
         MoreExecutors.directExecutor());

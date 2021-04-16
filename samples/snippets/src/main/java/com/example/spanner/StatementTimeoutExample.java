@@ -63,16 +63,14 @@ class StatementTimeoutExample {
     Context context =
         Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
     // Run the transaction in the custom context.
-    context.run(new Runnable() {
-      public void run() {
+    context.run(() ->
         client.readWriteTransaction().<long[]>run(transaction -> {
           String sql = "INSERT Singers (SingerId, FirstName, LastName)\n"
               + "VALUES (20, 'George', 'Washington')";
           long rowCount = transaction.executeUpdate(Statement.of(sql));
           System.out.printf("%d record inserted.%n", rowCount);
           return null;
-        });
-      }
-    });
+        })
+    );
   }
 }

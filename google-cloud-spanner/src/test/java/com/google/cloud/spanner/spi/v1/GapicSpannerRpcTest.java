@@ -426,29 +426,26 @@ public class GapicSpannerRpcTest {
       Context context =
           Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
       context.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
-                // exception.
-                timeoutHolder.timeout = Duration.ofNanos(1L);
+          () -> {
+            try {
+              // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
+              // exception.
+              timeoutHolder.timeout = Duration.ofNanos(1L);
+              client
+                  .readWriteTransaction()
+                  .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+              fail("missing expected timeout exception");
+            } catch (SpannerException e) {
+              assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+            }
+
+            // Then try with a longer timeout. This should now succeed.
+            timeoutHolder.timeout = Duration.ofMinutes(1L);
+            Long updateCount =
                 client
                     .readWriteTransaction()
                     .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
-                fail("missing expected timeout exception");
-              } catch (SpannerException e) {
-                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-              }
-
-              // Then try with a longer timeout. This should now succeed.
-              timeoutHolder.timeout = Duration.ofMinutes(1L);
-              Long updateCount =
-                  client
-                      .readWriteTransaction()
-                      .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
-              assertThat(updateCount).isEqualTo(1L);
-            }
+            assertThat(updateCount).isEqualTo(1L);
           });
     }
   }

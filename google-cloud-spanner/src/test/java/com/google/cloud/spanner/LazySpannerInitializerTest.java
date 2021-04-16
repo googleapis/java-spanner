@@ -27,7 +27,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -100,13 +99,10 @@ public class LazySpannerInitializerTest {
     for (int i = 0; i < threads; i++) {
       futures.add(
           executor.submit(
-              new Callable<Spanner>() {
-                @Override
-                public Spanner call() throws Exception {
-                  latch.countDown();
-                  latch.await(10L, TimeUnit.SECONDS);
-                  return initializer.get();
-                }
+              () -> {
+                latch.countDown();
+                latch.await(10L, TimeUnit.SECONDS);
+                return initializer.get();
               }));
     }
     assertThat(Futures.allAsList(futures).get()).hasSize(threads);

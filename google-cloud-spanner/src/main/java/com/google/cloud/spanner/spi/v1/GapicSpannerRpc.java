@@ -654,36 +654,32 @@ public class GapicSpannerRpc implements SpannerRpc {
       acquireAdministrativeRequestsRateLimiter();
 
       return runWithRetryOnAdministrativeRequestsExceeded(
-          new Callable<OperationFuture<ResponseT, MetadataT>>() {
-            @Override
-            public OperationFuture<ResponseT, MetadataT> call() throws Exception {
-              String operationName = null;
-              if (isRetry) {
-                // Query the backend to see if the operation was actually created, and that the
-                // problem was caused by a network problem or other transient problem client side.
-                Operation operation =
-                    mostRecentOperation(lister, getStartTimeFunction, initialCallTime);
-                if (operation != null) {
-                  // Operation found, resume tracking that operation.
-                  operationName = operation.getName();
-                }
-              } else {
-                initialCallTime =
-                    Timestamp.newBuilder()
-                        .setSeconds(
-                            TimeUnit.SECONDS.convert(
-                                System.currentTimeMillis(), TimeUnit.MILLISECONDS))
-                        .build();
+          () -> {
+            String operationName = null;
+            if (isRetry) {
+              // Query the backend to see if the operation was actually created, and that the
+              // problem was caused by a network problem or other transient problem client side.
+              Operation operation =
+                  mostRecentOperation(lister, getStartTimeFunction, initialCallTime);
+              if (operation != null) {
+                // Operation found, resume tracking that operation.
+                operationName = operation.getName();
               }
-              isRetry = true;
+            } else {
+              initialCallTime =
+                  Timestamp.newBuilder()
+                      .setSeconds(
+                          TimeUnit.SECONDS.convert(
+                              System.currentTimeMillis(), TimeUnit.MILLISECONDS))
+                      .build();
+            }
+            isRetry = true;
 
-              if (operationName == null) {
-                GrpcCallContext context =
-                    newCallContext(null, instanceName, initialRequest, method);
-                return operationCallable.futureCall(initialRequest, context);
-              } else {
-                return operationCallable.resumeFutureCall(operationName);
-              }
+            if (operationName == null) {
+              GrpcCallContext context = newCallContext(null, instanceName, initialRequest, method);
+              return operationCallable.futureCall(initialRequest, context);
+            } else {
+              return operationCallable.resumeFutureCall(operationName);
             }
           });
     }
@@ -872,13 +868,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             null, instanceName, request, DatabaseAdminGrpc.getListBackupOperationsMethod());
     ListBackupOperationsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            new Callable<ListBackupOperationsResponse>() {
-              @Override
-              public ListBackupOperationsResponse call() throws Exception {
-                return get(
-                    databaseAdminStub.listBackupOperationsCallable().futureCall(request, context));
-              }
-            });
+            () ->
+                get(databaseAdminStub.listBackupOperationsCallable().futureCall(request, context)));
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
@@ -902,15 +893,11 @@ public class GapicSpannerRpc implements SpannerRpc {
             null, instanceName, request, DatabaseAdminGrpc.getListDatabaseOperationsMethod());
     ListDatabaseOperationsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            new Callable<ListDatabaseOperationsResponse>() {
-              @Override
-              public ListDatabaseOperationsResponse call() throws Exception {
-                return get(
+            () ->
+                get(
                     databaseAdminStub
                         .listDatabaseOperationsCallable()
-                        .futureCall(request, context));
-              }
-            });
+                        .futureCall(request, context)));
 
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
@@ -934,12 +921,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListBackupsMethod());
     ListBackupsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            new Callable<ListBackupsResponse>() {
-              @Override
-              public ListBackupsResponse call() throws Exception {
-                return get(databaseAdminStub.listBackupsCallable().futureCall(request, context));
-              }
-            });
+            () -> get(databaseAdminStub.listBackupsCallable().futureCall(request, context)));
 
     return new Paginated<>(response.getBackupsList(), response.getNextPageToken());
   }
@@ -959,12 +941,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListDatabasesMethod());
     ListDatabasesResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            new Callable<ListDatabasesResponse>() {
-              @Override
-              public ListDatabasesResponse call() throws Exception {
-                return get(databaseAdminStub.listDatabasesCallable().futureCall(request, context));
-              }
-            });
+            () -> get(databaseAdminStub.listDatabasesCallable().futureCall(request, context)));
 
     return new Paginated<>(response.getDatabasesList(), response.getNextPageToken());
   }
@@ -1069,31 +1046,28 @@ public class GapicSpannerRpc implements SpannerRpc {
         databaseAdminStub.updateDatabaseDdlOperationCallable();
 
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<OperationFuture<Empty, UpdateDatabaseDdlMetadata>>() {
-          @Override
-          public OperationFuture<Empty, UpdateDatabaseDdlMetadata> call() throws Exception {
-            OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture =
-                callable.futureCall(request, context);
-            try {
-              operationFuture.getInitialFuture().get();
-            } catch (InterruptedException e) {
-              throw newSpannerException(e);
-            } catch (ExecutionException e) {
-              Throwable t = e.getCause();
-              SpannerException se = SpannerExceptionFactory.asSpannerException(t);
-              if (se instanceof AdminRequestsPerMinuteExceededException) {
-                // Propagate this to trigger a retry.
-                throw se;
-              }
-              if (t instanceof AlreadyExistsException) {
-                String operationName =
-                    OPERATION_NAME_TEMPLATE.instantiate(
-                        "database", databaseName, "operation", updateId);
-                return callable.resumeFutureCall(operationName, context);
-              }
+        () -> {
+          OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture =
+              callable.futureCall(request, context);
+          try {
+            operationFuture.getInitialFuture().get();
+          } catch (InterruptedException e) {
+            throw newSpannerException(e);
+          } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            SpannerException se = SpannerExceptionFactory.asSpannerException(t);
+            if (se instanceof AdminRequestsPerMinuteExceededException) {
+              // Propagate this to trigger a retry.
+              throw se;
             }
-            return operationFuture;
+            if (t instanceof AlreadyExistsException) {
+              String operationName =
+                  OPERATION_NAME_TEMPLATE.instantiate(
+                      "database", databaseName, "operation", updateId);
+              return callable.resumeFutureCall(operationName, context);
+            }
           }
+          return operationFuture;
         });
   }
 
@@ -1106,12 +1080,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getDropDatabaseMethod());
     runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            get(databaseAdminStub.dropDatabaseCallable().futureCall(request, context));
-            return null;
-          }
+        () -> {
+          get(databaseAdminStub.dropDatabaseCallable().futureCall(request, context));
+          return null;
         });
   }
 
@@ -1124,12 +1095,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Database>() {
-          @Override
-          public Database call() throws Exception {
-            return get(databaseAdminStub.getDatabaseCallable().futureCall(request, context));
-          }
-        });
+        () -> get(databaseAdminStub.getDatabaseCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1141,13 +1107,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<List<String>>() {
-          @Override
-          public List<String> call() throws Exception {
-            return get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
-                .getStatementsList();
-          }
-        });
+        () ->
+            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
+                .getStatementsList());
   }
 
   @Override
@@ -1286,12 +1248,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, backup.getName(), request, DatabaseAdminGrpc.getUpdateBackupMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Backup>() {
-          @Override
-          public Backup call() throws Exception {
-            return databaseAdminStub.updateBackupCallable().call(request, context);
-          }
-        });
+        () -> databaseAdminStub.updateBackupCallable().call(request, context));
   }
 
   @Override
@@ -1302,12 +1259,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getDeleteBackupMethod());
     runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            databaseAdminStub.deleteBackupCallable().call(request, context);
-            return null;
-          }
+        () -> {
+          databaseAdminStub.deleteBackupCallable().call(request, context);
+          return null;
         });
   }
 
@@ -1318,12 +1272,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getGetBackupMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Backup>() {
-          @Override
-          public Backup call() throws Exception {
-            return get(databaseAdminStub.getBackupCallable().futureCall(request, context));
-          }
-        });
+        () -> get(databaseAdminStub.getBackupCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1333,16 +1282,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, name, request, OperationsGrpc.getGetOperationMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Operation>() {
-          @Override
-          public Operation call() throws Exception {
-            return get(
+        () ->
+            get(
                 databaseAdminStub
                     .getOperationsStub()
                     .getOperationCallable()
-                    .futureCall(request, context));
-          }
-        });
+                    .futureCall(request, context)));
   }
 
   @Override
@@ -1353,16 +1298,13 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, name, request, OperationsGrpc.getCancelOperationMethod());
     runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            get(
-                databaseAdminStub
-                    .getOperationsStub()
-                    .cancelOperationCallable()
-                    .futureCall(request, context));
-            return null;
-          }
+        () -> {
+          get(
+              databaseAdminStub
+                  .getOperationsStub()
+                  .cancelOperationCallable()
+                  .futureCall(request, context));
+          return null;
         });
   }
 
@@ -1585,12 +1527,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getGetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Policy>() {
-          @Override
-          public Policy call() throws Exception {
-            return get(databaseAdminStub.getIamPolicyCallable().futureCall(request, context));
-          }
-        });
+        () -> get(databaseAdminStub.getIamPolicyCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1601,12 +1538,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getSetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Policy>() {
-          @Override
-          public Policy call() throws Exception {
-            return get(databaseAdminStub.setIamPolicyCallable().futureCall(request, context));
-          }
-        });
+        () -> get(databaseAdminStub.setIamPolicyCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1621,12 +1553,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getTestIamPermissionsMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<TestIamPermissionsResponse>() {
-          @Override
-          public TestIamPermissionsResponse call() throws Exception {
-            return get(databaseAdminStub.testIamPermissionsCallable().futureCall(request, context));
-          }
-        });
+        () -> get(databaseAdminStub.testIamPermissionsCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1637,12 +1564,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getGetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Policy>() {
-          @Override
-          public Policy call() throws Exception {
-            return get(instanceAdminStub.getIamPolicyCallable().futureCall(request, context));
-          }
-        });
+        () -> get(instanceAdminStub.getIamPolicyCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1653,12 +1575,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getSetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<Policy>() {
-          @Override
-          public Policy call() throws Exception {
-            return get(instanceAdminStub.setIamPolicyCallable().futureCall(request, context));
-          }
-        });
+        () -> get(instanceAdminStub.setIamPolicyCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1673,12 +1590,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getTestIamPermissionsMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        new Callable<TestIamPermissionsResponse>() {
-          @Override
-          public TestIamPermissionsResponse call() throws Exception {
-            return get(instanceAdminStub.testIamPermissionsCallable().futureCall(request, context));
-          }
-        });
+        () -> get(instanceAdminStub.testIamPermissionsCallable().futureCall(request, context)));
   }
 
   /** Gets the result of an async RPC call, handling any exceptions encountered. */

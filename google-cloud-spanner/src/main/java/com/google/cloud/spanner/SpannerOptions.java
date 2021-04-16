@@ -162,25 +162,23 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Context context =
    *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try {
-   *           client
-   *               .readWriteTransaction()
-   *               .run(
-   *                   new TransactionCallable<long[]>() {
-   *                     public long[] run(TransactionContext transaction) throws Exception {
-   *                       return transaction.batchUpdate(
-   *                           ImmutableList.of(statement1, statement2));
-   *                     }
-   *                   });
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // handle timeout exception.
-   *           }
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static interface CallContextConfigurator {
@@ -285,24 +283,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *             SpannerCallContextTimeoutConfigurator.create()
    *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try (ResultSet rs =
-   *             client
-   *                 .singleUse()
-   *                 .executeQuery(
-   *                     Statement.of(
-   *                         "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
-   *           while (rs.next()) {
-   *             System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
-   *           }
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // Handle timeout.
-   *           }
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {

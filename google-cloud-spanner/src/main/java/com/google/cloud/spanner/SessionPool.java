@@ -176,14 +176,11 @@ class SessionPool {
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                synchronized (lock) {
-                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
-                    // All async operations for this read context have finished.
-                    AutoClosingReadContext.this.close();
-                  }
+            () -> {
+              synchronized (lock) {
+                if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                  // All async operations for this read context have finished.
+                  AutoClosingReadContext.this.close();
                 }
               }
             };
@@ -205,7 +202,7 @@ class SessionPool {
     private final boolean isSingleUse;
     private final AtomicInteger asyncOperationsCount = new AtomicInteger();
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
@@ -993,49 +990,46 @@ class SessionPool {
       commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerException exception = null;
-              R r = null;
-              AsyncRunner runner = null;
-              while (true) {
-                SpannerException se = null;
-                try {
-                  runner = session.get().runAsync(options);
-                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
-                  break;
-                } catch (ExecutionException e) {
-                  se = SpannerExceptionFactory.asSpannerException(e.getCause());
-                } catch (InterruptedException e) {
-                  se = SpannerExceptionFactory.propagateInterrupt(e);
-                } catch (Throwable t) {
-                  se = SpannerExceptionFactory.newSpannerException(t);
-                } finally {
-                  if (se instanceof SessionNotFoundException) {
-                    try {
-                      // The replaceSession method will re-throw the SessionNotFoundException if the
-                      // session cannot be replaced with a new one.
-                      session = sessionPool.replaceSession((SessionNotFoundException) se, session);
-                      se = null;
-                    } catch (SessionNotFoundException e) {
-                      exception = e;
-                      break;
-                    }
-                  } else {
-                    exception = se;
+          () -> {
+            SpannerException exception = null;
+            R r = null;
+            AsyncRunner runner = null;
+            while (true) {
+              SpannerException se = null;
+              try {
+                runner = session.get().runAsync(options);
+                r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
+                break;
+              } catch (ExecutionException e) {
+                se = SpannerExceptionFactory.asSpannerException(e.getCause());
+              } catch (InterruptedException e) {
+                se = SpannerExceptionFactory.propagateInterrupt(e);
+              } catch (Throwable t) {
+                se = SpannerExceptionFactory.newSpannerException(t);
+              } finally {
+                if (se instanceof SessionNotFoundException) {
+                  try {
+                    // The replaceSession method will re-throw the SessionNotFoundException if the
+                    // session cannot be replaced with a new one.
+                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                    se = null;
+                  } catch (SessionNotFoundException e) {
+                    exception = e;
                     break;
                   }
+                } else {
+                  exception = se;
+                  break;
                 }
               }
-              session.get().markUsed();
-              session.close();
-              setCommitResponse(runner);
-              if (exception != null) {
-                res.setException(exception);
-              } else {
-                res.set(r);
-              }
+            }
+            session.get().markUsed();
+            session.close();
+            setCommitResponse(runner);
+            if (exception != null) {
+              res.setException(exception);
+            } else {
+              res.set(r);
             }
           });
       return res;
@@ -1643,15 +1637,7 @@ class SessionPool {
       synchronized (lock) {
         scheduledFuture =
             executor.scheduleAtFixedRate(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    maintainPool();
-                  }
-                },
-                loopFrequency,
-                loopFrequency,
-                TimeUnit.MILLISECONDS);
+                this::maintainPool, loopFrequency, loopFrequency, TimeUnit.MILLISECONDS);
       }
     }
 
@@ -2237,14 +2223,7 @@ class SessionPool {
       }
     }
 
-    retFuture.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            executorFactory.release(executor);
-          }
-        },
-        MoreExecutors.directExecutor());
+    retFuture.addListener(() -> executorFactory.release(executor), MoreExecutors.directExecutor());
     return retFuture;
   }
 
@@ -2264,20 +2243,17 @@ class SessionPool {
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            synchronized (lock) {
-              allSessions.remove(sess);
-              if (isClosed()) {
-                decrementPendingClosures(1);
-                return;
-              }
-              // Create a new session if needed to unblock some waiter.
-              if (numWaiters() > numSessionsBeingCreated) {
-                createSessions(
-                    getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
-              }
+        () -> {
+          synchronized (lock) {
+            allSessions.remove(sess);
+            if (isClosed()) {
+              decrementPendingClosures(1);
+              return;
+            }
+            // Create a new session if needed to unblock some waiter.
+            if (numWaiters() > numSessionsBeingCreated) {
+              createSessions(
+                  getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
             }
           }
         },

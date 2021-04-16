@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -283,14 +282,7 @@ class ConnectionImpl implements Connection {
       // Add a no-op statement to the execute. Once this has been executed, we know that all
       // preceding statements have also been executed, as the executor is single-threaded and
       // executes all statements in order of submitting.
-      futures.add(
-          statementExecutor.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  return null;
-                }
-              }));
+      futures.add(statementExecutor.submit(() -> null));
       statementExecutor.shutdown();
       leakedException = null;
       spannerPool.removeConnection(options, this);

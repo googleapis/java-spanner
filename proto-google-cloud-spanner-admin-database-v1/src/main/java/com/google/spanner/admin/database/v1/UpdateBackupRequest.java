@@ -22,8 +22,7 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for
- * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup].
+ * The request for [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.UpdateBackupRequest}
@@ -441,8 +440,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * The request for
-   * [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup].
+   * The request for [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.UpdateBackupRequest}

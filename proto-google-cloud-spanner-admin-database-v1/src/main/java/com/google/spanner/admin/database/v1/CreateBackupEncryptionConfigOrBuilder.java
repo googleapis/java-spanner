@@ -59,8 +59,8 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
-   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *
@@ -77,8 +77,8 @@ public interface CreateBackupEncryptionConfigOrBuilder
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
-   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *

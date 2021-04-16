@@ -28,7 +28,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.longrunning.Operation.ResultCase;
 import com.google.protobuf.Any;
 import com.google.rpc.Status;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
@@ -143,12 +142,7 @@ public class Operation<R, M> {
     try {
       com.google.longrunning.Operation proto =
           RetryHelper.poll(
-              new Callable<com.google.longrunning.Operation>() {
-                @Override
-                public com.google.longrunning.Operation call() throws Exception {
-                  return rpc.getOperation(name);
-                }
-              },
+              () -> rpc.getOperation(name),
               waitSettings,
               new BasicResultRetryAlgorithm<com.google.longrunning.Operation>() {
                 @Override

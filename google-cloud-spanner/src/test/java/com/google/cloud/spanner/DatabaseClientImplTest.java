@@ -1798,21 +1798,18 @@ public class DatabaseClientImplTest {
             SpannerCallContextTimeoutConfigurator.create()
                 .withExecuteQueryTimeout(Duration.ofNanos(1L)))
         .run(
-            new Runnable() {
-              @Override
-              public void run() {
-                // Query should fail with a timeout.
-                try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-                  rs.next();
-                  fail("missing expected DEADLINE_EXCEEDED exception");
-                } catch (SpannerException e) {
-                  assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-                }
-                // Update should succeed.
-                client
-                    .readWriteTransaction()
-                    .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+            () -> {
+              // Query should fail with a timeout.
+              try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+                rs.next();
+                fail("missing expected DEADLINE_EXCEEDED exception");
+              } catch (SpannerException e) {
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
               }
+              // Update should succeed.
+              client
+                  .readWriteTransaction()
+                  .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
             });
   }
 
