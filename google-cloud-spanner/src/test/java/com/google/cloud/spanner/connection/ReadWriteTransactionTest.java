@@ -508,7 +508,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -516,7 +516,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -533,7 +533,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -541,7 +541,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -559,7 +559,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -567,7 +567,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -586,7 +586,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -594,7 +594,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -602,7 +602,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(3l)
+                    .to(3L)
                     .set("NAME")
                     .to("TEST 3")
                     .set("AMOUNT")
@@ -646,13 +646,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 4L})
                     .build()));
@@ -666,13 +666,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 5L})
                     .build()));
