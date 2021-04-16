@@ -104,9 +104,9 @@ public class RandomResultSetGenerator {
     ResultSet.Builder builder = ResultSet.newBuilder();
     for (int row = 0; row < rowCount; row++) {
       ListValue.Builder rowBuilder = ListValue.newBuilder();
-      for (int col = 0; col < TYPES.length; col++) {
+      for (Type type : TYPES) {
         Value.Builder valueBuilder = Value.newBuilder();
-        setRandomValue(valueBuilder, TYPES[col]);
+        setRandomValue(valueBuilder, type);
         rowBuilder.addValues(valueBuilder.build());
       }
       builder.addRows(rowBuilder.build());

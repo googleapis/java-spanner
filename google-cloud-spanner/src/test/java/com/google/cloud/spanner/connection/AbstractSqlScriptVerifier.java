@@ -381,8 +381,8 @@ public abstract class AbstractSqlScriptVerifier {
     if (ARRAY_INT64_PATTERN.matcher(valueString).matches()) {
       String[] stringArray = valueString.substring(1, valueString.length() - 1).split(",");
       List<Long> res = new ArrayList<>();
-      for (int i = 0; i < stringArray.length; i++) {
-        res.add(Long.valueOf(stringArray[i]));
+      for (String string : stringArray) {
+        res.add(Long.valueOf(string));
       }
       return res;
     }
