@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +126,9 @@ public abstract class AbstractConnectionImplTest {
     try {
       writer =
           new PrintWriter(
-              new OutputStreamWriter(new FileOutputStream(LOG_FILE, append), "UTF8"), true);
+              new OutputStreamWriter(
+                  new FileOutputStream(LOG_FILE, append), StandardCharsets.UTF_8),
+              true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
