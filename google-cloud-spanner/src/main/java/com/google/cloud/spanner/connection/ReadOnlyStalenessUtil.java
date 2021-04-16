@@ -196,7 +196,7 @@ public class ReadOnlyStalenessUtil {
    */
   static String durationToString(DurationValueGetter function) {
     TimeUnit unit = getAppropriateTimeUnit(function);
-    return String.valueOf(function.getDuration(unit)) + getTimeUnitAbbreviation(unit);
+    return function.getDuration(unit) + getTimeUnitAbbreviation(unit);
   }
 
   /**

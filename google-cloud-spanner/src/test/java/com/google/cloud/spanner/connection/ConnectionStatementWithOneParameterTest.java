@@ -56,9 +56,7 @@ public class ConnectionStatementWithOneParameterTest {
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
-      subject
-          .getClientSideStatement()
-          .execute(executor, String.format("set readonly = %s", Boolean.toString(mode)));
+      subject.getClientSideStatement().execute(executor, String.format("set readonly = %s", mode));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }

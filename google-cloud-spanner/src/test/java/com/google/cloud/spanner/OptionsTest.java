@@ -111,13 +111,7 @@ public class OptionsTest {
 
     assertThat(options.toString())
         .isEqualTo(
-            "pageSize: "
-                + Integer.toString(pageSize)
-                + " pageToken: "
-                + pageToken
-                + " filter: "
-                + filter
-                + " ");
+            "pageSize: " + pageSize + " pageToken: " + pageToken + " filter: " + filter + " ");
 
     assertThat(options.hasPageSize()).isTrue();
     assertThat(options.hasPageToken()).isTrue();
@@ -174,8 +168,7 @@ public class OptionsTest {
     String tag = "app=spanner,env=test,action=read";
     Options options = Options.fromReadOptions(Options.limit(limit), Options.tag(tag));
 
-    assertThat(options.toString())
-        .isEqualTo("limit: " + Integer.toString(limit) + " " + "tag: " + tag + " ");
+    assertThat(options.toString()).isEqualTo("limit: " + limit + " " + "tag: " + tag + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertThat(options.hashCode()).isEqualTo(-1111478426);
   }
@@ -207,7 +200,7 @@ public class OptionsTest {
     String tag = "app=spanner,env=test,action=query";
     Options options = Options.fromQueryOptions(Options.prefetchChunks(chunks), Options.tag(tag));
     assertThat(options.toString())
-        .isEqualTo("prefetchChunks: " + Integer.toString(chunks) + " " + "tag: " + tag + " ");
+        .isEqualTo("prefetchChunks: " + chunks + " " + "tag: " + tag + " ");
     assertThat(options.prefetchChunks()).isEqualTo(chunks);
     assertThat(options.tag()).isEqualTo(tag);
     assertThat(options.hashCode()).isEqualTo(-97431824);
