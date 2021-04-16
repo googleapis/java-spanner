@@ -163,7 +163,6 @@ public abstract class AbstractSqlScriptVerifier {
           String line = scanner.nextLine();
           builder.append(line).append("\n");
         }
-        scanner.close();
       }
       String script = builder.toString().replaceAll(StatementParserTest.COPYRIGHT_PATTERN, "");
       String[] array = script.split(";");
