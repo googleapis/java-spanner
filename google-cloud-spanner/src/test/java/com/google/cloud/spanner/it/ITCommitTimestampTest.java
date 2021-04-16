@@ -312,7 +312,6 @@ public class ITCommitTimestampTest {
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
     DatabaseClient client = testHelper.getDatabaseClient(db);
-    db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
@@ -340,7 +339,6 @@ public class ITCommitTimestampTest {
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
     DatabaseClient client = testHelper.getDatabaseClient(db);
-    db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
