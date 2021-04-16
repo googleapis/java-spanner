@@ -212,7 +212,6 @@ public abstract class AbstractSqlScriptVerifier {
    *     semicolon (;)
    * @param resourceClass The class that should be used to locate the resource specified by the file
    *     name
-   * @throws Exception
    */
   public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
     verifyStatementsInFile(connectionProvider.getConnection(), filename, resourceClass);

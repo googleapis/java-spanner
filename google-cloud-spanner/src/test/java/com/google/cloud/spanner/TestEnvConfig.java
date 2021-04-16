@@ -23,11 +23,7 @@ public interface TestEnvConfig {
   /** Returns the options to use to create the Cloud Spanner client for integration tests. */
   SpannerOptions spannerOptions();
 
-  /**
-   * Custom setup.
-   *
-   * @throws IOException
-   */
+  /** Custom setup. */
   void setUp() throws IOException;
 
   /** Custom tear down. */

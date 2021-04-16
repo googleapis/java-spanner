@@ -188,8 +188,8 @@ class ConnectionImpl implements Connection {
 
   private UnitOfWork currentUnitOfWork = null;
   /**
-   * The {@link ConnectionImpl#inTransaction} field is only used in autocommit mode to indicate that
-   * the user has explicitly started a transaction.
+   * This field is only used in autocommit mode to indicate that the user has explicitly started a
+   * transaction.
    */
   private boolean inTransaction = false;
   /**

@@ -152,9 +152,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
    */
   interface AsyncTransactionFunction<I, O> {
     /**
-     * {@link #apply(TransactionContext, Object)} is called when this transaction step is executed.
-     * The input value is the result of the previous step, and this method will only be called if
-     * the previous step executed successfully.
+     * This method is called when this transaction step is executed. The input value is the result
+     * of the previous step, and this method will only be called if the previous step executed
+     * successfully.
      *
      * @param txn the {@link TransactionContext} that can be used to execute statements.
      * @param input the result of the previous transaction step.

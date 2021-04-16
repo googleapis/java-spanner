@@ -204,7 +204,7 @@ public class SessionPoolOptions {
     private int maxSessions = DEFAULT_MAX_SESSIONS;
     private int incStep = DEFAULT_INC_STEP;
 
-    /** Set a higher value for {@link #minSessions} instead of using {@link #maxIdleSessions}. */
+    /** Set a higher value for {@link #minSessions} instead of using this field. */
     @Deprecated private int maxIdleSessions;
 
     /**
