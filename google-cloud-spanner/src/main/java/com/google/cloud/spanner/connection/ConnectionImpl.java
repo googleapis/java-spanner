@@ -667,8 +667,8 @@ class ConnectionImpl implements Connection {
   }
 
   /** Internal interface for ending a transaction (commit/rollback). */
-  private static interface EndTransactionMethod {
-    public ApiFuture<Void> endAsync(UnitOfWork t);
+  private interface EndTransactionMethod {
+    ApiFuture<Void> endAsync(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {

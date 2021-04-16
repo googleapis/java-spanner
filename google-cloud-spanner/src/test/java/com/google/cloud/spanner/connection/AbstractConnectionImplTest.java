@@ -60,7 +60,7 @@ public abstract class AbstractConnectionImplTest {
   public static final String DDL =
       "CREATE TABLE foo (id INT64 NOT NULL, name STRING(100)) PRIMARY KEY (id)";
 
-  static interface ConnectionConsumer {
+  interface ConnectionConsumer {
     void accept(Connection connection);
   }
 

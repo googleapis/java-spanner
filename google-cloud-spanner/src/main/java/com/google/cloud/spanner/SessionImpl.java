@@ -79,7 +79,7 @@ class SessionImpl implements Session {
    * transactions, and read-write transactions. The defining characteristic is that a session may
    * only have one such transaction active at a time.
    */
-  static interface SessionTransaction {
+  interface SessionTransaction {
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
     /** Registers the current span on the transaction. */

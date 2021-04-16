@@ -97,7 +97,7 @@ public class ITTransactionTest {
     return "k" + seq++;
   }
 
-  private static interface ReadStrategy {
+  private interface ReadStrategy {
     Struct read(ReadContext ctx, String key);
   }
 

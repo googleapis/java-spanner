@@ -38,7 +38,7 @@ import com.google.cloud.spanner.AbortedException;
 public interface TransactionRetryListener {
   /** The result of a retry. */
   @InternalApi
-  public enum RetryResult {
+  enum RetryResult {
     /** The retry executed successfully and the transaction will continue. */
     RETRY_SUCCESSFUL,
     /** The retry was aborted by Spanner and another retry attempt will be started. */

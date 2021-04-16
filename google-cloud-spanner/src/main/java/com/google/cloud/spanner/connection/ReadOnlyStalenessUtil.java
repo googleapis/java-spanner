@@ -97,7 +97,7 @@ public class ReadOnlyStalenessUtil {
    * Internal interface that is used to generalize getting a time duration from Cloud Spanner
    * read-only staleness settings.
    */
-  static interface DurationValueGetter {
+  interface DurationValueGetter {
     long getDuration(TimeUnit unit);
 
     boolean hasDuration();

@@ -1011,7 +1011,7 @@ public interface Connection extends AutoCloseable {
    * <p>NOT INTENDED FOR EXTERNAL USE!
    */
   @InternalApi
-  public static final class InternalMetadataQuery implements QueryOption {
+  final class InternalMetadataQuery implements QueryOption {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}

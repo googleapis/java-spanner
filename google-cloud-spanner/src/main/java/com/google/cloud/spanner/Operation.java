@@ -45,7 +45,7 @@ public class Operation<R, M> {
           .setMaxRetryDelay(Duration.ofMinutes(500L))
           .build();
 
-  static interface Parser<R, M> {
+  interface Parser<R, M> {
     R parseResult(Any response);
 
     M parseMetadata(Any metadata);

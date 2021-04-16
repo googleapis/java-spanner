@@ -150,8 +150,8 @@ public abstract class AbstractSqlScriptVerifier {
     protected abstract Object getFirstValue() throws Exception;
   }
 
-  public static interface GenericConnectionProvider {
-    public GenericConnection getConnection();
+  public interface GenericConnectionProvider {
+    GenericConnection getConnection();
   }
 
   /** Reads SQL statements from a file. Any copyright header in the file will be stripped away. */
