@@ -1492,7 +1492,7 @@ public class DatabaseClientImplTest {
                     if (rs.next()) {
                       return add + rs.getLong(0);
                     }
-                    return add + 0L;
+                    return add;
                   }
                 });
     assertThat(res).isEqualTo(2L);
