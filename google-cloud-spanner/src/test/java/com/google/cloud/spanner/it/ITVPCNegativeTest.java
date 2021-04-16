@@ -85,7 +85,7 @@ public class ITVPCNegativeTest {
     assertTrue(
         "GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT environment variable needs "
             + "to be set to a GCP project that is outside the VPC perimeter",
-        OUTSIDE_VPC_PROJECT != null && OUTSIDE_VPC_PROJECT != "");
+        OUTSIDE_VPC_PROJECT != null && !OUTSIDE_VPC_PROJECT.equals(""));
     assumeTrue(Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")));
   }
 
