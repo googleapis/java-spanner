@@ -588,11 +588,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ByteString generatePartitionToken(String session, ByteString transactionId) {
     ByteString token = ByteString.copyFromUtf8(UUID.randomUUID().toString());
     String key = partitionKey(session, transactionId);
-    List<ByteString> tokens = partitionTokens.get(key);
-    if (tokens == null) {
-      tokens = new ArrayList<>(5);
-      partitionTokens.put(key, tokens);
-    }
+    List<ByteString> tokens = partitionTokens.computeIfAbsent(key, k -> new ArrayList<>(5));
     tokens.add(token);
     return token;
   }
