@@ -530,7 +530,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       Preconditions.checkState(
           this.state == State.INITIALIZED, "This AsyncResultSet has already been used.");
       final SettableApiFuture<List<T>> res = SettableApiFuture.<List<T>>create();
-      CreateListCallback<T> callback = new CreateListCallback<T>(res, transformer);
+      CreateListCallback<T> callback = new CreateListCallback<>(res, transformer);
       ApiFuture<Void> finished = setCallback(executor, callback);
       return ApiFutures.transformAsync(
           finished,

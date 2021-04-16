@@ -145,7 +145,7 @@ public class SessionClientTest {
     final Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<Long>());
+    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
@@ -208,7 +208,7 @@ public class SessionClientTest {
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = Collections.<String, String>emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<Long>());
+    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(

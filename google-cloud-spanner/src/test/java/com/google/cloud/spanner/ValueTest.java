@@ -1135,8 +1135,8 @@ public class ValueTest {
     tester.addEqualityGroup(
         Value.structArray(structType1, null), Value.structArray(structType1, null));
     tester.addEqualityGroup(
-        Value.structArray(structType1, new ArrayList<Struct>()),
-        Value.structArray(structType1, new ArrayList<Struct>()));
+        Value.structArray(structType1, new ArrayList<>()),
+        Value.structArray(structType1, new ArrayList<>()));
 
     tester.testEquals();
   }

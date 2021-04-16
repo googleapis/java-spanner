@@ -502,7 +502,7 @@ public class GrpcResultSetTest {
         ResultSetStats.newBuilder().setQueryPlan(QueryPlan.newBuilder().build()).build();
     consumer.onPartialResultSet(
         PartialResultSet.newBuilder()
-            .setMetadata(makeMetadata(Type.struct(new ArrayList<Type.StructField>())))
+            .setMetadata(makeMetadata(Type.struct(new ArrayList<>())))
             .setChunkedValue(false)
             .setStats(stats)
             .build());
@@ -519,7 +519,7 @@ public class GrpcResultSetTest {
     ResultSetStats stats = ResultSetStats.newBuilder().build();
     consumer.onPartialResultSet(
         PartialResultSet.newBuilder()
-            .setMetadata(makeMetadata(Type.struct(new ArrayList<Type.StructField>())))
+            .setMetadata(makeMetadata(Type.struct(new ArrayList<>())))
             .setChunkedValue(false)
             .setStats(stats)
             .build());
@@ -816,7 +816,7 @@ public class GrpcResultSetTest {
 
   @Test
   public void getBigDecimalList() {
-    List<BigDecimal> bigDecimalsList = new ArrayList<BigDecimal>();
+    List<BigDecimal> bigDecimalsList = new ArrayList<>();
     bigDecimalsList.add(BigDecimal.valueOf(Double.MIN_VALUE));
     bigDecimalsList.add(BigDecimal.valueOf(Double.MAX_VALUE));
     bigDecimalsList.add(BigDecimal.ZERO);

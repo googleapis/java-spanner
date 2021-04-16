@@ -85,7 +85,7 @@ public class Operation<R, M> {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(
             ErrorCode.fromRpcStatus(status), status.getMessage(), null);
-    return new Operation<R, M>(rpc, name, metadata, null, e, true, parser, clock);
+    return new Operation<>(rpc, name, metadata, null, e, true, parser, clock);
   }
 
   private static <R, M> Operation<R, M> successful(

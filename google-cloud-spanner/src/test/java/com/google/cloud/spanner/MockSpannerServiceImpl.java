@@ -271,11 +271,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     private static class KeepLastElementDeque<E> extends LinkedList<E> {
       private static <E> KeepLastElementDeque<E> singleton(E item) {
-        return new KeepLastElementDeque<E>(Collections.singleton(item));
+        return new KeepLastElementDeque<>(Collections.singleton(item));
       }
 
       private static <E> KeepLastElementDeque<E> of(E first, E second) {
-        return new KeepLastElementDeque<E>(Arrays.asList(first, second));
+        return new KeepLastElementDeque<>(Arrays.asList(first, second));
       }
 
       private KeepLastElementDeque(Collection<E> coll) {

@@ -773,7 +773,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStructWithNullStructField() {
-    Type emptyStructType = Type.struct(new ArrayList<StructField>());
+    Type emptyStructType = Type.struct(new ArrayList<>());
     Struct p = Struct.newBuilder().set("f1").to(emptyStructType, null).build();
 
     Struct row =

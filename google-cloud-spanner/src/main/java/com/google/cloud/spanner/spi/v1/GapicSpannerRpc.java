@@ -274,7 +274,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean throttleAdministrativeRequests;
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
-      new ConcurrentHashMap<String, RateLimiter>();
+      new ConcurrentHashMap<>();
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -968,7 +968,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final CreateDatabaseRequest request = requestBuilder.build();
 
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
-        new OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>(
+        new OperationFutureCallable<>(
             databaseAdminStub.createDatabaseOperationCallable(),
             request,
             DatabaseAdminGrpc.getCreateDatabaseMethod(),
@@ -1139,7 +1139,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     final CreateBackupRequest request = requestBuilder.build();
     final OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata> callable =
-        new OperationFutureCallable<CreateBackupRequest, Backup, CreateBackupMetadata>(
+        new OperationFutureCallable<>(
             databaseAdminStub.createBackupOperationCallable(),
             request,
             DatabaseAdminGrpc.getCreateBackupMethod(),
@@ -1198,7 +1198,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     final OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
         callable =
-            new OperationFutureCallable<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>(
+            new OperationFutureCallable<>(
                 databaseAdminStub.restoreDatabaseOperationCallable(),
                 requestBuilder.build(),
                 DatabaseAdminGrpc.getRestoreDatabaseMethod(),
