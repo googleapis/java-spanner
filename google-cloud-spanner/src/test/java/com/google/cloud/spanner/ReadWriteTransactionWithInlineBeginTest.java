@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -214,14 +213,7 @@ public class ReadWriteTransactionWithInlineBeginTest {
                 transaction -> {
                   List<Future<Long>> list = new ArrayList<>(updates);
                   for (int i = 0; i < updates; i++) {
-                    list.add(
-                        service.submit(
-                            new Callable<Long>() {
-                              @Override
-                              public Long call() throws Exception {
-                                return transaction.executeUpdate(UPDATE_STATEMENT);
-                              }
-                            }));
+                    list.add(service.submit(() -> transaction.executeUpdate(UPDATE_STATEMENT)));
                   }
                   long totalUpdateCount = 0L;
                   for (Future<Long> fut : list) {
@@ -247,13 +239,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   for (int i = 0; i < updates; i++) {
                     list.add(
                         service.submit(
-                            new Callable<long[]>() {
-                              @Override
-                              public long[] call() throws Exception {
-                                return transaction.batchUpdate(
-                                    Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                              }
-                            }));
+                            () ->
+                                transaction.batchUpdate(
+                                    Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT))));
                   }
                   long totalUpdateCount = 0L;
                   for (Future<long[]> fut : list) {
@@ -281,16 +269,13 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   for (int i = 0; i < queries; i++) {
                     list.add(
                         service.submit(
-                            new Callable<Long>() {
-                              @Override
-                              public Long call() throws Exception {
-                                try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                                  while (rs.next()) {
-                                    return rs.getLong(0);
-                                  }
+                            () -> {
+                              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                                while (rs.next()) {
+                                  return rs.getLong(0);
                                 }
-                                return 0L;
                               }
+                              return 0L;
                             }));
                   }
                   long selectedTotal1 = 0L;

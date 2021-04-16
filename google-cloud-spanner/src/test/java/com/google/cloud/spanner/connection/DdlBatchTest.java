@@ -538,15 +538,7 @@ public class DdlBatchTest {
     final DdlBatch batch = createSubject(client);
     batch.executeDdlAsync(statement);
     Executors.newSingleThreadScheduledExecutor()
-        .schedule(
-            new Runnable() {
-              @Override
-              public void run() {
-                batch.cancel();
-              }
-            },
-            100,
-            TimeUnit.MILLISECONDS);
+        .schedule(batch::cancel, 100, TimeUnit.MILLISECONDS);
     try {
       get(batch.runBatchAsync());
       fail("expected CANCELLED");

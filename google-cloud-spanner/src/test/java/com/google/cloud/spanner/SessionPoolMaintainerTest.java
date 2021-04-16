@@ -81,15 +81,12 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(setupMockSession(mockSession()));
-                        }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      for (int i = 0; i < sessionCount; i++) {
+                        consumer.onSessionReady(setupMockSession(mockSession()));
                       }
                     });
                 return null;

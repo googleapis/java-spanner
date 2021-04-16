@@ -369,13 +369,10 @@ public class AsyncResultSetImplStressTest {
       final AtomicBoolean finished = new AtomicBoolean(false);
       ExecutorService resumeService = createExecService();
       resumeService.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (!finished.get()) {
-                // Randomly resume result sets.
-                resultSets.get(random.nextInt(resultSets.size())).resume();
-              }
+          () -> {
+            while (!finished.get()) {
+              // Randomly resume result sets.
+              resultSets.get(random.nextInt(resultSets.size())).resume();
             }
           });
       List<ImmutableList<Row>> lists = ApiFutures.allAsList(futures).get();
@@ -441,30 +438,24 @@ public class AsyncResultSetImplStressTest {
       // Both resume and cancel resultsets randomly.
       ExecutorService resumeService = createExecService();
       resumeService.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (!finished.get()) {
-                // Randomly resume result sets.
-                resultSets.get(random.nextInt(resultSets.size())).resume();
-              }
-              // Make sure all result sets finish.
-              for (AsyncResultSet rs : resultSets) {
-                rs.resume();
-              }
+          () -> {
+            while (!finished.get()) {
+              // Randomly resume result sets.
+              resultSets.get(random.nextInt(resultSets.size())).resume();
+            }
+            // Make sure all result sets finish.
+            for (AsyncResultSet rs : resultSets) {
+              rs.resume();
             }
           });
       ExecutorService cancelService = createExecService();
       cancelService.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (!finished.get()) {
-                // Randomly cancel result sets.
-                int index = random.nextInt(resultSets.size());
-                resultSets.get(index).cancel();
-                cancelledIndexes.add(index);
-              }
+          () -> {
+            while (!finished.get()) {
+              // Randomly cancel result sets.
+              int index = random.nextInt(resultSets.size());
+              resultSets.get(index).cancel();
+              cancelledIndexes.add(index);
             }
           });
 

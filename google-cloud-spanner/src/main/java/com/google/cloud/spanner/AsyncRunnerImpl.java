@@ -42,16 +42,13 @@ class AsyncRunnerImpl implements AsyncRunner {
     commitResponse = SettableApiFuture.create();
     final SettableApiFuture<R> res = SettableApiFuture.create();
     executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              res.set(runTransaction(work));
-            } catch (Throwable t) {
-              res.setException(t);
-            } finally {
-              setCommitResponse();
-            }
+        () -> {
+          try {
+            res.set(runTransaction(work));
+          } catch (Throwable t) {
+            res.setException(t);
+          } finally {
+            setCommitResponse();
           }
         });
     return res;

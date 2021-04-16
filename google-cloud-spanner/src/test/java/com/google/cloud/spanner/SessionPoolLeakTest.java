@@ -96,26 +96,18 @@ public class SessionPoolLeakTest {
   @Test
   public void testReadWriteTransactionExceptionOnCreateSession() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 
   @Test
   public void testReadWriteTransactionExceptionOnBegin() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBeginTransactionExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         1);
   }
 
@@ -136,13 +128,9 @@ public class SessionPoolLeakTest {
   @Test
   public void testTansactionManagerExceptionOnCreateSession() {
     transactionManagerTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 

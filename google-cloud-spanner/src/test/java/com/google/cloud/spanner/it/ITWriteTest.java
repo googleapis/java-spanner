@@ -764,11 +764,8 @@ public class ITWriteTest {
     context.cancel(new RuntimeException("Cancelled by test"));
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {
@@ -786,11 +783,8 @@ public class ITWriteTest {
         Context.current().withDeadlineAfter(10, TimeUnit.NANOSECONDS, executor);
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {

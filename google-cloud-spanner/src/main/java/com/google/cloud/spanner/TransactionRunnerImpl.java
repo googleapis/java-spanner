@@ -125,13 +125,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
-        Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                decreaseAsyncOperations();
-              }
-            };
+        Runnable listener = TransactionContextImpl.this::decreaseAsyncOperations;
         try {
           increaseAsynOperations();
           addListener(listener);
@@ -248,30 +242,25 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       span.addAnnotation("Creating Transaction");
       final ApiFuture<ByteString> fut = session.beginTransactionAsync();
       fut.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                transactionId = fut.get();
-                span.addAnnotation(
-                    "Transaction Creation Done",
-                    ImmutableMap.of(
-                        "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
-                txnLogger.log(
-                    Level.FINER,
-                    "Started transaction {0}",
-                    txnLogger.isLoggable(Level.FINER)
-                        ? transactionId.asReadOnlyByteBuffer()
-                        : null);
-                res.set(null);
-              } catch (ExecutionException e) {
-                span.addAnnotation(
-                    "Transaction Creation Failed",
-                    TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
-                res.setException(e.getCause() == null ? e : e.getCause());
-              } catch (InterruptedException e) {
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              }
+          () -> {
+            try {
+              transactionId = fut.get();
+              span.addAnnotation(
+                  "Transaction Creation Done",
+                  ImmutableMap.of(
+                      "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+              txnLogger.log(
+                  Level.FINER,
+                  "Started transaction {0}",
+                  txnLogger.isLoggable(Level.FINER) ? transactionId.asReadOnlyByteBuffer() : null);
+              res.set(null);
+            } catch (ExecutionException e) {
+              span.addAnnotation(
+                  "Transaction Creation Failed",
+                  TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+              res.setException(e.getCause() == null ? e : e.getCause());
+            } catch (InterruptedException e) {
+              res.setException(SpannerExceptionFactory.propagateInterrupt(e));
             }
           },
           MoreExecutors.directExecutor());
@@ -374,32 +363,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           commitFuture.addListener(
               tracer.withSpan(
                   opSpan,
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      try {
-                        com.google.spanner.v1.CommitResponse proto = commitFuture.get();
-                        if (!proto.hasCommitTimestamp()) {
-                          throw newSpannerException(
-                              ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-                        }
-                        span.addAnnotation("Commit Done");
-                        opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                        res.set(new CommitResponse(proto));
-                      } catch (Throwable e) {
-                        if (e instanceof ExecutionException) {
-                          e =
-                              SpannerExceptionFactory.newSpannerException(
-                                  e.getCause() == null ? e : e.getCause());
-                        } else if (e instanceof InterruptedException) {
-                          e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
-                        } else {
-                          e = SpannerExceptionFactory.newSpannerException(e);
-                        }
-                        span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-                        TraceUtil.endSpanWithFailure(opSpan, e);
-                        res.setException(onError((SpannerException) e, false));
+                  () -> {
+                    try {
+                      com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+                      if (!proto.hasCommitTimestamp()) {
+                        throw newSpannerException(
+                            ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
                       }
+                      span.addAnnotation("Commit Done");
+                      opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                      res.set(new CommitResponse(proto));
+                    } catch (Throwable e) {
+                      if (e instanceof ExecutionException) {
+                        e =
+                            SpannerExceptionFactory.newSpannerException(
+                                e.getCause() == null ? e : e.getCause());
+                      } else if (e instanceof InterruptedException) {
+                        e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
+                      } else {
+                        e = SpannerExceptionFactory.newSpannerException(e);
+                      }
+                      span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                      TraceUtil.endSpanWithFailure(opSpan, e);
+                      res.setException(onError((SpannerException) e, false));
                     }
                   }),
               MoreExecutors.directExecutor());
@@ -717,21 +703,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               },
               MoreExecutors.directExecutor());
       updateCount.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                if (resultSet.get().getMetadata().hasTransaction()) {
-                  onTransactionMetadata(
-                      resultSet.get().getMetadata().getTransaction(),
-                      builder.getTransaction().hasBegin());
-                }
-              } catch (Throwable e) {
-                // Ignore this error here as it is handled by the future that is returned by the
-                // executeUpdateAsync method.
+          () -> {
+            try {
+              if (resultSet.get().getMetadata().hasTransaction()) {
+                onTransactionMetadata(
+                    resultSet.get().getMetadata().getTransaction(),
+                    builder.getTransaction().hasBegin());
               }
-              decreaseAsyncOperations();
+            } catch (Throwable e) {
+              // Ignore this error here as it is handled by the future that is returned by the
+              // executeUpdateAsync method.
             }
+            decreaseAsyncOperations();
           },
           MoreExecutors.directExecutor());
       return updateCount;
@@ -842,14 +825,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
               },
               MoreExecutors.directExecutor());
-      updateCounts.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              decreaseAsyncOperations();
-            }
-          },
-          MoreExecutors.directExecutor());
+      updateCounts.addListener(this::decreaseAsyncOperations, MoreExecutors.directExecutor());
       return updateCounts;
     }
 
@@ -922,90 +898,84 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private <T> T runInternal(final TransactionCallable<T> txCallable) {
     final AtomicInteger attempt = new AtomicInteger();
     Callable<T> retryCallable =
-        new Callable<T>() {
-          @Override
-          public T call() {
-            boolean useInlinedBegin = true;
-            if (attempt.get() > 0) {
-              // Do not inline the BeginTransaction during a retry if the initial attempt did not
-              // actually start a transaction.
-              useInlinedBegin = txn.transactionId != null;
-              txn = session.newTransaction(options);
-            }
-            checkState(
-                isValid,
-                "TransactionRunner has been invalidated by a new operation on the session");
-            attempt.incrementAndGet();
-            span.addAnnotation(
-                "Starting Transaction Attempt",
-                ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
-            // Only ensure that there is a transaction if we should not inline the beginTransaction
-            // with the first statement.
-            if (!useInlinedBegin) {
-              txn.ensureTxn();
-            }
+        () -> {
+          boolean useInlinedBegin = true;
+          if (attempt.get() > 0) {
+            // Do not inline the BeginTransaction during a retry if the initial attempt did not
+            // actually start a transaction.
+            useInlinedBegin = txn.transactionId != null;
+            txn = session.newTransaction(options);
+          }
+          checkState(
+              isValid, "TransactionRunner has been invalidated by a new operation on the session");
+          attempt.incrementAndGet();
+          span.addAnnotation(
+              "Starting Transaction Attempt",
+              ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+          // Only ensure that there is a transaction if we should not inline the beginTransaction
+          // with the first statement.
+          if (!useInlinedBegin) {
+            txn.ensureTxn();
+          }
 
-            T result;
-            boolean shouldRollback = true;
-            try {
-              result = txCallable.run(txn);
+          T result;
+          boolean shouldRollback = true;
+          try {
+            result = txCallable.run(txn);
+            shouldRollback = false;
+          } catch (Exception e) {
+            txnLogger.log(Level.FINE, "User-provided TransactionCallable raised exception", e);
+            if (txn.isAborted() || (e instanceof AbortedException)) {
+              span.addAnnotation(
+                  "Transaction Attempt Aborted in user operation. Retrying",
+                  ImmutableMap.of(
+                      "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
               shouldRollback = false;
-            } catch (Exception e) {
-              txnLogger.log(Level.FINE, "User-provided TransactionCallable raised exception", e);
-              if (txn.isAborted() || (e instanceof AbortedException)) {
-                span.addAnnotation(
-                    "Transaction Attempt Aborted in user operation. Retrying",
-                    ImmutableMap.of(
-                        "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
-                shouldRollback = false;
-                if (e instanceof AbortedException) {
-                  throw (AbortedException) e;
-                }
-                throw SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.ABORTED, e.getMessage(), e);
+              if (e instanceof AbortedException) {
+                throw (AbortedException) e;
               }
-              SpannerException toThrow;
-              if (e instanceof SpannerException) {
-                toThrow = (SpannerException) e;
-              } else {
-                toThrow = newSpannerException(ErrorCode.UNKNOWN, e.getMessage(), e);
-              }
-              span.addAnnotation(
-                  "Transaction Attempt Failed in user operation",
-                  ImmutableMap.<String, AttributeValue>builder()
-                      .putAll(TraceUtil.getExceptionAnnotations(toThrow))
-                      .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
-                      .build());
-              throw toThrow;
-            } finally {
-              if (shouldRollback) {
-                txn.rollback();
-              }
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED, e.getMessage(), e);
             }
+            SpannerException toThrow;
+            if (e instanceof SpannerException) {
+              toThrow = (SpannerException) e;
+            } else {
+              toThrow = newSpannerException(ErrorCode.UNKNOWN, e.getMessage(), e);
+            }
+            span.addAnnotation(
+                "Transaction Attempt Failed in user operation",
+                ImmutableMap.<String, AttributeValue>builder()
+                    .putAll(TraceUtil.getExceptionAnnotations(toThrow))
+                    .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
+                    .build());
+            throw toThrow;
+          } finally {
+            if (shouldRollback) {
+              txn.rollback();
+            }
+          }
 
-            try {
-              txn.commit();
-              span.addAnnotation(
-                  "Transaction Attempt Succeeded",
-                  ImmutableMap.of(
-                      "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
-              return result;
-            } catch (AbortedException e) {
-              txnLogger.log(Level.FINE, "Commit aborted", e);
-              span.addAnnotation(
-                  "Transaction Attempt Aborted in Commit. Retrying",
-                  ImmutableMap.of(
-                      "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
-              throw e;
-            } catch (SpannerException e) {
-              span.addAnnotation(
-                  "Transaction Attempt Failed in Commit",
-                  ImmutableMap.<String, AttributeValue>builder()
-                      .putAll(TraceUtil.getExceptionAnnotations(e))
-                      .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
-                      .build());
-              throw e;
-            }
+          try {
+            txn.commit();
+            span.addAnnotation(
+                "Transaction Attempt Succeeded",
+                ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+            return result;
+          } catch (AbortedException e) {
+            txnLogger.log(Level.FINE, "Commit aborted", e);
+            span.addAnnotation(
+                "Transaction Attempt Aborted in Commit. Retrying",
+                ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+            throw e;
+          } catch (SpannerException e) {
+            span.addAnnotation(
+                "Transaction Attempt Failed in Commit",
+                ImmutableMap.<String, AttributeValue>builder()
+                    .putAll(TraceUtil.getExceptionAnnotations(e))
+                    .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
+                    .build());
+            throw e;
           }
         };
     return SpannerRetryHelper.runTxWithRetriesOnAborted(retryCallable);
