@@ -288,7 +288,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               @Override
               public void run() {
                 while (!stopMaintenance.get()) {
-                  runMaintainanceLoop(clock, pool, 1);
+                  runMaintenanceLoop(clock, pool, 1);
                 }
               }
             })

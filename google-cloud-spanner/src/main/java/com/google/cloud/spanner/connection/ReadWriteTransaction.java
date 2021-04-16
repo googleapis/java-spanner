@@ -222,7 +222,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     // new transaction for the following statement after a transaction has aborted, and instead we
     // should wait until the application has rolled back the current transaction.
     //
-    // Othwerwise the following list of statements could show unexpected behavior:
+    // Otherwise the following list of statements could show unexpected behavior:
 
     // connection.executeUpdateAsync("UPDATE FOO SET BAR=1 ...");
     // connection.executeUpdateAsync("UPDATE BAR SET FOO=2 ...");

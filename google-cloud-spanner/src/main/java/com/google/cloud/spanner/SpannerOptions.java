@@ -983,7 +983,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {

@@ -105,7 +105,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
    * This exception will be thrown if a user tries to use any resources that were returned by this
    * Spanner instance after the instance has been closed. This makes it easier to track down the
-   * code that (accidently) closed the Spanner instance.
+   * code that (accidentally) closed the Spanner instance.
    */
   static final class ClosedException extends RuntimeException {
     private static final long serialVersionUID = 1451131180314064914L;

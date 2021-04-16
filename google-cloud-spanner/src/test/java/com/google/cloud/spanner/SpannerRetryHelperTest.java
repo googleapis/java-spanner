@@ -147,7 +147,7 @@ public class SpannerRetryHelperTest {
   }
 
   @Test
-  public void testTimedoutContext() {
+  public void testTimedOutContext() {
     ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
     final Callable<Integer> callable =
         new Callable<Integer>() {

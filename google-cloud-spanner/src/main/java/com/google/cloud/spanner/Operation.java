@@ -188,7 +188,7 @@ public class Operation<R, M> {
 
   /**
    * Returns the metadata returned by the last refresh of this operation. Returns null if no
-   * metadata was returned or if this operation has not been refereshed.
+   * metadata was returned or if this operation has not been refreshed.
    */
   public M getMetadata() {
     return metadata;
@@ -217,7 +217,7 @@ public class Operation<R, M> {
     return name;
   }
 
-  /** Returns true if the operation completed sucessfully. */
+  /** Returns true if the operation completed successfully. */
   public boolean isSuccessful() {
     return isDone && exception == null;
   }

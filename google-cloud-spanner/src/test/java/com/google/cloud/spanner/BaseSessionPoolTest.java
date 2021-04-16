@@ -73,7 +73,7 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  void runMaintainanceLoop(FakeClock clock, SessionPool pool, long numCycles) {
+  void runMaintenanceLoop(FakeClock clock, SessionPool pool, long numCycles) {
     for (int i = 0; i < numCycles; i++) {
       pool.poolMaintainer.maintainPool();
       clock.currentTimeMillis += pool.poolMaintainer.loopFrequency;

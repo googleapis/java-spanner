@@ -40,9 +40,9 @@ public interface TransactionManager extends AutoCloseable {
   /** State of the transaction manager. */
   public enum TransactionState {
     // Transaction has been started either by calling {@link #begin()} or via
-    // {@link resetForRetry()} but has not been commited or rolled back yet.
+    // {@link resetForRetry()} but has not been committed or rolled back yet.
     STARTED,
-    // Transaction was sucessfully committed. This is a terminal state.
+    // Transaction was successfully committed. This is a terminal state.
     COMMITTED,
     // Transaction failed during commit with an error other than ABORTED. Transaction cannot be
     // retried in this state. This is a terminal state.

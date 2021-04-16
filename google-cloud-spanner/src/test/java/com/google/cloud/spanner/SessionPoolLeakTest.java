@@ -134,7 +134,7 @@ public class SessionPoolLeakTest {
   }
 
   @Test
-  public void testTansactionManagerExceptionOnCreateSession() {
+  public void testTransactionManagerExceptionOnCreateSession() {
     transactionManagerTest(
         new Runnable() {
           @Override

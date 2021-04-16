@@ -133,7 +133,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               }
             };
         try {
-          increaseAsynOperations();
+          increaseAsyncOperations();
           addListener(listener);
           return super.setCallback(exec, cb);
         } catch (Throwable t) {
@@ -198,7 +198,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.finishedAsyncOperations.set(null);
     }
 
-    private void increaseAsynOperations() {
+    private void increaseAsyncOperations() {
       synchronized (lock) {
         if (runningAsyncOperations == 0) {
           finishedAsyncOperations = SettableApiFuture.create();
@@ -676,7 +676,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
-        increaseAsynOperations();
+        increaseAsyncOperations();
         resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions());
       } catch (Throwable t) {
         decreaseAsyncOperations();
@@ -795,7 +795,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
-        increaseAsynOperations();
+        increaseAsyncOperations();
         response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
       } catch (Throwable t) {
         decreaseAsyncOperations();

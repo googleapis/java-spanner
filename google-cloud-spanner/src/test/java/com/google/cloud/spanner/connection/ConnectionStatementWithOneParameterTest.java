@@ -34,7 +34,7 @@ public class ConnectionStatementWithOneParameterTest {
   private final StatementParser parser = StatementParser.INSTANCE;
 
   @Test
-  public void testExecuteSetAutcommit() {
+  public void testExecuteSetAutocommit() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit = true"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -64,7 +64,7 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
-  public void testExecuteSetAutcommitDmlMode() {
+  public void testExecuteSetAutocommitDmlMode() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit_dml_mode='foo'"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);

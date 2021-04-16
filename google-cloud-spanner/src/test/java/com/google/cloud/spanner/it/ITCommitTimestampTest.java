@@ -269,9 +269,9 @@ public class ITCommitTimestampTest {
   }
 
   // 1) Write timestamps in the past
-  // 2) Set all interleaved tables allow_commmit_timestamp=true
+  // 2) Set all interleaved tables allow_commit_timestamp=true
   // 3) Use commit timestamp in all tables
-  // 4) Set all interleaved tables allow_commmit_timestamp=null
+  // 4) Set all interleaved tables allow_commit_timestamp=null
   // 5) Write timestamps in the future
   @Test
   public void interleavedTable() throws Exception {
@@ -302,7 +302,7 @@ public class ITCommitTimestampTest {
   }
 
   // In interleaved table, use of commit timestamp in child table is not allowed
-  // if parent tables are not allow_commmit_timestamp=true
+  // if parent tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy1() {
     Database db =
@@ -329,7 +329,7 @@ public class ITCommitTimestampTest {
   }
 
   // In interleaved table, use of commit timestamp in parent table is not
-  // allowed if child tables are not allow_commmit_timestamp=true
+  // allowed if child tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy2() {
     Database db =
