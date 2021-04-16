@@ -1824,17 +1824,14 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
-      ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      try {
+      try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         while (rs.next()) {
           fail("Missing expected exception");
         }
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      } finally {
-        // This should not cause any failures.
-        rs.close();
       }
+      // This should not cause any failures.
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
     }
