@@ -157,7 +157,7 @@ public class ITTransactionTest {
                 .singleUse(TimestampBound.strong())
                 .readRow("T", Key.of(key), Arrays.asList("V"))
                 .getLong(0))
-        .isEqualTo(Long.valueOf(numThreads));
+        .isEqualTo((long) numThreads);
   }
 
   @Test

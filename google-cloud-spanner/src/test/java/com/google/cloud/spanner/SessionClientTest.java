@@ -273,7 +273,7 @@ public class SessionClientTest {
       final List<Long> errorOnChannels = new ArrayList<>();
       if (behavior == AddRemoveSetException.REMOVE) {
         for (int c = 0; c < spannerOptions.getNumChannels(); c++) {
-          errorOnChannels.add(Long.valueOf(c));
+          errorOnChannels.add((long) c);
         }
       }
       for (int errorOnChannel = 0;
@@ -283,7 +283,7 @@ public class SessionClientTest {
           case SET:
             errorOnChannels.clear();
           case ADD:
-            errorOnChannels.add(Long.valueOf(errorOnChannel));
+            errorOnChannels.add((long) errorOnChannel);
             break;
           case REMOVE:
             errorOnChannels.remove(Long.valueOf(errorOnChannel));

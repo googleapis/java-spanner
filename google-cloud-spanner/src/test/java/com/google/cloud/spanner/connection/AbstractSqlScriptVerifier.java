@@ -324,7 +324,7 @@ public abstract class AbstractSqlScriptVerifier {
             }
             break;
           case UPDATE_COUNT:
-            long expectedUpdateCount = Long.valueOf(verifyMatcher.group("count").trim());
+            long expectedUpdateCount = Long.parseLong(verifyMatcher.group("count").trim());
             assertThat(statement, result.getUpdateCount(), is(equalTo(expectedUpdateCount)));
             break;
         }

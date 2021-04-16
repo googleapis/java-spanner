@@ -68,7 +68,7 @@ public class InlineBeginBenchmark {
 
   @State(Scope.Thread)
   public static class BenchmarkState {
-    private final boolean useRealServer = Boolean.valueOf(System.getProperty("useRealServer"));
+    private final boolean useRealServer = Boolean.parseBoolean(System.getProperty("useRealServer"));
     private final String instance = System.getProperty("instance", TEST_INSTANCE);
     private final String database = System.getProperty("database", TEST_DATABASE);
     private StandardBenchmarkMockServer mockServer;

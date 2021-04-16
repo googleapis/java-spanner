@@ -195,7 +195,7 @@ public class GapicSpannerRpcTest {
                 })
             .build()
             .start();
-    optionsMap.put(Option.CHANNEL_HINT, Long.valueOf(1L));
+    optionsMap.put(Option.CHANNEL_HINT, 1L);
   }
 
   @After

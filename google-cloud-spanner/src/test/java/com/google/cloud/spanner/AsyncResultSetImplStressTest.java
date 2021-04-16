@@ -153,7 +153,7 @@ public class AsyncResultSetImplStressTest {
   private List<Row> createExpectedRows() {
     List<Row> rows = new ArrayList<>(resultSetSize);
     for (int i = 0; i < resultSetSize; i++) {
-      rows.add(new Row(Long.valueOf(i + 1), String.format("Row %d", (i + 1))));
+      rows.add(new Row((long) (i + 1), String.format("Row %d", (i + 1))));
     }
     return rows;
   }

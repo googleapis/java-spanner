@@ -1749,7 +1749,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     if (transactionId != null && transactionId.toStringUtf8() != null && counter != null) {
       int index = transactionId.toStringUtf8().lastIndexOf('/');
       if (index > -1) {
-        long id = Long.valueOf(transactionId.toStringUtf8().substring(index + 1));
+        long id = Long.parseLong(transactionId.toStringUtf8().substring(index + 1));
         if (id != counter.get()) {
           throw Status.FAILED_PRECONDITION
               .withDescription(

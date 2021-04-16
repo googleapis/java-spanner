@@ -114,7 +114,7 @@ public abstract class AbstractConnectionImplTest {
 
   @BeforeClass
   public static void openLog() {
-    doLog = Boolean.valueOf(System.getProperty(DO_LOG_PROPERTY, "false"));
+    doLog = Boolean.parseBoolean(System.getProperty(DO_LOG_PROPERTY, "false"));
     if (doLog) {
       openLog(true);
     } else {
