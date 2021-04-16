@@ -1147,7 +1147,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         if (tokens == null || !tokens.contains(request.getPartitionToken())) {
           throw Status.INVALID_ARGUMENT
               .withDescription(
-                  String.format("Partition token %s is not a valid token for this transaction"))
+                  String.format(
+                      "Partition token %s is not a valid token for this transaction",
+                      request.getPartitionToken()))
               .asRuntimeException();
         }
       }
@@ -1467,7 +1469,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         if (tokens == null || !tokens.contains(request.getPartitionToken())) {
           throw Status.INVALID_ARGUMENT
               .withDescription(
-                  String.format("Partition token %s is not a valid token for this transaction"))
+                  String.format(
+                      "Partition token %s is not a valid token for this transaction",
+                      request.getPartitionToken()))
               .asRuntimeException();
         }
       }
