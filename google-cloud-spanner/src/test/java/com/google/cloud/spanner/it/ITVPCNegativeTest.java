@@ -18,7 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -82,10 +82,10 @@ public class ITVPCNegativeTest {
     assumeTrue(
         "To run tests, GOOGLE_CLOUD_TESTS_IN_VPCSC environment variable needs to be set to True",
         IN_VPCSC_TEST != null && IN_VPCSC_TEST.equalsIgnoreCase("true"));
-    assertTrue(
+    assertFalse(
         "GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT environment variable needs "
             + "to be set to a GCP project that is outside the VPC perimeter",
-        OUTSIDE_VPC_PROJECT != null && !OUTSIDE_VPC_PROJECT.equals(""));
+        Strings.isNullOrEmpty(OUTSIDE_VPC_PROJECT));
     assumeTrue(Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")));
   }
 

@@ -24,6 +24,7 @@ import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
+import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,7 +73,8 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before()
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException {
     this.initializeConfig();
     this.config.setUp();
 
@@ -98,8 +100,7 @@ public class IntegrationTestEnv extends ExternalResource {
     }
   }
 
-  RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId)
-      throws Throwable {
+  RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId) {
     return RemoteSpannerHelper.create(options, instanceId);
   }
 
