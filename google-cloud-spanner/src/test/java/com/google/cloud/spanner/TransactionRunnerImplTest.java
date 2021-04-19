@@ -268,7 +268,7 @@ public class TransactionRunnerImplTest {
 
   @Test
   public void batchDmlAborted() {
-    long updateCount[] = batchDmlException(Code.ABORTED_VALUE);
+    long[] updateCount = batchDmlException(Code.ABORTED_VALUE);
     assertThat(updateCount.length).isEqualTo(2);
     assertThat(updateCount[0]).isEqualTo(1L);
     assertThat(updateCount[1]).isEqualTo(1L);
@@ -365,7 +365,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(ApiFutures.immediateFuture(commitResponse));
     final Statement statement = Statement.of("UPDATE FOO SET BAR=1");
     final AtomicInteger numCalls = new AtomicInteger(0);
-    long updateCount[] =
+    long[] updateCount =
         runner.run(
             transaction1 -> {
               numCalls.incrementAndGet();

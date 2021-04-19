@@ -300,7 +300,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       for (T proto : nextPage.getResults()) {
         results.add(fromProto(proto));
       }
-      return new PageImpl<S>(this, nextPageToken, results);
+      return new PageImpl<>(this, nextPageToken, results);
     }
 
     void setNextPageToken(String nextPageToken) {

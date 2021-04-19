@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,7 @@ public abstract class AbstractConnectionImplTest {
   public static final String DDL =
       "CREATE TABLE foo (id INT64 NOT NULL, name STRING(100)) PRIMARY KEY (id)";
 
-  static interface ConnectionConsumer {
+  interface ConnectionConsumer {
     void accept(Connection connection);
   }
 
@@ -113,7 +114,7 @@ public abstract class AbstractConnectionImplTest {
 
   @BeforeClass
   public static void openLog() {
-    doLog = Boolean.valueOf(System.getProperty(DO_LOG_PROPERTY, "false"));
+    doLog = Boolean.parseBoolean(System.getProperty(DO_LOG_PROPERTY, "false"));
     if (doLog) {
       openLog(true);
     } else {
@@ -125,7 +126,9 @@ public abstract class AbstractConnectionImplTest {
     try {
       writer =
           new PrintWriter(
-              new OutputStreamWriter(new FileOutputStream(LOG_FILE, append), "UTF8"), true);
+              new OutputStreamWriter(
+                  new FileOutputStream(LOG_FILE, append), StandardCharsets.UTF_8),
+              true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

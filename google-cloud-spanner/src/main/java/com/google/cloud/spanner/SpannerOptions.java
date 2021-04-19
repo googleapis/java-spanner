@@ -127,7 +127,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -181,7 +181,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *     }
    * }</pre>
    */
-  public static interface CallContextConfigurator {
+  public interface CallContextConfigurator {
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -472,7 +472,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
   static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
@@ -576,7 +576,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.

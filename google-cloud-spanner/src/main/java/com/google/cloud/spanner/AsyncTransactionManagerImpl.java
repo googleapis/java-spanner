@@ -79,9 +79,7 @@ final class AsyncTransactionManagerImpl
   @Override
   public TransactionContextFutureImpl beginAsync() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    TransactionContextFutureImpl begin =
-        new TransactionContextFutureImpl(this, internalBeginAsync(true));
-    return begin;
+    return new TransactionContextFutureImpl(this, internalBeginAsync(true));
   }
 
   private ApiFuture<TransactionContext> internalBeginAsync(boolean firstAttempt) {

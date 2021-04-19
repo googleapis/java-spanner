@@ -97,7 +97,7 @@ public class ITTransactionTest {
     return "k" + seq++;
   }
 
-  private static interface ReadStrategy {
+  private interface ReadStrategy {
     Struct read(ReadContext ctx, String key);
   }
 
@@ -157,7 +157,7 @@ public class ITTransactionTest {
                 .singleUse(TimestampBound.strong())
                 .readRow("T", Key.of(key), Arrays.asList("V"))
                 .getLong(0))
-        .isEqualTo(Long.valueOf(numThreads));
+        .isEqualTo((long) numThreads);
   }
 
   @Test

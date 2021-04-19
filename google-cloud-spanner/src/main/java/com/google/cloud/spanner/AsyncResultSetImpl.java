@@ -62,11 +62,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     /** Does this state mean that the result set should permanently stop producing rows. */
     private final boolean shouldStop;
 
-    private State() {
+    State() {
       shouldStop = false;
     }
 
-    private State(boolean shouldStop) {
+    State(boolean shouldStop) {
       this.shouldStop = shouldStop;
     }
   }
@@ -116,32 +116,31 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   private State state = State.INITIALIZED;
 
   /**
-   * {@link #finished} indicates whether all the results from the underlying result set have been
-   * read.
+   * This variable indicates whether all the results from the underlying result set have been read.
    */
   private volatile boolean finished;
 
   private volatile ApiFuture<Void> result;
 
   /**
-   * {@link #cursorReturnedDoneOrException} indicates whether {@link #tryNext()} has returned {@link
-   * CursorState#DONE} or a {@link SpannerException}.
+   * This variable indicates whether {@link #tryNext()} has returned {@link CursorState#DONE} or a
+   * {@link SpannerException}.
    */
   private volatile boolean cursorReturnedDoneOrException;
 
   /**
-   * {@link #pausedLatch} is used to pause the producer when the {@link AsyncResultSet} is paused.
-   * The production of rows that are put into the buffer is only paused once the buffer is full.
+   * This variable is used to pause the producer when the {@link AsyncResultSet} is paused. The
+   * production of rows that are put into the buffer is only paused once the buffer is full.
    */
   private volatile CountDownLatch pausedLatch = new CountDownLatch(1);
   /**
-   * {@link #bufferConsumptionLatch} is used to pause the producer when the buffer is full and the
-   * consumer needs some time to catch up.
+   * This variable is used to pause the producer when the buffer is full and the consumer needs some
+   * time to catch up.
    */
   private volatile CountDownLatch bufferConsumptionLatch = new CountDownLatch(0);
   /**
-   * {@link #consumingLatch} is used to pause the producer when all rows have been put into the
-   * buffer, but the consumer (the callback) has not yet received and processed all rows.
+   * This variable is used to pause the producer when all rows have been put into the buffer, but
+   * the consumer (the callback) has not yet received and processed all rows.
    */
   private volatile CountDownLatch consumingLatch = new CountDownLatch(0);
 
@@ -531,7 +530,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       Preconditions.checkState(
           this.state == State.INITIALIZED, "This AsyncResultSet has already been used.");
       final SettableApiFuture<List<T>> res = SettableApiFuture.<List<T>>create();
-      CreateListCallback<T> callback = new CreateListCallback<T>(res, transformer);
+      CreateListCallback<T> callback = new CreateListCallback<>(res, transformer);
       ApiFuture<Void> finished = setCallback(executor, callback);
       return ApiFutures.transformAsync(
           finished,

@@ -105,7 +105,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
         rawOperationFuture = rpc.restoreDatabase(restore);
 
-    return new OperationFutureImpl<Database, RestoreDatabaseMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Database>() {
@@ -308,7 +308,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
         rawOperationFuture =
             rpc.createDatabase(
                 database.getId().getInstanceId().getName(), createStatement, statements, database);
-    return new OperationFutureImpl<Database, CreateDatabaseMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Database>() {
@@ -347,7 +347,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
         rpc.updateDatabaseDdl(dbName, statements, opId);
-    return new OperationFutureImpl<Void, UpdateDatabaseDdlMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Void>() {

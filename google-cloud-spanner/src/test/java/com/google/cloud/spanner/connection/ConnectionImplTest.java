@@ -337,38 +337,36 @@ public class ConnectionImplTest {
             new Answer<TransactionRunner>() {
               @Override
               public TransactionRunner answer(InvocationOnMock invocation) {
-                TransactionRunner runner =
-                    new TransactionRunner() {
-                      private CommitResponse commitResponse;
+                return new TransactionRunner() {
+                  private CommitResponse commitResponse;
 
-                      @Override
-                      public <T> T run(TransactionCallable<T> callable) {
-                        commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
-                        TransactionContext transaction = mock(TransactionContext.class);
-                        when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                        try {
-                          return callable.run(transaction);
-                        } catch (Exception e) {
-                          throw SpannerExceptionFactory.newSpannerException(e);
-                        }
-                      }
+                  @Override
+                  public <T> T run(TransactionCallable<T> callable) {
+                    commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+                    TransactionContext transaction = mock(TransactionContext.class);
+                    when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                    try {
+                      return callable.run(transaction);
+                    } catch (Exception e) {
+                      throw SpannerExceptionFactory.newSpannerException(e);
+                    }
+                  }
 
-                      @Override
-                      public Timestamp getCommitTimestamp() {
-                        return commitResponse == null ? null : commitResponse.getCommitTimestamp();
-                      }
+                  @Override
+                  public Timestamp getCommitTimestamp() {
+                    return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+                  }
 
-                      @Override
-                      public CommitResponse getCommitResponse() {
-                        return commitResponse;
-                      }
+                  @Override
+                  public CommitResponse getCommitResponse() {
+                    return commitResponse;
+                  }
 
-                      @Override
-                      public TransactionRunner allowNestedTransaction() {
-                        return this;
-                      }
-                    };
-                return runner;
+                  @Override
+                  public TransactionRunner allowNestedTransaction() {
+                    return this;
+                  }
+                };
               }
             });
     return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);

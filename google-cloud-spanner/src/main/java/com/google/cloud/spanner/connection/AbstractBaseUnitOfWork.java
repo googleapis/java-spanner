@@ -77,7 +77,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
 
   enum InterceptorsUsage {
     INVOKE_INTERCEPTORS,
-    IGNORE_INTERCEPTORS;
+    IGNORE_INTERCEPTORS
   }
 
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractBaseUnitOfWork> {

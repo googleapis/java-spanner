@@ -96,7 +96,7 @@ public class SpannerPool {
   @VisibleForTesting
   enum CheckAndCloseSpannersMode {
     WARN,
-    ERROR;
+    ERROR
   }
 
   private final class CloseSpannerRunnable implements Runnable {
@@ -291,11 +291,8 @@ public class SpannerPool {
         spanner = createSpanner(key, options);
         spanners.put(key, spanner);
       }
-      List<ConnectionImpl> registeredConnectionsForSpanner = connections.get(key);
-      if (registeredConnectionsForSpanner == null) {
-        registeredConnectionsForSpanner = new ArrayList<>();
-        connections.put(key, registeredConnectionsForSpanner);
-      }
+      List<ConnectionImpl> registeredConnectionsForSpanner =
+          connections.computeIfAbsent(key, k -> new ArrayList<>());
       registeredConnectionsForSpanner.add(connection);
       lastConnectionClosedAt.remove(key);
       return spanner;
@@ -484,8 +481,7 @@ public class SpannerPool {
         // Check whether the last connection was closed more than
         // closeSpannerAfterMillisecondsUnused milliseconds ago.
         if (closedAt != null
-            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS)
-                    - closedAt.longValue()))
+            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS) - closedAt))
                 > closeSpannerAfterMillisecondsUnused) {
           Spanner spanner = spanners.get(entry.getKey());
           if (spanner != null) {

@@ -110,7 +110,7 @@ public interface SpannerRpc extends ServiceRpc {
    *
    * @param <T> the type of result
    */
-  public static final class Paginated<T> {
+  final class Paginated<T> {
     private final Iterable<T> results;
     private final String nextPageToken;
 
@@ -354,7 +354,7 @@ public interface SpannerRpc extends ServiceRpc {
   TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions);
 
-  public void shutdown();
+  void shutdown();
 
   boolean isClosed();
 }

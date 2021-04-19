@@ -150,8 +150,8 @@ public abstract class AbstractSqlScriptVerifier {
     protected abstract Object getFirstValue() throws Exception;
   }
 
-  public static interface GenericConnectionProvider {
-    public GenericConnection getConnection();
+  public interface GenericConnectionProvider {
+    GenericConnection getConnection();
   }
 
   /** Reads SQL statements from a file. Any copyright header in the file will be stripped away. */
@@ -163,7 +163,6 @@ public abstract class AbstractSqlScriptVerifier {
           String line = scanner.nextLine();
           builder.append(line).append("\n");
         }
-        scanner.close();
       }
       String script = builder.toString().replaceAll(StatementParserTest.COPYRIGHT_PATTERN, "");
       String[] array = script.split(";");
@@ -213,7 +212,6 @@ public abstract class AbstractSqlScriptVerifier {
    *     semicolon (;)
    * @param resourceClass The class that should be used to locate the resource specified by the file
    *     name
-   * @throws Exception
    */
   public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
     verifyStatementsInFile(connectionProvider.getConnection(), filename, resourceClass);
@@ -313,7 +311,7 @@ public abstract class AbstractSqlScriptVerifier {
             } else {
               String value = verifyMatcher.group("value");
               if (value != null) {
-                String parts[] = column.split(",", 2);
+                String[] parts = column.split(",", 2);
                 column = parts[0].trim();
                 value = parts[1].trim();
                 column = column.substring(1, column.length() - 1);
@@ -326,7 +324,7 @@ public abstract class AbstractSqlScriptVerifier {
             }
             break;
           case UPDATE_COUNT:
-            long expectedUpdateCount = Long.valueOf(verifyMatcher.group("count").trim());
+            long expectedUpdateCount = Long.parseLong(verifyMatcher.group("count").trim());
             assertThat(statement, result.getUpdateCount(), is(equalTo(expectedUpdateCount)));
             break;
         }
@@ -383,8 +381,8 @@ public abstract class AbstractSqlScriptVerifier {
     if (ARRAY_INT64_PATTERN.matcher(valueString).matches()) {
       String[] stringArray = valueString.substring(1, valueString.length() - 1).split(",");
       List<Long> res = new ArrayList<>();
-      for (int i = 0; i < stringArray.length; i++) {
-        res.add(Long.valueOf(stringArray[i]));
+      for (String string : stringArray) {
+        res.add(Long.valueOf(string));
       }
       return res;
     }

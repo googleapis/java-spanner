@@ -635,7 +635,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getSession();
-    session1.writeAtLeastOnceWithOptions(new ArrayList<Mutation>());
+    session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
@@ -801,7 +801,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     UPDATE,
     BATCH_UPDATE,
     WRITE,
-    EXCEPTION;
+    EXCEPTION
   }
 
   @SuppressWarnings("unchecked")

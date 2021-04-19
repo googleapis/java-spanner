@@ -208,7 +208,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       Object merged =
           kind == KindCase.STRING_VALUE
               ? value.getStringValue()
-              : new ArrayList<com.google.protobuf.Value>(value.getListValue().getValuesList());
+              : new ArrayList<>(value.getListValue().getValuesList());
       while (current.getChunkedValue() && pos == current.getValuesCount()) {
         if (!ensureReady(StreamValue.RESULT)) {
           throw newSpannerException(

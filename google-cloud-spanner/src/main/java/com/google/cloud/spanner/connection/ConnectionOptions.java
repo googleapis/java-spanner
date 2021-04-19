@@ -605,25 +605,25 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseUsePlainText(String uri) {
     String value = parseUriProperty(uri, USE_PLAIN_TEXT_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_USE_PLAIN_TEXT;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_PLAIN_TEXT;
   }
 
   @VisibleForTesting
   static boolean parseAutocommit(String uri) {
     String value = parseUriProperty(uri, AUTOCOMMIT_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_AUTOCOMMIT;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTOCOMMIT;
   }
 
   @VisibleForTesting
   static boolean parseReadOnly(String uri) {
     String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_READONLY;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
   }
 
   @VisibleForTesting
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
   }
 
   @VisibleForTesting
@@ -671,18 +671,18 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
-    return value != null ? Boolean.valueOf(value) : false;
+    return value != null ? Boolean.parseBoolean(value) : false;
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
     String value = parseUriProperty(uri, "autoConfigEmulator");
-    return value != null ? Boolean.valueOf(value) : false;
+    return value != null ? Boolean.parseBoolean(value) : false;
   }
 
   @VisibleForTesting
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_LENIENT;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
   }
 
   @VisibleForTesting

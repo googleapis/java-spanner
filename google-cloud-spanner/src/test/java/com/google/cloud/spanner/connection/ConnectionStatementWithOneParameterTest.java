@@ -56,9 +56,7 @@ public class ConnectionStatementWithOneParameterTest {
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
-      subject
-          .getClientSideStatement()
-          .execute(executor, String.format("set readonly = %s", Boolean.toString(mode)));
+      subject.getClientSideStatement().execute(executor, String.format("set readonly = %s", mode));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }
@@ -102,9 +100,8 @@ public class ConnectionStatementWithOneParameterTest {
         verify(connection, times(1)).setStatementTimeout(val, unit);
       }
     }
-    ParsedStatement subject =
-        parser.parse(Statement.of(String.format("set statement_timeout=null")));
-    subject.getClientSideStatement().execute(executor, String.format("set statement_timeout=null"));
+    ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
+    subject.getClientSideStatement().execute(executor, "set statement_timeout=null");
     verify(connection, times(1)).clearStatementTimeout();
   }
 

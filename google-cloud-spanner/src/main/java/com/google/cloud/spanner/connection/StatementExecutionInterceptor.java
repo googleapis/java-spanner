@@ -36,5 +36,5 @@ enum StatementExecutionStep {
   /** Execution of the statement during an internal transaction retry. */
   RETRY_STATEMENT,
   /** A call to {@link ResultSet#next()} during internal transaction retry. */
-  RETRY_NEXT_ON_RESULT_SET;
+  RETRY_NEXT_ON_RESULT_SET
 }
