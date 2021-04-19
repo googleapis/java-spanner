@@ -284,7 +284,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.projectId = options.getProjectId();
     String projectNameStr = PROJECT_NAME_TEMPLATE.instantiate("project", this.projectId);
     try {
-      // Fix use cases where projectName contains special charecters.
+      // Fix use cases where projectName contains special characters.
       // This would happen when projects are under an organization.
       projectNameStr = URLDecoder.decode(projectNameStr, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) { // Ignored.
@@ -328,7 +328,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setDaemon(true)
                 .setNameFormat("Cloud-Spanner-TransportChannel-%d")
                 .build());
-    // First check if SpannerOptions provides a TransportChannerProvider. Create one
+    // First check if SpannerOptions provides a TransportChannelProvider. Create one
     // with information gathered from SpannerOptions if none is provided
     InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
         InstantiatingGrpcChannelProvider.newBuilder()

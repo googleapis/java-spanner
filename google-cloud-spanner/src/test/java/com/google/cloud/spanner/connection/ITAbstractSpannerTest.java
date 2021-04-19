@@ -76,7 +76,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   public static class AbortInterceptor implements StatementExecutionInterceptor {
-    /** We need to replicate the enum here as it is not visibible outside the connection package */
+    /** We need to replicate the enum here as it is not visible outside the connection package */
     public enum ExecutionStep {
       /** The initial execution of a statement (DML/Query) */
       EXECUTE_STATEMENT,

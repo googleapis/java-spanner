@@ -240,7 +240,7 @@ OR LastName IN (
 ;
 
 /* As we are in a transaction, the statement *could* continue in the background and will not
- * automatically be rollbacked by the connection. Whether the statement will continue to
+ * automatically be rolled back by the connection. Whether the statement will continue to
  * execute in the background depends on what the reason for the timeout was. If the timeout
  * was caused because the statement took too long to execute on the server, the statement
  * will continue to run server side. If the timeout was caused by a network problem that

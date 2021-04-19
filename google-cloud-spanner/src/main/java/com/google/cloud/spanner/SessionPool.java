@@ -1616,10 +1616,10 @@ class SessionPool {
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
-    private final Duration keepAliveMilis =
+    private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
@@ -1716,7 +1716,7 @@ class SessionPool {
                         / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {

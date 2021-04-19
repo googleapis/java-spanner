@@ -227,8 +227,8 @@ public class ITTransactionManagerAsyncTest {
   @Test
   public void testAbortAndRetry() throws InterruptedException, ExecutionException {
     assumeFalse(
-        "Emulator does not support more than 1 simultanous transaction. "
-            + "This test would therefore loop indefinetly on the emulator.",
+        "Emulator does not support more than 1 simultaneous transaction. "
+            + "This test would therefore loop indefinitely on the emulator.",
         isUsingEmulator());
 
     client.write(

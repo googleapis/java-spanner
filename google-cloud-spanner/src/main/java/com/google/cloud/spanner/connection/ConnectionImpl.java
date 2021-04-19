@@ -280,7 +280,7 @@ class ConnectionImpl implements Connection {
       // connection.
       this.closed = true;
       // Add a no-op statement to the execute. Once this has been executed, we know that all
-      // preceeding statements have also been executed, as the executor is single-threaded and
+      // preceding statements have also been executed, as the executor is single-threaded and
       // executes all statements in order of submitting.
       futures.add(statementExecutor.submit(() -> null));
       statementExecutor.shutdown();

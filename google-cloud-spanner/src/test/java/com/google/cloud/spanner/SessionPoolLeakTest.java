@@ -126,7 +126,7 @@ public class SessionPoolLeakTest {
   }
 
   @Test
-  public void testTansactionManagerExceptionOnCreateSession() {
+  public void testTransactionManagerExceptionOnCreateSession() {
     transactionManagerTest(
         () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(

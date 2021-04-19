@@ -277,7 +277,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     new Thread(
             () -> {
               while (!stopMaintenance.get()) {
-                runMaintainanceLoop(clock, pool, 1);
+                runMaintenanceLoop(clock, pool, 1);
               }
             })
         .start();

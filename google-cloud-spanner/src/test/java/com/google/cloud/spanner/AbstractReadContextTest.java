@@ -145,7 +145,7 @@ public class AbstractReadContextTest {
   }
 
   @Test
-  public void testBuildRequestionOptions() {
+  public void testBuildRequestOptions() {
     RequestOptions requestOptions = context.buildRequestOptions(Options.fromQueryOptions());
     assertEquals(RequestOptions.Priority.PRIORITY_UNSPECIFIED, requestOptions.getPriority());
   }

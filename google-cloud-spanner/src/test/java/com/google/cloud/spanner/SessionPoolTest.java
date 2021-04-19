@@ -266,7 +266,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             () -> {
               // Run in a tight loop.
               while (!stop.get()) {
-                runMaintainanceLoop(clock, pool, 1);
+                runMaintenanceLoop(clock, pool, 1);
               }
             })
         .start();
@@ -562,7 +562,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool(clock);
     // Make sure pool has been initialized
     pool.getSession().close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     PooledSessionFuture readSession1 = pool.getSession();
     PooledSessionFuture readSession2 = pool.getSession();
@@ -577,7 +577,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     readSession3.close();
     // Now there are 3 sessions in the pool but since none of them has timed out, they will all be
     // kept in the pool.
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     // Counters have now been reset
     // Use all 3 sessions sequentially
@@ -588,7 +588,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // one session to be kept alive and two sessions to be removed.
     long cycles =
         options.getRemoveInactiveSessionAfter().toMillis() / pool.poolMaintainer.loopFrequency;
-    runMaintainanceLoop(clock, pool, cycles);
+    runMaintenanceLoop(clock, pool, cycles);
     // We will still close 2 sessions since at any point in time only 1 session was in use.
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
@@ -628,16 +628,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session2.get();
     session1.close();
     session2.close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     verify(session, never()).singleUse(any(TimestampBound.class));
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     verify(session, times(2)).singleUse(any(TimestampBound.class));
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getSession();
     session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
     verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
         .singleUse(any(TimestampBound.class));

@@ -201,7 +201,7 @@ public abstract class AbstractSqlScriptVerifier {
 
   /**
    * Reads sql statements from the specified file name and executes and verifies these. Statements
-   * that are preceeded by an @EXPECT statement are verified against the @EXPECT specification.
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
@@ -219,7 +219,7 @@ public abstract class AbstractSqlScriptVerifier {
 
   /**
    * Reads sql statements from the specified file name and executes and verifies these. Statements
-   * that are preceeded by an @EXPECT statement are verified against the @EXPECT specification.
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *

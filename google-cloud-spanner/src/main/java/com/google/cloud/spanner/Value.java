@@ -75,7 +75,7 @@ public abstract class Value implements Serializable {
   private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
   private static final String NULL_STRING = "NULL";
-  private static final char LIST_SEPERATOR = ',';
+  private static final char LIST_SEPARATOR = ',';
   private static final char LIST_OPEN = '[';
   private static final char LIST_CLOSE = ']';
   private static final long serialVersionUID = -5289864325087675338L;
@@ -1194,7 +1194,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         if (nulls != null && nulls.get(i)) {
           b.append(NULL_STRING);
@@ -1378,7 +1378,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < value.size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         T v = value.get(i);
         if (v == null) {
@@ -1597,7 +1597,7 @@ public abstract class Value implements Serializable {
   }
 
   private static class StructArrayImpl extends AbstractArrayValue<Struct> {
-    private static final Joiner joiner = Joiner.on(LIST_SEPERATOR).useForNull(NULL_STRING);
+    private static final Joiner joiner = Joiner.on(LIST_SEPARATOR).useForNull(NULL_STRING);
 
     private StructArrayImpl(Type elementType, @Nullable List<Struct> values) {
       super(values == null, elementType, values);

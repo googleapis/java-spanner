@@ -158,7 +158,7 @@ public interface SpannerRpc extends ServiceRpc {
   interface StreamingCall {
 
     /**
-     * Requests more messages from the stream. We disable the auto flow control mechanisam in grpc,
+     * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,
      * so we need to request messages ourself. This gives us more control over how much buffer we
      * maintain in the client. Grpc will request 1 initial message automatically so we don't need to
      * call this at the beginning. After that it should be called whenever there is a flow control

@@ -530,9 +530,9 @@ public interface DatabaseClient {
    * Returns the lower bound of rows modified by this DML statement.
    *
    * <p>The method will block until the update is complete. Running a DML statement with this method
-   * does not offer exactly once semantics, and therfore the DML statement should be idempotent. The
-   * DML statement must be fully-partitionable. Specifically, the statement must be expressible as
-   * the union of many statements which each access only a single row of the table. This is a
+   * does not offer exactly once semantics, and therefore the DML statement should be idempotent.
+   * The DML statement must be fully-partitionable. Specifically, the statement must be expressible
+   * as the union of many statements which each access only a single row of the table. This is a
    * Partitioned DML transaction in which a single Partitioned DML statement is executed.
    * Partitioned DML partitions the key space and runs the DML statement over each partition in
    * parallel using separate, internal transactions that commit independently. Partitioned DML

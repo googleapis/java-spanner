@@ -109,7 +109,7 @@ public class AsyncRunnerImplTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testRunAyncFailsIfCalledMultipleTimes() {
+  public void testRunAsyncFailsIfCalledMultipleTimes() {
     final Object result = new Object();
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     when(delegate.run(any(TransactionCallable.class))).thenReturn(result);
