@@ -145,7 +145,7 @@ public class SessionClientTest {
     final Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<Long>());
+    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
@@ -208,7 +208,7 @@ public class SessionClientTest {
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = Collections.<String, String>emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<Long>());
+    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
@@ -263,7 +263,7 @@ public class SessionClientTest {
   private enum AddRemoveSetException {
     SET,
     ADD,
-    REMOVE;
+    REMOVE
   }
 
   @SuppressWarnings("unchecked")
@@ -273,7 +273,7 @@ public class SessionClientTest {
       final List<Long> errorOnChannels = new ArrayList<>();
       if (behavior == AddRemoveSetException.REMOVE) {
         for (int c = 0; c < spannerOptions.getNumChannels(); c++) {
-          errorOnChannels.add(Long.valueOf(c));
+          errorOnChannels.add((long) c);
         }
       }
       for (int errorOnChannel = 0;
@@ -283,7 +283,7 @@ public class SessionClientTest {
           case SET:
             errorOnChannels.clear();
           case ADD:
-            errorOnChannels.add(Long.valueOf(errorOnChannel));
+            errorOnChannels.add((long) errorOnChannel);
             break;
           case REMOVE:
             errorOnChannels.remove(Long.valueOf(errorOnChannel));

@@ -1002,7 +1002,7 @@ public class InlineBeginTransactionTest {
                     }
                     return res;
                   });
-      assertThat(updateCount).isEqualTo(1L * numQueries);
+      assertThat(updateCount).isEqualTo((long) numQueries);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
     }
@@ -1202,7 +1202,7 @@ public class InlineBeginTransactionTest {
                         MoreExecutors.directExecutor());
                   },
                   executor);
-      assertThat(updateCount.get()).isEqualTo(1L * numQueries);
+      assertThat(updateCount.get()).isEqualTo((long) numQueries);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
     }

@@ -1749,9 +1749,9 @@ class SessionPool {
     }
   }
 
-  private static enum Position {
+  private enum Position {
     FIRST,
-    RANDOM;
+    RANDOM
   }
 
   private final SessionPoolOptions options;
@@ -2058,7 +2058,7 @@ class SessionPool {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
-      span.addAnnotation(String.format("Waiting for a session to come available"));
+      span.addAnnotation("Waiting for a session to come available");
       sessionFuture = waiter;
     } else {
       SettableFuture<PooledSession> fut = SettableFuture.create();

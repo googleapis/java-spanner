@@ -153,7 +153,7 @@ public class AsyncResultSetImplStressTest {
   private List<Row> createExpectedRows() {
     List<Row> rows = new ArrayList<>(resultSetSize);
     for (int i = 0; i < resultSetSize; i++) {
-      rows.add(new Row(Long.valueOf(i + 1), String.format("Row %d", (i + 1))));
+      rows.add(new Row(i + 1L, String.format("Row %d", (i + 1))));
     }
     return rows;
   }
@@ -334,8 +334,7 @@ public class AsyncResultSetImplStressTest {
         new Executor[] {
           MoreExecutors.directExecutor(), createExecService(), createExecService(32)
         }) {
-      final List<AsyncResultSet> resultSets =
-          Collections.synchronizedList(new ArrayList<AsyncResultSet>());
+      final List<AsyncResultSet> resultSets = Collections.synchronizedList(new ArrayList<>());
       for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
         for (int i = 0; i < TEST_RUNS; i++) {
           final SettableApiFuture<ImmutableList<Row>> future = SettableApiFuture.create();
@@ -396,8 +395,7 @@ public class AsyncResultSetImplStressTest {
           MoreExecutors.directExecutor(), createExecService(), createExecService(32)
         }) {
       List<ApiFuture<ImmutableList<Row>>> futures = new ArrayList<>();
-      final List<AsyncResultSet> resultSets =
-          Collections.synchronizedList(new ArrayList<AsyncResultSet>());
+      final List<AsyncResultSet> resultSets = Collections.synchronizedList(new ArrayList<>());
       final Set<Integer> cancelledIndexes = new HashSet<>();
       for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
         for (int i = 0; i < TEST_RUNS; i++) {

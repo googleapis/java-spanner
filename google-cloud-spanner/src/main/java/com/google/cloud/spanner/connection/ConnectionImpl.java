@@ -119,7 +119,7 @@ class ConnectionImpl implements Connection {
   enum BatchMode {
     NONE,
     DDL,
-    DML;
+    DML
   }
 
   /**
@@ -188,8 +188,8 @@ class ConnectionImpl implements Connection {
 
   private UnitOfWork currentUnitOfWork = null;
   /**
-   * The {@link ConnectionImpl#inTransaction} field is only used in autocommit mode to indicate that
-   * the user has explicitly started a transaction.
+   * This field is only used in autocommit mode to indicate that the user has explicitly started a
+   * transaction.
    */
   private boolean inTransaction = false;
   /**
@@ -667,8 +667,8 @@ class ConnectionImpl implements Connection {
   }
 
   /** Internal interface for ending a transaction (commit/rollback). */
-  private static interface EndTransactionMethod {
-    public ApiFuture<Void> endAsync(UnitOfWork t);
+  private interface EndTransactionMethod {
+    ApiFuture<Void> endAsync(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {

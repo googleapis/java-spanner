@@ -38,7 +38,7 @@ import com.google.cloud.Timestamp;
 public interface TransactionManager extends AutoCloseable {
 
   /** State of the transaction manager. */
-  public enum TransactionState {
+  enum TransactionState {
     // Transaction has been started either by calling {@link #begin()} or via
     // {@link resetForRetry()} but has not been commited or rolled back yet.
     STARTED,

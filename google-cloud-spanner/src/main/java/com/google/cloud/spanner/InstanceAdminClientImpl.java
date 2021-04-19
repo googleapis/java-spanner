@@ -103,7 +103,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
         rawOperationFuture =
             rpc.createInstance(projectName, instance.getId().getInstance(), instance.toProto());
 
-    return new OperationFutureImpl<Instance, CreateInstanceMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Instance>() {
@@ -172,7 +172,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
 
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, UpdateInstanceMetadata>
         rawOperationFuture = rpc.updateInstance(instance.toProto(), fieldMask);
-    return new OperationFutureImpl<Instance, UpdateInstanceMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Instance>() {

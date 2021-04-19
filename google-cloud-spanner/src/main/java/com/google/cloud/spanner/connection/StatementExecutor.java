@@ -144,7 +144,7 @@ class StatementExecutor {
   private static ListeningExecutorService createExecutorService() {
     return MoreExecutors.listeningDecorator(
         new ThreadPoolExecutor(
-            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), THREAD_FACTORY));
+            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY));
   }
 
   private ListeningExecutorService executor = createExecutorService();

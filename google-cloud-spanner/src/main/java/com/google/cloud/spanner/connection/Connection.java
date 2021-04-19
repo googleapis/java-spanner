@@ -800,13 +800,6 @@ public interface Connection extends AutoCloseable {
   ResultSet executeQuery(Statement query, QueryOption... options);
 
   /**
-   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
-   * and returns the query result as an {@link AsyncResultSet}. See {@link
-   * AsyncResultSet#setCallback(java.util.concurrent.Executor,
-   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
-   */
-  /**
    * Executes the given statement asynchronously as a query and returns the result as an {@link
    * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
    * contain a valid query, the method will throw a {@link SpannerException}.
@@ -1011,7 +1004,7 @@ public interface Connection extends AutoCloseable {
    * <p>NOT INTENDED FOR EXTERNAL USE!
    */
   @InternalApi
-  public static final class InternalMetadataQuery implements QueryOption {
+  final class InternalMetadataQuery implements QueryOption {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}

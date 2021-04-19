@@ -205,9 +205,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     readTimestamp = SettableApiFuture.create();
-    ApiFuture<ResultSet> res =
-        executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
-    return res;
+    return executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
   }
 
   @Override

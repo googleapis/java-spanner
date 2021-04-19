@@ -694,7 +694,7 @@ public class DatabaseAdminClientTest {
           op.getMetadata().unpack(OptimizeRestoredDatabaseMetadata.class);
       String progress =
           String.format(
-              "Restored database %s is optimized",
+              "Restored database %s is optimized %d%%",
               metadata.getName(), metadata.getProgress().getProgressPercent());
       assertThat(progress.contains("100%"));
     }
