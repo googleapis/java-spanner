@@ -51,9 +51,7 @@ import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1081,117 +1079,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static NullPointerException throwNotNull(int columnIndex) {
     throw new NullPointerException(
         "Cannot call array getter for column " + columnIndex + " with null elements");
-  }
-
-  /**
-   * Memory-optimized base class for {@code ARRAY<INT64>} and {@code ARRAY<FLOAT64>} types. Both of
-   * these involve conversions from the type yielded by JSON parsing, which are {@code String} and
-   * {@code BigDecimal} respectively. Rather than construct new wrapper objects for each array
-   * element, we use primitive arrays and a {@code BitSet} to track nulls.
-   */
-  abstract static class PrimitiveArray<T, A> extends AbstractList<T> {
-    private final A data;
-    private final BitSet nulls;
-    private final int size;
-
-    PrimitiveArray(ListValue protoList) {
-      this.size = protoList.getValuesCount();
-      A data = newArray(size);
-      BitSet nulls = new BitSet(size);
-      for (int i = 0; i < protoList.getValuesCount(); ++i) {
-        if (protoList.getValues(i).getKindCase() == KindCase.NULL_VALUE) {
-          nulls.set(i);
-        } else {
-          setProto(data, i, protoList.getValues(i));
-        }
-      }
-      this.data = data;
-      this.nulls = nulls;
-    }
-
-    PrimitiveArray(A data, BitSet nulls, int size) {
-      this.data = data;
-      this.nulls = nulls;
-      this.size = size;
-    }
-
-    abstract A newArray(int size);
-
-    abstract void setProto(A array, int i, com.google.protobuf.Value protoValue);
-
-    abstract T get(A array, int i);
-
-    @Override
-    public T get(int index) {
-      if (index < 0 || index >= size) {
-        throw new ArrayIndexOutOfBoundsException("index=" + index + " size=" + size);
-      }
-      return nulls.get(index) ? null : get(data, index);
-    }
-
-    @Override
-    public int size() {
-      return size;
-    }
-
-    A toPrimitiveArray(int columnIndex) {
-      if (nulls.length() > 0) {
-        throw throwNotNull(columnIndex);
-      }
-      A r = newArray(size);
-      System.arraycopy(data, 0, r, 0, size);
-      return r;
-    }
-  }
-
-  static class Int64Array extends PrimitiveArray<Long, long[]> {
-    Int64Array(ListValue protoList) {
-      super(protoList);
-    }
-
-    Int64Array(long[] data, BitSet nulls) {
-      super(data, nulls, data.length);
-    }
-
-    @Override
-    long[] newArray(int size) {
-      return new long[size];
-    }
-
-    @Override
-    void setProto(long[] array, int i, com.google.protobuf.Value protoValue) {
-      array[i] = Long.parseLong(protoValue.getStringValue());
-    }
-
-    @Override
-    Long get(long[] array, int i) {
-      return array[i];
-    }
-  }
-
-  static class Float64Array extends PrimitiveArray<Double, double[]> {
-    Float64Array(ListValue protoList) {
-      super(protoList);
-    }
-
-    Float64Array(double[] data, BitSet nulls) {
-      super(data, nulls, data.length);
-    }
-
-    @Override
-    double[] newArray(int size) {
-      return new double[size];
-    }
-
-    @Override
-    void setProto(double[] array, int i, com.google.protobuf.Value protoValue) {
-      array[i] = valueProtoToFloat64(protoValue);
-    }
-
-    @Override
-    Double get(double[] array, int i) {
-      return array[i];
-    }
   }
 
   protected abstract GrpcStruct currRow();
