@@ -28,11 +28,14 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
@@ -51,7 +54,9 @@ import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,10 +66,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -346,7 +349,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
   static class GrpcStruct extends Struct implements Serializable {
     private final Type type;
-    private final List<Value> rowData;
+    private final List<Object> rowData;
 
     /**
      * Builds an immutable version of this struct using {@link Struct#newBuilder()} which is used as
@@ -358,71 +361,63 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       for (int i = 0; i < structFields.size(); i++) {
         Type.StructField field = structFields.get(i);
         String fieldName = field.getName();
-        Value value = rowData.get(i);
+        Object value = rowData.get(i);
         Type fieldType = field.getType();
         switch (fieldType.getCode()) {
           case BOOL:
-            builder.set(fieldName).to(value == null ? null : value.getBool());
+            builder.set(fieldName).to((Boolean) value);
             break;
           case INT64:
-            builder.set(fieldName).to(value == null ? null : value.getInt64());
+            builder.set(fieldName).to((Long) value);
             break;
           case FLOAT64:
-            builder.set(fieldName).to(value == null ? null : value.getFloat64());
+            builder.set(fieldName).to((Double) value);
             break;
           case NUMERIC:
-            builder.set(fieldName).to(value == null ? null : value.getNumeric());
+            builder.set(fieldName).to((BigDecimal) value);
             break;
           case STRING:
-            builder.set(fieldName).to(value == null ? null : value.getString());
+            builder.set(fieldName).to((String) value);
             break;
           case BYTES:
-            builder.set(fieldName).to(value == null ? null : value.getBytes());
+            builder.set(fieldName).to((ByteArray) value);
             break;
           case TIMESTAMP:
-            builder.set(fieldName).to(value == null ? null : value.getTimestamp());
+            builder.set(fieldName).to((Timestamp) value);
             break;
           case DATE:
-            builder.set(fieldName).to(value == null ? null : value.getDate());
+            builder.set(fieldName).to((Date) value);
             break;
           case ARRAY:
             switch (fieldType.getArrayElementType().getCode()) {
               case BOOL:
-                builder.set(fieldName).toBoolArray(value == null ? null : value.getBoolArray());
+                builder.set(fieldName).toBoolArray((Iterable<Boolean>) value);
                 break;
               case INT64:
-                builder.set(fieldName).toInt64Array(value == null ? null : value.getInt64Array());
+                builder.set(fieldName).toInt64Array((Iterable<Long>) value);
                 break;
               case FLOAT64:
-                builder
-                    .set(fieldName)
-                    .toFloat64Array(value == null ? null : value.getFloat64Array());
+                builder.set(fieldName).toFloat64Array((Iterable<Double>) value);
                 break;
               case NUMERIC:
-                builder
-                    .set(fieldName)
-                    .toNumericArray(value == null ? null : value.getNumericArray());
+                builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
                 break;
               case STRING:
-                builder.set(fieldName).toStringArray(value == null ? null : value.getStringArray());
+                builder.set(fieldName).toStringArray((Iterable<String>) value);
                 break;
               case BYTES:
-                builder.set(fieldName).toBytesArray(value == null ? null : value.getBytesArray());
+                builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
                 break;
               case TIMESTAMP:
-                builder
-                    .set(fieldName)
-                    .toTimestampArray(value == null ? null : value.getTimestampArray());
+                builder.set(fieldName).toTimestampArray((Iterable<Timestamp>) value);
                 break;
               case DATE:
-                builder.set(fieldName).toDateArray(value == null ? null : value.getDateArray());
+                builder.set(fieldName).toDateArray((Iterable<Date>) value);
                 break;
               case STRUCT:
                 builder
                     .set(fieldName)
-                    .toStructArray(
-                        fieldType.getArrayElementType(),
-                        value == null ? null : value.getStructArray());
+                    .toStructArray(fieldType.getArrayElementType(), (Iterable<Struct>) value);
                 break;
               default:
                 throw new AssertionError(
@@ -433,7 +428,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             if (value == null) {
               builder.set(fieldName).to(fieldType, null);
             } else {
-              builder.set(fieldName).to(value.getStruct());
+              builder.set(fieldName).to((Struct) value);
             }
             break;
           default:
@@ -443,7 +438,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return builder.build();
     }
 
-    GrpcStruct(Type type, List<Value> rowData) {
+    GrpcStruct(Type type, List<Object> rowData) {
       this.type = type;
       this.rowData = rowData;
     }
@@ -470,33 +465,33 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return true;
     }
 
-    private static Value decodeValue(Type fieldType, com.google.protobuf.Value proto) {
+    private static Object decodeValue(Type fieldType, com.google.protobuf.Value proto) {
       if (proto.getKindCase() == KindCase.NULL_VALUE) {
         return null;
       }
       switch (fieldType.getCode()) {
         case BOOL:
           checkType(fieldType, proto, KindCase.BOOL_VALUE);
-          return Value.bool(proto.getBoolValue());
+          return proto.getBoolValue();
         case INT64:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return Value.int64(Long.parseLong(proto.getStringValue()));
+          return Long.parseLong(proto.getStringValue());
         case FLOAT64:
-          return Value.float64(valueProtoToFloat64(proto));
+          return valueProtoToFloat64(proto);
         case NUMERIC:
-          return Value.numeric(new BigDecimal(proto.getStringValue()));
+          return new BigDecimal(proto.getStringValue());
         case STRING:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return Value.string(proto.getStringValue());
+          return proto.getStringValue();
         case BYTES:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return Value.bytes(ByteArray.fromBase64(proto.getStringValue()));
+          return ByteArray.fromBase64(proto.getStringValue());
         case TIMESTAMP:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return Value.timestamp(Timestamp.parseTimestamp(proto.getStringValue()));
+          return Timestamp.parseTimestamp(proto.getStringValue());
         case DATE:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return Value.date(Date.parseDate(proto.getStringValue()));
+          return Date.parseDate(proto.getStringValue());
         case ARRAY:
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue listValue = proto.getListValue();
@@ -504,7 +499,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRUCT:
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue structValue = proto.getListValue();
-          return Value.struct(decodeStructValue(fieldType, structValue));
+          return decodeStructValue(fieldType, structValue);
         default:
           throw new AssertionError("Unhandled type code: " + fieldType.getCode());
       }
@@ -515,7 +510,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       checkArgument(
           structValue.getValuesCount() == fieldTypes.size(),
           "Size mismatch between type descriptor and actual values.");
-      List<Value> fields = new ArrayList<>(fieldTypes.size());
+      List<Object> fields = new ArrayList<>(fieldTypes.size());
       List<com.google.protobuf.Value> fieldValues = structValue.getValuesList();
       for (int i = 0; i < fieldTypes.size(); ++i) {
         fields.add(decodeValue(fieldTypes.get(i).getType(), fieldValues.get(i)));
@@ -523,50 +518,98 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return new GrpcStruct(structType, fields);
     }
 
-    static Value decodeArrayValue(Type elementType, ListValue listValue) {
+    static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
         case BOOL:
-          return Value.boolArray(
-              decodeListValue(listValue, com.google.protobuf.Value::getBoolValue));
+          // Use a view: element conversion is virtually free.
+          return Lists.transform(
+              listValue.getValuesList(),
+              new Function<com.google.protobuf.Value, Boolean>() {
+                @Override
+                public Boolean apply(com.google.protobuf.Value input) {
+                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue();
+                }
+              });
         case INT64:
-          return Value.int64Array(
-              decodeListValue(listValue, value -> Long.parseLong(value.getStringValue())));
+          // For int64/float64 types, use custom containers.  These avoid wrapper object
+          // creation for non-null arrays.
+          return new Int64Array(listValue);
         case FLOAT64:
-          return Value.float64Array(
-              decodeListValue(listValue, AbstractResultSet::valueProtoToFloat64));
+          return new Float64Array(listValue);
         case NUMERIC:
-          return Value.numericArray(
-              decodeListValue(listValue, value -> new BigDecimal(value.getStringValue())));
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : new BigDecimal(value.getStringValue()));
+            }
+            return list;
+          }
         case STRING:
-          return Value.stringArray(
-              decodeListValue(listValue, com.google.protobuf.Value::getStringValue));
+          return Lists.transform(
+              listValue.getValuesList(),
+              new Function<com.google.protobuf.Value, String>() {
+                @Override
+                public String apply(com.google.protobuf.Value input) {
+                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue();
+                }
+              });
         case BYTES:
-          return Value.bytesArray(
-              decodeListValue(listValue, value -> ByteArray.fromBase64(value.getStringValue())));
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : ByteArray.fromBase64(value.getStringValue()));
+            }
+            return list;
+          }
         case TIMESTAMP:
-          return Value.timestampArray(
-              decodeListValue(
-                  listValue, value -> Timestamp.parseTimestamp(value.getStringValue())));
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : Timestamp.parseTimestamp(value.getStringValue()));
+            }
+            return list;
+          }
         case DATE:
-          return Value.dateArray(
-              decodeListValue(listValue, value -> Date.parseDate(value.getStringValue())));
+          {
+            // Materialize list: element conversion is expensive and should happen only once.
+            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              list.add(
+                  value.getKindCase() == KindCase.NULL_VALUE
+                      ? null
+                      : Date.parseDate(value.getStringValue()));
+            }
+            return list;
+          }
+
         case STRUCT:
-          return Value.structArray(
-              elementType,
-              decodeListValue(
-                  listValue, value -> decodeStructValue(elementType, value.getListValue())));
+          {
+            ArrayList<Struct> list = new ArrayList<>(listValue.getValuesCount());
+            for (com.google.protobuf.Value value : listValue.getValuesList()) {
+              if (value.getKindCase() == KindCase.NULL_VALUE) {
+                list.add(null);
+              } else {
+                ListValue structValue = value.getListValue();
+                list.add(decodeStructValue(elementType, structValue));
+              }
+            }
+            return list;
+          }
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }
-    }
-
-    private static <T> List<T> decodeListValue(
-        ListValue listValue, Function<com.google.protobuf.Value, T> valueDecoder) {
-      return listValue.getValuesList().stream()
-          .map(
-              value ->
-                  value.getKindCase() == KindCase.NULL_VALUE ? null : valueDecoder.apply(value))
-          .collect(Collectors.toList());
     }
 
     private static void checkType(
@@ -599,57 +642,107 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected boolean getBooleanInternal(int columnIndex) {
-      return rowData.get(columnIndex).getBool();
+      return (Boolean) rowData.get(columnIndex);
     }
 
     @Override
     protected long getLongInternal(int columnIndex) {
-      return rowData.get(columnIndex).getInt64();
+      return (Long) rowData.get(columnIndex);
     }
 
     @Override
     protected double getDoubleInternal(int columnIndex) {
-      return rowData.get(columnIndex).getFloat64();
+      return (Double) rowData.get(columnIndex);
     }
 
     @Override
     protected BigDecimal getBigDecimalInternal(int columnIndex) {
-      return rowData.get(columnIndex).getNumeric();
+      return (BigDecimal) rowData.get(columnIndex);
     }
 
     @Override
     protected String getStringInternal(int columnIndex) {
-      return rowData.get(columnIndex).getString();
+      return (String) rowData.get(columnIndex);
     }
 
     @Override
     protected ByteArray getBytesInternal(int columnIndex) {
-      return rowData.get(columnIndex).getBytes();
+      return (ByteArray) rowData.get(columnIndex);
     }
 
     @Override
     protected Timestamp getTimestampInternal(int columnIndex) {
-      return rowData.get(columnIndex).getTimestamp();
+      return (Timestamp) rowData.get(columnIndex);
     }
 
     @Override
     protected Date getDateInternal(int columnIndex) {
-      return rowData.get(columnIndex).getDate();
+      return (Date) rowData.get(columnIndex);
     }
 
     @Override
     protected Value getValueInternal(int columnIndex) {
-      return rowData.get(columnIndex);
+      final List<Type.StructField> structFields = getType().getStructFields();
+      final StructField structField = structFields.get(columnIndex);
+      final Type columnType = structField.getType();
+      switch (columnType.getCode()) {
+        case BOOL:
+          return Value.bool(getBooleanInternal(columnIndex));
+        case INT64:
+          return Value.int64(getLongInternal(columnIndex));
+        case NUMERIC:
+          return Value.numeric(getBigDecimalInternal(columnIndex));
+        case FLOAT64:
+          return Value.float64(getDoubleInternal(columnIndex));
+        case STRING:
+          return Value.string(getStringInternal(columnIndex));
+        case BYTES:
+          return Value.bytes(getBytesInternal(columnIndex));
+        case TIMESTAMP:
+          return Value.timestamp(getTimestampInternal(columnIndex));
+        case DATE:
+          return Value.date(getDateInternal(columnIndex));
+        case STRUCT:
+          return Value.struct(getStructInternal(columnIndex));
+        case ARRAY:
+          switch (columnType.getArrayElementType().getCode()) {
+            case BOOL:
+              return Value.boolArray(getBooleanArrayInternal(columnIndex));
+            case INT64:
+              return Value.int64Array(getLongArrayInternal(columnIndex));
+            case NUMERIC:
+              return Value.numericArray(getBigDecimalListInternal(columnIndex));
+            case FLOAT64:
+              return Value.float64Array(getDoubleArrayInternal(columnIndex));
+            case STRING:
+              return Value.stringArray(getStringListInternal(columnIndex));
+            case BYTES:
+              return Value.bytesArray(getBytesListInternal(columnIndex));
+            case TIMESTAMP:
+              return Value.timestampArray(getTimestampListInternal(columnIndex));
+            case DATE:
+              return Value.dateArray(getDateListInternal(columnIndex));
+            case STRUCT:
+              return Value.structArray(
+                  this.type.getArrayElementType(), getStructListInternal(columnIndex));
+            default:
+              throw new IllegalArgumentException(
+                  "Invalid array value type " + this.type.getArrayElementType());
+          }
+        default:
+          throw new IllegalArgumentException("Invalid value type " + this.type);
+      }
     }
 
     @Override
     protected Struct getStructInternal(int columnIndex) {
-      return rowData.get(columnIndex).getStruct();
+      return (Struct) rowData.get(columnIndex);
     }
 
     @Override
     protected boolean[] getBooleanArrayInternal(int columnIndex) {
-      final List<Boolean> values = rowData.get(columnIndex).getBoolArray();
+      @SuppressWarnings("unchecked") // We know ARRAY<BOOL> produces a List<Boolean>.
+      List<Boolean> values = (List<Boolean>) rowData.get(columnIndex);
       boolean[] r = new boolean[values.size()];
       for (int i = 0; i < values.size(); ++i) {
         if (values.get(i) == null) {
@@ -661,70 +754,65 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<BOOL> produces a List<Boolean>.
     protected List<Boolean> getBooleanListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getBoolArray());
+      return Collections.unmodifiableList((List<Boolean>) rowData.get(columnIndex));
     }
 
     @Override
     protected long[] getLongArrayInternal(int columnIndex) {
-      final List<Long> values = rowData.get(columnIndex).getInt64Array();
-      int i = 0;
-      long[] result = new long[values.size()];
-      for (Long value : values) {
-        result[i++] = value;
-      }
-      return result;
+      return getLongListInternal(columnIndex).toPrimitiveArray(columnIndex);
     }
 
     @Override
-    protected List<Long> getLongListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getInt64Array());
+    protected Int64Array getLongListInternal(int columnIndex) {
+      return (Int64Array) rowData.get(columnIndex);
     }
 
     @Override
     protected double[] getDoubleArrayInternal(int columnIndex) {
-      final List<Double> values = rowData.get(columnIndex).getFloat64Array();
-      int i = 0;
-      double[] result = new double[values.size()];
-      for (Double value : values) {
-        result[i++] = value;
-      }
-      return result;
+      return getDoubleListInternal(columnIndex).toPrimitiveArray(columnIndex);
     }
 
     @Override
-    protected List<Double> getDoubleListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getFloat64Array());
+    protected Float64Array getDoubleListInternal(int columnIndex) {
+      return (Float64Array) rowData.get(columnIndex);
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<NUMERIC> produces a List<BigDecimal>.
     protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getNumericArray());
+      return (List<BigDecimal>) rowData.get(columnIndex);
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<STRING> produces a List<String>.
     protected List<String> getStringListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getStringArray());
+      return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<ByteArray>.
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getBytesArray());
+      return Collections.unmodifiableList((List<ByteArray>) rowData.get(columnIndex));
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<TIMESTAMP> produces a List<Timestamp>.
     protected List<Timestamp> getTimestampListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getTimestampArray());
+      return Collections.unmodifiableList((List<Timestamp>) rowData.get(columnIndex));
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<DATE> produces a List<Date>.
     protected List<Date> getDateListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getDateArray());
+      return Collections.unmodifiableList((List<Date>) rowData.get(columnIndex));
     }
 
     @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<STRUCT<...>> produces a List<STRUCT>.
     protected List<Struct> getStructListInternal(int columnIndex) {
-      return Collections.unmodifiableList(rowData.get(columnIndex).getStructArray());
+      return Collections.unmodifiableList((List<Struct>) rowData.get(columnIndex));
     }
   }
 
@@ -1087,6 +1175,117 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static NullPointerException throwNotNull(int columnIndex) {
     throw new NullPointerException(
         "Cannot call array getter for column " + columnIndex + " with null elements");
+  }
+
+  /**
+   * Memory-optimized base class for {@code ARRAY<INT64>} and {@code ARRAY<FLOAT64>} types. Both of
+   * these involve conversions from the type yielded by JSON parsing, which are {@code String} and
+   * {@code BigDecimal} respectively. Rather than construct new wrapper objects for each array
+   * element, we use primitive arrays and a {@code BitSet} to track nulls.
+   */
+  abstract static class PrimitiveArray<T, A> extends AbstractList<T> {
+    private final A data;
+    private final BitSet nulls;
+    private final int size;
+
+    PrimitiveArray(ListValue protoList) {
+      this.size = protoList.getValuesCount();
+      A data = newArray(size);
+      BitSet nulls = new BitSet(size);
+      for (int i = 0; i < protoList.getValuesCount(); ++i) {
+        if (protoList.getValues(i).getKindCase() == KindCase.NULL_VALUE) {
+          nulls.set(i);
+        } else {
+          setProto(data, i, protoList.getValues(i));
+        }
+      }
+      this.data = data;
+      this.nulls = nulls;
+    }
+
+    PrimitiveArray(A data, BitSet nulls, int size) {
+      this.data = data;
+      this.nulls = nulls;
+      this.size = size;
+    }
+
+    abstract A newArray(int size);
+
+    abstract void setProto(A array, int i, com.google.protobuf.Value protoValue);
+
+    abstract T get(A array, int i);
+
+    @Override
+    public T get(int index) {
+      if (index < 0 || index >= size) {
+        throw new ArrayIndexOutOfBoundsException("index=" + index + " size=" + size);
+      }
+      return nulls.get(index) ? null : get(data, index);
+    }
+
+    @Override
+    public int size() {
+      return size;
+    }
+
+    A toPrimitiveArray(int columnIndex) {
+      if (nulls.length() > 0) {
+        throw throwNotNull(columnIndex);
+      }
+      A r = newArray(size);
+      System.arraycopy(data, 0, r, 0, size);
+      return r;
+    }
+  }
+
+  static class Int64Array extends PrimitiveArray<Long, long[]> {
+    Int64Array(ListValue protoList) {
+      super(protoList);
+    }
+
+    Int64Array(long[] data, BitSet nulls) {
+      super(data, nulls, data.length);
+    }
+
+    @Override
+    long[] newArray(int size) {
+      return new long[size];
+    }
+
+    @Override
+    void setProto(long[] array, int i, com.google.protobuf.Value protoValue) {
+      array[i] = Long.parseLong(protoValue.getStringValue());
+    }
+
+    @Override
+    Long get(long[] array, int i) {
+      return array[i];
+    }
+  }
+
+  static class Float64Array extends PrimitiveArray<Double, double[]> {
+    Float64Array(ListValue protoList) {
+      super(protoList);
+    }
+
+    Float64Array(double[] data, BitSet nulls) {
+      super(data, nulls, data.length);
+    }
+
+    @Override
+    double[] newArray(int size) {
+      return new double[size];
+    }
+
+    @Override
+    void setProto(double[] array, int i, com.google.protobuf.Value protoValue) {
+      array[i] = valueProtoToFloat64(protoValue);
+    }
+
+    @Override
+    Double get(double[] array, int i) {
+      return array[i];
+    }
   }
 
   protected abstract GrpcStruct currRow();
