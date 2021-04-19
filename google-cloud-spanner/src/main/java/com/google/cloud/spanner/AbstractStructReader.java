@@ -49,7 +49,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected abstract Value getValueInternal(int columnIndex);
+  protected Value getValueInternal(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   protected abstract boolean[] getBooleanArrayInternal(int columnIndex);
 
