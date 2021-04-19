@@ -362,59 +362,67 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         Type fieldType = field.getType();
         switch (fieldType.getCode()) {
           case BOOL:
-            builder.set(fieldName).to(value.getBool());
+            builder.set(fieldName).to(value == null ? null : value.getBool());
             break;
           case INT64:
-            builder.set(fieldName).to(value.getInt64());
+            builder.set(fieldName).to(value == null ? null : value.getInt64());
             break;
           case FLOAT64:
-            builder.set(fieldName).to(value.getFloat64());
+            builder.set(fieldName).to(value == null ? null : value.getFloat64());
             break;
           case NUMERIC:
-            builder.set(fieldName).to(value.getNumeric());
+            builder.set(fieldName).to(value == null ? null : value.getNumeric());
             break;
           case STRING:
-            builder.set(fieldName).to(value.getString());
+            builder.set(fieldName).to(value == null ? null : value.getString());
             break;
           case BYTES:
-            builder.set(fieldName).to(value.getBytes());
+            builder.set(fieldName).to(value == null ? null : value.getBytes());
             break;
           case TIMESTAMP:
-            builder.set(fieldName).to(value.getTimestamp());
+            builder.set(fieldName).to(value == null ? null : value.getTimestamp());
             break;
           case DATE:
-            builder.set(fieldName).to(value.getDate());
+            builder.set(fieldName).to(value == null ? null : value.getDate());
             break;
           case ARRAY:
             switch (fieldType.getArrayElementType().getCode()) {
               case BOOL:
-                builder.set(fieldName).toBoolArray(value.getBoolArray());
+                builder.set(fieldName).toBoolArray(value == null ? null : value.getBoolArray());
                 break;
               case INT64:
-                builder.set(fieldName).toInt64Array(value.getInt64Array());
+                builder.set(fieldName).toInt64Array(value == null ? null : value.getInt64Array());
                 break;
               case FLOAT64:
-                builder.set(fieldName).toFloat64Array(value.getFloat64Array());
+                builder
+                    .set(fieldName)
+                    .toFloat64Array(value == null ? null : value.getFloat64Array());
                 break;
               case NUMERIC:
-                builder.set(fieldName).toNumericArray(value.getNumericArray());
+                builder
+                    .set(fieldName)
+                    .toNumericArray(value == null ? null : value.getNumericArray());
                 break;
               case STRING:
-                builder.set(fieldName).toStringArray(value.getStringArray());
+                builder.set(fieldName).toStringArray(value == null ? null : value.getStringArray());
                 break;
               case BYTES:
-                builder.set(fieldName).toBytesArray(value.getBytesArray());
+                builder.set(fieldName).toBytesArray(value == null ? null : value.getBytesArray());
                 break;
               case TIMESTAMP:
-                builder.set(fieldName).toTimestampArray(value.getTimestampArray());
+                builder
+                    .set(fieldName)
+                    .toTimestampArray(value == null ? null : value.getTimestampArray());
                 break;
               case DATE:
-                builder.set(fieldName).toDateArray(value.getDateArray());
+                builder.set(fieldName).toDateArray(value == null ? null : value.getDateArray());
                 break;
               case STRUCT:
                 builder
                     .set(fieldName)
-                    .toStructArray(fieldType.getArrayElementType(), value.getStructArray());
+                    .toStructArray(
+                        fieldType.getArrayElementType(),
+                        value == null ? null : value.getStructArray());
                 break;
               default:
                 throw new AssertionError(
