@@ -132,6 +132,10 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
   Date getDate(String columnName);
 
+  Value getValue(int columnIndex);
+
+  Value getValue(String columnName);
+
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    *

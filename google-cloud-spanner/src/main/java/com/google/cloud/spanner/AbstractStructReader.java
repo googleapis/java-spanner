@@ -49,6 +49,8 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
+  protected abstract Value getValueInternal(int columnIndex);
+
   protected abstract boolean[] getBooleanArrayInternal(int columnIndex);
 
   protected abstract List<Boolean> getBooleanListInternal(int columnIndex);
@@ -195,6 +197,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public Value getValue(int columnIndex) {
+    checkNonNull(columnIndex, columnIndex);
+    return getValueInternal(columnIndex);
+  }
+
+  @Override
+  public Value getValue(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNull(columnIndex, columnName);
+    return getValueInternal(columnIndex);
   }
 
   @Override

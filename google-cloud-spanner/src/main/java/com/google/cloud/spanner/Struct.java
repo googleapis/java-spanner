@@ -208,6 +208,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected Value getValueInternal(int columnIndex) {
+      return values.get(columnIndex);
+    }
+
+    @Override
     protected Struct getStructInternal(int columnIndex) {
       return values.get(columnIndex).getStruct();
     }
