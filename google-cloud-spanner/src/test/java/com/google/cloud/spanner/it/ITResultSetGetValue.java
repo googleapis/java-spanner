@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -184,6 +185,12 @@ public class ITResultSetGetValue {
             Mutation.newInsertBuilder(TABLE_NAME)
                 .set("Id")
                 .to(2L)
+                .set("boolArray")
+                .toBoolArray(Arrays.asList(true, null))
+                .set("int64Array")
+                .toInt64Array(Arrays.asList(null, 2L))
+                .set("float64Array")
+                .toFloat64Array(Arrays.asList(null, 10D))
                 .set("numericArray")
                 .toNumericArray(Arrays.asList(new BigDecimal("10000"), null))
                 .set("stringArray")
@@ -203,6 +210,10 @@ public class ITResultSetGetValue {
       resultSet.next();
 
       assertEquals(Value.int64(2L), resultSet.getValue("Id"));
+      assertEquals(Value.boolArray(Arrays.asList(true, null)), resultSet.getValue("boolArray"));
+      assertEquals(Value.int64Array(Arrays.asList(null, 2L)), resultSet.getValue("int64Array"));
+      assertNull(resultSet.getValue("float64Array").getFloat64Array().get(0));
+      assertEquals(10D, resultSet.getValue("float64Array").getFloat64Array().get(1), DELTA);
       assertEquals(
           Value.numericArray(Arrays.asList(new BigDecimal("10000"), null)),
           resultSet.getValue("numericArray"));

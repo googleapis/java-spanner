@@ -707,13 +707,13 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case ARRAY:
           switch (columnType.getArrayElementType().getCode()) {
             case BOOL:
-              return Value.boolArray(getBooleanArrayInternal(columnIndex));
+              return Value.boolArray(getBooleanListInternal(columnIndex));
             case INT64:
-              return Value.int64Array(getLongArrayInternal(columnIndex));
+              return Value.int64Array(getLongListInternal(columnIndex));
             case NUMERIC:
               return Value.numericArray(getBigDecimalListInternal(columnIndex));
             case FLOAT64:
-              return Value.float64Array(getDoubleArrayInternal(columnIndex));
+              return Value.float64Array(getDoubleListInternal(columnIndex));
             case STRING:
               return Value.stringArray(getStringListInternal(columnIndex));
             case BYTES:
