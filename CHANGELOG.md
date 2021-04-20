@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.3.0](https://www.github.com/googleapis/java-spanner/compare/v6.2.1...v6.3.0) (2021-04-19)
+
+
+### Features
+
+* async work as functional interface ([#1068](https://www.github.com/googleapis/java-spanner/issues/1068)) ([734fb60](https://www.github.com/googleapis/java-spanner/commit/734fb6095819bde94ea482b02a8e77983f2a5449))
+* **spanner:** add `progress` field to `UpdateDatabaseDdlMetadata` ([#1063](https://www.github.com/googleapis/java-spanner/issues/1063)) ([7992342](https://www.github.com/googleapis/java-spanner/commit/7992342bffc273ad8249e7564ae9ef51764bf83c))
+* transaction callable as functional interface ([#1066](https://www.github.com/googleapis/java-spanner/issues/1066)) ([b036a77](https://www.github.com/googleapis/java-spanner/commit/b036a77196886f16d2738e70f676ccc99a52874c))
+
+
+### Bug Fixes
+
+* release scripts from issuing overlapping phases ([#1064](https://www.github.com/googleapis/java-spanner/issues/1064)) ([2f6fe5e](https://www.github.com/googleapis/java-spanner/commit/2f6fe5e87cc4c9ae26a6f2867411004a8c2b39fe))
+
+
+### Dependencies
+
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.29 ([#1014](https://www.github.com/googleapis/java-spanner/issues/1014)) ([81ee9b0](https://www.github.com/googleapis/java-spanner/commit/81ee9b02d5846f6569f588d3b17da4faf2f2dae9))
+
 ### [6.2.1](https://www.github.com/googleapis/java-spanner/compare/v6.2.0...v6.2.1) (2021-04-13)
 
 
