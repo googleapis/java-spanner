@@ -724,7 +724,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.dateArray(getDateListInternal(columnIndex));
             case STRUCT:
               return Value.structArray(
-                  this.type.getArrayElementType(), getStructListInternal(columnIndex));
+                  columnType.getArrayElementType(), getStructListInternal(columnIndex));
             default:
               throw new IllegalArgumentException(
                   "Invalid array value type " + this.type.getArrayElementType());
