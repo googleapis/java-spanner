@@ -29,6 +29,9 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.primitives.Doubles;
@@ -214,6 +217,162 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null)),
           resultSet.getValue("dateArray"));
+    }
+  }
+
+  @Test
+  public void testReadNonFloat64Literals() {
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT "
+                        + "TRUE AS bool,"
+                        + "1 AS int64,"
+                        + "CAST('100' AS NUMERIC) AS numeric,"
+                        + "'stringValue' AS string,"
+                        + "CAST('bytesValue' AS BYTES) AS bytes,"
+                        + "CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS timestamp,"
+                        + "CAST('2021-02-03' AS DATE) AS date,"
+                        + "[false, true] AS boolArray,"
+                        + "[1, 2] AS int64Array,"
+                        + "[CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS numericArray,"
+                        + "['string1', 'string2'] AS stringArray,"
+                        + "[CAST('bytes1' AS BYTES), CAST('bytes2' AS BYTES)] AS bytesArray,"
+                        + "[CAST('1970-01-01T00:00:01.000000002Z' AS TIMESTAMP), CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS timestampArray,"
+                        + "[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS dateArray,"
+                        + "ARRAY(SELECT STRUCT("
+                        + "  TRUE AS structBool,"
+                        + "  1 AS structInt64,"
+                        + "  CAST('100' AS NUMERIC) AS structNumeric,"
+                        + "  'stringValue' AS structString,"
+                        + "  CAST('bytesValue' AS BYTES) AS structBytes,"
+                        + "  CAST('1970-01-01T00:00:01Z' AS TIMESTAMP) AS structTimestamp,"
+                        + "  CAST('2020-01-02' AS DATE) AS structDate,"
+                        + "  [false, true] AS structBoolArray,"
+                        + "  [1, 2] AS structInt64Array,"
+                        + "  [CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS structNumericArray,"
+                        + "  ['string1', 'string2'] AS structStringArray,"
+                        + "  [CAST('bytes1' AS BYTES), CAST('bytes2' AS BYTES)] AS structBytesArray,"
+                        + "  [CAST('1970-01-01T00:00:01.000000002Z' AS TIMESTAMP), CAST('1970-01-01T00:00:02.000000003Z' AS TIMESTAMP)] AS structTimestampArray,"
+                        + "  [CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS structDateArray"
+                        + ")) AS structArray"))) {
+      resultSet.next();
+
+      assertEquals(Value.bool(true), resultSet.getValue("bool"));
+      assertEquals(Value.int64(1L), resultSet.getValue("int64"));
+      assertEquals(Value.numeric(new BigDecimal("100")), resultSet.getValue("numeric"));
+      assertEquals(Value.string("stringValue"), resultSet.getValue("string"));
+      assertEquals(Value.bytes(ByteArray.copyFrom("bytesValue")), resultSet.getValue("bytes"));
+      assertEquals(
+          Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 0)), resultSet.getValue("timestamp"));
+      assertEquals(Value.date(Date.fromYearMonthDay(2021, 2, 3)), resultSet.getValue("date"));
+      assertEquals(Value.boolArray(new boolean[] {false, true}), resultSet.getValue("boolArray"));
+      assertEquals(Value.int64Array(new long[] {1L, 2L}), resultSet.getValue("int64Array"));
+      assertEquals(
+          Value.numericArray(Arrays.asList(new BigDecimal("100"), new BigDecimal("200"))),
+          resultSet.getValue("numericArray"));
+      assertEquals(
+          Value.stringArray(Arrays.asList("string1", "string2")),
+          resultSet.getValue("stringArray"));
+      assertEquals(
+          Value.bytesArray(
+              Arrays.asList(ByteArray.copyFrom("bytes1"), ByteArray.copyFrom("bytes2"))),
+          resultSet.getValue("bytesArray"));
+      assertEquals(
+          Value.timestampArray(
+              Arrays.asList(
+                  Timestamp.ofTimeSecondsAndNanos(1, 2), Timestamp.ofTimeSecondsAndNanos(2, 3))),
+          resultSet.getValue("timestampArray"));
+      assertEquals(
+          Value.dateArray(
+              Arrays.asList(Date.fromYearMonthDay(2020, 1, 2), Date.fromYearMonthDay(2021, 2, 3))),
+          resultSet.getValue("dateArray"));
+      assertEquals(
+          Value.structArray(
+              Type.struct(
+                  StructField.of("structBool", Type.bool()),
+                  StructField.of("structInt64", Type.int64()),
+                  StructField.of("structNumeric", Type.numeric()),
+                  StructField.of("structString", Type.string()),
+                  StructField.of("structBytes", Type.bytes()),
+                  StructField.of("structTimestamp", Type.timestamp()),
+                  StructField.of("structDate", Type.date()),
+                  StructField.of("structBoolArray", Type.array(Type.bool())),
+                  StructField.of("structInt64Array", Type.array(Type.int64())),
+                  StructField.of("structNumericArray", Type.array(Type.numeric())),
+                  StructField.of("structStringArray", Type.array(Type.string())),
+                  StructField.of("structBytesArray", Type.array(Type.bytes())),
+                  StructField.of("structTimestampArray", Type.array(Type.timestamp())),
+                  StructField.of("structDateArray", Type.array(Type.date()))),
+              Collections.singletonList(
+                  Struct.newBuilder()
+                      .set("structBool")
+                      .to(Value.bool(true))
+                      .set("structInt64")
+                      .to(Value.int64(1L))
+                      .set("structNumeric")
+                      .to(new BigDecimal("100"))
+                      .set("structString")
+                      .to("stringValue")
+                      .set("structBytes")
+                      .to(ByteArray.copyFrom("bytesValue"))
+                      .set("structTimestamp")
+                      .to(Timestamp.ofTimeSecondsAndNanos(1, 0))
+                      .set("structDate")
+                      .to(Date.fromYearMonthDay(2020, 1, 2))
+                      .set("structBoolArray")
+                      .toBoolArray(new boolean[] {false, true})
+                      .set("structInt64Array")
+                      .toInt64Array(new long[] {1L, 2L})
+                      .set("structNumericArray")
+                      .toNumericArray(Arrays.asList(new BigDecimal("100"), new BigDecimal("200")))
+                      .set("structStringArray")
+                      .toStringArray(Arrays.asList("string1", "string2"))
+                      .set("structBytesArray")
+                      .toBytesArray(
+                          Arrays.asList(ByteArray.copyFrom("bytes1"), ByteArray.copyFrom("bytes2")))
+                      .set("structTimestampArray")
+                      .toTimestampArray(
+                          Arrays.asList(
+                              Timestamp.ofTimeSecondsAndNanos(1, 2),
+                              Timestamp.ofTimeSecondsAndNanos(2, 3)))
+                      .set("structDateArray")
+                      .toDateArray(
+                          Arrays.asList(
+                              Date.fromYearMonthDay(2020, 1, 2), Date.fromYearMonthDay(2021, 2, 3)))
+                      .build())),
+          resultSet.getValue("structArray"));
+    }
+  }
+
+  @Test
+  public void testReadFloat64Literals() {
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT "
+                        + "10.0 AS float64,"
+                        + "[20.0, 30.0] AS float64Array,"
+                        + "ARRAY(SELECT STRUCT("
+                        + "  40.0 AS structFloat64,"
+                        + "  [50.0, 60.0] AS structFloat64Array"
+                        + ")) AS structArray"))) {
+      resultSet.next();
+
+      final Struct struct = resultSet.getValue("structArray").getStructArray().get(0);
+
+      assertEquals(10D, resultSet.getValue("float64").getFloat64(), DELTA);
+      assertArrayEquals(
+          new double[] {20D, 30D},
+          Doubles.toArray(resultSet.getValue("float64Array").getFloat64Array()),
+          DELTA);
+      assertEquals(40D, struct.getDouble("structFloat64"), DELTA);
+      assertArrayEquals(
+          new double[] {50D, 60D}, struct.getDoubleArray("structFloat64Array"), DELTA);
     }
   }
 }
