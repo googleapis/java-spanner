@@ -543,7 +543,7 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  abstract List<Struct> getStructArray();
+  public abstract List<Struct> getStructArray();
 
   @Override
   public String toString() {
