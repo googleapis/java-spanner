@@ -19,6 +19,8 @@ package com.google.cloud.spanner.it;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -179,12 +181,68 @@ public class ITResultSetGetValue {
   }
 
   @Test
-  public void testReadNullInArrays() {
+  public void testReadNullValues() {
+    databaseClient.write(
+        Collections.singletonList(Mutation.newInsertBuilder(TABLE_NAME).set("Id").to(2L).build()));
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE Id = 2"))) {
+      resultSet.next();
+
+      assertEquals(Value.int64(2L), resultSet.getValue("Id"));
+      assertTrue(resultSet.getValue("bool").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("bool").getBool());
+      assertTrue(resultSet.getValue("int64").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("int64").getInt64());
+      assertTrue(resultSet.getValue("float64").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("float64").getFloat64());
+      assertTrue(resultSet.getValue("numeric").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("numeric").getNumeric());
+      assertTrue(resultSet.getValue("string").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("string").getString());
+      assertTrue(resultSet.getValue("bytes").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("bytes").getBytes());
+      assertTrue(resultSet.getValue("timestamp").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("timestamp").getTimestamp());
+      assertTrue(resultSet.getValue("date").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("date").getDate());
+      assertTrue(resultSet.getValue("boolArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("boolArray").getBoolArray());
+      assertTrue(resultSet.getValue("int64Array").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("int64Array").getInt64Array());
+      assertTrue(resultSet.getValue("float64Array").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("float64Array").getFloat64Array());
+      assertTrue(resultSet.getValue("numericArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("numericArray").getNumericArray());
+      assertTrue(resultSet.getValue("stringArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("stringArray").getStringArray());
+      assertTrue(resultSet.getValue("bytesArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("bytesArray").getBytesArray());
+      assertTrue(resultSet.getValue("timestampArray").isNull());
+      assertThrows(
+          IllegalStateException.class,
+          () -> resultSet.getValue("timestampArray").getTimestampArray());
+      assertTrue(resultSet.getValue("dateArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("dateArray").getDateArray());
+    }
+  }
+
+  @Test
+  public void testReadNullValuesInArrays() {
     databaseClient.write(
         Collections.singletonList(
             Mutation.newInsertBuilder(TABLE_NAME)
                 .set("Id")
-                .to(2L)
+                .to(3L)
                 .set("boolArray")
                 .toBoolArray(Arrays.asList(true, null))
                 .set("int64Array")
@@ -206,10 +264,10 @@ public class ITResultSetGetValue {
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
-            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE Id = 2"))) {
+            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE Id = 3"))) {
       resultSet.next();
 
-      assertEquals(Value.int64(2L), resultSet.getValue("Id"));
+      assertEquals(Value.int64(3L), resultSet.getValue("Id"));
       assertEquals(Value.boolArray(Arrays.asList(true, null)), resultSet.getValue("boolArray"));
       assertEquals(Value.int64Array(Arrays.asList(null, 2L)), resultSet.getValue("int64Array"));
       assertNull(resultSet.getValue("float64Array").getFloat64Array().get(0));

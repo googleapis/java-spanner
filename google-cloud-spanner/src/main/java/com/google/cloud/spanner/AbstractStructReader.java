@@ -210,7 +210,6 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public Value getValue(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNull(columnIndex, columnName);
     return getValueInternal(columnIndex);
   }
 

@@ -685,46 +685,48 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       final List<Type.StructField> structFields = getType().getStructFields();
       final StructField structField = structFields.get(columnIndex);
       final Type columnType = structField.getType();
+      final boolean isNull = rowData.get(columnIndex) == null;
       switch (columnType.getCode()) {
         case BOOL:
-          return Value.bool(getBooleanInternal(columnIndex));
+          return Value.bool(isNull ? null : getBooleanInternal(columnIndex));
         case INT64:
-          return Value.int64(getLongInternal(columnIndex));
+          return Value.int64(isNull ? null : getLongInternal(columnIndex));
         case NUMERIC:
-          return Value.numeric(getBigDecimalInternal(columnIndex));
+          return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
         case FLOAT64:
-          return Value.float64(getDoubleInternal(columnIndex));
+          return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
         case STRING:
-          return Value.string(getStringInternal(columnIndex));
+          return Value.string(isNull ? null : getStringInternal(columnIndex));
         case BYTES:
-          return Value.bytes(getBytesInternal(columnIndex));
+          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
         case TIMESTAMP:
-          return Value.timestamp(getTimestampInternal(columnIndex));
+          return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
-          return Value.date(getDateInternal(columnIndex));
+          return Value.date(isNull ? null : getDateInternal(columnIndex));
         case STRUCT:
-          return Value.struct(getStructInternal(columnIndex));
+          return Value.struct(isNull ? null : getStructInternal(columnIndex));
         case ARRAY:
           switch (columnType.getArrayElementType().getCode()) {
             case BOOL:
-              return Value.boolArray(getBooleanListInternal(columnIndex));
+              return Value.boolArray(isNull ? null : getBooleanListInternal(columnIndex));
             case INT64:
-              return Value.int64Array(getLongListInternal(columnIndex));
+              return Value.int64Array(isNull ? null : getLongListInternal(columnIndex));
             case NUMERIC:
-              return Value.numericArray(getBigDecimalListInternal(columnIndex));
+              return Value.numericArray(isNull ? null : getBigDecimalListInternal(columnIndex));
             case FLOAT64:
-              return Value.float64Array(getDoubleListInternal(columnIndex));
+              return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
             case STRING:
-              return Value.stringArray(getStringListInternal(columnIndex));
+              return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
             case BYTES:
-              return Value.bytesArray(getBytesListInternal(columnIndex));
+              return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
             case TIMESTAMP:
-              return Value.timestampArray(getTimestampListInternal(columnIndex));
+              return Value.timestampArray(isNull ? null : getTimestampListInternal(columnIndex));
             case DATE:
-              return Value.dateArray(getDateListInternal(columnIndex));
+              return Value.dateArray(isNull ? null : getDateListInternal(columnIndex));
             case STRUCT:
               return Value.structArray(
-                  columnType.getArrayElementType(), getStructListInternal(columnIndex));
+                  columnType.getArrayElementType(),
+                  isNull ? null : getStructListInternal(columnIndex));
             default:
               throw new IllegalArgumentException(
                   "Invalid array value type " + this.type.getArrayElementType());
