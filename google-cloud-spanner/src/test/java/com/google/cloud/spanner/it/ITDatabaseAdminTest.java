@@ -149,7 +149,15 @@ public class ITDatabaseAdminTest {
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), "myop");
     op1.get();
     op2.get();
-    assertThat(op1.getMetadata().get()).isEqualTo(op2.getMetadata().get());
+
+    // Remove the progress list from the metadata before comparing, as there could be small
+    // differences between the two in the reported progress depending on exactly when each
+    // operation was fetched from the backend.
+    UpdateDatabaseDdlMetadata metadata1 =
+        op1.getMetadata().get().toBuilder().clearProgress().build();
+    UpdateDatabaseDdlMetadata metadata2 =
+        op2.getMetadata().get().toBuilder().clearProgress().build();
+    assertThat(metadata1).isEqualTo(metadata2);
   }
 
   @Test
