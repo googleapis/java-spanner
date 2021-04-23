@@ -28,6 +28,11 @@ public class SampleRunner {
     return runSampleWithRetry(sample, e -> false);
   }
 
+  /**
+   * Runs a sample and retries it if the given predicate returns true for a given
+   * {@link SpannerException}. The predicate can return different answers for the same error, for
+   * example by only allowing the retry of a certain error a specific number of times.
+   */
   public static String runSampleWithRetry(Callable<Void> sample,
       Predicate<SpannerException> shouldRetry) throws Exception {
     final PrintStream stdOut = System.out;
