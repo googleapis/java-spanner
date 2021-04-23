@@ -576,8 +576,8 @@ public class ITBackupTest {
   private void testPagination(int expectedMinimumTotalBackups) {
     logger.info("Listing backups using pagination");
 
-    // First get all current backups without using pagination to so we can compare that list with
-    // the same list if pagination fails.
+    // First get all current backups without using pagination so we can compare that list with
+    // the same list when pagination fails.
     List<Backup> initialBackups =
         Lists.newArrayList(dbAdminClient.listBackups(instanceId).iterateAll());
 
@@ -596,8 +596,8 @@ public class ITBackupTest {
       // The backend should not return the same page token twice.
       if (seenPageTokens.contains(page.getNextPageToken())) {
         // This should not happen, so to try to figure out why we list all the backups here to see
-        // if there's anything that we can figure out from the list of backups (for example that a
-        // new backup has been added while we were iterating).
+        // if there's anything that we can figure out from the list of backups now compared with
+        // the initial list (for example that a new backup has been added while we were iterating).
         logger.info("Pagination of backups failed. Initial list of backups was:");
         for (Backup backup : initialBackups) {
           logger.info(backup.getId().toString());
