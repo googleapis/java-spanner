@@ -592,4 +592,17 @@
     <className>com/google/cloud/spanner/AsyncTransactionManager$CommitTimestampFuture</className>
     <method>java.lang.Object get()</method>
   </difference>
+
+  <!-- Adds getValue to ResultSet -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Value getValue(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Value getValue(java.lang.String)</method>
+  </difference>
 </differences>
