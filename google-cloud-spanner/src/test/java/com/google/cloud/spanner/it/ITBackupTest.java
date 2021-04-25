@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.api.client.util.Lists;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.rpc.FailedPreconditionException;
@@ -574,6 +575,12 @@ public class ITBackupTest {
 
   private void testPagination(int expectedMinimumTotalBackups) {
     logger.info("Listing backups using pagination");
+
+    // First get all current backups without using pagination so we can compare that list with
+    // the same list when pagination fails.
+    List<Backup> initialBackups =
+        Lists.newArrayList(dbAdminClient.listBackups(instanceId).iterateAll());
+
     int numBackups = 0;
     logger.info("Fetching first page");
     Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
@@ -587,6 +594,21 @@ public class ITBackupTest {
           String.format(
               "Fetching page %d with page token %s", numBackups + 1, page.getNextPageToken()));
       // The backend should not return the same page token twice.
+      if (seenPageTokens.contains(page.getNextPageToken())) {
+        // This should not happen, so to try to figure out why we list all the backups here to see
+        // if there's anything that we can figure out from the list of backups now compared with
+        // the initial list (for example that a new backup has been added while we were iterating).
+        logger.info("Pagination of backups failed. Initial list of backups was:");
+        for (Backup backup : initialBackups) {
+          logger.info(backup.getId().toString());
+        }
+        logger.info("Current list of backups is:");
+        List<Backup> currentBackups =
+            Lists.newArrayList(dbAdminClient.listBackups(instanceId).iterateAll());
+        for (Backup backup : currentBackups) {
+          logger.info(backup.getId().toString());
+        }
+      }
       assertThat(seenPageTokens).doesNotContain(page.getNextPageToken());
       seenPageTokens.add(page.getNextPageToken());
       page =
