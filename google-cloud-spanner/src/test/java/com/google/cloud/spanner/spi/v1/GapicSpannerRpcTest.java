@@ -24,7 +24,9 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -43,8 +45,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
@@ -151,6 +151,8 @@ public class GapicSpannerRpcTest {
   private Server server;
   private InetSocketAddress address;
   private final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+  private Metadata seenHeaders;
+  private String defaultUserAgent;
 
   @BeforeClass
   public static void checkNotEmulator() {
@@ -161,6 +163,7 @@ public class GapicSpannerRpcTest {
 
   @Before
   public void startServer() throws IOException {
+    defaultUserAgent = "spanner-java/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
@@ -183,6 +186,7 @@ public class GapicSpannerRpcTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    seenHeaders = headers;
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
@@ -191,7 +195,7 @@ public class GapicSpannerRpcTest {
                 })
             .build()
             .start();
-    optionsMap.put(Option.CHANNEL_HINT, Long.valueOf(1L));
+    optionsMap.put(Option.CHANNEL_HINT, 1L);
   }
 
   @After
@@ -422,41 +426,26 @@ public class GapicSpannerRpcTest {
       Context context =
           Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
       context.run(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
-                // exception.
-                timeoutHolder.timeout = Duration.ofNanos(1L);
+          () -> {
+            try {
+              // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
+              // exception.
+              timeoutHolder.timeout = Duration.ofNanos(1L);
+              client
+                  .readWriteTransaction()
+                  .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+              fail("missing expected timeout exception");
+            } catch (SpannerException e) {
+              assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+            }
+
+            // Then try with a longer timeout. This should now succeed.
+            timeoutHolder.timeout = Duration.ofMinutes(1L);
+            Long updateCount =
                 client
                     .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Long>() {
-                          @Override
-                          public Long run(TransactionContext transaction) throws Exception {
-                            return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
-                          }
-                        });
-                fail("missing expected timeout exception");
-              } catch (SpannerException e) {
-                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-              }
-
-              // Then try with a longer timeout. This should now succeed.
-              timeoutHolder.timeout = Duration.ofMinutes(1L);
-              Long updateCount =
-                  client
-                      .readWriteTransaction()
-                      .run(
-                          new TransactionCallable<Long>() {
-                            @Override
-                            public Long run(TransactionContext transaction) throws Exception {
-                              return transaction.executeUpdate(UPDATE_FOO_STATEMENT);
-                            }
-                          });
-              assertThat(updateCount).isEqualTo(1L);
-            }
+                    .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+            assertThat(updateCount).isEqualTo(1L);
           });
     }
   }
@@ -500,6 +489,48 @@ public class GapicSpannerRpcTest {
     assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
 
     assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
+  }
+
+  @Test
+  public void testDefaultUserAgent() {
+    final SpannerOptions options = createSpannerOptions();
+    try (final Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+          .contains(defaultUserAgent);
+    }
+  }
+
+  @Test
+  public void testCustomUserAgent() {
+    final HeaderProvider userAgentHeaderProvider =
+        new HeaderProvider() {
+          @Override
+          public Map<String, String> getHeaders() {
+            final Map<String, String> headers = new HashMap<>();
+            headers.put("user-agent", "test-agent");
+            return headers;
+          }
+        };
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+          .contains("test-agent " + defaultUserAgent);
+    }
   }
 
   @SuppressWarnings("rawtypes")

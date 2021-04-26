@@ -138,6 +138,16 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
   Date getDate(String columnName);
 
+  /** Returns the value of a nullable column as a {@link Value}. */
+  default Value getValue(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /** Returns the value of a nullable column as a {@link Value}. */
+  default Value getValue(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    *

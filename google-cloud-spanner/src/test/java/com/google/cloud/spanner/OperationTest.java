@@ -174,7 +174,7 @@ public class OperationTest {
   }
 
   @Test
-  public void waitForTimesout() {
+  public void waitForTimeout() {
     com.google.longrunning.Operation proto = newBuilder().setName("op1").setDone(false).build();
     Operation<Database, String> op = Operation.create(rpc, proto, new ParserImpl(), clock);
     when(rpc.getOperation("op1")).thenReturn(proto);

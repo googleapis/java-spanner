@@ -226,7 +226,7 @@ public class StructTest {
     Struct arrayStructFieldStruct =
         Struct.newBuilder()
             .set("f1")
-            .toStructArray(simpleStruct.getType(), new ArrayList<Struct>())
+            .toStructArray(simpleStruct.getType(), new ArrayList<>())
             .build();
     reserializeAndAssert(arrayStructFieldStruct);
     arrayStructFieldStruct =

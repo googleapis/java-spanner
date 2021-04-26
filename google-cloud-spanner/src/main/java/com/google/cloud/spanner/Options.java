@@ -17,12 +17,29 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
 import java.util.Objects;
 
 /** Specifies options for various spanner operations */
 public final class Options implements Serializable {
   private static final long serialVersionUID = 8067099123096783941L;
+
+  /**
+   * Priority for an RPC invocation. The default priority is {@link #HIGH}. This enum can be used to
+   * set a lower priority for a specific RPC invocation.
+   */
+  public enum RpcPriority {
+    LOW(Priority.PRIORITY_LOW),
+    MEDIUM(Priority.PRIORITY_MEDIUM),
+    HIGH(Priority.PRIORITY_HIGH);
+
+    private final Priority proto;
+
+    RpcPriority(Priority proto) {
+      this.proto = Preconditions.checkNotNull(proto);
+    }
+  }
 
   /** Marker interface to mark options applicable to both Read and Query operations */
   public interface ReadAndQueryOption extends ReadOption, QueryOption {}
@@ -45,6 +62,11 @@ public final class Options implements Serializable {
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
+
+  /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
+  public static TransactionOption commitStats() {
+    return COMMIT_STATS_OPTION;
+  }
 
   /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
@@ -72,6 +94,19 @@ public final class Options implements Serializable {
   public static ReadAndQueryOption bufferRows(int bufferRows) {
     Preconditions.checkArgument(bufferRows > 0, "bufferRows should be greater than 0");
     return new BufferRowsOption(bufferRows);
+  }
+
+  /** Specifies the priority to use for the RPC. */
+  public static ReadQueryUpdateTransactionOption priority(RpcPriority priority) {
+    return new PriorityOption(priority);
+  }
+
+  /**
+   * Specifying this will cause the reads, queries, updates and writes operations statistics
+   * collection to be grouped by tag.
+   */
+  public static ReadQueryUpdateTransactionOption tag(String name) {
+    return new TagOption(name);
   }
 
   /**
@@ -116,6 +151,16 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  /** Option to request {@link CommitStats} for read/write transactions. */
+  static final class CommitStatsOption extends InternalOption implements TransactionOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.withCommitStats = true;
+    }
+  }
+
+  static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
+
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
     final int prefetchChunks;
@@ -143,15 +188,49 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class PriorityOption extends InternalOption
+      implements ReadQueryUpdateTransactionOption {
+    private final RpcPriority priority;
+
+    PriorityOption(RpcPriority priority) {
+      this.priority = priority;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.priority = priority;
+    }
+  }
+
+  static final class TagOption extends InternalOption implements ReadQueryUpdateTransactionOption {
+    private final String tag;
+
+    TagOption(String tag) {
+      this.tag = tag;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.tag = tag;
+    }
+  }
+
+  private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
   private Integer bufferRows;
   private Integer pageSize;
   private String pageToken;
   private String filter;
+  private RpcPriority priority;
+  private String tag;
 
   // Construction is via factory methods below.
   private Options() {}
+
+  boolean withCommitStats() {
+    return withCommitStats;
+  }
 
   boolean hasLimit() {
     return limit != null;
@@ -201,9 +280,28 @@ public final class Options implements Serializable {
     return filter;
   }
 
+  boolean hasPriority() {
+    return priority != null;
+  }
+
+  Priority priority() {
+    return priority == null ? null : priority.proto;
+  }
+
+  boolean hasTag() {
+    return tag != null;
+  }
+
+  String tag() {
+    return tag;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
+    if (withCommitStats) {
+      b.append("withCommitStats: ").append(withCommitStats).append(' ');
+    }
     if (limit != null) {
       b.append("limit: ").append(limit).append(' ');
     }
@@ -218,6 +316,12 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       b.append("filter: ").append(filter).append(' ');
+    }
+    if (priority != null) {
+      b.append("priority: ").append(priority).append(' ');
+    }
+    if (tag != null) {
+      b.append("tag: ").append(tag).append(' ');
     }
     return b.toString();
   }
@@ -234,7 +338,8 @@ public final class Options implements Serializable {
     }
 
     Options that = (Options) o;
-    return (!hasLimit() && !that.hasLimit()
+    return Objects.equals(withCommitStats, that.withCommitStats)
+        && (!hasLimit() && !that.hasLimit()
             || hasLimit() && that.hasLimit() && Objects.equals(limit(), that.limit()))
         && (!hasPrefetchChunks() && !that.hasPrefetchChunks()
             || hasPrefetchChunks()
@@ -247,12 +352,17 @@ public final class Options implements Serializable {
         && (!hasPageSize() && !that.hasPageSize()
             || hasPageSize() && that.hasPageSize() && Objects.equals(pageSize(), that.pageSize()))
         && Objects.equals(pageToken(), that.pageToken())
-        && Objects.equals(filter(), that.filter());
+        && Objects.equals(filter(), that.filter())
+        && Objects.equals(priority(), that.priority())
+        && Objects.equals(tag(), that.tag());
   }
 
   @Override
   public int hashCode() {
     int result = 31;
+    if (withCommitStats) {
+      result = 31 * result + 1231;
+    }
     if (limit != null) {
       result = 31 * result + limit.hashCode();
     }
@@ -270,6 +380,12 @@ public final class Options implements Serializable {
     }
     if (filter != null) {
       result = 31 * result + filter.hashCode();
+    }
+    if (priority != null) {
+      result = 31 * result + priority.hashCode();
+    }
+    if (tag != null) {
+      result = 31 * result + tag.hashCode();
     }
     return result;
   }

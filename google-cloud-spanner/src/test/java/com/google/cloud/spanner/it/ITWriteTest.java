@@ -17,7 +17,9 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -25,6 +27,7 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -32,6 +35,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -155,6 +159,44 @@ public class ITWriteTest {
     Struct row = readLastRow("StringValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("v1");
+  }
+
+  @Test
+  public void testWriteReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeWithOptions(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
+  }
+
+  @Test
+  public void testWriteAtLeastOnceReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeAtLeastOnceWithOptions(
+            Arrays.asList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
   }
 
   @Test
@@ -722,11 +764,8 @@ public class ITWriteTest {
     context.cancel(new RuntimeException("Cancelled by test"));
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {
@@ -744,11 +783,8 @@ public class ITWriteTest {
         Context.current().withDeadlineAfter(10, TimeUnit.NANOSECONDS, executor);
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {

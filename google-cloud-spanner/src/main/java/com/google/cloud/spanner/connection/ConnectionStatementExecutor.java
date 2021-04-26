@@ -56,6 +56,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowCommitTimestamp();
 
+  StatementResult statementShowCommitResponse();
+
   StatementResult statementSetReadOnlyStaleness(TimestampBound staleness);
 
   StatementResult statementShowReadOnlyStaleness();
@@ -63,6 +65,10 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetOptimizerVersion(String optimizerVersion);
 
   StatementResult statementShowOptimizerVersion();
+
+  StatementResult statementSetReturnCommitStats(Boolean returnCommitStats);
+
+  StatementResult statementShowReturnCommitStats();
 
   StatementResult statementBeginTransaction();
 

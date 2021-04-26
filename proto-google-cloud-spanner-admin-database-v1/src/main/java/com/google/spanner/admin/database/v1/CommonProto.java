@@ -31,6 +31,14 @@ public final class CommonProto {
       internal_static_google_spanner_admin_database_v1_OperationProgress_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_OperationProgress_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_EncryptionConfig_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_EncryptionConfig_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_EncryptionInfo_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_EncryptionInfo_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
@@ -42,26 +50,47 @@ public final class CommonProto {
     java.lang.String[] descriptorData = {
       "\n-google/spanner/admin/database/v1/commo"
           + "n.proto\022 google.spanner.admin.database.v"
-          + "1\032\037google/api/field_behavior.proto\032\037goog"
-          + "le/protobuf/timestamp.proto\032\034google/api/"
-          + "annotations.proto\"\213\001\n\021OperationProgress\022"
-          + "\030\n\020progress_percent\030\001 \001(\005\022.\n\nstart_time\030"
-          + "\002 \001(\0132\032.google.protobuf.Timestamp\022,\n\010end"
-          + "_time\030\003 \001(\0132\032.google.protobuf.TimestampB"
-          + "\377\001\n$com.google.spanner.admin.database.v1"
-          + "B\013CommonProtoP\001ZHgoogle.golang.org/genpr"
-          + "oto/googleapis/spanner/admin/database/v1"
-          + ";database\252\002&Google.Cloud.Spanner.Admin.D"
-          + "atabase.V1\312\002&Google\\Cloud\\Spanner\\Admin\\"
-          + "Database\\V1\352\002+Google::Cloud::Spanner::Ad"
-          + "min::Database::V1b\006proto3"
+          + "1\032\037google/api/field_behavior.proto\032\031goog"
+          + "le/api/resource.proto\032\037google/protobuf/t"
+          + "imestamp.proto\032\027google/rpc/status.proto\032"
+          + "\034google/api/annotations.proto\"\213\001\n\021Operat"
+          + "ionProgress\022\030\n\020progress_percent\030\001 \001(\005\022.\n"
+          + "\nstart_time\030\002 \001(\0132\032.google.protobuf.Time"
+          + "stamp\022,\n\010end_time\030\003 \001(\0132\032.google.protobu"
+          + "f.Timestamp\"P\n\020EncryptionConfig\022<\n\014kms_k"
+          + "ey_name\030\002 \001(\tB&\372A#\n!cloudkms.googleapis."
+          + "com/CryptoKey\"\302\002\n\016EncryptionInfo\022S\n\017encr"
+          + "yption_type\030\003 \001(\01625.google.spanner.admin"
+          + ".database.v1.EncryptionInfo.TypeB\003\340A\003\0222\n"
+          + "\021encryption_status\030\004 \001(\0132\022.google.rpc.St"
+          + "atusB\003\340A\003\022I\n\017kms_key_version\030\002 \001(\tB0\340A\003\372"
+          + "A*\n(cloudkms.googleapis.com/CryptoKeyVer"
+          + "sion\"\\\n\004Type\022\024\n\020TYPE_UNSPECIFIED\020\000\022\035\n\031GO"
+          + "OGLE_DEFAULT_ENCRYPTION\020\001\022\037\n\033CUSTOMER_MA"
+          + "NAGED_ENCRYPTION\020\002B\244\004\n$com.google.spanne"
+          + "r.admin.database.v1B\013CommonProtoP\001ZHgoog"
+          + "le.golang.org/genproto/googleapis/spanne"
+          + "r/admin/database/v1;database\252\002&Google.Cl"
+          + "oud.Spanner.Admin.Database.V1\312\002&Google\\C"
+          + "loud\\Spanner\\Admin\\Database\\V1\352\002+Google:"
+          + ":Cloud::Spanner::Admin::Database::V1\352Ax\n"
+          + "!cloudkms.googleapis.com/CryptoKey\022Sproj"
+          + "ects/{project}/locations/{location}/keyR"
+          + "ings/{key_ring}/cryptoKeys/{crypto_key}\352"
+          + "A\246\001\n(cloudkms.googleapis.com/CryptoKeyVe"
+          + "rsion\022zprojects/{project}/locations/{loc"
+          + "ation}/keyRings/{key_ring}/cryptoKeys/{c"
+          + "rypto_key}/cryptoKeyVersions/{crypto_key"
+          + "_version}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
               com.google.api.FieldBehaviorProto.getDescriptor(),
+              com.google.api.ResourceProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
+              com.google.rpc.StatusProto.getDescriptor(),
               com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_admin_database_v1_OperationProgress_descriptor =
@@ -72,8 +101,33 @@ public final class CommonProto {
             new java.lang.String[] {
               "ProgressPercent", "StartTime", "EndTime",
             });
+    internal_static_google_spanner_admin_database_v1_EncryptionConfig_descriptor =
+        getDescriptor().getMessageTypes().get(1);
+    internal_static_google_spanner_admin_database_v1_EncryptionConfig_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_EncryptionConfig_descriptor,
+            new java.lang.String[] {
+              "KmsKeyName",
+            });
+    internal_static_google_spanner_admin_database_v1_EncryptionInfo_descriptor =
+        getDescriptor().getMessageTypes().get(2);
+    internal_static_google_spanner_admin_database_v1_EncryptionInfo_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_EncryptionInfo_descriptor,
+            new java.lang.String[] {
+              "EncryptionType", "EncryptionStatus", "KmsKeyVersion",
+            });
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
+    registry.add(com.google.api.ResourceProto.resourceDefinition);
+    registry.add(com.google.api.ResourceProto.resourceReference);
+    com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
+        descriptor, registry);
     com.google.api.FieldBehaviorProto.getDescriptor();
+    com.google.api.ResourceProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
+    com.google.rpc.StatusProto.getDescriptor();
     com.google.api.AnnotationsProto.getDescriptor();
   }
 

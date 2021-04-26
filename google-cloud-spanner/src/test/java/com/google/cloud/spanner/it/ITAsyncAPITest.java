@@ -16,15 +16,24 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
+import com.google.cloud.spanner.AsyncTransactionManager;
+import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -35,6 +44,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -51,6 +61,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -86,7 +97,17 @@ public class ITAsyncAPITest {
                 "CREATE INDEX TestTableByValue ON TestTable(StringValue)",
                 "CREATE INDEX TestTableByValueDesc ON TestTable(StringValue DESC)");
     client = env.getTestHelper().getDatabaseClient(db);
+    executor = Executors.newSingleThreadExecutor();
+  }
 
+  @AfterClass
+  public static void cleanup() {
+    executor.shutdown();
+  }
+
+  @Before
+  public void setupData() {
+    client.write(Arrays.asList(Mutation.delete(TABLE_NAME, KeySet.all())));
     // Includes k0..k14.  Note that strings k{10,14} sort between k1 and k2.
     List<Mutation> mutations = new ArrayList<>();
     for (int i = 0; i < 15; ++i) {
@@ -99,12 +120,6 @@ public class ITAsyncAPITest {
               .build());
     }
     client.write(mutations);
-    executor = Executors.newSingleThreadExecutor();
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    executor.shutdown();
   }
 
   @Test
@@ -283,16 +298,13 @@ public class ITAsyncAPITest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Long> res =
           runner.runAsync(
-              new AsyncWork<Long>() {
-                @Override
-                public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                  // The error returned by this update statement will not bubble up and fail the
-                  // transaction.
-                  txn.executeUpdateAsync(Statement.of("UPDATE BadTableName SET FOO=1 WHERE ID=2"));
-                  return txn.executeUpdateAsync(
-                      Statement.of(
-                          "INSERT INTO TestTable (Key, StringValue) VALUES ('k999', 'v999')"));
-                }
+              txn -> {
+                // The error returned by this update statement will not bubble up and fail the
+                // transaction.
+                txn.executeUpdateAsync(Statement.of("UPDATE BadTableName SET FOO=1 WHERE ID=2"));
+                return txn.executeUpdateAsync(
+                    Statement.of(
+                        "INSERT INTO TestTable (Key, StringValue) VALUES ('k999', 'v999')"));
               },
               executor);
       assertThat(res.get()).isEqualTo(1L);
@@ -300,6 +312,64 @@ public class ITAsyncAPITest {
     } finally {
       client.writeAtLeastOnce(Arrays.asList(Mutation.delete("TestTable", Key.of("k999"))));
       assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
+    }
+  }
+
+  @Test
+  public void testAsyncRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    AsyncRunner runner = client.runAsync(Options.commitStats());
+    runner.runAsync(
+        transaction -> {
+          transaction.buffer(
+              Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                  .set("Key")
+                  .to("k_commit_stats")
+                  .set("StringValue")
+                  .to("Should return commit stats")
+                  .build());
+          return ApiFutures.immediateFuture(null);
+        },
+        executor);
+    assertNotNull(get(runner.getCommitResponse()).getCommitStats());
+    // MutationCount = 2 columns + 2 secondary indexes.
+    assertEquals(4L, get(runner.getCommitResponse()).getCommitStats().getMutationCount());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    try (AsyncTransactionManager manager = client.transactionManagerAsync(Options.commitStats())) {
+      TransactionContextFuture context = manager.beginAsync();
+      while (true) {
+        try {
+          get(
+              context
+                  .then(
+                      new AsyncTransactionFunction<Void, Void>() {
+                        @Override
+                        public ApiFuture<Void> apply(TransactionContext transaction, Void input)
+                            throws Exception {
+                          transaction.buffer(
+                              Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                                  .set("Key")
+                                  .to("k_commit_stats")
+                                  .set("StringValue")
+                                  .to("Should return commit stats")
+                                  .build());
+                          return ApiFutures.immediateFuture(null);
+                        }
+                      },
+                      executor)
+                  .commitAsync());
+          assertNotNull(get(manager.getCommitResponse()).getCommitStats());
+          assertEquals(4L, get(manager.getCommitResponse()).getCommitStats().getMutationCount());
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis());
+          context = manager.resetForRetryAsync();
+        }
+      }
     }
   }
 }

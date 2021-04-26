@@ -22,6 +22,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -138,9 +139,18 @@ import java.util.concurrent.TimeUnit;
  */
 @InternalApi
 public interface Connection extends AutoCloseable {
-  /** Closes this connection. This is a no-op if the {@link Connection} has alread been closed. */
+
+  /** Closes this connection. This is a no-op if the {@link Connection} has already been closed. */
   @Override
   void close();
+
+  /**
+   * Closes this connection without blocking. This is a no-op if the {@link Connection} has already
+   * been closed. The {@link Connection} is no longer usable directly after calling this method. The
+   * returned {@link ApiFuture} is done when the running statement(s) (if any) on the connection
+   * have finished.
+   */
+  ApiFuture<Void> closeAsync();
 
   /** @return <code>true</code> if this connection has been closed. */
   boolean isClosed();
@@ -439,6 +449,15 @@ public interface Connection extends AutoCloseable {
   String getOptimizerVersion();
 
   /**
+   * Sets whether this connection should request commit statistics from Cloud Spanner for read/write
+   * transactions and DML statements in autocommit mode.
+   */
+  void setReturnCommitStats(boolean returnCommitStats);
+
+  /** @return true if this connection requests commit statistics from Cloud Spanner */
+  boolean isReturnCommitStats();
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *
@@ -623,14 +642,25 @@ public interface Connection extends AutoCloseable {
 
   /**
    * @return the commit timestamp of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction. This method will throw a {@link SpannerException} if there is no last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction (i.e. the last transaction was a {@link
-   *     TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It will also throw a
-   *     {@link SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction was empty when committed.
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
    */
   Timestamp getCommitTimestamp();
+
+  /**
+   * @return the {@link CommitResponse} of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
+   */
+  CommitResponse getCommitResponse();
 
   /**
    * Starts a new DDL batch on this connection. A DDL batch allows several DDL statements to be
@@ -769,13 +799,6 @@ public interface Connection extends AutoCloseable {
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
 
-  /**
-   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
-   * and returns the query result as an {@link AsyncResultSet}. See {@link
-   * AsyncResultSet#setCallback(java.util.concurrent.Executor,
-   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
-   */
   /**
    * Executes the given statement asynchronously as a query and returns the result as an {@link
    * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
@@ -981,7 +1004,7 @@ public interface Connection extends AutoCloseable {
    * <p>NOT INTENDED FOR EXTERNAL USE!
    */
   @InternalApi
-  public static final class InternalMetadataQuery implements QueryOption {
+  final class InternalMetadataQuery implements QueryOption {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}

@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import io.grpc.Server;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -97,26 +96,18 @@ public class SessionPoolLeakTest {
   @Test
   public void testReadWriteTransactionExceptionOnCreateSession() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 
   @Test
   public void testReadWriteTransactionExceptionOnBegin() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBeginTransactionExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         1);
   }
 
@@ -125,15 +116,7 @@ public class SessionPoolLeakTest {
     assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
     setup.run();
     try {
-      client
-          .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) {
-                  return null;
-                }
-              });
+      client.readWriteTransaction().run(transaction -> null);
       fail("missing FAILED_PRECONDITION exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
@@ -143,15 +126,11 @@ public class SessionPoolLeakTest {
   }
 
   @Test
-  public void testTansactionManagerExceptionOnCreateSession() {
+  public void testTransactionManagerExceptionOnCreateSession() {
     transactionManagerTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 

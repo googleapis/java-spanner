@@ -54,17 +54,14 @@ class AsyncDmlExample {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> rowCount =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                String sql =
-                    "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
-                        + "(12, 'Melissa', 'Garcia'), "
-                        + "(13, 'Russell', 'Morales'), "
-                        + "(14, 'Jacqueline', 'Long'), "
-                        + "(15, 'Dylan', 'Shaw')";
-                return txn.executeUpdateAsync(Statement.of(sql));
-              }
+            txn -> {
+              String sql =
+                  "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
+                      + "(12, 'Melissa', 'Garcia'), "
+                      + "(13, 'Russell', 'Morales'), "
+                      + "(14, 'Jacqueline', 'Long'), "
+                      + "(15, 'Dylan', 'Shaw')";
+              return txn.executeUpdateAsync(Statement.of(sql));
             },
             executor);
     System.out.printf("%d records inserted.%n", rowCount.get());

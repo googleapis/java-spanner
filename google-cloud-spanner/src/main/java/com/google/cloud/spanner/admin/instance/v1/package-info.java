@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,13 @@
  * databases in that instance, and their performance may suffer.
  *
  * <p>Sample for InstanceAdminClient:
+ *
+ * <pre>{@code
+ * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+ *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+ *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
+ * }
+ * }</pre>
  */
 @Generated("by gapic-generator-java")
 package com.google.cloud.spanner.admin.instance.v1;

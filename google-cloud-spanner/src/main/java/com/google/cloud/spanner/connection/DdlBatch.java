@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -129,13 +130,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
           temp.remove(i);
           final QueryOption[] internalOptions = temp.toArray(new QueryOption[0]);
           Callable<ResultSet> callable =
-              new Callable<ResultSet>() {
-                @Override
-                public ResultSet call() throws Exception {
-                  return DirectExecuteResultSet.ofResultSet(
+              () ->
+                  DirectExecuteResultSet.ofResultSet(
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
-                }
-              };
           return executeStatementAsync(
               statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
         }
@@ -165,6 +162,17 @@ class DdlBatch extends AbstractBaseUnitOfWork {
 
   @Override
   public Timestamp getCommitTimestampOrNull() {
+    return null;
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "There is no commit response available for DDL batches.");
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
     return null;
   }
 
@@ -219,28 +227,25 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     }
     // create a statement that can be passed in to the execute method
     Callable<long[]> callable =
-        new Callable<long[]>() {
-          @Override
-          public long[] call() throws Exception {
+        () -> {
+          try {
+            OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+                ddlClient.executeDdl(statements);
             try {
-              OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                  ddlClient.executeDdl(statements);
-              try {
-                // Wait until the operation has finished.
-                getWithStatementTimeout(operation, RUN_BATCH);
-                long[] updateCounts = new long[statements.size()];
-                Arrays.fill(updateCounts, 1L);
-                state = UnitOfWorkState.RAN;
-                return updateCounts;
-              } catch (SpannerException e) {
-                long[] updateCounts = extractUpdateCounts(operation);
-                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    e.getErrorCode(), e.getMessage(), updateCounts);
-              }
-            } catch (Throwable t) {
-              state = UnitOfWorkState.RUN_FAILED;
-              throw t;
+              // Wait until the operation has finished.
+              getWithStatementTimeout(operation, RUN_BATCH);
+              long[] updateCounts = new long[statements.size()];
+              Arrays.fill(updateCounts, 1L);
+              state = UnitOfWorkState.RAN;
+              return updateCounts;
+            } catch (SpannerException e) {
+              long[] updateCounts = extractUpdateCounts(operation);
+              throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                  e.getErrorCode(), e.getMessage(), updateCounts);
             }
+          } catch (Throwable t) {
+            state = UnitOfWorkState.RUN_FAILED;
+            throw t;
           }
         };
     this.state = UnitOfWorkState.RUNNING;

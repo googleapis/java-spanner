@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiAsyncFunction;
@@ -27,7 +28,6 @@ import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
@@ -36,7 +36,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
@@ -60,8 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -69,7 +66,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
@@ -220,16 +216,7 @@ public class InlineBeginTransactionTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       ApiFuture<Long> updateCount =
-          client
-              .runAsync()
-              .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                    }
-                  },
-                  executor);
+          client.runAsync().runAsync(txn -> txn.executeUpdateAsync(UPDATE_STATEMENT), executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
@@ -244,15 +231,12 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      ApiFuture<Long> res = txn.executeUpdateAsync(UPDATE_STATEMENT);
-                      if (firstAttempt.getAndSet(false)) {
-                        mockSpanner.abortTransaction(txn);
-                      }
-                      return res;
+                  txn -> {
+                    ApiFuture<Long> res = txn.executeUpdateAsync(UPDATE_STATEMENT);
+                    if (firstAttempt.getAndSet(false)) {
+                      mockSpanner.abortTransaction(txn);
                     }
+                    return res;
                   },
                   executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
@@ -270,31 +254,28 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                      final SettableApiFuture<Long> res = SettableApiFuture.create();
-                      try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
-                        rs.setCallback(
-                            executor,
-                            new ReadyCallback() {
-                              @Override
-                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                switch (resultSet.tryNext()) {
-                                  case DONE:
-                                    return CallbackResponse.DONE;
-                                  case NOT_READY:
-                                    return CallbackResponse.CONTINUE;
-                                  case OK:
-                                    res.set(resultSet.getLong(0));
-                                  default:
-                                    throw new IllegalStateException();
-                                }
+                  txn -> {
+                    final SettableApiFuture<Long> res = SettableApiFuture.create();
+                    try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                      rs.setCallback(
+                          executor,
+                          new ReadyCallback() {
+                            @Override
+                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                              switch (resultSet.tryNext()) {
+                                case DONE:
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
+                                case OK:
+                                  res.set(resultSet.getLong(0));
+                                default:
+                                  throw new IllegalStateException();
                               }
-                            });
-                      }
-                      return res;
+                            }
+                          });
                     }
+                    return res;
                   },
                   queryExecutor);
       assertThat(updateCount.get()).isEqualTo(1L);
@@ -312,13 +293,9 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<long[]>() {
-                    @Override
-                    public ApiFuture<long[]> doWorkAsync(TransactionContext transaction) {
-                      return transaction.batchUpdateAsync(
-                          Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                    }
-                  },
+                  transaction ->
+                      transaction.batchUpdateAsync(
+                          Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
                   executor);
       assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -333,12 +310,9 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(TransactionContext transaction) {
-                      transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
-                      return transaction.executeUpdateAsync(UPDATE_STATEMENT);
-                    }
+                  transaction -> {
+                    transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                    return transaction.executeUpdateAsync(UPDATE_STATEMENT);
                   },
                   executor);
       assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
@@ -359,12 +333,9 @@ public class InlineBeginTransactionTest {
       client
           .runAsync()
           .runAsync(
-              new AsyncWork<Void>() {
-                @Override
-                public ApiFuture<Void> doWorkAsync(TransactionContext transaction) {
-                  transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-                  return ApiFutures.immediateFuture(null);
-                }
+              transaction -> {
+                transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                return ApiFutures.immediateFuture(null);
               },
               executor)
           .get();
@@ -541,13 +512,7 @@ public class InlineBeginTransactionTest {
       long updateCount =
           client
               .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
-                    }
-                  });
+              .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
@@ -564,15 +529,12 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      long res = transaction.executeUpdate(UPDATE_STATEMENT);
-                      if (firstAttempt.getAndSet(false)) {
-                        mockSpanner.abortTransaction(transaction);
-                      }
-                      return res;
+                  transaction -> {
+                    long res = transaction.executeUpdate(UPDATE_STATEMENT);
+                    if (firstAttempt.getAndSet(false)) {
+                      mockSpanner.abortTransaction(transaction);
                     }
+                    return res;
                   });
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -660,17 +622,14 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      // The first attempt will return UNAVAILABLE and retry internally.
-                      try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                        while (rs.next()) {
-                          return rs.getLong(0);
-                        }
+                  transaction -> {
+                    // The first attempt will return UNAVAILABLE and retry internally.
+                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
                       }
-                      return 0L;
                     }
+                    return 0L;
                   });
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -687,18 +646,15 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      // The first attempt will return UNAVAILABLE and retry internally.
-                      try (ResultSet rs =
-                          transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
-                        while (rs.next()) {
-                          return rs.getLong(0);
-                        }
+                  transaction -> {
+                    // The first attempt will return UNAVAILABLE and retry internally.
+                    try (ResultSet rs =
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
                       }
-                      return 0L;
                     }
+                    return 0L;
                   });
       assertThat(value).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -714,16 +670,13 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                        while (rs.next()) {
-                          return rs.getLong(0);
-                        }
+                  transaction -> {
+                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
                       }
-                      return 0L;
                     }
+                    return 0L;
                   });
       assertThat(updateCount).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -739,17 +692,14 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      try (ResultSet rs =
-                          transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
-                        while (rs.next()) {
-                          return rs.getLong(0);
-                        }
+                  transaction -> {
+                    try (ResultSet rs =
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                      while (rs.next()) {
+                        return rs.getLong(0);
                       }
-                      return 0L;
                     }
+                    return 0L;
                   });
       assertThat(updateCount).isEqualTo(1L);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
@@ -766,13 +716,8 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<long[]>() {
-                    @Override
-                    public long[] run(TransactionContext transaction) throws Exception {
-                      return transaction.batchUpdate(
-                          Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                    }
-                  });
+                  transaction ->
+                      transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)));
       assertThat(updateCounts).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
@@ -788,17 +733,14 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      try {
-                        transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                        fail("missing expected exception");
-                      } catch (SpannerException e) {
-                        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                      }
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
+                  transaction -> {
+                    try {
+                      transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
+                    return transaction.executeUpdate(UPDATE_STATEMENT);
                   });
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
       // The transaction will be retried because the first statement that also tried to include the
@@ -833,17 +775,14 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    try {
-                      transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                    }
-                    return null;
+                transaction -> {
+                  try {
+                    transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                   }
+                  return null;
                 });
         fail("Missing expected exception");
       } catch (SpannerException e) {
@@ -867,13 +806,7 @@ public class InlineBeginTransactionTest {
       try {
         client
             .readWriteTransaction()
-            .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                  }
-                });
+            .run(transaction -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -898,14 +831,11 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    // This statement will start a transaction.
-                    transaction.executeUpdate(UPDATE_STATEMENT);
-                    // This statement will fail and cause a rollback as the exception is not caught.
-                    return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                  }
+                transaction -> {
+                  // This statement will start a transaction.
+                  transaction.executeUpdate(UPDATE_STATEMENT);
+                  // This statement will fail and cause a rollback as the exception is not caught.
+                  return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
                 });
         fail("missing expected exception");
       } catch (SpannerException e) {
@@ -926,19 +856,16 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                      try {
-                        transaction.batchUpdate(
-                            ImmutableList.of(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
-                        fail("missing expected exception");
-                      } catch (SpannerBatchUpdateException e) {
-                        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                        assertThat(e.getUpdateCounts()).hasLength(0);
-                      }
-                      return null;
+                  transaction -> {
+                    try {
+                      transaction.batchUpdate(
+                          ImmutableList.of(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
+                      fail("missing expected exception");
+                    } catch (SpannerBatchUpdateException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                      assertThat(e.getUpdateCounts()).hasLength(0);
                     }
+                    return null;
                   });
       assertThat(res).isNull();
       // The first statement failed and could not return a transaction. The entire transaction is
@@ -957,21 +884,18 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) throws Exception {
-                      try {
-                        transaction.batchUpdate(
-                            ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
-                        fail("missing expected exception");
-                        // The following line is needed as the compiler does not know that this is
-                        // unreachable.
-                        return -1L;
-                      } catch (SpannerBatchUpdateException e) {
-                        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                        assertThat(e.getUpdateCounts()).hasLength(1);
-                        return e.getUpdateCounts()[0];
-                      }
+                  transaction -> {
+                    try {
+                      transaction.batchUpdate(
+                          ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+                      fail("missing expected exception");
+                      // The following line is needed as the compiler does not know that this is
+                      // unreachable.
+                      return -1L;
+                    } catch (SpannerBatchUpdateException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                      assertThat(e.getUpdateCounts()).hasLength(1);
+                      return e.getUpdateCounts()[0];
                     }
                   });
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
@@ -992,17 +916,14 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                      try (ResultSet rs = transaction.executeQuery(INVALID_SELECT)) {
-                        while (rs.next()) {}
-                        fail("missing expected exception");
-                      } catch (SpannerException e) {
-                        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                      }
-                      return null;
+                  transaction -> {
+                    try (ResultSet rs = transaction.executeQuery(INVALID_SELECT)) {
+                      while (rs.next()) {}
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                     }
+                    return null;
                   });
       assertThat(res).isNull();
       // The transaction will be retried because the first statement that also tried to include the
@@ -1033,17 +954,14 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                      try (ResultSet rs = transaction.executeQuery(statement)) {
-                        while (rs.next()) {}
-                        fail("missing expected exception");
-                      } catch (SpannerException e) {
-                        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DATA_LOSS);
-                      }
-                      return null;
+                  transaction -> {
+                    try (ResultSet rs = transaction.executeQuery(statement)) {
+                      while (rs.next()) {}
+                      fail("missing expected exception");
+                    } catch (SpannerException e) {
+                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DATA_LOSS);
                     }
+                    return null;
                   });
       assertThat(res).isNull();
       // The transaction will not be retried, as the first PartialResultSet returns the transaction
@@ -1064,33 +982,27 @@ public class InlineBeginTransactionTest {
           client
               .readWriteTransaction()
               .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(final TransactionContext transaction) throws Exception {
-                      List<Future<Long>> futures = new ArrayList<>(numQueries);
-                      for (int i = 0; i < numQueries; i++) {
-                        futures.add(
-                            executor.submit(
-                                new Callable<Long>() {
-                                  @Override
-                                  public Long call() throws Exception {
-                                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                                      while (rs.next()) {
-                                        return rs.getLong(0);
-                                      }
-                                    }
-                                    return 0L;
+                  transaction -> {
+                    List<Future<Long>> futures = new ArrayList<>(numQueries);
+                    for (int i = 0; i < numQueries; i++) {
+                      futures.add(
+                          executor.submit(
+                              () -> {
+                                try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                                  while (rs.next()) {
+                                    return rs.getLong(0);
                                   }
-                                }));
-                      }
-                      Long res = 0L;
-                      for (Future<Long> f : futures) {
-                        res += f.get();
-                      }
-                      return res;
+                                }
+                                return 0L;
+                              }));
                     }
+                    Long res = 0L;
+                    for (Future<Long> f : futures) {
+                      res += f.get();
+                    }
+                    return res;
                   });
-      assertThat(updateCount).isEqualTo(1L * numQueries);
+      assertThat(updateCount).isEqualTo((long) numQueries);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
     }
@@ -1102,15 +1014,12 @@ public class InlineBeginTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws Exception {
-                  transaction.buffer(
-                      Arrays.asList(
-                          Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
-                          Mutation.delete("FOO", Key.of(1L))));
-                  return null;
-                }
+              transaction -> {
+                transaction.buffer(
+                    Arrays.asList(
+                        Mutation.newInsertBuilder("FOO").set("ID").to(1L).build(),
+                        Mutation.delete("FOO", Key.of(1L))));
+                return null;
               });
       // There should be 1 call to BeginTransaction because there is no statement that we can use to
       // inline the BeginTransaction call with.
@@ -1253,50 +1162,47 @@ public class InlineBeginTransactionTest {
           client
               .runAsync()
               .runAsync(
-                  new AsyncWork<Long>() {
-                    @Override
-                    public ApiFuture<Long> doWorkAsync(final TransactionContext txn) {
-                      List<ApiFuture<Long>> futures = new ArrayList<>(numQueries);
-                      for (int i = 0; i < numQueries; i++) {
-                        final SettableApiFuture<Long> res = SettableApiFuture.create();
-                        try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
-                          rs.setCallback(
-                              executor,
-                              new ReadyCallback() {
-                                @Override
-                                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                  switch (resultSet.tryNext()) {
-                                    case DONE:
-                                      return CallbackResponse.DONE;
-                                    case NOT_READY:
-                                      return CallbackResponse.CONTINUE;
-                                    case OK:
-                                      res.set(resultSet.getLong(0));
-                                    default:
-                                      throw new IllegalStateException();
-                                  }
+                  txn -> {
+                    List<ApiFuture<Long>> futures = new ArrayList<>(numQueries);
+                    for (int i = 0; i < numQueries; i++) {
+                      final SettableApiFuture<Long> res = SettableApiFuture.create();
+                      try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
+                        rs.setCallback(
+                            executor,
+                            new ReadyCallback() {
+                              @Override
+                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                                switch (resultSet.tryNext()) {
+                                  case DONE:
+                                    return CallbackResponse.DONE;
+                                  case NOT_READY:
+                                    return CallbackResponse.CONTINUE;
+                                  case OK:
+                                    res.set(resultSet.getLong(0));
+                                  default:
+                                    throw new IllegalStateException();
                                 }
-                              });
-                        }
-                        futures.add(res);
-                      }
-                      return ApiFutures.transformAsync(
-                          ApiFutures.allAsList(futures),
-                          new ApiAsyncFunction<List<Long>, Long>() {
-                            @Override
-                            public ApiFuture<Long> apply(List<Long> input) throws Exception {
-                              long sum = 0L;
-                              for (Long l : input) {
-                                sum += l;
                               }
-                              return ApiFutures.immediateFuture(sum);
-                            }
-                          },
-                          MoreExecutors.directExecutor());
+                            });
+                      }
+                      futures.add(res);
                     }
+                    return ApiFutures.transformAsync(
+                        ApiFutures.allAsList(futures),
+                        new ApiAsyncFunction<List<Long>, Long>() {
+                          @Override
+                          public ApiFuture<Long> apply(List<Long> input) throws Exception {
+                            long sum = 0L;
+                            for (Long l : input) {
+                              sum += l;
+                            }
+                            return ApiFutures.immediateFuture(sum);
+                          }
+                        },
+                        MoreExecutors.directExecutor());
                   },
                   executor);
-      assertThat(updateCount.get()).isEqualTo(1L * numQueries);
+      assertThat(updateCount.get()).isEqualTo((long) numQueries);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
     }
@@ -1307,15 +1213,12 @@ public class InlineBeginTransactionTest {
       assertThat(
               client
                   .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          // This will not actually send an RPC, so it will also not request a
-                          // transaction.
-                          transaction.executeQuery(SELECT1);
-                          return transaction.executeUpdate(UPDATE_STATEMENT);
-                        }
+                  .<Long>run(
+                      transaction -> {
+                        // This will not actually send an RPC, so it will also not request a
+                        // transaction.
+                        transaction.executeQuery(SELECT1);
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
       assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
@@ -1329,13 +1232,10 @@ public class InlineBeginTransactionTest {
       assertThat(
               client
                   .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          transaction.executeQueryAsync(SELECT1);
-                          return transaction.executeUpdate(UPDATE_STATEMENT);
-                        }
+                  .<Long>run(
+                      transaction -> {
+                        transaction.executeQueryAsync(SELECT1);
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
       assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
@@ -1349,13 +1249,10 @@ public class InlineBeginTransactionTest {
       assertThat(
               client
                   .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          transaction.read("FOO", KeySet.all(), Arrays.asList("ID"));
-                          return transaction.executeUpdate(UPDATE_STATEMENT);
-                        }
+                  .<Long>run(
+                      transaction -> {
+                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"));
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
       assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
@@ -1370,13 +1267,10 @@ public class InlineBeginTransactionTest {
       assertThat(
               client
                   .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          transaction.readAsync("FOO", KeySet.all(), Arrays.asList("ID"));
-                          return transaction.executeUpdate(UPDATE_STATEMENT);
-                        }
+                  .<Long>run(
+                      transaction -> {
+                        transaction.readAsync("FOO", KeySet.all(), Arrays.asList("ID"));
+                        return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
       assertThat(mockSpanner.countRequestsOfType(BeginTransactionRequest.class)).isEqualTo(0L);
@@ -1392,16 +1286,13 @@ public class InlineBeginTransactionTest {
       assertThat(
               client
                   .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          ResultSet rs = transaction.executeQuery(SELECT1);
-                          long updateCount = transaction.executeUpdate(UPDATE_STATEMENT);
-                          // Consume the result set.
-                          while (rs.next()) {}
-                          return updateCount;
-                        }
+                  .<Long>run(
+                      transaction -> {
+                        ResultSet rs = transaction.executeQuery(SELECT1);
+                        long updateCount = transaction.executeUpdate(UPDATE_STATEMENT);
+                        // Consume the result set.
+                        while (rs.next()) {}
+                        return updateCount;
                       }))
           .isEqualTo(UPDATE_COUNT);
       // The update statement should start the transaction, and the query should use the transaction
@@ -1410,7 +1301,7 @@ public class InlineBeginTransactionTest {
       assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(2L);
       assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(1L);
       assertThat(countTransactionsStarted()).isEqualTo(1);
-      List<AbstractMessage> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSql())
           .isEqualTo(UPDATE_STATEMENT.getSql());
@@ -1427,21 +1318,18 @@ public class InlineBeginTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws Exception {
-                  try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
-                    while (rs.next()) {}
-                  }
-                  return null;
+              transaction -> {
+                try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
+                  while (rs.next()) {}
                 }
+                return null;
               });
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
       assertThat(countTransactionsStarted()).isEqualTo(1);
 
-      List<AbstractMessage> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request1 = (ExecuteSqlRequest) requests.get(0);
       assertThat(request1.getSql()).isEqualTo(SELECT1_UNION_ALL_SELECT2.getSql());
@@ -1473,13 +1361,12 @@ public class InlineBeginTransactionTest {
                   if (attempt == 1) {
                     impl.waitForTransactionTimeoutMillis = 1L;
                     // Freeze the mock server to prevent the first (async) statement from returning
-                    // a
-                    // transaction.
+                    // a transaction.
                     mockSpanner.freeze();
                   } else {
                     impl.waitForTransactionTimeoutMillis = 60_000L;
                   }
-                  transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                  ApiFuture<Long> updateCount = transaction.executeUpdateAsync(UPDATE_STATEMENT);
 
                   // Try to execute a query. This will timeout during the first attempt while
                   // waiting
@@ -1489,6 +1376,9 @@ public class InlineBeginTransactionTest {
                     while (rs.next()) {}
                   } catch (Throwable t) {
                     mockSpanner.unfreeze();
+                    // Wait until the update actually finishes so it has returned a transaction.
+                    // This ensures that the retry does not issue a BeginTransaction RPC.
+                    SpannerApiFutures.get(updateCount);
                     throw t;
                   }
                   return null;
@@ -1497,76 +1387,6 @@ public class InlineBeginTransactionTest {
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(3);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
-    }
-
-    @Test
-    public void testCloseResultSetWhileRequestInFlight() throws Exception {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      final ExecutorService service = Executors.newSingleThreadExecutor();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    final ResultSet rs = transaction.executeQuery(SELECT1);
-                    // Prevent the server from executing the query.
-                    final CountDownLatch latch = new CountDownLatch(1);
-                    mockSpanner.freeze();
-                    service.submit(
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            try {
-                              // This call will be stuck on the server until the mock server is
-                              // unfrozen.
-                              rs.next();
-                            } finally {
-                              latch.countDown();
-                            }
-                          }
-                        });
-
-                    // First wait for the request to be on the server and then close the result set
-                    // while the request is in flight.
-                    mockSpanner.waitForRequestsToContain(
-                        new Predicate<AbstractMessage>() {
-                          @Override
-                          public boolean apply(AbstractMessage input) {
-                            return input instanceof ExecuteSqlRequest
-                                && ((ExecuteSqlRequest) input).getTransaction().hasBegin();
-                          }
-                        },
-                        1000L);
-                    rs.close();
-                    // The next statement should now fail before it is sent to the server because
-                    // the first statement failed to return a transaction while the result set was
-                    // still open.
-                    mockSpanner.unfreeze();
-                    latch.await(1L, TimeUnit.SECONDS);
-                    try {
-                      transaction.executeUpdate(UPDATE_STATEMENT);
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-                      assertThat(e.getMessage())
-                          .contains("ResultSet was closed before a transaction id was returned");
-                    }
-                    return null;
-                  }
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        // The commit request will also fail, which means that the entire transaction will fail.
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage())
-            .contains("ResultSet was closed before a transaction id was returned");
-      }
-      service.shutdown();
-      assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
-      assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
-      assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
     }
 
     @Test
@@ -1579,14 +1399,11 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
-                      while (rs.next()) {}
-                    }
-                    return null;
+                transaction -> {
+                  try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
+                    while (rs.next()) {}
                   }
+                  return null;
                 });
         fail("missing expected exception");
       } catch (SpannerException e) {
@@ -1608,12 +1425,9 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    transaction.readRow("FOO", Key.of(1L), Arrays.asList("BAR"));
-                    return null;
-                  }
+                transaction -> {
+                  transaction.readRow("FOO", Key.of(1L), Arrays.asList("BAR"));
+                  return null;
                 });
         fail("missing expected exception");
       } catch (SpannerException e) {
@@ -1635,12 +1449,9 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    transaction.executeUpdate(UPDATE_STATEMENT);
-                    return null;
-                  }
+                transaction -> {
+                  transaction.executeUpdate(UPDATE_STATEMENT);
+                  return null;
                 });
         fail("missing expected exception");
       } catch (SpannerException e) {
@@ -1662,12 +1473,9 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
-                    return null;
-                  }
+                transaction -> {
+                  transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
+                  return null;
                 });
         fail("missing expected exception");
       } catch (SpannerException e) {
@@ -1690,34 +1498,31 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) throws Exception {
-                    try (AsyncResultSet rs =
-                        transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
-                      return SpannerApiFutures.get(
-                          rs.setCallback(
-                              executor,
-                              new ReadyCallback() {
-                                @Override
-                                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                  try {
-                                    while (true) {
-                                      switch (resultSet.tryNext()) {
-                                        case OK:
-                                          break;
-                                        case DONE:
-                                          return CallbackResponse.DONE;
-                                        case NOT_READY:
-                                          return CallbackResponse.CONTINUE;
-                                      }
+                transaction -> {
+                  try (AsyncResultSet rs =
+                      transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
+                    return SpannerApiFutures.get(
+                        rs.setCallback(
+                            executor,
+                            new ReadyCallback() {
+                              @Override
+                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                                try {
+                                  while (true) {
+                                    switch (resultSet.tryNext()) {
+                                      case OK:
+                                        break;
+                                      case DONE:
+                                        return CallbackResponse.DONE;
+                                      case NOT_READY:
+                                        return CallbackResponse.CONTINUE;
                                     }
-                                  } catch (SpannerException e) {
-                                    return CallbackResponse.DONE;
                                   }
+                                } catch (SpannerException e) {
+                                  return CallbackResponse.DONE;
                                 }
-                              }));
-                    }
+                              }
+                            }));
                   }
                 });
         fail("missing expected exception");
@@ -1740,12 +1545,8 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    return SpannerApiFutures.get(transaction.executeUpdateAsync(UPDATE_STATEMENT));
-                  }
-                });
+                transaction ->
+                    SpannerApiFutures.get(transaction.executeUpdateAsync(UPDATE_STATEMENT)));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -1766,13 +1567,9 @@ public class InlineBeginTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<long[]>() {
-                  @Override
-                  public long[] run(TransactionContext transaction) throws Exception {
-                    return SpannerApiFutures.get(
-                        transaction.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT)));
-                  }
-                });
+                transaction ->
+                    SpannerApiFutures.get(
+                        transaction.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT))));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -1781,6 +1578,80 @@ public class InlineBeginTransactionTest {
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
+    }
+
+    @Test
+    public void testInlinedBeginTx_withCancelledOnFirstStatement() {
+      final Statement statement = Statement.of("INSERT INTO FOO (Id) VALUES (1)");
+      mockSpanner.putStatementResult(
+          StatementResult.exception(
+              statement,
+              Status.CANCELLED
+                  .withDescription(
+                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                  .asRuntimeException()));
+
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      long updateCount =
+          client
+              .readWriteTransaction()
+              .run(
+                  new TransactionCallable<Long>() {
+                    int attempt = 0;
+
+                    @Override
+                    public Long run(TransactionContext transaction) throws Exception {
+                      if (attempt > 0) {
+                        mockSpanner.putStatementResult(StatementResult.update(statement, 1L));
+                      }
+                      attempt++;
+                      return transaction.executeUpdate(statement);
+                    }
+                  });
+      assertEquals(1L, updateCount);
+      // The transaction will be retried because the first statement that also tried to include the
+      // BeginTransaction statement failed with the specific CANCELLED error and did not return a
+      // transaction. That forces a retry of the entire transaction with an explicit
+      // BeginTransaction RPC.
+      assertEquals(1, countRequests(BeginTransactionRequest.class));
+      // The update statement will be executed 2 times:
+      assertEquals(2, countRequests(ExecuteSqlRequest.class));
+      // The transaction will attempt to commit once.
+      assertEquals(1, countRequests(CommitRequest.class));
+      // The first update will start a transaction, but then fail the update statement. This will
+      // start a transaction on the mock server, but that transaction will never be returned to the
+      // client.
+      assertEquals(2, countTransactionsStarted());
+    }
+
+    @Test
+    public void testInlinedBeginTx_withStickyCancelledOnFirstStatement() {
+      final Statement statement = Statement.of("INSERT INTO FOO (Id) VALUES (1)");
+      mockSpanner.putStatementResult(
+          StatementResult.exception(
+              statement,
+              Status.CANCELLED
+                  .withDescription(
+                      "Read/query was cancelled due to the enclosing transaction being invalidated by a later transaction in the same session.")
+                  .asRuntimeException()));
+
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      // The CANCELLED error is thrown both on the first and second attempt. The second attempt will
+      // not be retried, as it did not include a BeginTransaction option.
+      try {
+        client.readWriteTransaction().run(transaction -> transaction.executeUpdate(statement));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+      }
+      assertEquals(1, countRequests(BeginTransactionRequest.class));
+      // The update statement will be executed 2 times:
+      assertEquals(2, countRequests(ExecuteSqlRequest.class));
+      // The transaction will never attempt to commit.
+      assertEquals(0, countRequests(CommitRequest.class));
+      assertEquals(2, countTransactionsStarted());
     }
   }
 

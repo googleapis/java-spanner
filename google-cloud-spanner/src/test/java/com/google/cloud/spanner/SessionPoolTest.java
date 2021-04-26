@@ -75,7 +75,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -154,15 +153,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(mockSession());
-                        }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      for (int i = 0; i < sessionCount; i++) {
+                        consumer.onSessionReady(mockSession());
                       }
                     });
                 return null;
@@ -238,13 +234,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(sessions.pop());
                     });
                 return null;
               }
@@ -270,14 +263,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool(clock);
     final AtomicBoolean stop = new AtomicBoolean(false);
     new Thread(
-            new Runnable() {
-
-              @Override
-              public void run() {
-                // Run in a tight loop.
-                while (!stop.get()) {
-                  runMaintainanceLoop(clock, pool, 1);
-                }
+            () -> {
+              // Run in a tight loop.
+              while (!stop.get()) {
+                runMaintenanceLoop(clock, pool, 1);
               }
             })
         .start();
@@ -296,13 +285,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session1);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session1);
                     });
                 return null;
               }
@@ -312,16 +298,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session2);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session2);
+                      return null;
                     });
                 return null;
               }
@@ -354,13 +337,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session1);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session1);
                     });
                 return null;
               }
@@ -370,16 +350,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session2);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session2);
+                      return null;
                     });
                 return null;
               }
@@ -410,17 +387,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() throws Exception {
-                        insideCreation.countDown();
-                        releaseCreation.await();
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionCreateFailure(
-                            SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
-                        return null;
-                      }
+                    () -> {
+                      insideCreation.countDown();
+                      releaseCreation.await();
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionCreateFailure(
+                          SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
+                      return null;
                     });
                 return null;
               }
@@ -446,13 +420,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session);
                     });
                 return null;
               }
@@ -496,15 +467,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Callable<Void>() {
-                      @Override
-                      public Void call() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionCreateFailure(
-                            SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
-                        return null;
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionCreateFailure(
+                          SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
+                      return null;
                     });
                 return null;
               }
@@ -533,13 +501,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(mockSession());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(mockSession());
                     });
                 return null;
               }
@@ -579,13 +544,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(sessions.pop());
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(sessions.pop());
                     });
                 return null;
               }
@@ -600,7 +562,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool = createPool(clock);
     // Make sure pool has been initialized
     pool.getSession().close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     PooledSessionFuture readSession1 = pool.getSession();
     PooledSessionFuture readSession2 = pool.getSession();
@@ -615,7 +577,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     readSession3.close();
     // Now there are 3 sessions in the pool but since none of them has timed out, they will all be
     // kept in the pool.
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
     // Counters have now been reset
     // Use all 3 sessions sequentially
@@ -626,7 +588,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // one session to be kept alive and two sessions to be removed.
     long cycles =
         options.getRemoveInactiveSessionAfter().toMillis() / pool.poolMaintainer.loopFrequency;
-    runMaintainanceLoop(clock, pool, cycles);
+    runMaintenanceLoop(clock, pool, cycles);
     // We will still close 2 sessions since at any point in time only 1 session was in use.
     assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
@@ -644,15 +606,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(session);
-                        }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      for (int i = 0; i < sessionCount; i++) {
+                        consumer.onSessionReady(session);
                       }
                     });
                 return null;
@@ -669,16 +628,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session2.get();
     session1.close();
     session2.close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     verify(session, never()).singleUse(any(TimestampBound.class));
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     verify(session, times(2)).singleUse(any(TimestampBound.class));
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getSession();
-    session1.writeAtLeastOnce(new ArrayList<Mutation>());
+    session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
-    runMaintainanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
     verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
         .singleUse(any(TimestampBound.class));
@@ -704,14 +663,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Then try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
         executor.submit(
-            new Callable<Void>() {
-              @Override
-              public Void call() {
-                latch.countDown();
-                PooledSessionFuture session = pool.getSession();
-                session.close();
-                return null;
-              }
+            () -> {
+              latch.countDown();
+              PooledSessionFuture session = pool.getSession();
+              session.close();
+              return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
@@ -758,13 +714,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -774,13 +727,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -814,13 +764,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -830,13 +777,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -857,7 +801,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     UPDATE,
     BATCH_UPDATE,
     WRITE,
-    EXCEPTION;
+    EXCEPTION
   }
 
   @SuppressWarnings("unchecked")
@@ -900,8 +844,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
-      TransactionRunnerImpl closedTransactionRunner =
-          new TransactionRunnerImpl(closedSession, rpc, 10);
+      TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(mock(Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -915,8 +858,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync())
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
-      TransactionRunnerImpl openTransactionRunner =
-          new TransactionRunnerImpl(openSession, mock(SpannerRpc.class), 10);
+      TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(mock(Span.class));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
@@ -939,13 +881,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 @Override
                 public Void answer(final InvocationOnMock invocation) {
                   executor.submit(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          SessionConsumerImpl consumer =
-                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                          consumer.onSessionReady(closedSession);
-                        }
+                      () -> {
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        consumer.onSessionReady(closedSession);
                       });
                   return null;
                 }
@@ -955,13 +894,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 @Override
                 public Void answer(final InvocationOnMock invocation) {
                   executor.submit(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          SessionConsumerImpl consumer =
-                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                          consumer.onSessionReady(openSession);
-                        }
+                      () -> {
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        consumer.onSessionReady(openSession);
                       });
                   return null;
                 }
@@ -1047,22 +983,22 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.write(mutations)).thenThrow(sessionNotFound);
+    when(closedSession.writeWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.write(mutations)).thenReturn(Timestamp.now());
+    com.google.cloud.spanner.CommitResponse response =
+        mock(com.google.cloud.spanner.CommitResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.writeWithOptions(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1072,13 +1008,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1099,22 +1032,22 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
     List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
-    when(closedSession.writeAtLeastOnce(mutations)).thenThrow(sessionNotFound);
+    when(closedSession.writeAtLeastOnceWithOptions(mutations)).thenThrow(sessionNotFound);
 
     final SessionImpl openSession = mockSession();
-    when(openSession.writeAtLeastOnce(mutations)).thenReturn(Timestamp.now());
+    com.google.cloud.spanner.CommitResponse response =
+        mock(com.google.cloud.spanner.CommitResponse.class);
+    when(response.getCommitTimestamp()).thenReturn(Timestamp.now());
+    when(openSession.writeAtLeastOnceWithOptions(mutations)).thenReturn(response);
     doAnswer(
             new Answer<Void>() {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1124,13 +1057,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1159,13 +1089,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(closedSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(closedSession);
                     });
                 return null;
               }
@@ -1175,13 +1102,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 executor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(openSession);
-                      }
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(openSession);
                     });
                 return null;
               }
@@ -1292,14 +1216,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
         executor.submit(
-            new Callable<Void>() {
-              @Override
-              public Void call() {
-                latch.countDown();
-                Session session = pool.getSession();
-                session.close();
-                return null;
-              }
+            () -> {
+              latch.countDown();
+              Session session = pool.getSession();
+              session.close();
+              return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
@@ -1351,18 +1272,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   private void getSessionAsync(final CountDownLatch latch, final AtomicBoolean failed) {
     new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                try (PooledSessionFuture future = pool.getSession()) {
-                  PooledSession session = future.get();
-                  failed.compareAndSet(false, session == null);
-                  Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
-                } catch (Throwable e) {
-                  failed.compareAndSet(false, true);
-                } finally {
-                  latch.countDown();
-                }
+            () -> {
+              try (PooledSessionFuture future = pool.getSession()) {
+                PooledSession session = future.get();
+                failed.compareAndSet(false, session == null);
+                Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+              } catch (Throwable e) {
+                failed.compareAndSet(false, true);
+              } finally {
+                latch.countDown();
               }
             })
         .start();

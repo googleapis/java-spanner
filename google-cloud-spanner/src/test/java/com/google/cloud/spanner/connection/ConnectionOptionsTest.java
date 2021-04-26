@@ -17,10 +17,15 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
 import org.junit.Test;
@@ -116,6 +121,34 @@ public class ConnectionOptionsTest {
         .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
     assertThat(options.isAutocommit()).isEqualTo(ConnectionOptions.DEFAULT_AUTOCOMMIT);
     assertThat(options.isReadOnly()).isEqualTo(ConnectionOptions.DEFAULT_READONLY);
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulator() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://localhost:9010", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulatorAndHost() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner://central-emulator.local:8080/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://central-emulator.local:8080", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
   }
 
   @Test
@@ -444,5 +477,35 @@ public class ConnectionOptionsTest {
             .build();
     assertThat(options.getMaxSessions()).isEqualTo(4000);
     assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
+
+  @Test
+  public void testLocalConnectionError() {
+    String uri =
+        "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    try (Connection connection = options.getConnection()) {
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
+      assertThat(e.getMessage())
+          .contains(
+              String.format(
+                  "The connection string '%s' contains host 'localhost:1', but no running", uri));
+    }
+  }
+
+  @Test
+  public void testInvalidCredentials() {
+    String uri =
+        "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=/some/non/existing/path";
+    try {
+      ConnectionOptions.newBuilder().setUri(uri).build();
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertThat(e.getMessage())
+          .contains("Invalid credentials path specified: /some/non/existing/path");
+    }
   }
 }

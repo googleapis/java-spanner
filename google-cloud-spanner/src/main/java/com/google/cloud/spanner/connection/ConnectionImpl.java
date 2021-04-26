@@ -18,10 +18,12 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -41,6 +43,7 @@ import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,8 +51,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -114,7 +119,7 @@ class ConnectionImpl implements Connection {
   enum BatchMode {
     NONE,
     DDL,
-    DML;
+    DML
   }
 
   /**
@@ -179,11 +184,12 @@ class ConnectionImpl implements Connection {
   private DatabaseClient dbClient;
   private boolean autocommit;
   private boolean readOnly;
+  private boolean returnCommitStats;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
-   * The {@link ConnectionImpl#inTransaction} field is only used in autocommit mode to indicate that
-   * the user has explicitly started a transaction.
+   * This field is only used in autocommit mode to indicate that the user has explicitly started a
+   * transaction.
    */
   private boolean inTransaction = false;
   /**
@@ -208,11 +214,15 @@ class ConnectionImpl implements Connection {
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
+    if (options.isAutoConfigEmulator()) {
+      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+    }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -237,6 +247,7 @@ class ConnectionImpl implements Connection {
     this.dbClient = dbClient;
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
+    setReturnCommitStats(options.isReturnCommitStats());
     setDefaultTransactionOptions();
   }
 
@@ -250,22 +261,42 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void close() {
-    if (!isClosed()) {
-      try {
-        if (isTransactionStarted()) {
-          try {
-            rollback();
-          } catch (Exception e) {
-            // Ignore as we are closing the connection.
-          }
-        }
-        statementExecutor.shutdownNow();
-        spannerPool.removeConnection(options, this);
-        leakedException = null;
-      } finally {
-        this.closed = true;
-      }
+    try {
+      closeAsync().get(10L, TimeUnit.SECONDS);
+    } catch (SpannerException | InterruptedException | ExecutionException | TimeoutException e) {
+      // ignore and continue to close the connection.
+    } finally {
+      statementExecutor.shutdownNow();
     }
+  }
+
+  public ApiFuture<Void> closeAsync() {
+    if (!isClosed()) {
+      List<ApiFuture<Void>> futures = new ArrayList<>();
+      if (isTransactionStarted()) {
+        futures.add(rollbackAsync());
+      }
+      // Try to wait for the current statement to finish (if any) before we actually close the
+      // connection.
+      this.closed = true;
+      // Add a no-op statement to the execute. Once this has been executed, we know that all
+      // preceding statements have also been executed, as the executor is single-threaded and
+      // executes all statements in order of submitting.
+      futures.add(statementExecutor.submit(() -> null));
+      statementExecutor.shutdown();
+      leakedException = null;
+      spannerPool.removeConnection(options, this);
+      return ApiFutures.transform(
+          ApiFutures.allAsList(futures),
+          new ApiFunction<List<Void>, Void>() {
+            @Override
+            public Void apply(List<Void> input) {
+              return null;
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+    return ApiFutures.immediateFuture(null);
   }
 
   /** Get the current unit-of-work type of this connection. */
@@ -574,6 +605,31 @@ class ConnectionImpl implements Connection {
         : this.currentUnitOfWork.getCommitTimestampOrNull();
   }
 
+  @Override
+  public CommitResponse getCommitResponse() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        this.currentUnitOfWork != null, "There is no transaction on this connection");
+    return this.currentUnitOfWork.getCommitResponse();
+  }
+
+  CommitResponse getCommitResponseOrNull() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.currentUnitOfWork == null ? null : this.currentUnitOfWork.getCommitResponseOrNull();
+  }
+
+  @Override
+  public void setReturnCommitStats(boolean returnCommitStats) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.returnCommitStats = returnCommitStats;
+  }
+
+  @Override
+  public boolean isReturnCommitStats() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.returnCommitStats;
+  }
+
   /** Resets this connection to its default transaction options. */
   private void setDefaultTransactionOptions() {
     if (transactionStack.isEmpty()) {
@@ -611,8 +667,8 @@ class ConnectionImpl implements Connection {
   }
 
   /** Internal interface for ending a transaction (commit/rollback). */
-  private static interface EndTransactionMethod {
-    public ApiFuture<Void> endAsync(UnitOfWork t);
+  private interface EndTransactionMethod {
+    ApiFuture<Void> endAsync(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {
@@ -948,6 +1004,7 @@ class ConnectionImpl implements Connection {
           .setReadOnly(isReadOnly())
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
+          .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
           .build();
@@ -964,6 +1021,7 @@ class ConnectionImpl implements Connection {
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setRetryAbortsInternally(retryAbortsInternally)
+              .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

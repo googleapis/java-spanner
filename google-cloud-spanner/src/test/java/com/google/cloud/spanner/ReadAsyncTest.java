@@ -439,7 +439,7 @@ public class ReadAsyncTest {
         while (!(evenFinished.isDone() && unevenFinished.isDone())) {
           synchronized (lock) {
             if (allValues.peekLast() != null) {
-              if (Integer.valueOf(allValues.peekLast().substring(1)) % 2 == 1) {
+              if (Integer.parseInt(allValues.peekLast().substring(1)) % 2 == 1) {
                 evenRs.resume();
               } else {
                 unevenRs.resume();

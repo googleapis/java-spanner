@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "004c5d759804a380e65d1023faef0978de5d3ff9"
+        "sha": "1d4eed45eb0b09c816912977393ff7a551eb82d6"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "30eb779ddcc4f389df34d0802d081ef6c4559d6d",
-        "internalRef": "354462069"
+        "sha": "3b236df084cf9222c529a2890f90e3a4ff0f2dfd",
+        "internalRef": "368426665"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "d1bb9173100f62c0cfc8f3138b62241e7f47ca6a"
+        "sha": "8285c2b4cdbc3771d031ad91e1c4ec9e55fff45d"
       }
     }
   ],
@@ -74,7 +74,6 @@
     ".kokoro/continuous/java8.cfg",
     ".kokoro/continuous/readme.cfg",
     ".kokoro/dependencies.sh",
-    ".kokoro/linkage-monitor.sh",
     ".kokoro/nightly/integration.cfg",
     ".kokoro/nightly/java11.cfg",
     ".kokoro/nightly/java7.cfg",
@@ -102,6 +101,8 @@
     ".kokoro/release/promote.sh",
     ".kokoro/release/publish_javadoc.cfg",
     ".kokoro/release/publish_javadoc.sh",
+    ".kokoro/release/publish_javadoc11.cfg",
+    ".kokoro/release/publish_javadoc11.sh",
     ".kokoro/release/snapshot.cfg",
     ".kokoro/release/snapshot.sh",
     ".kokoro/release/stage.cfg",
@@ -113,6 +114,7 @@
     "codecov.yaml",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStub.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/DatabaseAdminStubSettings.java",
@@ -120,6 +122,7 @@
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/stub/GrpcDatabaseAdminStub.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/InstanceAdminSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminCallableFactory.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/GrpcInstanceAdminStub.java",
@@ -127,6 +130,7 @@
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/instance/v1/stub/InstanceAdminStubSettings.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/SpannerSettings.java",
+    "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/gapic_metadata.json",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/package-info.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerCallableFactory.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/v1/stub/GrpcSpannerStub.java",
@@ -153,6 +157,8 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/BackupOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/BackupProto.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CommonProto.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateBackupEncryptionConfig.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateBackupEncryptionConfigOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateBackupMetadata.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateBackupMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateBackupRequest.java",
@@ -161,6 +167,8 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequestOrBuilder.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyName.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyVersionName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/Database.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseOrBuilder.java",
@@ -168,6 +176,10 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DeleteBackupRequestOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DropDatabaseRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DropDatabaseRequestOrBuilder.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/EncryptionConfig.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/EncryptionConfigOrBuilder.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/EncryptionInfo.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/EncryptionInfoOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetBackupRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetBackupRequestOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/GetDatabaseDdlRequest.java",
@@ -197,6 +209,8 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/OperationProgressOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/OptimizeRestoredDatabaseMetadata.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/OptimizeRestoredDatabaseMetadataOrBuilder.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/RestoreDatabaseEncryptionConfig.java",
+    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/RestoreDatabaseEncryptionConfigOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/RestoreDatabaseMetadata.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/RestoreDatabaseMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/RestoreDatabaseRequest.java",
@@ -257,6 +271,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponse.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DatabaseName.java",
@@ -301,6 +316,8 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/QueryPlanProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ReadRequestOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RequestOptions.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/RequestOptionsOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSet.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadata.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/ResultSetMetadataOrBuilder.java",
@@ -327,6 +344,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeCode.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeProto.java",
+    "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/commit_response.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/keys.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/mutation.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/query_plan.proto",

@@ -17,22 +17,34 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.AbortedException;
 import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
-import com.google.spanner.v1.*;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status.Code;
 import java.util.Collections;
 import java.util.Iterator;
@@ -64,6 +76,7 @@ public class PartitionedDmlTransactionTest {
   private final ByteString txId = ByteString.copyFromUtf8("tx");
   private final ByteString resumeToken = ByteString.copyFromUtf8("resume");
   private final String sql = "UPDATE FOO SET BAR=1 WHERE TRUE";
+  private final String tag = "app=spanner,env=test";
   private final ExecuteSqlRequest executeRequestWithoutResumeToken =
       ExecuteSqlRequest.newBuilder()
           .setQueryMode(QueryMode.NORMAL)
@@ -73,6 +86,11 @@ public class PartitionedDmlTransactionTest {
           .build();
   private final ExecuteSqlRequest executeRequestWithResumeToken =
       executeRequestWithoutResumeToken.toBuilder().setResumeToken(resumeToken).build();
+  private final ExecuteSqlRequest executeRequestWithRequestOptions =
+      executeRequestWithoutResumeToken
+          .toBuilder()
+          .setRequestOptions(RequestOptions.newBuilder().setRequestTag(tag).build())
+          .build();
 
   @Before
   public void setup() {
@@ -103,6 +121,28 @@ public class PartitionedDmlTransactionTest {
     verify(rpc)
         .executeStreamingPartitionedDml(
             Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+  }
+
+  @Test
+  public void testExecuteStreamingPartitionedUpdateWithUpdateOptions() {
+    ResultSetStats stats = ResultSetStats.newBuilder().setRowCountLowerBound(1000L).build();
+    PartialResultSet p1 = PartialResultSet.newBuilder().setResumeToken(resumeToken).build();
+    PartialResultSet p2 = PartialResultSet.newBuilder().setStats(stats).build();
+    ServerStream<PartialResultSet> stream = mock(ServerStream.class);
+    when(stream.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
+    when(rpc.executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class)))
+        .thenReturn(stream);
+
+    long count =
+        tx.executeStreamingPartitionedUpdate(
+            Statement.of(sql), Duration.ofMinutes(10), Options.tag(tag));
+
+    assertThat(count).isEqualTo(1000L);
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithRequestOptions), anyMap(), any(Duration.class));
   }
 
   @Test
@@ -334,5 +374,33 @@ public class PartitionedDmlTransactionTest {
           .executeStreamingPartitionedDml(
               Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
     }
+  }
+
+  @Test
+  public void testRequestWithoutPriority() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"), Options.fromUpdateOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testRequestWithPriority() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
+            Options.fromUpdateOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testRequestWithPriorityAndRequestTag() {
+    ExecuteSqlRequest request =
+        tx.newTransactionRequestFrom(
+            Statement.of("UPDATE FOO SET BAR=1 WHERE TRUE"),
+            Options.fromUpdateOptions(
+                Options.priority(RpcPriority.LOW), Options.tag("app=spanner,env=test")));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+    assertThat(request.getRequestOptions().getRequestTag()).isEqualTo("app=spanner,env=test");
   }
 }

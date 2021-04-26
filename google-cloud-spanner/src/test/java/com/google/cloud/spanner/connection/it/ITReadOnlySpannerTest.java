@@ -200,18 +200,12 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       final ResultSet rs2 = connection.executeQuery(Statement.of("SELECT * FROM NUMBERS"));
       ExecutorService exec = Executors.newFixedThreadPool(2);
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs1.next()) {}
-            }
+          () -> {
+            while (rs1.next()) {}
           });
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs2.next()) {}
-            }
+          () -> {
+            while (rs2.next()) {}
           });
       exec.shutdown();
       exec.awaitTermination(1000L, TimeUnit.SECONDS);

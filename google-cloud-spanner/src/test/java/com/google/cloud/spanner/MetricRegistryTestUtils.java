@@ -90,7 +90,7 @@ class MetricRegistryTestUtils {
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
       if (!this.record.metrics.containsKey(this.name)) {
-        this.record.metrics.put(this.name, new ArrayList<PointWithFunction>());
+        this.record.metrics.put(this.name, new ArrayList<>());
       }
       this.record
           .metrics
@@ -121,7 +121,7 @@ class MetricRegistryTestUtils {
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T t, ToLongFunction<T> toLongFunction) {
       if (!this.record.metrics.containsKey(this.name)) {
-        this.record.metrics.put(this.name, new ArrayList<PointWithFunction>());
+        this.record.metrics.put(this.name, new ArrayList<>());
       }
       this.record
           .metrics

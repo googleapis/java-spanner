@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,13 @@ import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.CryptoKeyVersionName;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
+import com.google.spanner.admin.database.v1.EncryptionConfig;
+import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
@@ -217,6 +220,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -270,6 +275,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -323,6 +330,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -365,6 +374,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -640,7 +651,9 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -664,7 +677,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -726,7 +741,9 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -748,7 +765,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -802,7 +821,9 @@ public class DatabaseAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource =
+        CryptoKeyVersionName.of(
+            "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -826,7 +847,9 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource =
+          CryptoKeyVersionName.of(
+              "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");
@@ -885,6 +908,7 @@ public class DatabaseAdminClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -943,6 +967,7 @@ public class DatabaseAdminClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1001,6 +1026,7 @@ public class DatabaseAdminClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1045,6 +1071,7 @@ public class DatabaseAdminClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1089,6 +1116,7 @@ public class DatabaseAdminClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1288,6 +1316,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -1344,6 +1374,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -1400,6 +1432,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();
@@ -1456,6 +1490,8 @@ public class DatabaseAdminClientTest {
             .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .build();

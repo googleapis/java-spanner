@@ -27,7 +27,6 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -82,21 +81,18 @@ public final class ITBatchDmlTest {
   @Test
   public void noStatementsInRequest() {
     final TransactionCallable<long[]> callable =
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) {
-            List<Statement> stmts = new ArrayList<>();
-            long[] rowCounts;
-            try {
-              rowCounts = transaction.batchUpdate(stmts);
-              Assert.fail("Expecting an exception.");
-            } catch (SpannerException e) {
-              assertThat(e instanceof SpannerBatchUpdateException).isFalse();
-              assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-              rowCounts = new long[0];
-            }
-            return rowCounts;
+        transaction -> {
+          List<Statement> stmts = new ArrayList<>();
+          long[] rowCounts;
+          try {
+            rowCounts = transaction.batchUpdate(stmts);
+            Assert.fail("Expecting an exception.");
+          } catch (SpannerException e) {
+            assertThat(e instanceof SpannerBatchUpdateException).isFalse();
+            assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+            rowCounts = new long[0];
           }
+          return rowCounts;
         };
     TransactionRunner runner = client.readWriteTransaction();
     long[] rowCounts = runner.run(callable);
@@ -106,15 +102,12 @@ public final class ITBatchDmlTest {
   @Test
   public void batchDml() {
     final TransactionCallable<long[]> callable =
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) {
-            List<Statement> stmts = new ArrayList<>();
-            stmts.add(Statement.of(INSERT_DML));
-            stmts.add(Statement.of(UPDATE_DML));
-            stmts.add(Statement.of(DELETE_DML));
-            return transaction.batchUpdate(stmts);
-          }
+        transaction -> {
+          List<Statement> stmts = new ArrayList<>();
+          stmts.add(Statement.of(INSERT_DML));
+          stmts.add(Statement.of(UPDATE_DML));
+          stmts.add(Statement.of(DELETE_DML));
+          return transaction.batchUpdate(stmts);
         };
     TransactionRunner runner = client.readWriteTransaction();
     long[] rowCounts = runner.run(callable);
@@ -127,19 +120,16 @@ public final class ITBatchDmlTest {
   @Test
   public void mixedBatchDmlAndDml() {
     final TransactionCallable<long[]> callable =
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) {
-            long rowCount = transaction.executeUpdate(Statement.of(INSERT_DML));
-            List<Statement> stmts = new ArrayList<>();
-            stmts.add(Statement.of(UPDATE_DML));
-            stmts.add(Statement.of(DELETE_DML));
-            long[] batchRowCounts = transaction.batchUpdate(stmts);
-            long[] rowCounts = new long[batchRowCounts.length + 1];
-            System.arraycopy(batchRowCounts, 0, rowCounts, 0, batchRowCounts.length);
-            rowCounts[batchRowCounts.length] = rowCount;
-            return rowCounts;
-          }
+        transaction -> {
+          long rowCount = transaction.executeUpdate(Statement.of(INSERT_DML));
+          List<Statement> stmts = new ArrayList<>();
+          stmts.add(Statement.of(UPDATE_DML));
+          stmts.add(Statement.of(DELETE_DML));
+          long[] batchRowCounts = transaction.batchUpdate(stmts);
+          long[] rowCounts = new long[batchRowCounts.length + 1];
+          System.arraycopy(batchRowCounts, 0, rowCounts, 0, batchRowCounts.length);
+          rowCounts[batchRowCounts.length] = rowCount;
+          return rowCounts;
         };
     TransactionRunner runner = client.readWriteTransaction();
     long[] rowCounts = runner.run(callable);
@@ -152,15 +142,12 @@ public final class ITBatchDmlTest {
   @Test
   public void errorBatchDmlIllegalStatement() {
     final TransactionCallable<long[]> callable =
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) {
-            List<Statement> stmts = new ArrayList<>();
-            stmts.add(Statement.of(INSERT_DML));
-            stmts.add(Statement.of("some illegal statement"));
-            stmts.add(Statement.of(UPDATE_DML));
-            return transaction.batchUpdate(stmts);
-          }
+        transaction -> {
+          List<Statement> stmts = new ArrayList<>();
+          stmts.add(Statement.of(INSERT_DML));
+          stmts.add(Statement.of("some illegal statement"));
+          stmts.add(Statement.of(UPDATE_DML));
+          return transaction.batchUpdate(stmts);
         };
     TransactionRunner runner = client.readWriteTransaction();
     try {
@@ -180,15 +167,12 @@ public final class ITBatchDmlTest {
   @Test
   public void errorBatchDmlAlreadyExist() {
     final TransactionCallable<long[]> callable =
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) {
-            List<Statement> stmts = new ArrayList<>();
-            stmts.add(Statement.of(INSERT_DML));
-            stmts.add(Statement.of(INSERT_DML)); // should fail
-            stmts.add(Statement.of(UPDATE_DML));
-            return transaction.batchUpdate(stmts);
-          }
+        transaction -> {
+          List<Statement> stmts = new ArrayList<>();
+          stmts.add(Statement.of(INSERT_DML));
+          stmts.add(Statement.of(INSERT_DML)); // should fail
+          stmts.add(Statement.of(UPDATE_DML));
+          return transaction.batchUpdate(stmts);
         };
     TransactionRunner runner = client.readWriteTransaction();
     try {

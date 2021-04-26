@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,7 @@ public abstract class AbstractConnectionImplTest {
   public static final String DDL =
       "CREATE TABLE foo (id INT64 NOT NULL, name STRING(100)) PRIMARY KEY (id)";
 
-  static interface ConnectionConsumer {
+  interface ConnectionConsumer {
     void accept(Connection connection);
   }
 
@@ -72,7 +73,7 @@ public abstract class AbstractConnectionImplTest {
    * subclasses of {@link AbstractConnectionImplTest}.
    */
   private static final String LOG_FILE =
-      "src/test/resources/com/google/cloud/spanner/jdbc/ConnectionImplGeneratedSqlScriptTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
 
   private static final String DO_LOG_PROPERTY = "do_log_statements";
   private static boolean doLog;
@@ -113,7 +114,7 @@ public abstract class AbstractConnectionImplTest {
 
   @BeforeClass
   public static void openLog() {
-    doLog = Boolean.valueOf(System.getProperty(DO_LOG_PROPERTY, "false"));
+    doLog = Boolean.parseBoolean(System.getProperty(DO_LOG_PROPERTY, "false"));
     if (doLog) {
       openLog(true);
     } else {
@@ -125,7 +126,9 @@ public abstract class AbstractConnectionImplTest {
     try {
       writer =
           new PrintWriter(
-              new OutputStreamWriter(new FileOutputStream(LOG_FILE, append), "UTF8"), true);
+              new OutputStreamWriter(
+                  new FileOutputStream(LOG_FILE, append), StandardCharsets.UTF_8),
+              true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -731,6 +734,22 @@ public abstract class AbstractConnectionImplTest {
         log("SHOW VARIABLE COMMIT_TIMESTAMP;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getCommitTimestamp();
+      }
+    }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    try (Connection connection = getConnection()) {
+      if (isGetCommitTimestampAllowed()) {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP'");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        assertThat(connection.getCommitResponse(), is(notNullValue()));
+      } else {
+        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP',null");
+        log("SHOW VARIABLE COMMIT_RESPONSE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getCommitResponse();
       }
     }
   }

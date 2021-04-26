@@ -102,24 +102,21 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               @Override
               public Void answer(final InvocationOnMock invocation) {
                 createExecutor.submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        for (int s = 0; s < sessionCount; s++) {
-                          SessionImpl session;
-                          synchronized (lock) {
-                            session = mockSession();
-                            setupSession(session);
-                            sessions.put(session.getName(), false);
-                            if (sessions.size() > maxAliveSessions) {
-                              maxAliveSessions = sessions.size();
-                            }
+                    () -> {
+                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                      for (int s = 0; s < sessionCount; s++) {
+                        SessionImpl session;
+                        synchronized (lock) {
+                          session = mockSession();
+                          setupSession(session);
+                          sessions.put(session.getName(), false);
+                          if (sessions.size() > maxAliveSessions) {
+                            maxAliveSessions = sessions.size();
                           }
-                          SessionConsumerImpl consumer =
-                              invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                          consumer.onSessionReady(session);
                         }
+                        SessionConsumerImpl consumer =
+                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        consumer.onSessionReady(session);
                       }
                     });
                 return null;
@@ -254,42 +251,33 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         };
     for (int i = 0; i < concurrentThreads; i++) {
       new Thread(
-              new Runnable() {
-
-                @Override
-                public void run() {
-                  Uninterruptibles.awaitUninterruptibly(releaseThreads);
-                  for (int j = 0; j < numOperationsPerThread; j++) {
-                    try {
-                      PooledSessionFuture session = pool.getSession();
-                      session.get();
-                      Uninterruptibles.sleepUninterruptibly(
-                          random.nextInt(2), TimeUnit.MILLISECONDS);
-                      resetTransaction(session.get().delegate);
-                      session.close();
-                    } catch (SpannerException e) {
-                      if (e.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED || shouldBlock) {
-                        setFailed(e);
-                      }
-                    } catch (Exception e) {
+              () -> {
+                Uninterruptibles.awaitUninterruptibly(releaseThreads);
+                for (int j = 0; j < numOperationsPerThread; j++) {
+                  try {
+                    PooledSessionFuture session = pool.getSession();
+                    session.get();
+                    Uninterruptibles.sleepUninterruptibly(random.nextInt(2), TimeUnit.MILLISECONDS);
+                    resetTransaction(session.get().delegate);
+                    session.close();
+                  } catch (SpannerException e) {
+                    if (e.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED || shouldBlock) {
                       setFailed(e);
                     }
+                  } catch (Exception e) {
+                    setFailed(e);
                   }
-                  threadsDone.countDown();
                 }
+                threadsDone.countDown();
               })
           .start();
     }
     // Start maintenance threads in tight loop
     final AtomicBoolean stopMaintenance = new AtomicBoolean(false);
     new Thread(
-            new Runnable() {
-
-              @Override
-              public void run() {
-                while (!stopMaintenance.get()) {
-                  runMaintainanceLoop(clock, pool, 1);
-                }
+            () -> {
+              while (!stopMaintenance.get()) {
+                runMaintenanceLoop(clock, pool, 1);
               }
             })
         .start();

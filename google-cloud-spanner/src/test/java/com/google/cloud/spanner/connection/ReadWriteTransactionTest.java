@@ -24,6 +24,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -32,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -49,7 +52,11 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.ResultSetStats;
+import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,12 +72,12 @@ public class ReadWriteTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   private static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
     private CommitBehavior commitBehavior;
 
@@ -89,7 +96,7 @@ public class ReadWriteTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitTimestamp = Timestamp.now();
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -98,7 +105,8 @@ public class ReadWriteTransactionTest {
         case ABORT:
           state = TransactionState.COMMIT_FAILED;
           commitBehavior = CommitBehavior.SUCCEED;
-          throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "commit aborted");
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.ABORTED, "commit aborted", createAbortedExceptionWithMinimalRetry());
         default:
           throw new IllegalStateException();
       }
@@ -116,7 +124,11 @@ public class ReadWriteTransactionTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+    }
+
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -406,7 +418,7 @@ public class ReadWriteTransactionTest {
 
   private enum RetryResults {
     SAME,
-    DIFFERENT;
+    DIFFERENT
   }
 
   @Test
@@ -444,7 +456,9 @@ public class ReadWriteTransactionTest {
       }
 
       // first abort, then do nothing
-      doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "commit aborted"))
+      doThrow(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED, "commit aborted", createAbortedExceptionWithMinimalRetry()))
           .doNothing()
           .when(txManager)
           .commit();
@@ -501,7 +515,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -511,7 +525,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -531,7 +545,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -541,7 +555,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -562,7 +576,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -572,7 +586,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -594,7 +608,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -604,7 +618,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -614,7 +628,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(3l)
+                    .to(3L)
                     .set("NAME")
                     .to("TEST 3")
                     .set("AMOUNT")
@@ -660,13 +674,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 4L})
                     .build()));
@@ -680,13 +694,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 5L})
                     .build()));
@@ -699,5 +713,51 @@ public class ReadWriteTransactionTest {
     rs1.next();
     rs2.next();
     assertThat(rs1.getChecksum(), is(not(equalTo(rs2.getChecksum()))));
+  }
+
+  @Test
+  public void testGetCommitResponseBeforeCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    try {
+      transaction.getCommitResponse();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    get(transaction.commitAsync());
+
+    assertNotNull(transaction.getCommitResponse());
+    assertNotNull(transaction.getCommitResponseOrNull());
+  }
+
+  private static StatusRuntimeException createAbortedExceptionWithMinimalRetry() {
+    Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(com.google.protobuf.Duration.newBuilder().setNanos(1).setSeconds(0L))
+            .build();
+    trailers.put(key, retryInfo);
+    return io.grpc.Status.ABORTED.asRuntimeException(trailers);
   }
 }

@@ -284,6 +284,16 @@ public final class ResultSets {
     }
 
     @Override
+    public Value getValue(int columnIndex) {
+      return getCurrentRowAsStruct().getValue(columnIndex);
+    }
+
+    @Override
+    public Value getValue(String columnName) {
+      return getCurrentRowAsStruct().getValue(columnName);
+    }
+
+    @Override
     public boolean[] getBooleanArray(int columnIndex) {
       return getCurrentRowAsStruct().getBooleanArray(columnIndex);
     }

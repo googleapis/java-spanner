@@ -37,6 +37,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
@@ -175,14 +176,11 @@ class SessionPool {
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                synchronized (lock) {
-                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
-                    // All async operations for this read context have finished.
-                    AutoClosingReadContext.this.close();
-                  }
+            () -> {
+              synchronized (lock) {
+                if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                  // All async operations for this read context have finished.
+                  AutoClosingReadContext.this.close();
                 }
               }
             };
@@ -204,7 +202,7 @@ class SessionPool {
     private final boolean isSingleUse;
     private final AtomicInteger asyncOperationsCount = new AtomicInteger();
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
@@ -815,13 +813,21 @@ class SessionPool {
     }
 
     @Override
-    public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
-      session = sessionPool.replaceSession(notFound, session);
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
+      session = sessionPool.replaceSession(notFoundException, session);
       PooledSession pooledSession = session.get();
       delegate = pooledSession.delegate.transactionManager(options);
       restartedAfterSessionNotFound = true;
+      return createAbortedExceptionWithMinimalRetryDelay(notFoundException);
+    }
+
+    private static SpannerException createAbortedExceptionWithMinimalRetryDelay(
+        SessionNotFoundException notFoundException) {
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), notFound);
+          ErrorCode.ABORTED,
+          notFoundException.getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+              notFoundException.getMessage(), notFoundException, 0, 1));
     }
 
     @Override
@@ -860,7 +866,7 @@ class SessionPool {
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
           PooledSession pooledSession = session.get();
-          delegate = pooledSession.delegate.transactionManager();
+          delegate = pooledSession.delegate.transactionManager(options);
           restartedAfterSessionNotFound = true;
         }
       }
@@ -869,6 +875,11 @@ class SessionPool {
     @Override
     public Timestamp getCommitTimestamp() {
       return delegate.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return delegate.getCommitResponse();
     }
 
     @Override
@@ -950,6 +961,11 @@ class SessionPool {
     }
 
     @Override
+    public CommitResponse getCommitResponse() {
+      return getRunner().getCommitResponse();
+    }
+
+    @Override
     public TransactionRunner allowNestedTransaction() {
       getRunner().allowNestedTransaction();
       return this;
@@ -960,7 +976,7 @@ class SessionPool {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
     private final TransactionOption[] options;
-    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private SettableApiFuture<CommitResponse> commitResponse;
 
     private SessionPoolAsyncRunner(
         SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
@@ -971,67 +987,80 @@ class SessionPool {
 
     @Override
     public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerException exception = null;
-              R r = null;
-              AsyncRunner runner = null;
-              while (true) {
-                SpannerException se = null;
-                try {
-                  runner = session.get().runAsync(options);
-                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
-                  break;
-                } catch (ExecutionException e) {
-                  se = SpannerExceptionFactory.asSpannerException(e.getCause());
-                } catch (InterruptedException e) {
-                  se = SpannerExceptionFactory.propagateInterrupt(e);
-                } catch (Throwable t) {
-                  se = SpannerExceptionFactory.newSpannerException(t);
-                } finally {
-                  if (se instanceof SessionNotFoundException) {
-                    try {
-                      // The replaceSession method will re-throw the SessionNotFoundException if the
-                      // session cannot be replaced with a new one.
-                      session = sessionPool.replaceSession((SessionNotFoundException) se, session);
-                      se = null;
-                    } catch (SessionNotFoundException e) {
-                      exception = e;
-                      break;
-                    }
-                  } else {
-                    exception = se;
+          () -> {
+            SpannerException exception = null;
+            R r = null;
+            AsyncRunner runner = null;
+            while (true) {
+              SpannerException se = null;
+              try {
+                runner = session.get().runAsync(options);
+                r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
+                break;
+              } catch (ExecutionException e) {
+                se = SpannerExceptionFactory.asSpannerException(e.getCause());
+              } catch (InterruptedException e) {
+                se = SpannerExceptionFactory.propagateInterrupt(e);
+              } catch (Throwable t) {
+                se = SpannerExceptionFactory.newSpannerException(t);
+              } finally {
+                if (se instanceof SessionNotFoundException) {
+                  try {
+                    // The replaceSession method will re-throw the SessionNotFoundException if the
+                    // session cannot be replaced with a new one.
+                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                    se = null;
+                  } catch (SessionNotFoundException e) {
+                    exception = e;
                     break;
                   }
+                } else {
+                  exception = se;
+                  break;
                 }
               }
-              session.get().markUsed();
-              session.close();
-              setCommitTimestamp(runner);
-              if (exception != null) {
-                res.setException(exception);
-              } else {
-                res.set(r);
-              }
+            }
+            session.get().markUsed();
+            session.close();
+            setCommitResponse(runner);
+            if (exception != null) {
+              res.setException(exception);
+            } else {
+              res.set(r);
             }
           });
       return res;
     }
 
-    private void setCommitTimestamp(AsyncRunner delegate) {
+    private void setCommitResponse(AsyncRunner delegate) {
       try {
-        commitTimestamp.set(delegate.getCommitTimestamp().get());
+        commitResponse.set(delegate.getCommitResponse().get());
       } catch (Throwable t) {
-        commitTimestamp.setException(t);
+        commitResponse.setException(t);
       }
     }
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
-      return commitTimestamp;
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return ApiFutures.transform(
+          commitResponse,
+          new ApiFunction<CommitResponse, Timestamp>() {
+            @Override
+            public Timestamp apply(CommitResponse input) {
+              return input.getCommitTimestamp();
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ApiFuture<CommitResponse> getCommitResponse() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return commitResponse;
     }
   }
 
@@ -1587,10 +1616,10 @@ class SessionPool {
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
-    private final Duration keepAliveMilis =
+    private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
@@ -1608,15 +1637,7 @@ class SessionPool {
       synchronized (lock) {
         scheduledFuture =
             executor.scheduleAtFixedRate(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    maintainPool();
-                  }
-                },
-                loopFrequency,
-                loopFrequency,
-                TimeUnit.MILLISECONDS);
+                this::maintainPool, loopFrequency, loopFrequency, TimeUnit.MILLISECONDS);
       }
     }
 
@@ -1695,7 +1716,7 @@ class SessionPool {
                         / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
@@ -1728,9 +1749,9 @@ class SessionPool {
     }
   }
 
-  private static enum Position {
+  private enum Position {
     FIRST,
-    RANDOM;
+    RANDOM
   }
 
   private final SessionPoolOptions options;
@@ -2037,7 +2058,7 @@ class SessionPool {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
-      span.addAnnotation(String.format("Waiting for a session to come available"));
+      span.addAnnotation("Waiting for a session to come available");
       sessionFuture = waiter;
     } else {
       SettableFuture<PooledSession> fut = SettableFuture.create();
@@ -2202,14 +2223,7 @@ class SessionPool {
       }
     }
 
-    retFuture.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            executorFactory.release(executor);
-          }
-        },
-        MoreExecutors.directExecutor());
+    retFuture.addListener(() -> executorFactory.release(executor), MoreExecutors.directExecutor());
     return retFuture;
   }
 
@@ -2229,20 +2243,17 @@ class SessionPool {
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            synchronized (lock) {
-              allSessions.remove(sess);
-              if (isClosed()) {
-                decrementPendingClosures(1);
-                return;
-              }
-              // Create a new session if needed to unblock some waiter.
-              if (numWaiters() > numSessionsBeingCreated) {
-                createSessions(
-                    getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
-              }
+        () -> {
+          synchronized (lock) {
+            allSessions.remove(sess);
+            if (isClosed()) {
+              decrementPendingClosures(1);
+              return;
+            }
+            // Create a new session if needed to unblock some waiter.
+            if (numWaiters() > numSessionsBeingCreated) {
+              createSessions(
+                  getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
             }
           }
         },

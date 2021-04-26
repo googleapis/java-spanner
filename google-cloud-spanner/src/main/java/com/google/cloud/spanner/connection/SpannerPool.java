@@ -25,6 +25,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
@@ -62,6 +63,15 @@ public class SpannerPool {
   private static final String CONNECTION_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final Logger logger = Logger.getLogger(SpannerPool.class.getName());
 
+  private static final Function<Spanner, Void> DEFAULT_CLOSE_FUNCTION =
+      new Function<Spanner, Void>() {
+        @Override
+        public Void apply(Spanner spanner) {
+          spanner.close();
+          return null;
+        }
+      };
+
   /**
    * Closes the default {@link SpannerPool} and all {@link Spanner} instances that have been opened
    * by connections and that are still open. Call this method at the end of your application to
@@ -86,7 +96,7 @@ public class SpannerPool {
   @VisibleForTesting
   enum CheckAndCloseSpannersMode {
     WARN,
-    ERROR;
+    ERROR
   }
 
   private final class CloseSpannerRunnable implements Runnable {
@@ -94,7 +104,7 @@ public class SpannerPool {
     public void run() {
       try {
         checkAndCloseSpanners(CheckAndCloseSpannersMode.WARN);
-      } catch (Exception e) {
+      } catch (Throwable e) {
         // ignore
       }
     }
@@ -281,11 +291,8 @@ public class SpannerPool {
         spanner = createSpanner(key, options);
         spanners.put(key, spanner);
       }
-      List<ConnectionImpl> registeredConnectionsForSpanner = connections.get(key);
-      if (registeredConnectionsForSpanner == null) {
-        registeredConnectionsForSpanner = new ArrayList<>();
-        connections.put(key, registeredConnectionsForSpanner);
-      }
+      List<ConnectionImpl> registeredConnectionsForSpanner =
+          connections.computeIfAbsent(key, k -> new ArrayList<>());
       registeredConnectionsForSpanner.add(connection);
       lastConnectionClosedAt.remove(key);
       return spanner;
@@ -395,6 +402,12 @@ public class SpannerPool {
 
   @VisibleForTesting
   void checkAndCloseSpanners(CheckAndCloseSpannersMode mode) {
+    checkAndCloseSpanners(mode, DEFAULT_CLOSE_FUNCTION);
+  }
+
+  @VisibleForTesting
+  void checkAndCloseSpanners(
+      CheckAndCloseSpannersMode mode, Function<Spanner, Void> closeSpannerFunction) {
     List<SpannerPoolKey> keysStillInUse = new ArrayList<>();
     synchronized (this) {
       for (Entry<SpannerPoolKey, Spanner> entry : spanners.entrySet()) {
@@ -416,7 +429,7 @@ public class SpannerPool {
           // Force close all Spanner instances by passing in a value that will always be less than
           // the
           // difference between the current time and the close time of a connection.
-          closeUnusedSpanners(Long.MIN_VALUE);
+          closeUnusedSpanners(Long.MIN_VALUE, closeSpannerFunction);
         } else {
           logLeakedConnections(keysStillInUse);
           throw SpannerExceptionFactory.newSpannerException(
@@ -456,6 +469,11 @@ public class SpannerPool {
    */
   @VisibleForTesting
   void closeUnusedSpanners(long closeSpannerAfterMillisecondsUnused) {
+    closeUnusedSpanners(closeSpannerAfterMillisecondsUnused, DEFAULT_CLOSE_FUNCTION);
+  }
+
+  void closeUnusedSpanners(
+      long closeSpannerAfterMillisecondsUnused, Function<Spanner, Void> closeSpannerFunction) {
     List<SpannerPoolKey> keysToBeRemoved = new ArrayList<>();
     synchronized (this) {
       for (Entry<SpannerPoolKey, Long> entry : lastConnectionClosedAt.entrySet()) {
@@ -463,13 +481,14 @@ public class SpannerPool {
         // Check whether the last connection was closed more than
         // closeSpannerAfterMillisecondsUnused milliseconds ago.
         if (closedAt != null
-            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS)
-                    - closedAt.longValue()))
+            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS) - closedAt))
                 > closeSpannerAfterMillisecondsUnused) {
           Spanner spanner = spanners.get(entry.getKey());
           if (spanner != null) {
             try {
-              spanner.close();
+              closeSpannerFunction.apply(spanner);
+            } catch (Throwable t) {
+              // Ignore any errors and continue with the next one in the pool.
             } finally {
               // Even if the close operation failed, we should remove the spanner object as it is no
               // longer valid.
@@ -482,13 +501,6 @@ public class SpannerPool {
       for (SpannerPoolKey key : keysToBeRemoved) {
         lastConnectionClosedAt.remove(key);
       }
-    }
-  }
-
-  @VisibleForTesting
-  int getCurrentSpannerCount() {
-    synchronized (this) {
-      return spanners.size();
     }
   }
 }

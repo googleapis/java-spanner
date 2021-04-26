@@ -48,7 +48,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
         throws SpannerException {}
 
     @Override
-    public void onError(SpannerException e, boolean withBeginTransaction) {}
+    public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+      return e;
+    }
 
     @Override
     public void onDone(boolean withBeginTransaction) {}

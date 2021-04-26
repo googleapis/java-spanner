@@ -26,7 +26,6 @@ import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -270,12 +269,9 @@ public class SpanTest {
   public void transactionRunner() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          return null;
         });
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
@@ -290,12 +286,9 @@ public class SpanTest {
     TransactionRunner runner = client.readWriteTransaction();
     try {
       runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-              return null;
-            }
+          transaction -> {
+            transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+            return null;
           });
       fail("missing expected exception");
     } catch (SpannerException e) {

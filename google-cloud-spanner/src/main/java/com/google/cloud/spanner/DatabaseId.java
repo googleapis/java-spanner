@@ -35,7 +35,7 @@ public final class DatabaseId {
     this.database = Preconditions.checkNotNull(database);
   }
 
-  /** Returns the instance id for this databse. */
+  /** Returns the instance id for this database. */
   public InstanceId getInstanceId() {
     return instanceId;
   }

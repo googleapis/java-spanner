@@ -124,7 +124,8 @@ public interface CreateBackupMetadataOrBuilder
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -146,7 +147,8 @@ public interface CreateBackupMetadataOrBuilder
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -168,7 +170,8 @@ public interface CreateBackupMetadataOrBuilder
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *

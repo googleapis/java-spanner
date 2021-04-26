@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -26,7 +27,13 @@ import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import com.google.spanner.admin.database.v1.EncryptionInfo;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +49,22 @@ public class DatabaseTest {
   private static final String NAME =
       "projects/test-project/instances/test-instance/databases/database-1";
 
+  private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
+  private static final String VERSION_RETENTION_PERIOD = "7d";
+  private static final String KMS_KEY_NAME = "kms-key-name";
+  private static final String KMS_KEY_VERSION = "kms-key-version";
+  private static final com.google.spanner.admin.database.v1.EncryptionConfig ENCRYPTION_CONFIG =
+      com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+          .setKmsKeyName(KMS_KEY_NAME)
+          .build();
+  private static final List<EncryptionInfo> ENCRYPTION_INFOS =
+      Collections.singletonList(
+          EncryptionInfo.newBuilder()
+              .setEncryptionType(EncryptionInfo.Type.CUSTOMER_MANAGED_ENCRYPTION)
+              .setEncryptionStatus(Status.newBuilder().setCode(Code.OK.getNumber()))
+              .setKmsKeyVersion(KMS_KEY_VERSION)
+              .build());
+
   @Mock DatabaseAdminClient dbClient;
 
   @Before
@@ -55,18 +78,27 @@ public class DatabaseTest {
                 return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
               }
             });
+    when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
+        .thenAnswer(
+            new Answer<Database.Builder>() {
+              @Override
+              public Database.Builder answer(InvocationOnMock invocation) throws Throwable {
+                return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
+              }
+            });
   }
 
   @Test
   public void backup() {
     Timestamp expireTime = Timestamp.now();
     Database db = createDatabase();
-    db.backup(
+    Backup backup =
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .setExpireTime(expireTime)
-            .build());
-    verify(dbClient).createBackup("test-instance", "test-backup", "database-1", expireTime);
+            .build();
+    db.backup(backup);
+    verify(dbClient).createBackup(backup.toBuilder().setDatabase(db.getId()).build());
   }
 
   @Test
@@ -82,6 +114,40 @@ public class DatabaseTest {
     Database db = createDatabase();
     assertThat(db.getId().getName()).isEqualTo(NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
+    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
+    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
+    assertThat(db.getEncryptionConfig())
+        .isEqualTo(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME));
+  }
+
+  @Test
+  public void testFromProtoWithEncryptionConfig() {
+    com.google.spanner.admin.database.v1.Database proto =
+        com.google.spanner.admin.database.v1.Database.newBuilder()
+            .setName(NAME)
+            .setEncryptionConfig(
+                com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+                    .setKmsKeyName("some-key")
+                    .build())
+            .build();
+    Database db = Database.fromProto(proto, dbClient);
+    assertThat(db.getEncryptionConfig()).isNotNull();
+    assertThat(db.getEncryptionConfig().getKmsKeyName()).isEqualTo("some-key");
+  }
+
+  @Test
+  public void testBuildWithEncryptionConfig() {
+    Database db =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setEncryptionConfig(
+                EncryptionConfigs.customerManagedEncryption(
+                    "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+            .build();
+    assertThat(db.getEncryptionConfig()).isNotNull();
+    assertThat(db.getEncryptionConfig().getKmsKeyName())
+        .isEqualTo(
+            "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key");
   }
 
   @Test
@@ -114,11 +180,24 @@ public class DatabaseTest {
     verify(dbClient).testDatabaseIAMPermissions("test-instance", "test-database", permissions);
   }
 
+  @Test
+  public void testEqualsAndHashCode() {
+    final Database database1 = createDatabase();
+    final Database database2 = createDatabase();
+
+    assertEquals(database1, database2);
+    assertEquals(database1.hashCode(), database2.hashCode());
+  }
+
   private Database createDatabase() {
     com.google.spanner.admin.database.v1.Database proto =
         com.google.spanner.admin.database.v1.Database.newBuilder()
             .setName(NAME)
             .setState(com.google.spanner.admin.database.v1.Database.State.CREATING)
+            .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+            .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+            .setEncryptionConfig(ENCRYPTION_CONFIG)
+            .addAllEncryptionInfo(ENCRYPTION_INFOS)
             .build();
     return Database.fromProto(proto, dbClient);
   }

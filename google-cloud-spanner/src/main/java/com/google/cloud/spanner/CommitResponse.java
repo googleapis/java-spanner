@@ -17,20 +17,43 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.common.base.Preconditions;
 import java.util.Objects;
 
 /** Represents a response from a commit operation. */
 public class CommitResponse {
 
-  private final Timestamp commitTimestamp;
+  private final com.google.spanner.v1.CommitResponse proto;
 
   public CommitResponse(Timestamp commitTimestamp) {
-    this.commitTimestamp = commitTimestamp;
+    this.proto =
+        com.google.spanner.v1.CommitResponse.newBuilder()
+            .setCommitTimestamp(commitTimestamp.toProto())
+            .build();
   }
 
-  /** Returns a {@link Timestamp} representing the commit time of the write operation. */
+  CommitResponse(com.google.spanner.v1.CommitResponse proto) {
+    this.proto = Preconditions.checkNotNull(proto);
+  }
+
+  /** Returns a {@link Timestamp} representing the commit time of the transaction. */
   public Timestamp getCommitTimestamp() {
-    return commitTimestamp;
+    return Timestamp.fromProto(proto.getCommitTimestamp());
+  }
+
+  /** @return true if the {@link CommitResponse} includes {@link CommitStats} */
+  public boolean hasCommitStats() {
+    return proto.hasCommitStats();
+  }
+
+  /**
+   * Commit statistics are returned by a read/write transaction if specifically requested by passing
+   * in {@link Options#commitStats()} to the transaction.
+   */
+  public CommitStats getCommitStats() {
+    Preconditions.checkState(
+        proto.hasCommitStats(), "The CommitResponse does not contain any commit statistics.");
+    return CommitStats.fromProto(proto.getCommitStats());
   }
 
   @Override
@@ -42,11 +65,11 @@ public class CommitResponse {
       return false;
     }
     CommitResponse that = (CommitResponse) o;
-    return Objects.equals(commitTimestamp, that.commitTimestamp);
+    return Objects.equals(proto, that.proto);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(commitTimestamp);
+    return Objects.hash(proto);
   }
 }

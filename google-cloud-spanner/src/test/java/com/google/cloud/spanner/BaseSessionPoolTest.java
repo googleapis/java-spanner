@@ -24,7 +24,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
-import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.protobuf.Empty;
@@ -67,14 +66,14 @@ abstract class BaseSessionPoolTest {
             "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);
     when(session.asyncClose()).thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(session.writeWithOptions(any(Iterable.class)))
-        .thenReturn(new CommitResponse(Timestamp.now()));
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
     when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
-        .thenReturn(new CommitResponse(Timestamp.now()));
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
     sessionIndex++;
     return session;
   }
 
-  void runMaintainanceLoop(FakeClock clock, SessionPool pool, long numCycles) {
+  void runMaintenanceLoop(FakeClock clock, SessionPool pool, long numCycles) {
     for (int i = 0; i < numCycles; i++) {
       pool.poolMaintainer.maintainPool();
       clock.currentTimeMillis += pool.poolMaintainer.loopFrequency;

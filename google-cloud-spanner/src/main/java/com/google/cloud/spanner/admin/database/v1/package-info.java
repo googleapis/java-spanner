@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,13 @@
  * list backups for a database and to restore from an existing backup.
  *
  * <p>Sample for DatabaseAdminClient:
+ *
+ * <pre>{@code
+ * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+ *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Database response = databaseAdminClient.getDatabase(name);
+ * }
+ * }</pre>
  */
 @Generated("by gapic-generator-java")
 package com.google.cloud.spanner.admin.database.v1;

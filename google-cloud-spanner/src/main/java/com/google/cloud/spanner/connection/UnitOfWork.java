@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
@@ -36,7 +37,7 @@ interface UnitOfWork {
   /** A unit of work can be either a transaction or a DDL/DML batch. */
   enum Type {
     TRANSACTION,
-    BATCH;
+    BATCH
   }
 
   enum UnitOfWorkState {
@@ -141,6 +142,18 @@ interface UnitOfWork {
 
   /** @return the commit timestamp of this transaction or null if there is no commit timestamp. */
   Timestamp getCommitTimestampOrNull();
+
+  /**
+   * @return the {@link CommitResponse} of this transaction
+   * @throws SpannerException if there is no {@link CommitResponse}
+   */
+  CommitResponse getCommitResponse();
+
+  /**
+   * @return the {@link CommitResponse} of this transaction or null if there is no {@link
+   *     CommitResponse}
+   */
+  CommitResponse getCommitResponseOrNull();
 
   /**
    * Executes the specified DDL statements in this unit of work. For DDL batches, this will mean

@@ -25,6 +25,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -73,22 +74,38 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public Database.Builder newDatabaseBuilder(DatabaseId databaseId) {
+    return new Database.Builder(this, databaseId);
+  }
+
+  @Override
   public Backup.Builder newBackupBuilder(BackupId backupId) {
     return new Backup.Builder(this, backupId);
+  }
+
+  @Override
+  public Restore.Builder newRestoreBuilder(BackupId source, DatabaseId destination) {
+    return new Restore.Builder(source, destination);
   }
 
   @Override
   public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
       throws SpannerException {
-    String databaseInstanceName = getInstanceName(restoreInstanceId);
-    String backupName = getBackupName(backupInstanceId, backupId);
+    return restoreDatabase(
+        newRestoreBuilder(
+                BackupId.of(projectId, backupInstanceId, backupId),
+                DatabaseId.of(projectId, restoreInstanceId, restoreDatabaseId))
+            .build());
+  }
 
-    OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
-        rawOperationFuture =
-            rpc.restoreDatabase(databaseInstanceName, restoreDatabaseId, backupName);
+  @Override
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore)
+      throws SpannerException {
+    final OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
+        rawOperationFuture = rpc.restoreDatabase(restore);
 
-    return new OperationFutureImpl<Database, RestoreDatabaseMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Database>() {
@@ -114,16 +131,27 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
       String instanceId, String backupId, String databaseId, Timestamp expireTime)
       throws SpannerException {
-    com.google.spanner.admin.database.v1.Backup backup =
-        com.google.spanner.admin.database.v1.Backup.newBuilder()
-            .setDatabase(getDatabaseName(instanceId, databaseId))
-            .setExpireTime(expireTime.toProto())
+    final Backup backupInfo =
+        newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
+            .setExpireTime(expireTime)
             .build();
-    String instanceName = getInstanceName(instanceId);
-    OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
-        rawOperationFuture = rpc.createBackup(instanceName, backupId, backup);
 
-    return new OperationFutureImpl<Backup, CreateBackupMetadata>(
+    return createBackup(backupInfo);
+  }
+
+  @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backupInfo)
+      throws SpannerException {
+    Preconditions.checkArgument(
+        backupInfo.getExpireTime() != null, "Cannot create a backup without an expire time");
+    Preconditions.checkArgument(
+        backupInfo.getDatabase() != null, "Cannot create a backup without a source database");
+
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
+        rawOperationFuture = rpc.createBackup(backupInfo);
+
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Backup>() {
@@ -137,7 +165,9 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
                 com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
                     .setName(proto.getName())
                     .setExpireTime(proto.getExpireTime())
+                    .setVersionTime(proto.getVersionTime())
                     .setState(proto.getState())
+                    .setEncryptionInfo(proto.getEncryptionInfo())
                     .build(),
                 DatabaseAdminClientImpl.this);
           }
@@ -265,12 +295,20 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   @Override
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException {
-    // CreateDatabase() is not idempotent, so we're not retrying this request.
-    String instanceName = getInstanceName(instanceId);
-    String createStatement = "CREATE DATABASE `" + databaseId + "`";
+    return createDatabase(
+        new Database(DatabaseId.of(projectId, instanceId, databaseId), State.UNSPECIFIED, this),
+        statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      Database database, Iterable<String> statements) throws SpannerException {
+    String createStatement = "CREATE DATABASE `" + database.getId().getDatabase() + "`";
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
-        rawOperationFuture = rpc.createDatabase(instanceName, createStatement, statements);
-    return new OperationFutureImpl<Database, CreateDatabaseMetadata>(
+        rawOperationFuture =
+            rpc.createDatabase(
+                database.getId().getInstanceId().getName(), createStatement, statements, database);
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Database>() {
@@ -309,7 +347,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
         rpc.updateDatabaseDdl(dbName, statements, opId);
-    return new OperationFutureImpl<Void, UpdateDatabaseDdlMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
         new ApiFunction<OperationSnapshot, Void>() {

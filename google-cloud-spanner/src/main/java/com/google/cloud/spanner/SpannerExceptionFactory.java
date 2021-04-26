@@ -24,9 +24,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.ResourceInfo;
+import com.google.rpc.RetryInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
@@ -226,6 +228,28 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
+  /**
+   * Creates a {@link StatusRuntimeException} that contains a {@link RetryInfo} with the specified
+   * retry delay.
+   */
+  static StatusRuntimeException createAbortedExceptionWithRetryDelay(
+      String message, Throwable cause, long retryDelaySeconds, int retryDelayNanos) {
+    Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos(retryDelayNanos)
+                    .setSeconds(retryDelaySeconds))
+            .build();
+    trailers.put(key, retryInfo);
+    return io.grpc.Status.ABORTED
+        .withDescription(message)
+        .withCause(cause)
+        .asRuntimeException(trailers);
+  }
+
   static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
     // This is the one place in the codebase that is allowed to call constructors directly.
@@ -246,12 +270,13 @@ public final class SpannerExceptionFactory {
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
         if (resourceInfo != null) {
-          if (resourceInfo.getResourceType().equals(SESSION_RESOURCE_TYPE)) {
-            return new SessionNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(DATABASE_RESOURCE_TYPE)) {
-            return new DatabaseNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(INSTANCE_RESOURCE_TYPE)) {
-            return new InstanceNotFoundException(token, message, resourceInfo, cause);
+          switch (resourceInfo.getResourceType()) {
+            case SESSION_RESOURCE_TYPE:
+              return new SessionNotFoundException(token, message, resourceInfo, cause);
+            case DATABASE_RESOURCE_TYPE:
+              return new DatabaseNotFoundException(token, message, resourceInfo, cause);
+            case INSTANCE_RESOURCE_TYPE:
+              return new InstanceNotFoundException(token, message, resourceInfo, cause);
           }
         }
         // Fall through to the default.

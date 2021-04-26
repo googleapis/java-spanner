@@ -175,6 +175,22 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
               break;
             }
+          case 90:
+            {
+              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
+              if (requestOptions_ != null) {
+                subBuilder = requestOptions_.toBuilder();
+              }
+              requestOptions_ =
+                  input.readMessage(
+                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(requestOptions_);
+                requestOptions_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -393,15 +409,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * An option to control the selection of optimizer version.
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     * Specifying "latest" as a value instructs Cloud Spanner to use the
+     * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
-     * uses optimizer version set at the database level options. Any other
+     * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
      * The list of supported optimizer versions can be queried from
-     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-     * with an invalid optimizer version will fail with a syntax error
-     * (`INVALID_ARGUMENT`) status.
+     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+     * Executing a SQL statement with an invalid optimizer version fails with
+     * an `INVALID_ARGUMENT` error.
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
@@ -420,15 +436,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * An option to control the selection of optimizer version.
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     * Specifying "latest" as a value instructs Cloud Spanner to use the
+     * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
-     * uses optimizer version set at the database level options. Any other
+     * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
      * The list of supported optimizer versions can be queried from
-     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-     * with an invalid optimizer version will fail with a syntax error
-     * (`INVALID_ARGUMENT`) status.
+     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+     * Executing a SQL statement with an invalid optimizer version fails with
+     * an `INVALID_ARGUMENT` error.
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
@@ -440,6 +456,65 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * @return The bytes for optimizerVersion.
      */
     com.google.protobuf.ByteString getOptimizerVersionBytes();
+
+    /**
+     *
+     *
+     * <pre>
+     * An option to control the selection of optimizer statistics package.
+     * This parameter allows individual queries to use a different query
+     * optimizer statistics package.
+     * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+     * generated statistics package. If not specified, Cloud Spanner uses
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
+     * The statistics package requested by the query has to be exempt from
+     * garbage collection. This can be achieved with the following DDL
+     * statement:
+     * ```
+     * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+     * ```
+     * The list of available statistics packages can be queried from
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+     * Executing a SQL statement with an invalid optimizer statistics package
+     * or with a statistics package that allows garbage collection fails with
+     * an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The optimizerStatisticsPackage.
+     */
+    java.lang.String getOptimizerStatisticsPackage();
+    /**
+     *
+     *
+     * <pre>
+     * An option to control the selection of optimizer statistics package.
+     * This parameter allows individual queries to use a different query
+     * optimizer statistics package.
+     * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+     * generated statistics package. If not specified, Cloud Spanner uses
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
+     * The statistics package requested by the query has to be exempt from
+     * garbage collection. This can be achieved with the following DDL
+     * statement:
+     * ```
+     * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+     * ```
+     * The list of available statistics packages can be queried from
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+     * Executing a SQL statement with an invalid optimizer statistics package
+     * or with a statistics package that allows garbage collection fails with
+     * an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The bytes for optimizerStatisticsPackage.
+     */
+    com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes();
   }
   /**
    *
@@ -462,6 +537,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     private QueryOptions() {
       optimizerVersion_ = "";
+      optimizerStatisticsPackage_ = "";
     }
 
     @java.lang.Override
@@ -498,6 +574,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 java.lang.String s = input.readStringRequireUtf8();
 
                 optimizerVersion_ = s;
+                break;
+              }
+            case 18:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+
+                optimizerStatisticsPackage_ = s;
                 break;
               }
             default:
@@ -543,15 +626,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * An option to control the selection of optimizer version.
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     * Specifying "latest" as a value instructs Cloud Spanner to use the
+     * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
-     * uses optimizer version set at the database level options. Any other
+     * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
      * The list of supported optimizer versions can be queried from
-     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-     * with an invalid optimizer version will fail with a syntax error
-     * (`INVALID_ARGUMENT`) status.
+     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+     * Executing a SQL statement with an invalid optimizer version fails with
+     * an `INVALID_ARGUMENT` error.
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
@@ -581,15 +664,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * An option to control the selection of optimizer version.
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     * Specifying "latest" as a value instructs Cloud Spanner to use the
+     * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
-     * uses optimizer version set at the database level options. Any other
+     * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
      * The list of supported optimizer versions can be queried from
-     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-     * with an invalid optimizer version will fail with a syntax error
-     * (`INVALID_ARGUMENT`) status.
+     * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+     * Executing a SQL statement with an invalid optimizer version fails with
+     * an `INVALID_ARGUMENT` error.
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
@@ -613,6 +696,89 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
     }
 
+    public static final int OPTIMIZER_STATISTICS_PACKAGE_FIELD_NUMBER = 2;
+    private volatile java.lang.Object optimizerStatisticsPackage_;
+    /**
+     *
+     *
+     * <pre>
+     * An option to control the selection of optimizer statistics package.
+     * This parameter allows individual queries to use a different query
+     * optimizer statistics package.
+     * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+     * generated statistics package. If not specified, Cloud Spanner uses
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
+     * The statistics package requested by the query has to be exempt from
+     * garbage collection. This can be achieved with the following DDL
+     * statement:
+     * ```
+     * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+     * ```
+     * The list of available statistics packages can be queried from
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+     * Executing a SQL statement with an invalid optimizer statistics package
+     * or with a statistics package that allows garbage collection fails with
+     * an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The optimizerStatisticsPackage.
+     */
+    @java.lang.Override
+    public java.lang.String getOptimizerStatisticsPackage() {
+      java.lang.Object ref = optimizerStatisticsPackage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        optimizerStatisticsPackage_ = s;
+        return s;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * An option to control the selection of optimizer statistics package.
+     * This parameter allows individual queries to use a different query
+     * optimizer statistics package.
+     * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+     * generated statistics package. If not specified, Cloud Spanner uses
+     * the statistics package set at the database level options, or the latest
+     * package if the database option is not set.
+     * The statistics package requested by the query has to be exempt from
+     * garbage collection. This can be achieved with the following DDL
+     * statement:
+     * ```
+     * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+     * ```
+     * The list of available statistics packages can be queried from
+     * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+     * Executing a SQL statement with an invalid optimizer statistics package
+     * or with a statistics package that allows garbage collection fails with
+     * an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>string optimizer_statistics_package = 2;</code>
+     *
+     * @return The bytes for optimizerStatisticsPackage.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes() {
+      java.lang.Object ref = optimizerStatisticsPackage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        optimizerStatisticsPackage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
 
     @java.lang.Override
@@ -630,6 +796,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       if (!getOptimizerVersionBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, optimizerVersion_);
       }
+      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, optimizerStatisticsPackage_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -641,6 +810,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       size = 0;
       if (!getOptimizerVersionBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, optimizerVersion_);
+      }
+      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+        size +=
+            com.google.protobuf.GeneratedMessageV3.computeStringSize(
+                2, optimizerStatisticsPackage_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -659,6 +833,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           (com.google.spanner.v1.ExecuteSqlRequest.QueryOptions) obj;
 
       if (!getOptimizerVersion().equals(other.getOptimizerVersion())) return false;
+      if (!getOptimizerStatisticsPackage().equals(other.getOptimizerStatisticsPackage()))
+        return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -672,6 +848,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + OPTIMIZER_VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getOptimizerVersion().hashCode();
+      hash = (37 * hash) + OPTIMIZER_STATISTICS_PACKAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getOptimizerStatisticsPackage().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -822,6 +1000,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         super.clear();
         optimizerVersion_ = "";
 
+        optimizerStatisticsPackage_ = "";
+
         return this;
       }
 
@@ -850,6 +1030,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         com.google.spanner.v1.ExecuteSqlRequest.QueryOptions result =
             new com.google.spanner.v1.ExecuteSqlRequest.QueryOptions(this);
         result.optimizerVersion_ = optimizerVersion_;
+        result.optimizerStatisticsPackage_ = optimizerStatisticsPackage_;
         onBuilt();
         return result;
       }
@@ -906,6 +1087,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
           optimizerVersion_ = other.optimizerVersion_;
           onChanged();
         }
+        if (!other.getOptimizerStatisticsPackage().isEmpty()) {
+          optimizerStatisticsPackage_ = other.optimizerStatisticsPackage_;
+          onChanged();
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -944,15 +1129,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * An option to control the selection of optimizer version.
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       * Specifying "latest" as a value instructs Cloud Spanner to use the
+       * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
-       * uses optimizer version set at the database level options. Any other
+       * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
        * The list of supported optimizer versions can be queried from
-       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-       * with an invalid optimizer version will fail with a syntax error
-       * (`INVALID_ARGUMENT`) status.
+       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+       * Executing a SQL statement with an invalid optimizer version fails with
+       * an `INVALID_ARGUMENT` error.
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
@@ -981,15 +1166,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * An option to control the selection of optimizer version.
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       * Specifying "latest" as a value instructs Cloud Spanner to use the
+       * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
-       * uses optimizer version set at the database level options. Any other
+       * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
        * The list of supported optimizer versions can be queried from
-       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-       * with an invalid optimizer version will fail with a syntax error
-       * (`INVALID_ARGUMENT`) status.
+       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+       * Executing a SQL statement with an invalid optimizer version fails with
+       * an `INVALID_ARGUMENT` error.
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
@@ -1018,15 +1203,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * An option to control the selection of optimizer version.
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       * Specifying "latest" as a value instructs Cloud Spanner to use the
+       * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
-       * uses optimizer version set at the database level options. Any other
+       * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
        * The list of supported optimizer versions can be queried from
-       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-       * with an invalid optimizer version will fail with a syntax error
-       * (`INVALID_ARGUMENT`) status.
+       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+       * Executing a SQL statement with an invalid optimizer version fails with
+       * an `INVALID_ARGUMENT` error.
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
@@ -1054,15 +1239,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * An option to control the selection of optimizer version.
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       * Specifying "latest" as a value instructs Cloud Spanner to use the
+       * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
-       * uses optimizer version set at the database level options. Any other
+       * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
        * The list of supported optimizer versions can be queried from
-       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-       * with an invalid optimizer version will fail with a syntax error
-       * (`INVALID_ARGUMENT`) status.
+       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+       * Executing a SQL statement with an invalid optimizer version fails with
+       * an `INVALID_ARGUMENT` error.
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
@@ -1086,15 +1271,15 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        * An option to control the selection of optimizer version.
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       * Specifying "latest" as a value instructs Cloud Spanner to use the
+       * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
-       * uses optimizer version set at the database level options. Any other
+       * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
        * The list of supported optimizer versions can be queried from
-       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
-       * with an invalid optimizer version will fail with a syntax error
-       * (`INVALID_ARGUMENT`) status.
+       * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
+       * Executing a SQL statement with an invalid optimizer version fails with
+       * an `INVALID_ARGUMENT` error.
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
@@ -1113,6 +1298,197 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         checkByteStringIsUtf8(value);
 
         optimizerVersion_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object optimizerStatisticsPackage_ = "";
+      /**
+       *
+       *
+       * <pre>
+       * An option to control the selection of optimizer statistics package.
+       * This parameter allows individual queries to use a different query
+       * optimizer statistics package.
+       * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+       * generated statistics package. If not specified, Cloud Spanner uses
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
+       * The statistics package requested by the query has to be exempt from
+       * garbage collection. This can be achieved with the following DDL
+       * statement:
+       * ```
+       * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+       * ```
+       * The list of available statistics packages can be queried from
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+       * Executing a SQL statement with an invalid optimizer statistics package
+       * or with a statistics package that allows garbage collection fails with
+       * an `INVALID_ARGUMENT` error.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return The optimizerStatisticsPackage.
+       */
+      public java.lang.String getOptimizerStatisticsPackage() {
+        java.lang.Object ref = optimizerStatisticsPackage_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          optimizerStatisticsPackage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * An option to control the selection of optimizer statistics package.
+       * This parameter allows individual queries to use a different query
+       * optimizer statistics package.
+       * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+       * generated statistics package. If not specified, Cloud Spanner uses
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
+       * The statistics package requested by the query has to be exempt from
+       * garbage collection. This can be achieved with the following DDL
+       * statement:
+       * ```
+       * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+       * ```
+       * The list of available statistics packages can be queried from
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+       * Executing a SQL statement with an invalid optimizer statistics package
+       * or with a statistics package that allows garbage collection fails with
+       * an `INVALID_ARGUMENT` error.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return The bytes for optimizerStatisticsPackage.
+       */
+      public com.google.protobuf.ByteString getOptimizerStatisticsPackageBytes() {
+        java.lang.Object ref = optimizerStatisticsPackage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          optimizerStatisticsPackage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       *
+       *
+       * <pre>
+       * An option to control the selection of optimizer statistics package.
+       * This parameter allows individual queries to use a different query
+       * optimizer statistics package.
+       * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+       * generated statistics package. If not specified, Cloud Spanner uses
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
+       * The statistics package requested by the query has to be exempt from
+       * garbage collection. This can be achieved with the following DDL
+       * statement:
+       * ```
+       * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+       * ```
+       * The list of available statistics packages can be queried from
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+       * Executing a SQL statement with an invalid optimizer statistics package
+       * or with a statistics package that allows garbage collection fails with
+       * an `INVALID_ARGUMENT` error.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @param value The optimizerStatisticsPackage to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOptimizerStatisticsPackage(java.lang.String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+
+        optimizerStatisticsPackage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * An option to control the selection of optimizer statistics package.
+       * This parameter allows individual queries to use a different query
+       * optimizer statistics package.
+       * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+       * generated statistics package. If not specified, Cloud Spanner uses
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
+       * The statistics package requested by the query has to be exempt from
+       * garbage collection. This can be achieved with the following DDL
+       * statement:
+       * ```
+       * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+       * ```
+       * The list of available statistics packages can be queried from
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+       * Executing a SQL statement with an invalid optimizer statistics package
+       * or with a statistics package that allows garbage collection fails with
+       * an `INVALID_ARGUMENT` error.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearOptimizerStatisticsPackage() {
+
+        optimizerStatisticsPackage_ = getDefaultInstance().getOptimizerStatisticsPackage();
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * An option to control the selection of optimizer statistics package.
+       * This parameter allows individual queries to use a different query
+       * optimizer statistics package.
+       * Specifying `latest` as a value instructs Cloud Spanner to use the latest
+       * generated statistics package. If not specified, Cloud Spanner uses
+       * the statistics package set at the database level options, or the latest
+       * package if the database option is not set.
+       * The statistics package requested by the query has to be exempt from
+       * garbage collection. This can be achieved with the following DDL
+       * statement:
+       * ```
+       * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
+       * ```
+       * The list of available statistics packages can be queried from
+       * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
+       * Executing a SQL statement with an invalid optimizer statistics package
+       * or with a statistics package that allows garbage collection fails with
+       * an `INVALID_ARGUMENT` error.
+       * </pre>
+       *
+       * <code>string optimizer_statistics_package = 2;</code>
+       *
+       * @param value The bytes for optimizerStatisticsPackage to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOptimizerStatisticsPackageBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
+
+        optimizerStatisticsPackage_ = value;
         onChanged();
         return this;
       }
@@ -1692,6 +2068,54 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return getQueryOptions();
   }
 
+  public static final int REQUEST_OPTIONS_FIELD_NUMBER = 11;
+  private com.google.spanner.v1.RequestOptions requestOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   *
+   * @return Whether the requestOptions field is set.
+   */
+  @java.lang.Override
+  public boolean hasRequestOptions() {
+    return requestOptions_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   *
+   * @return The requestOptions.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptions getRequestOptions() {
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
+    return getRequestOptions();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1734,6 +2158,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (queryOptions_ != null) {
       output.writeMessage(10, getQueryOptions());
+    }
+    if (requestOptions_ != null) {
+      output.writeMessage(11, getRequestOptions());
     }
     unknownFields.writeTo(output);
   }
@@ -1781,6 +2208,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (queryOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(10, getQueryOptions());
     }
+    if (requestOptions_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1814,6 +2244,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (hasQueryOptions() != other.hasQueryOptions()) return false;
     if (hasQueryOptions()) {
       if (!getQueryOptions().equals(other.getQueryOptions())) return false;
+    }
+    if (hasRequestOptions() != other.hasRequestOptions()) return false;
+    if (hasRequestOptions()) {
+      if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -1853,6 +2287,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (hasQueryOptions()) {
       hash = (37 * hash) + QUERY_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getQueryOptions().hashCode();
+    }
+    if (hasRequestOptions()) {
+      hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getRequestOptions().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -2051,6 +2489,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         queryOptions_ = null;
         queryOptionsBuilder_ = null;
       }
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = null;
+      } else {
+        requestOptions_ = null;
+        requestOptionsBuilder_ = null;
+      }
       return this;
     }
 
@@ -2101,6 +2545,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         result.queryOptions_ = queryOptions_;
       } else {
         result.queryOptions_ = queryOptionsBuilder_.build();
+      }
+      if (requestOptionsBuilder_ == null) {
+        result.requestOptions_ = requestOptions_;
+      } else {
+        result.requestOptions_ = requestOptionsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -2180,6 +2629,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.hasQueryOptions()) {
         mergeQueryOptions(other.getQueryOptions());
+      }
+      if (other.hasRequestOptions()) {
+        mergeRequestOptions(other.getRequestOptions());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3624,6 +4076,191 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         queryOptions_ = null;
       }
       return queryOptionsBuilder_;
+    }
+
+    private com.google.spanner.v1.RequestOptions requestOptions_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        requestOptionsBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     *
+     * @return Whether the requestOptions field is set.
+     */
+    public boolean hasRequestOptions() {
+      return requestOptionsBuilder_ != null || requestOptions_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     *
+     * @return The requestOptions.
+     */
+    public com.google.spanner.v1.RequestOptions getRequestOptions() {
+      if (requestOptionsBuilder_ == null) {
+        return requestOptions_ == null
+            ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+            : requestOptions_;
+      } else {
+        return requestOptionsBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public Builder setRequestOptions(com.google.spanner.v1.RequestOptions value) {
+      if (requestOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        requestOptions_ = value;
+        onChanged();
+      } else {
+        requestOptionsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = builderForValue.build();
+        onChanged();
+      } else {
+        requestOptionsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
+      if (requestOptionsBuilder_ == null) {
+        if (requestOptions_ != null) {
+          requestOptions_ =
+              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          requestOptions_ = value;
+        }
+        onChanged();
+      } else {
+        requestOptionsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public Builder clearRequestOptions() {
+      if (requestOptionsBuilder_ == null) {
+        requestOptions_ = null;
+        onChanged();
+      } else {
+        requestOptions_ = null;
+        requestOptionsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
+
+      onChanged();
+      return getRequestOptionsFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
+      if (requestOptionsBuilder_ != null) {
+        return requestOptionsBuilder_.getMessageOrBuilder();
+      } else {
+        return requestOptions_ == null
+            ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+            : requestOptions_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Common options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.RequestOptions,
+            com.google.spanner.v1.RequestOptions.Builder,
+            com.google.spanner.v1.RequestOptionsOrBuilder>
+        getRequestOptionsFieldBuilder() {
+      if (requestOptionsBuilder_ == null) {
+        requestOptionsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.RequestOptions,
+                com.google.spanner.v1.RequestOptions.Builder,
+                com.google.spanner.v1.RequestOptionsOrBuilder>(
+                getRequestOptions(), getParentForChildren(), isClean());
+        requestOptions_ = null;
+      }
+      return requestOptionsBuilder_;
     }
 
     @java.lang.Override

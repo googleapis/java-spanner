@@ -936,11 +936,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   }
 
   public void addFilterMatches(String filter, String... names) {
-    Set<String> matches = filterMatches.get(filter);
-    if (matches == null) {
-      matches = new HashSet<>();
-      filterMatches.put(filter, matches);
-    }
+    Set<String> matches = filterMatches.computeIfAbsent(filter, k -> new HashSet<>());
     matches.addAll(Arrays.asList(names));
   }
 

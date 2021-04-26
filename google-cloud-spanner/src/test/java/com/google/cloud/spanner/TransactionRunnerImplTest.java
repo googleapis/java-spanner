@@ -30,7 +30,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionId;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Preconditions;
@@ -123,7 +122,7 @@ public class TransactionRunnerImplTest {
                 return builder.build();
               }
             });
-    transactionRunner = new TransactionRunnerImpl(session, rpc, 1);
+    transactionRunner = new TransactionRunnerImpl(session);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
             ApiFutures.immediateFuture(
@@ -191,15 +190,7 @@ public class TransactionRunnerImplTest {
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);
-      client
-          .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) {
-                  return null;
-                }
-              });
+      client.readWriteTransaction().run(transaction -> null);
       verify(rpc, times(1))
           .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
     }
@@ -209,12 +200,9 @@ public class TransactionRunnerImplTest {
   public void commitSucceeds() {
     final AtomicInteger numCalls = new AtomicInteger(0);
     transactionRunner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            numCalls.incrementAndGet();
-            return null;
-          }
+        transaction -> {
+          numCalls.incrementAndGet();
+          return null;
         });
     assertThat(numCalls.get()).isEqualTo(1);
     verify(txn, never()).ensureTxn();
@@ -235,12 +223,9 @@ public class TransactionRunnerImplTest {
     doThrow(error).doNothing().when(txn).commit();
     final AtomicInteger numCalls = new AtomicInteger(0);
     transactionRunner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            numCalls.incrementAndGet();
-            return null;
-          }
+        transaction -> {
+          numCalls.incrementAndGet();
+          return null;
         });
     assertThat(numCalls.get()).isEqualTo(2);
     // ensureTxn() is only called during retry.
@@ -256,12 +241,9 @@ public class TransactionRunnerImplTest {
     final AtomicInteger numCalls = new AtomicInteger(0);
     try {
       transactionRunner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              numCalls.incrementAndGet();
-              return null;
-            }
+          transaction -> {
+            numCalls.incrementAndGet();
+            return null;
           });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -286,7 +268,7 @@ public class TransactionRunnerImplTest {
 
   @Test
   public void batchDmlAborted() {
-    long updateCount[] = batchDmlException(Code.ABORTED_VALUE);
+    long[] updateCount = batchDmlException(Code.ABORTED_VALUE);
     assertThat(updateCount.length).isEqualTo(2);
     assertThat(updateCount[0]).isEqualTo(1L);
     assertThat(updateCount[1]).isEqualTo(1L);
@@ -323,16 +305,13 @@ public class TransactionRunnerImplTest {
           }
         };
     session.setCurrentSpan(mock(Span.class));
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
+          return null;
         });
     verify(rpc, Mockito.never())
         .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
@@ -356,7 +335,7 @@ public class TransactionRunnerImplTest {
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
-    TransactionRunnerImpl runner = new TransactionRunnerImpl(session, rpc, 10);
+    TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()
@@ -386,14 +365,11 @@ public class TransactionRunnerImplTest {
         .thenReturn(ApiFutures.immediateFuture(commitResponse));
     final Statement statement = Statement.of("UPDATE FOO SET BAR=1");
     final AtomicInteger numCalls = new AtomicInteger(0);
-    long updateCount[] =
+    long[] updateCount =
         runner.run(
-            new TransactionCallable<long[]>() {
-              @Override
-              public long[] run(TransactionContext transaction) {
-                numCalls.incrementAndGet();
-                return transaction.batchUpdate(Arrays.asList(statement, statement));
-              }
+            transaction1 -> {
+              numCalls.incrementAndGet();
+              return transaction1.batchUpdate(Arrays.asList(statement, statement));
             });
     if (status == Code.ABORTED_VALUE) {
       // Assert that the method ran twice because the first response aborted.
@@ -404,15 +380,12 @@ public class TransactionRunnerImplTest {
 
   private void runTransaction(final Exception exception) {
     transactionRunner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            if (firstRun) {
-              firstRun = false;
-              throw SpannerExceptionFactory.newSpannerException(exception);
-            }
-            return null;
+        transaction -> {
+          if (firstRun) {
+            firstRun = false;
+            throw SpannerExceptionFactory.newSpannerException(exception);
           }
+          return null;
         });
   }
 

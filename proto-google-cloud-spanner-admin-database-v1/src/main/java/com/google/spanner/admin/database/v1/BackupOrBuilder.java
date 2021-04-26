@@ -294,7 +294,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return A list containing the referencingDatabases.
@@ -313,7 +314,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return The count of referencingDatabases.
@@ -332,7 +334,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the element to return.
@@ -352,11 +355,53 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the value to return.
    * @return The bytes of the referencingDatabases at the given index.
    */
   com.google.protobuf.ByteString getReferencingDatabasesBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionInfo field is set.
+   */
+  boolean hasEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionInfo.
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder();
 }

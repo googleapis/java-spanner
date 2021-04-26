@@ -145,7 +145,7 @@ public class SessionClientTest {
     final Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<Long>());
+    final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
@@ -195,7 +195,7 @@ public class SessionClientTest {
   }
 
   /**
-   * Tests that multiple consequtive calls to {@link SessionClient#asyncBatchCreateSessions(int,
+   * Tests that multiple consecutive calls to {@link SessionClient#asyncBatchCreateSessions(int,
    * boolean, SessionConsumer)} with distributeOverChannels=false does not distribute one batch over
    * multiple channels, but it does assign each new call to a new channel. This means that multiple
    * calls to this method will still distribute the total set of sessions over all available
@@ -208,7 +208,7 @@ public class SessionClientTest {
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = Collections.<String, String>emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
-    final Set<Long> usedChannelHintss = Collections.synchronizedSet(new HashSet<Long>());
+    final Set<Long> usedChannelHints = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
@@ -217,7 +217,7 @@ public class SessionClientTest {
               public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
                 Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
-                usedChannelHintss.add(channelHint);
+                usedChannelHints.add(channelHint);
                 int sessionCount = invocation.getArgumentAt(1, Integer.class);
                 List<com.google.spanner.v1.Session> res = new ArrayList<>();
                 for (int i = 1; i <= sessionCount; i++) {
@@ -252,18 +252,18 @@ public class SessionClientTest {
       }
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions * numBatches);
-    assertThat(usedChannelHintss.size()).isEqualTo(spannerOptions.getNumChannels() * 2);
+    assertThat(usedChannelHints.size()).isEqualTo(spannerOptions.getNumChannels() * 2);
     List<Long> expectedChannels = new ArrayList<>();
     for (long l = 0; l < spannerOptions.getNumChannels() * 2; l++) {
       expectedChannels.add(l);
     }
-    assertThat(usedChannelHintss).containsExactlyElementsIn(expectedChannels);
+    assertThat(usedChannelHints).containsExactlyElementsIn(expectedChannels);
   }
 
   private enum AddRemoveSetException {
     SET,
     ADD,
-    REMOVE;
+    REMOVE
   }
 
   @SuppressWarnings("unchecked")
@@ -273,7 +273,7 @@ public class SessionClientTest {
       final List<Long> errorOnChannels = new ArrayList<>();
       if (behavior == AddRemoveSetException.REMOVE) {
         for (int c = 0; c < spannerOptions.getNumChannels(); c++) {
-          errorOnChannels.add(Long.valueOf(c));
+          errorOnChannels.add((long) c);
         }
       }
       for (int errorOnChannel = 0;
@@ -283,7 +283,7 @@ public class SessionClientTest {
           case SET:
             errorOnChannels.clear();
           case ADD:
-            errorOnChannels.add(Long.valueOf(errorOnChannel));
+            errorOnChannels.add((long) errorOnChannel);
             break;
           case REMOVE:
             errorOnChannels.remove(Long.valueOf(errorOnChannel));

@@ -49,7 +49,7 @@ public class SpannerApiFuturesTest {
 
   @Test
   public void testGetOrNull() {
-    assertThat(SpannerApiFutures.getOrNull(null)).isNull();
+    assertThat(SpannerApiFutures.getOrNull((ApiFuture<Object>) null)).isNull();
   }
 
   @Test

@@ -171,6 +171,149 @@ public interface DatabaseOrBuilder
    *
    *
    * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption configuration for the database.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo> getEncryptionInfoList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  int getEncryptionInfoCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+      getEncryptionInfoOrBuilderList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For databases that are using customer managed encryption, this
+   * field contains the encryption information for the database, such as
+   * encryption state and the Cloud KMS key versions that are in use.
+   * For databases that are using Google default or other types of encryption,
+   * this field is empty.
+   * This field is propagated lazily from the backend. There might be a delay
+   * from when a key version is being used and when it appears in this field.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder(
+      int index);
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
@@ -205,7 +348,10 @@ public interface DatabaseOrBuilder
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>
@@ -220,7 +366,10 @@ public interface DatabaseOrBuilder
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>
@@ -235,7 +384,10 @@ public interface DatabaseOrBuilder
    *
    * <pre>
    * Output only. Earliest timestamp at which older versions of the data can be
-   * read.
+   * read. This value is continuously updated by Cloud Spanner and becomes stale
+   * the moment it is queried. If you are using this value to recover data, make
+   * sure to account for the time from the moment when the value is queried to
+   * the moment when you initiate the recovery.
    * </pre>
    *
    * <code>

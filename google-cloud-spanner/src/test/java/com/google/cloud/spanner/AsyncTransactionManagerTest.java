@@ -23,6 +23,8 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -211,6 +213,32 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           }
         },
         0L);
+  }
+
+  @Test
+  public void testAsyncTransactionManager_returnsCommitStats() throws Exception {
+    try (AsyncTransactionManager manager =
+        client().transactionManagerAsync(Options.commitStats())) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      while (true) {
+        try {
+          CommitTimestampFuture commitTimestamp =
+              transaction
+                  .then(
+                      AsyncTransactionManagerHelper.<Void>buffer(
+                          Mutation.delete("FOO", Key.of("foo"))),
+                      executor)
+                  .commitAsync();
+          assertNotNull(commitTimestamp.get());
+          assertNotNull(manager.getCommitResponse().get());
+          assertNotNull(manager.getCommitResponse().get().getCommitStats());
+          assertEquals(1L, manager.getCommitResponse().get().getCommitStats().getMutationCount());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetryAsync();
+        }
+      }
+    }
   }
 
   @Test
@@ -1109,7 +1137,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           commitTimestamp.get();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         }
       }

@@ -133,7 +133,7 @@ public class ITTransactionManagerAsyncTest {
           assertThat(row.getBoolean(1)).isTrue();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         }
       }
@@ -166,7 +166,7 @@ public class ITTransactionManagerAsyncTest {
               .get();
           fail("Expected exception");
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         } catch (ExecutionException e) {
           assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -211,7 +211,7 @@ public class ITTransactionManagerAsyncTest {
           manager.rollbackAsync();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         }
       }
@@ -227,8 +227,8 @@ public class ITTransactionManagerAsyncTest {
   @Test
   public void testAbortAndRetry() throws InterruptedException, ExecutionException {
     assumeFalse(
-        "Emulator does not support more than 1 simultanous transaction. "
-            + "This test would therefore loop indefinetly on the emulator.",
+        "Emulator does not support more than 1 simultaneous transaction. "
+            + "This test would therefore loop indefinitely on the emulator.",
         isUsingEmulator());
 
     client.write(
@@ -286,7 +286,7 @@ public class ITTransactionManagerAsyncTest {
           txn1Step2.commitAsync().get();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           // It is possible that it was txn2 that aborted.
           // In that case we should just retry without resetting anything.
           if (manager1.getState() == TransactionState.ABORTED) {

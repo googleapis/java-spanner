@@ -144,7 +144,7 @@ class StatementExecutor {
   private static ListeningExecutorService createExecutorService() {
     return MoreExecutors.listeningDecorator(
         new ThreadPoolExecutor(
-            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), THREAD_FACTORY));
+            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY));
   }
 
   private ListeningExecutorService executor = createExecutorService();
@@ -162,6 +162,14 @@ class StatementExecutor {
 
   StatementExecutor(List<StatementExecutionInterceptor> interceptors) {
     this.interceptors = Collections.unmodifiableList(interceptors);
+  }
+
+  void shutdown() {
+    executor.shutdown();
+  }
+
+  void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+    executor.awaitTermination(timeout, unit);
   }
 
   /**

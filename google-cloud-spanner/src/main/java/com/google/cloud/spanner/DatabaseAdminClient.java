@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
@@ -68,8 +69,52 @@ public interface DatabaseAdminClient {
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException;
 
+  /**
+   * Creates a database in a Cloud Spanner instance. Any configuration options in the {@link
+   * Database} instance will be included in the {@link CreateDatabaseRequest}.
+   *
+   * <p>Example to create an encrypted database.
+   *
+   * <pre>{@code
+   * Database dbInfo =
+   *     dbClient
+   *         .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+   *         .setEncryptionConfig(
+   *             EncryptionConfig.ofKey(
+   *                 "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+   *         .build();
+   * Operation<Database, CreateDatabaseMetadata> op = dbAdminClient
+   *     .createDatabase(
+   *         dbInfo,
+   *         Arrays.asList(
+   *             "CREATE TABLE Singers (\n"
+   *                 + "  SingerId   INT64 NOT NULL,\n"
+   *                 + "  FirstName  STRING(1024),\n"
+   *                 + "  LastName   STRING(1024),\n"
+   *                 + "  SingerInfo BYTES(MAX)\n"
+   *                 + ") PRIMARY KEY (SingerId)",
+   *             "CREATE TABLE Albums (\n"
+   *                 + "  SingerId     INT64 NOT NULL,\n"
+   *                 + "  AlbumId      INT64 NOT NULL,\n"
+   *                 + "  AlbumTitle   STRING(MAX)\n"
+   *                 + ") PRIMARY KEY (SingerId, AlbumId),\n"
+   *                 + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"));
+   * Database db = op.waitFor().getResult();
+   * }</pre>
+   *
+   * @see also #createDatabase(String, String, Iterable)
+   */
+  OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      Database database, Iterable<String> statements) throws SpannerException;
+
+  /** Returns a builder for a {@code Database} object with the given id. */
+  Database.Builder newDatabaseBuilder(DatabaseId id);
+
   /** Returns a builder for a {@code Backup} object with the given id. */
   Backup.Builder newBackupBuilder(BackupId id);
+
+  /** Returns a builder for a {@link Restore} object with the given source and destination */
+  Restore.Builder newRestoreBuilder(BackupId source, DatabaseId destination);
 
   /**
    * Creates a new backup from a database in a Cloud Spanner instance.
@@ -90,8 +135,8 @@ public interface DatabaseAdminClient {
    * Backup backup = op.get();
    * }</pre>
    *
-   * @param instanceId the id of the instance where the database to backup is located and where the
-   *     backup will be created.
+   * @param sourceInstanceId the id of the instance where the database to backup is located and
+   *     where the backup will be created.
    * @param backupId the id of the backup which will be created. It must conform to the regular
    *     expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
    * @param databaseId the id of the database to backup.
@@ -100,6 +145,38 @@ public interface DatabaseAdminClient {
   OperationFuture<Backup, CreateBackupMetadata> createBackup(
       String sourceInstanceId, String backupId, String databaseId, Timestamp expireTime)
       throws SpannerException;
+
+  /**
+   * Creates a new backup from a database in a Cloud Spanner. Any configuration options in the
+   * {@link Backup} instance will be included in the {@link
+   * com.google.spanner.admin.database.v1.CreateBackupRequest}.
+   *
+   * <p>Example to create an encrypted backup.
+   *
+   * <pre>{@code
+   * BackupId backupId = BackupId.of("project", "instance", "backup-id");
+   * DatabaseId databaseId = DatabaseId.of("project", "instance", "database-id");
+   * Timestamp expireTime = Timestamp.ofTimeMicroseconds(expireTimeMicros);
+   * Timestamp versionTime = Timestamp.ofTimeMicroseconds(versionTimeMicros);
+   * EncryptionConfig encryptionConfig =
+   *         EncryptionConfig.ofKey(
+   *             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"));
+   *
+   * Backup backupToCreate = dbAdminClient
+   *     .newBackupBuilder(backupId)
+   *     .setDatabase(databaseId)
+   *     .setExpireTime(expireTime)
+   *     .setVersionTime(versionTime)
+   *     .setEncryptionConfig(encryptionConfig)
+   *     .build();
+   *
+   * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackup(backupToCreate);
+   * Backup createdBackup = op.get();
+   * }</pre>
+   *
+   * @param backup the backup to be created
+   */
+  OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backup) throws SpannerException;
 
   /**
    * Restore a database from a backup. The database that is restored will be created and may not
@@ -112,7 +189,7 @@ public interface DatabaseAdminClient {
    * String backupId           = my_backup_id;
    * String restoreInstanceId  = my_db_instance_id;
    * String restoreDatabaseId  = my_database_id;
-   * OperationFuture<Backup, RestoreDatabaseMetadata> op = dbAdminClient
+   * OperationFuture<Database, RestoreDatabaseMetadata> op = dbAdminClient
    *     .restoreDatabase(
    *         backupInstanceId,
    *         backupId,
@@ -127,8 +204,35 @@ public interface DatabaseAdminClient {
    *     be a different instance than where the backup is stored.
    * @param restoreDatabaseId the id of the database to restore to.
    */
-  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
+      throws SpannerException;
+
+  /**
+   * Restore a database from a backup. The database that is restored will be created and may not
+   * already exist.
+   *
+   * <p>Example to restore an encrypted database.
+   *
+   * <pre>{@code
+   * final Restore restore = dbAdminClient
+   *     .newRestoreBuilder(
+   *         BackupId.of("my-project", "my-instance", "my-backup"),
+   *         DatabaseId.of("my-project", "my-instance", "my-database")
+   *     )
+   *     .setEncryptionConfig(EncryptionConfig.ofKey(
+   *         "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"))
+   *     .build();
+   *
+   * final OperationFuture<Database, RestoreDatabaseMetadata> op = dbAdminClient
+   *     .restoreDatabase(restore);
+   *
+   * Database database = op.get();
+   * }</pre>
+   *
+   * @param restore a {@link Restore} instance with the backup source and destination database
+   */
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore)
       throws SpannerException;
 
   /** Lists long-running database operations on the specified instance. */

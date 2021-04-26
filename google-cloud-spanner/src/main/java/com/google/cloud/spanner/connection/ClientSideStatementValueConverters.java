@@ -114,7 +114,7 @@ class ClientSideStatementValueConverters {
         } else {
           Duration duration =
               ReadOnlyStalenessUtil.createDuration(
-                  Long.valueOf(matcher.group(1)),
+                  Long.parseLong(matcher.group(1)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(2)));
           if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
             return null;
@@ -171,7 +171,7 @@ class ClientSideStatementValueConverters {
           case EXACT_STALENESS:
             try {
               return TimestampBound.ofExactStaleness(
-                  Long.valueOf(matcher.group(groupIndex + 2)),
+                  Long.parseLong(matcher.group(groupIndex + 2)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(
@@ -180,7 +180,7 @@ class ClientSideStatementValueConverters {
           case MAX_STALENESS:
             try {
               return TimestampBound.ofMaxStaleness(
-                  Long.valueOf(matcher.group(groupIndex + 2)),
+                  Long.parseLong(matcher.group(groupIndex + 2)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(

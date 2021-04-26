@@ -80,6 +80,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
+  private static final String LIQUIBASE_API_CLIENT_LIB_TOKEN = "sp-liq";
+
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final ImmutableSet<String> SCOPES =
@@ -125,7 +127,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -160,28 +162,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Context context =
    *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try {
-   *           client
-   *               .readWriteTransaction()
-   *               .run(
-   *                   new TransactionCallable<long[]>() {
-   *                     public long[] run(TransactionContext transaction) throws Exception {
-   *                       return transaction.batchUpdate(
-   *                           ImmutableList.of(statement1, statement2));
-   *                     }
-   *                   });
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // handle timeout exception.
-   *           }
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
-  public static interface CallContextConfigurator {
+  public interface CallContextConfigurator {
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -283,24 +283,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *             SpannerCallContextTimeoutConfigurator.create()
    *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try (ResultSet rs =
-   *             client
-   *                 .singleUse()
-   *                 .executeQuery(
-   *                     Statement.of(
-   *                         "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
-   *           while (rs.next()) {
-   *             System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
-   *           }
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // Handle timeout.
-   *           }
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
@@ -474,7 +472,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
   static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
@@ -578,7 +576,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
@@ -612,7 +610,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
             JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN);
+            HIBERNATE_API_CLIENT_LIB_TOKEN,
+            LIQUIBASE_API_CLIENT_LIB_TOKEN);
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -980,7 +979,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {

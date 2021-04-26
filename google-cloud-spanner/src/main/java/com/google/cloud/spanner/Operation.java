@@ -28,7 +28,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.longrunning.Operation.ResultCase;
 import com.google.protobuf.Any;
 import com.google.rpc.Status;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
@@ -46,7 +45,7 @@ public class Operation<R, M> {
           .setMaxRetryDelay(Duration.ofMinutes(500L))
           .build();
 
-  static interface Parser<R, M> {
+  interface Parser<R, M> {
     R parseResult(Any response);
 
     M parseMetadata(Any metadata);
@@ -86,7 +85,7 @@ public class Operation<R, M> {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(
             ErrorCode.fromRpcStatus(status), status.getMessage(), null);
-    return new Operation<R, M>(rpc, name, metadata, null, e, true, parser, clock);
+    return new Operation<>(rpc, name, metadata, null, e, true, parser, clock);
   }
 
   private static <R, M> Operation<R, M> successful(
@@ -143,12 +142,7 @@ public class Operation<R, M> {
     try {
       com.google.longrunning.Operation proto =
           RetryHelper.poll(
-              new Callable<com.google.longrunning.Operation>() {
-                @Override
-                public com.google.longrunning.Operation call() throws Exception {
-                  return rpc.getOperation(name);
-                }
-              },
+              () -> rpc.getOperation(name),
               waitSettings,
               new BasicResultRetryAlgorithm<com.google.longrunning.Operation>() {
                 @Override
@@ -188,7 +182,7 @@ public class Operation<R, M> {
 
   /**
    * Returns the metadata returned by the last refresh of this operation. Returns null if no
-   * metadata was returned or if this operation has not been refereshed.
+   * metadata was returned or if this operation has not been refreshed.
    */
   public M getMetadata() {
     return metadata;
@@ -217,7 +211,7 @@ public class Operation<R, M> {
     return name;
   }
 
-  /** Returns true if the operation completed sucessfully. */
+  /** Returns true if the operation completed successfully. */
   public boolean isSuccessful() {
     return isDone && exception == null;
   }
