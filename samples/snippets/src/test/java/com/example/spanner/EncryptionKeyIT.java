@@ -19,11 +19,16 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -104,7 +109,7 @@ public class EncryptionKeyIT {
         "Database projects/" + projectId + "/instances/" + instanceId + "/databases/" + databaseId
             + " created with encryption key " + key);
 
-    out = SampleRunner.runSample(() ->
+    out = SampleRunner.runSampleWithRetry(() ->
         CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
             databaseAdminClient,
             projectId,
@@ -112,12 +117,12 @@ public class EncryptionKeyIT {
             databaseId,
             backupId,
             key
-        ));
+        ), new ShouldRetryBackupOperation());
     assertThat(out).containsMatch(
         "Backup projects/" + projectId + "/instances/" + instanceId + "/backups/" + backupId
             + " of size \\d+ bytes was created at (.*) using encryption key " + key);
 
-    out = SampleRunner.runSample(() ->
+    out = SampleRunner.runSampleWithRetry(() ->
         RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(
             databaseAdminClient,
             projectId,
@@ -125,11 +130,33 @@ public class EncryptionKeyIT {
             backupId,
             restoreId,
             key
-        ));
+        ), new ShouldRetryBackupOperation());
     assertThat(out).contains(
         "Database projects/" + projectId + "/instances/" + instanceId + "/databases/" + databaseId
             + " restored to projects/" + projectId + "/instances/" + instanceId + "/databases/"
             + restoreId + " from backup projects/" + projectId + "/instances/" + instanceId
             + "/backups/" + backupId + " using encryption key " + key);
+  }
+
+  private static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
+    private static final int MAX_ATTEMPTS = 10;
+    private int attempts = 0;
+
+    @Override
+    public boolean test(SpannerException e) {
+      if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
+          && e.getMessage().contains("Please retry the operation once the pending")) {
+        attempts++;
+        if (attempts == MAX_ATTEMPTS) {
+          System.out.printf("Operation failed %d times because of other pending operations. "
+              + "Giving up operation.\n", attempts);
+          return false;
+        }
+        // Wait one minute before retrying.
+        Uninterruptibles.sleepUninterruptibly(60L, TimeUnit.SECONDS);
+        return true;
+      }
+      return false;
+    }
   }
 }
