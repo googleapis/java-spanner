@@ -19,6 +19,9 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -941,6 +944,36 @@ public class ITQueryTest {
     assertThat(receivedStats).isNotNull();
     assertThat(receivedStats.hasQueryPlan()).isTrue();
     assertThat(receivedStats.hasQueryStats()).isTrue();
+  }
+
+  @Test
+  public void testSelectArrayOfStructs() {
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "WITH points AS\n"
+                        + "  (SELECT [1, 5] as point\n"
+                        + "   UNION ALL SELECT [2, 8] as point\n"
+                        + "   UNION ALL SELECT [3, 7] as point\n"
+                        + "   UNION ALL SELECT [4, 1] as point\n"
+                        + "   UNION ALL SELECT [5, 7] as point)\n"
+                        + "SELECT ARRAY(\n"
+                        + "  SELECT STRUCT(point)\n"
+                        + "  FROM points)\n"
+                        + "  AS coordinates"))) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getColumnCount(), 1);
+      assertThat(resultSet.getStructList(0))
+          .containsExactly(
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {1L, 5L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {2L, 8L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {3L, 7L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {4L, 1L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {5L, 7L})).build());
+      assertFalse(resultSet.next());
+    }
   }
 
   private List<Struct> resultRows(Statement statement, Type expectedRowType) {
