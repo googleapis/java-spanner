@@ -28,7 +28,6 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -238,12 +237,14 @@ public class ResultSetsTest {
     assertThat(rs.getBytes("byteVal")).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getValue("byteVal")).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
     assertThat(rs.getTimestamp(columnIndex)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
-    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.timestamp(Timestamp.ofTimeMicroseconds(usecs)));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.timestamp(Timestamp.ofTimeMicroseconds(usecs)));
     assertThat(rs.getTimestamp("timestamp")).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
     assertThat(rs.getValue("timestamp"))
         .isEqualTo(Value.timestamp(Timestamp.ofTimeMicroseconds(usecs)));
     assertThat(rs.getDate(columnIndex)).isEqualTo(Date.fromYearMonthDay(year, month, day));
-    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
     assertThat(rs.getValue("date")).isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
     assertThat(rs.getBooleanArray(columnIndex)).isEqualTo(boolArray);
@@ -266,7 +267,8 @@ public class ResultSetsTest {
     assertThat(rs.getDoubleList(columnIndex++)).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getDoubleList("doubleArray")).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getBigDecimalList(columnIndex)).isEqualTo(Arrays.asList(bigDecimalArray));
-    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
     assertThat(rs.getBigDecimalList("bigDecimalArray")).isEqualTo(Arrays.asList(bigDecimalArray));
     assertThat(rs.getValue("bigDecimalArray"))
         .isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
@@ -275,7 +277,8 @@ public class ResultSetsTest {
     assertThat(rs.getBytesList("byteArray")).isEqualTo(Arrays.asList(byteArray));
     assertThat(rs.getValue("byteArray")).isEqualTo(Value.bytesArray(Arrays.asList(byteArray)));
     assertThat(rs.getTimestampList(columnIndex)).isEqualTo(Arrays.asList(timestampArray));
-    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.timestampArray(Arrays.asList(timestampArray)));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.timestampArray(Arrays.asList(timestampArray)));
     assertThat(rs.getTimestampList("timestampArray")).isEqualTo(Arrays.asList(timestampArray));
     assertThat(rs.getValue("timestampArray"))
         .isEqualTo(Value.timestampArray(Arrays.asList(timestampArray)));

@@ -35,6 +35,8 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link com.google.cloud.spanner.ValueBinder}. */
 @RunWith(JUnit4.class)
 public class ValueBinderTest {
+  private static final String JSON_METHOD_NAME = "json";
+
   private Value lastValue;
   private int lastReturnValue;
   private ValueBinder<Integer> binder = new BinderImpl();
@@ -111,7 +113,7 @@ public class ValueBinderTest {
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
-          if (method.getName().toLowerCase().equals("json")) {
+          if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
             // Special case for json to change the method from ValueBinder.to(String) to
             // ValueBinder.to(Value)
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
@@ -127,7 +129,7 @@ public class ValueBinderTest {
         }
         // Test unary non-null.
         Object defaultObject;
-        if (method.getName().toLowerCase().equals("json")) {
+        if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
           defaultObject = defaultJson();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))

@@ -215,11 +215,11 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
-              Type.json(),
-              "getJsonInternal",
-              "{\"color\":\"red\",\"value\":\"#f00\"}",
-              "getJson",
-              Collections.singletonList("getValue")
+            Type.json(),
+            "getJsonInternal",
+            "{\"color\":\"red\",\"value\":\"#f00\"}",
+            "getJson",
+            Collections.singletonList("getValue")
           },
           {
             Type.timestamp(),
@@ -292,11 +292,11 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
-              Type.array(Type.json()),
-              "getJsonListInternal",
-              Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
-              "getJsonList",
-              Collections.singletonList("getValue")
+            Type.array(Type.json()),
+            "getJsonListInternal",
+            Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
+            "getJsonList",
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.bytes()),
