@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,14 +70,15 @@ import org.junit.runners.JUnit4;
 public class ITWriteTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  // TODO: Remove when the emulator supports NUMERIC
-  private static final String SCHEMA_WITH_NUMERIC =
+  // TODO: Remove when the emulator supports NUMERIC and JSON
+  private static final String SCHEMA_WITH_NUMERIC_AND_JSON =
       "CREATE TABLE T ("
           + "  K                   STRING(MAX) NOT NULL,"
           + "  BoolValue           BOOL,"
           + "  Int64Value          INT64,"
           + "  Float64Value        FLOAT64,"
           + "  StringValue         STRING(MAX),"
+          + "  JsonValue           JSON,"
           + "  BytesValue          BYTES(MAX),"
           + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
           + "  DateValue           DATE,"
@@ -85,12 +87,13 @@ public class ITWriteTest {
           + "  Int64ArrayValue     ARRAY<INT64>,"
           + "  Float64ArrayValue   ARRAY<FLOAT64>,"
           + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  JsonArrayValue      ARRAY<JSON>,"
           + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
           + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
           + "  DateArrayValue      ARRAY<DATE>,"
           + "  NumericArrayValue   ARRAY<NUMERIC>,"
           + ") PRIMARY KEY (K)";
-  private static final String SCHEMA_WITHOUT_NUMERIC =
+  private static final String SCHEMA_WITHOUT_NUMERIC_AND_JSON =
       "CREATE TABLE T ("
           + "  K                   STRING(MAX) NOT NULL,"
           + "  BoolValue           BOOL,"
@@ -118,10 +121,10 @@ public class ITWriteTest {
   @BeforeClass
   public static void setUpDatabase() {
     if (EmulatorSpannerHelper.isUsingEmulator()) {
-      // The emulator does not yet support NUMERIC.
-      db = env.getTestHelper().createTestDatabase(SCHEMA_WITHOUT_NUMERIC);
+      // The emulator does not yet support NUMERIC or JSON.
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITHOUT_NUMERIC_AND_JSON);
     } else {
-      db = env.getTestHelper().createTestDatabase(SCHEMA_WITH_NUMERIC);
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITH_NUMERIC_AND_JSON);
     }
     client = env.getTestHelper().getDatabaseClient(db);
   }
@@ -317,6 +320,21 @@ public class ITWriteTest {
   public void writeStringNull() {
     write(baseInsert().set("StringValue").to((String) null).build());
     Struct row = readLastRow("StringValue");
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void writeJson() {
+    write(baseInsert().set("JsonValue").to(Value.json("{}")).build());
+    Struct row = readLastRow("JsonValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{}");
+  }
+
+  @Test
+  public void writeJsonNull() {
+    write(baseInsert().set("JsonValue").to(Value.json(null)).build());
+    Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -583,6 +601,43 @@ public class ITWriteTest {
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly("a", null, "b").inOrder();
+  }
+
+  @Test
+  public void writeJsonArrayNull() {
+    write(baseInsert().set("JsonArrayValue").toJsonArray(null).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void writeJsonArrayEmpty() {
+    write(baseInsert().set("JsonArrayValue").toJsonArray(Collections.emptyList()).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).containsExactly();
+  }
+
+  @Test
+  public void writeJsonArray() {
+    write(baseInsert().set("JsonArrayValue").toJsonArray(Arrays.asList("[]", null, "{}")).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).containsExactly("[]", null, "{}").inOrder();
+  }
+
+  @Test
+  public void writeJsonArrayNoNulls() {
+    write(
+        baseInsert()
+            .set("JsonArrayValue")
+            .toJsonArray(Arrays.asList("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}"))
+            .build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0))
+        .containsExactly("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}")
+        .inOrder();
   }
 
   @Test

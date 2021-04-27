@@ -226,6 +226,21 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindJson() {
+    Struct row =
+        execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json("{}")), Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{}");
+  }
+
+  @Test
+  public void bindJsonNull() {
+    Struct row =
+        execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json(null)), Type.json());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindBytes() {
     Struct row =
         execute(
@@ -424,6 +439,34 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toStringArray(null),
             Type.array(Type.string()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindJsonArray() {
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(asList("{}", "[]", null)),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).containsExactly("{}", "[]", null).inOrder();
+  }
+
+  @Test
+  public void bindJsonArrayEmpty() {
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(Arrays.<String>asList()),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindJsonArrayNull() {
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(null), Type.array(Type.json()));
     assertThat(row.isNull(0)).isTrue();
   }
 
