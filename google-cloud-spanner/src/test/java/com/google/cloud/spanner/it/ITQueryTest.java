@@ -47,6 +47,7 @@ import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -227,6 +228,7 @@ public class ITQueryTest {
 
   @Test
   public void bindJson() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json("{}")), Type.json());
     assertThat(row.isNull(0)).isFalse();
@@ -235,6 +237,7 @@ public class ITQueryTest {
 
   @Test
   public void bindJsonNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json(null)), Type.json());
     assertThat(row.isNull(0)).isTrue();
@@ -444,6 +447,7 @@ public class ITQueryTest {
 
   @Test
   public void bindJsonArray() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toJsonArray(asList("{}", "[]", null)),
@@ -454,9 +458,10 @@ public class ITQueryTest {
 
   @Test
   public void bindJsonArrayEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(Arrays.<String>asList()),
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(Collections.emptyList()),
             Type.array(Type.json()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getJsonList(0)).containsExactly();
@@ -464,6 +469,7 @@ public class ITQueryTest {
 
   @Test
   public void bindJsonArrayNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toJsonArray(null), Type.array(Type.json()));

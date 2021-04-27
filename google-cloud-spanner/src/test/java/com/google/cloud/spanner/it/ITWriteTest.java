@@ -325,6 +325,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJson() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonValue").to(Value.json("{}")).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isFalse();
@@ -333,6 +334,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonValue").to(Value.json(null)).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isTrue();
@@ -605,6 +607,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonArrayNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonArrayValue").toJsonArray(null).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -612,6 +615,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonArrayEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonArrayValue").toJsonArray(Collections.emptyList()).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -620,6 +624,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonArray() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonArrayValue").toJsonArray(Arrays.asList("[]", null, "{}")).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -628,6 +633,7 @@ public class ITWriteTest {
 
   @Test
   public void writeJsonArrayNoNulls() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
             .set("JsonArrayValue")
