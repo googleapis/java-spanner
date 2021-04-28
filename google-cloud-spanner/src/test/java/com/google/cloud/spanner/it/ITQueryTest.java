@@ -1003,6 +1003,36 @@ public class ITQueryTest {
     assertThat(receivedStats.hasQueryStats()).isTrue();
   }
 
+  @Test
+  public void testSelectArrayOfStructs() {
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "WITH points AS\n"
+                        + "  (SELECT [1, 5] as point\n"
+                        + "   UNION ALL SELECT [2, 8] as point\n"
+                        + "   UNION ALL SELECT [3, 7] as point\n"
+                        + "   UNION ALL SELECT [4, 1] as point\n"
+                        + "   UNION ALL SELECT [5, 7] as point)\n"
+                        + "SELECT ARRAY(\n"
+                        + "  SELECT STRUCT(point)\n"
+                        + "  FROM points)\n"
+                        + "  AS coordinates"))) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getColumnCount(), 1);
+      assertThat(resultSet.getStructList(0))
+          .containsExactly(
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {1L, 5L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {2L, 8L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {3L, 7L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {4L, 1L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {5L, 7L})).build());
+      assertFalse(resultSet.next());
+    }
+  }
+
   private List<Struct> resultRows(Statement statement, Type expectedRowType) {
     ArrayList<Struct> results = new ArrayList<>();
     ResultSet resultSet = statement.executeQuery(client.singleUse(TimestampBound.strong()));
