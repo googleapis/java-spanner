@@ -695,6 +695,7 @@ public class SingleUseTransactionTest {
         get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
         fail("missing expected exception");
       } catch (IllegalStateException e) {
+        // Expected exception
       }
     }
 
@@ -708,6 +709,7 @@ public class SingleUseTransactionTest {
       get(subject.executeDdlAsync(ddl));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
@@ -719,6 +721,7 @@ public class SingleUseTransactionTest {
       get(subject.executeUpdateAsync(update));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -728,6 +731,7 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -738,6 +742,7 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Arrays.asList(mutation, mutation)));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
   }
 

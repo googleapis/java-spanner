@@ -1372,11 +1372,13 @@ public class DatabaseClientImplTest {
           while (rs.next()) {}
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // Expected exception
         }
         try {
           dbClient.readWriteTransaction().run(transaction -> null);
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // Expected exception
         }
 
         // Now simulate that the database has been re-created. The database client should still
@@ -1389,11 +1391,13 @@ public class DatabaseClientImplTest {
           while (rs.next()) {}
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // Expected exception
         }
         try {
           dbClient.readWriteTransaction().run(transaction -> null);
           fail("missing expected exception");
         } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          // Expected exception
         }
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will

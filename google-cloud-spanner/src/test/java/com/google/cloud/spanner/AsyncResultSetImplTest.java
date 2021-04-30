@@ -72,16 +72,19 @@ public class AsyncResultSetImplTest {
       rs.setCallback(mock(Executor.class), mock(ReadyCallback.class));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
     try {
       rs.toList(mock(Function.class));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
     try {
       rs.toListAsync(mock(Function.class), mock(Executor.class));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     // The following methods are allowed on a closed result set.

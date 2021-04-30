@@ -250,6 +250,7 @@ public class ConnectionOptionsTest {
       builder.setUri(uri);
       fail(uri + " should be considered an invalid uri");
     } catch (IllegalArgumentException e) {
+      // Expected exception
     }
   }
 
