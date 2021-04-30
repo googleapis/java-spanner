@@ -1030,7 +1030,7 @@ class SessionPool {
     public ApiFuture<Timestamp> getCommitTimestamp() {
       checkState(commitResponse != null, "runAsync() has not yet been called");
       return ApiFutures.transform(
-          commitResponse, input -> input.getCommitTimestamp(), MoreExecutors.directExecutor());
+          commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
     }
 
     @Override

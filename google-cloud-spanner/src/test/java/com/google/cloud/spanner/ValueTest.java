@@ -54,7 +54,7 @@ public class ValueTest {
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
     final List<T> list = Lists.newArrayList(values);
-    return () -> list.iterator();
+    return list::iterator;
   }
 
   @Test

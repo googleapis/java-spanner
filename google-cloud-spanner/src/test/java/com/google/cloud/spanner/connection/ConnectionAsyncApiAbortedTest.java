@@ -290,7 +290,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       // Wait until the query has actually executed.
       queryLatch.await(10L, TimeUnit.SECONDS);
       ApiFuture<Long> updateCount = connection.executeUpdateAsync(INSERT_STATEMENT);
-      updateCount.addListener(() -> updateLatch.countDown(), MoreExecutors.directExecutor());
+      updateCount.addListener(updateLatch::countDown, MoreExecutors.directExecutor());
 
       // We should not commit before the AsyncResultSet has finished.
       assertThat(get(finished)).isNull();
