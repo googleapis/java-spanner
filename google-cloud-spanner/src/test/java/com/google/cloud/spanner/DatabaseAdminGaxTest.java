@@ -38,8 +38,8 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -317,7 +317,8 @@ public class DatabaseAdminGaxTest {
     }
     for (int i = 0; i < 2; i++) {
       ListDatabasesResponse.Builder builder =
-          ListDatabasesResponse.newBuilder().addAllDatabases(Arrays.asList(databases.get(i)));
+          ListDatabasesResponse.newBuilder()
+              .addAllDatabases(Collections.singletonList(databases.get(i)));
       if (i < (databases.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }
@@ -387,7 +388,10 @@ public class DatabaseAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       OperationFuture<Void, UpdateDatabaseDdlMetadata> actualResponse =
           client.updateDatabaseDdl(
-              INSTANCE, "DATABASE", Arrays.asList("CREATE TABLE FOO"), "updateDatabaseDdlTest");
+              INSTANCE,
+              "DATABASE",
+              Collections.singletonList("CREATE TABLE FOO"),
+              "updateDatabaseDdlTest");
       try {
         actualResponse.get();
       } catch (ExecutionException e) {

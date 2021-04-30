@@ -432,17 +432,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     public static SimulatedExecutionTime ofException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), false, Collections.<Long>emptySet());
     }
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), true, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), true, Collections.<Long>emptySet());
     }
 
     public static SimulatedExecutionTime ofStreamException(Exception exception, long streamIndex) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.singleton(streamIndex));
+          0, 0, Collections.singletonList(exception), false, Collections.singleton(streamIndex));
     }
 
     public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {

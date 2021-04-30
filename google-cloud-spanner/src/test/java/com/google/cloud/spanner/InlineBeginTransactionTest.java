@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -614,7 +615,7 @@ public class InlineBeginTransactionTest {
                   transaction -> {
                     // The first attempt will return UNAVAILABLE and retry internally.
                     try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
                       while (rs.next()) {
                         return rs.getLong(0);
                       }
@@ -659,7 +660,7 @@ public class InlineBeginTransactionTest {
               .run(
                   transaction -> {
                     try (ResultSet rs =
-                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"))) {
+                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
                       while (rs.next()) {
                         return rs.getLong(0);
                       }
@@ -1210,7 +1211,7 @@ public class InlineBeginTransactionTest {
                   .readWriteTransaction()
                   .<Long>run(
                       transaction -> {
-                        transaction.read("FOO", KeySet.all(), Arrays.asList("ID"));
+                        transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"));
                         return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
@@ -1228,7 +1229,7 @@ public class InlineBeginTransactionTest {
                   .readWriteTransaction()
                   .<Long>run(
                       transaction -> {
-                        transaction.readAsync("FOO", KeySet.all(), Arrays.asList("ID"));
+                        transaction.readAsync("FOO", KeySet.all(), Collections.singletonList("ID"));
                         return transaction.executeUpdate(UPDATE_STATEMENT);
                       }))
           .isEqualTo(UPDATE_COUNT);
@@ -1384,7 +1385,7 @@ public class InlineBeginTransactionTest {
             .readWriteTransaction()
             .run(
                 transaction -> {
-                  transaction.readRow("FOO", Key.of(1L), Arrays.asList("BAR"));
+                  transaction.readRow("FOO", Key.of(1L), Collections.singletonList("BAR"));
                   return null;
                 });
         fail("missing expected exception");
@@ -1432,7 +1433,7 @@ public class InlineBeginTransactionTest {
             .readWriteTransaction()
             .run(
                 transaction -> {
-                  transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
+                  transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT));
                   return null;
                 });
         fail("missing expected exception");
@@ -1524,7 +1525,7 @@ public class InlineBeginTransactionTest {
             .run(
                 transaction ->
                     SpannerApiFutures.get(
-                        transaction.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT))));
+                        transaction.batchUpdateAsync(Collections.singletonList(UPDATE_STATEMENT))));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);

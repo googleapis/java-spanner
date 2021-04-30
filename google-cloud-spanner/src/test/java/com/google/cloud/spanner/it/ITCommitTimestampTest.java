@@ -37,6 +37,7 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -89,7 +90,7 @@ public class ITCommitTimestampTest {
   }
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Collections.singletonList(m));
   }
 
   private Struct readRow(DatabaseClient client, String table, Key key, String... columns) {
@@ -316,7 +317,7 @@ public class ITCommitTimestampTest {
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertOrUpdateBuilder("T3")
                   .set("ts")
                   .to(Value.COMMIT_TIMESTAMP)
@@ -343,7 +344,7 @@ public class ITCommitTimestampTest {
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertOrUpdateBuilder("T1")
                   .set("ts")
                   .to(Value.COMMIT_TIMESTAMP)

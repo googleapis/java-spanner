@@ -46,7 +46,6 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -198,7 +197,7 @@ public class SessionImplTest {
 
     Timestamp timestamp =
         session.writeAtLeastOnce(
-            Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()));
+            Collections.singletonList(Mutation.newInsertBuilder("T").set("C").to("x").build()));
     assertThat(timestamp.getSeconds())
         .isEqualTo(utcTimeSeconds(2015, Calendar.OCTOBER, 1, 10, 54, 20));
     assertThat(timestamp.getNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(21));
@@ -228,7 +227,8 @@ public class SessionImplTest {
         CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
     Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
     session.writeAtLeastOnceWithOptions(
-        Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()), Options.tag(tag));
+        Collections.singletonList(Mutation.newInsertBuilder("T").set("C").to("x").build()),
+        Options.tag(tag));
 
     CommitRequest request = commit.getValue();
     assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo(tag);
@@ -256,7 +256,7 @@ public class SessionImplTest {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -268,7 +268,7 @@ public class SessionImplTest {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -280,7 +280,7 @@ public class SessionImplTest {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -292,7 +292,7 @@ public class SessionImplTest {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUseReadOnlyTransaction(TimestampBound.strong());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -304,7 +304,7 @@ public class SessionImplTest {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.readOnlyTransaction(TimestampBound.strong());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -320,9 +320,9 @@ public class SessionImplTest {
             CommitResponse.newBuilder()
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
                 .build());
-    session.writeAtLeastOnce(Arrays.<Mutation>asList());
+    session.writeAtLeastOnce(Collections.<Mutation>emptyList());
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -336,7 +336,7 @@ public class SessionImplTest {
     // Note that we don't even run the transaction - just preparing the runner is sufficient.
     session.readWriteTransaction();
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -368,7 +368,7 @@ public class SessionImplTest {
         .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
     session.prepareReadWriteTransaction();
     try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
+      ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (IllegalStateException ex) {
       assertThat(ex.getMessage()).contains("invalidated");
@@ -388,7 +388,7 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.singleUseReadOnlyTransaction(TimestampBound.strong());
-    assertThat(txn.readRow("Dummy", Key.of(), Arrays.asList("C"))).isNull();
+    assertThat(txn.readRow("Dummy", Key.of(), Collections.singletonList("C"))).isNull();
 
     // For now, getReadTimestamp() will raise an ISE because it hasn't seen a timestamp.  It would
     // be better for the read to fail with an INTERNAL error, but we can't do that until txn
@@ -415,7 +415,7 @@ public class SessionImplTest {
 
     ReadOnlyTransaction txn = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      txn.readRow("Dummy", Key.of(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
@@ -456,7 +456,7 @@ public class SessionImplTest {
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
     try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      txn.readRow("Dummy", Key.of(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
@@ -476,7 +476,7 @@ public class SessionImplTest {
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
     try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      txn.readRow("Dummy", Key.of(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
@@ -497,7 +497,7 @@ public class SessionImplTest {
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
     try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
+      txn.readRow("Dummy", Key.of(), Collections.singletonList("C"));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);

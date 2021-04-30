@@ -31,7 +31,7 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
@@ -67,14 +67,16 @@ public final class ITBatchDmlTest {
   public void createTable() throws Exception {
     String ddl =
         "CREATE TABLE T (" + "  K    STRING(MAX) NOT NULL," + "  V    INT64," + ") PRIMARY KEY (K)";
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op = db.updateDdl(Arrays.asList(ddl), null);
+    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
+        db.updateDdl(Collections.singletonList(ddl), null);
     op.get();
   }
 
   @After
   public void dropTable() throws Exception {
     String ddl = "DROP TABLE T";
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op = db.updateDdl(Arrays.asList(ddl), null);
+    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
+        db.updateDdl(Collections.singletonList(ddl), null);
     op.get();
   }
 

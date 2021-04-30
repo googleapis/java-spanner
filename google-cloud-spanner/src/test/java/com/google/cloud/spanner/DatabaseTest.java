@@ -31,7 +31,6 @@ import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -168,7 +167,7 @@ public class DatabaseTest {
     Database database =
         new Database(
             DatabaseId.of("test-project", "test-instance", "test-database"), State.READY, dbClient);
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     database.testIAMPermissions(permissions);
     verify(dbClient).testDatabaseIAMPermissions("test-instance", "test-database", permissions);
   }

@@ -706,7 +706,7 @@ public class DatabaseAdminClientTest {
     assertThat(database.listDatabaseOperations().iterateAll()).hasSize(1);
     // Update the database DDL. This should create an operation for this database.
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        database.updateDdl(Arrays.asList("DROP TABLE FOO"), null);
+        database.updateDdl(Collections.singletonList("DROP TABLE FOO"), null);
     mockDatabaseAdmin.addFilterMatches("name:databases/" + DB_ID, op.getName());
     assertThat(database.listDatabaseOperations().iterateAll()).hasSize(2);
   }
@@ -801,7 +801,7 @@ public class DatabaseAdminClientTest {
   public void testDatabaseIAMPermissions() {
     Iterable<String> permissions =
         client.testDatabaseIAMPermissions(
-            INSTANCE_ID, DB_ID, Arrays.asList("spanner.databases.select"));
+            INSTANCE_ID, DB_ID, Collections.singletonList("spanner.databases.select"));
     assertThat(permissions).containsExactly("spanner.databases.select");
   }
 

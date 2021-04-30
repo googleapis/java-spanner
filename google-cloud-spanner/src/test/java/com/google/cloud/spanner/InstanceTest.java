@@ -24,7 +24,7 @@ import com.google.cloud.Identity;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.common.testing.EqualsTester;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -163,7 +163,7 @@ public class InstanceTest {
   public void testIAMPermissions() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     instance.testIAMPermissions(permissions);
     verify(instanceClient).testInstanceIAMPermissions("test-instance", permissions);
   }

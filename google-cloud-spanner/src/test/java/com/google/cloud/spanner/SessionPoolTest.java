@@ -72,6 +72,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -944,7 +945,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void testSessionNotFoundWrite() {
     SpannerException sessionNotFound =
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
-    List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
+    List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
     when(closedSession.writeWithOptions(mutations)).thenThrow(sessionNotFound);
 
@@ -989,7 +990,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void testSessionNotFoundWriteAtLeastOnce() {
     SpannerException sessionNotFound =
         SpannerExceptionFactoryTest.newSessionNotFoundException(sessionName);
-    List<Mutation> mutations = Arrays.asList(Mutation.newInsertBuilder("FOO").build());
+    List<Mutation> mutations = Collections.singletonList(Mutation.newInsertBuilder("FOO").build());
     final SessionImpl closedSession = mockSession();
     when(closedSession.writeAtLeastOnceWithOptions(mutations)).thenThrow(sessionNotFound);
 

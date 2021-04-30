@@ -61,7 +61,6 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -227,7 +226,8 @@ public class ITBackupTest {
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
             testHelper.getUniqueDatabaseId() + "_db2",
-            Arrays.asList("CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+            Collections.singletonList(
+                "CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     // Make sure all databases are created before we try to create any backups.
     Database db1 = dbOp1.get();
     Database db2 = dbOp2.get();
@@ -236,7 +236,7 @@ public class ITBackupTest {
     // Insert some data into db2 to make sure the backup will have a size>0.
     DatabaseClient client = testHelper.getDatabaseClient(db2);
     client.writeAtLeastOnce(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("BAR")
                 .set("ID")
                 .to(1L)
@@ -319,7 +319,7 @@ public class ITBackupTest {
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertOrUpdateBuilder("BAR")
                     .set("ID")
                     .to(2L)

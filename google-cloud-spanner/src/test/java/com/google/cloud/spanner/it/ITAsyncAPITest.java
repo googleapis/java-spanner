@@ -54,6 +54,7 @@ import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -105,7 +106,7 @@ public class ITAsyncAPITest {
 
   @Before
   public void setupData() {
-    client.write(Arrays.asList(Mutation.delete(TABLE_NAME, KeySet.all())));
+    client.write(Collections.singletonList(Mutation.delete(TABLE_NAME, KeySet.all())));
     // Includes k0..k14.  Note that strings k{10,14} sort between k1 and k2.
     List<Mutation> mutations = new ArrayList<>();
     for (int i = 0; i < 15; ++i) {
@@ -302,7 +303,8 @@ public class ITAsyncAPITest {
       assertThat(res.get()).isEqualTo(1L);
       assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNotNull();
     } finally {
-      client.writeAtLeastOnce(Arrays.asList(Mutation.delete("TestTable", Key.of("k999"))));
+      client.writeAtLeastOnce(
+          Collections.singletonList(Mutation.delete("TestTable", Key.of("k999"))));
       assertThat(client.singleUse().readRow("TestTable", Key.of("k999"), ALL_COLUMNS)).isNull();
     }
   }

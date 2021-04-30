@@ -35,6 +35,7 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -136,7 +137,7 @@ public class DmlBatchTest {
   public void testWriteIterable() {
     DmlBatch batch = createSubject();
     try {
-      batch.writeAsync(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());

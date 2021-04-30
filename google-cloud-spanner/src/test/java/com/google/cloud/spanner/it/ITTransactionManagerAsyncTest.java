@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -222,7 +223,7 @@ public class ITTransactionManagerAsyncTest {
         isUsingEmulator());
 
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));
     try (AsyncTransactionManager manager1 = client.transactionManagerAsync()) {
       TransactionContextFuture txn1 = manager1.beginAsync();

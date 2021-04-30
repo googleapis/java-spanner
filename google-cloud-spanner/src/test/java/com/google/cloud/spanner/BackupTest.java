@@ -34,7 +34,7 @@ import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -283,7 +283,7 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     backup.testIAMPermissions(permissions);
     verify(dbClient).testBackupIAMPermissions("test-instance", "test-backup", permissions);
   }

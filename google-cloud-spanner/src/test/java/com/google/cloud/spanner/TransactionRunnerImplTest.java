@@ -152,7 +152,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             (Answer<List<Session>>)
                 invocation ->
-                    Arrays.asList(
+                    Collections.singletonList(
                         Session.newBuilder()
                             .setName((String) invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(

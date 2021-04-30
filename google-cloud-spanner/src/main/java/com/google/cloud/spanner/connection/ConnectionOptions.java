@@ -246,7 +246,7 @@ public class ConnectionOptions {
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
           new HashSet<>(
-              Arrays.asList(
+              Collections.singletonList(
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""))));
   private static final Set<ConnectionProperty> INTERNAL_VALID_PROPERTIES =
       Sets.union(VALID_PROPERTIES, INTERNAL_PROPERTIES);

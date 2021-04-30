@@ -31,7 +31,7 @@ import com.google.rpc.Status;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -99,7 +99,7 @@ public class TransactionContextImplTest {
             .setTransactionId(ByteString.copyFromUtf8("test"))
             .setOptions(Options.fromTransactionOptions())
             .build()) {
-      impl.batchUpdate(Arrays.asList(statement));
+      impl.batchUpdate(Collections.singletonList(statement));
     }
   }
 }

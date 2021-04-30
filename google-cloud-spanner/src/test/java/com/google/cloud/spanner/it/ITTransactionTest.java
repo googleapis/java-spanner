@@ -54,6 +54,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
@@ -90,7 +91,7 @@ public class ITTransactionTest {
 
   @Before
   public void removeTestData() {
-    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
+    client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("T", KeySet.all())));
   }
 
   private static String uniqueKey() {
@@ -106,7 +107,8 @@ public class ITTransactionTest {
 
     // Initial value.
     client.write(
-        Arrays.asList(Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build()));
+        Collections.singletonList(
+            Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build()));
 
     final int numThreads = 3;
 
@@ -155,7 +157,7 @@ public class ITTransactionTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key), Arrays.asList("V"))
+                .readRow("T", Key.of(key), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo((long) numThreads);
   }
@@ -164,7 +166,8 @@ public class ITTransactionTest {
   public void basicsUsingRead() throws InterruptedException {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
 
-    doBasicsTest((context, key) -> context.readRow("T", Key.of(key), Arrays.asList("V")));
+    doBasicsTest(
+        (context, key) -> context.readRow("T", Key.of(key), Collections.singletonList("V")));
   }
 
   @Test
@@ -212,7 +215,9 @@ public class ITTransactionTest {
     }
 
     Struct row =
-        client.singleUse(TimestampBound.strong()).readRow("T", Key.of(key), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .readRow("T", Key.of(key), Collections.singletonList("K"));
     assertThat(row).isNull();
   }
 
@@ -235,7 +240,9 @@ public class ITTransactionTest {
     }
 
     Struct row =
-        client.singleUse(TimestampBound.strong()).readRow("T", Key.of(key), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .readRow("T", Key.of(key), Collections.singletonList("K"));
     assertThat(row).isNull();
   }
 
@@ -352,13 +359,13 @@ public class ITTransactionTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key1), Arrays.asList("V"))
+                .readRow("T", Key.of(key1), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key2), Arrays.asList("V"))
+                .readRow("T", Key.of(key2), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(2);
   }
@@ -420,7 +427,7 @@ public class ITTransactionTest {
                     "Test",
                     "Index",
                     KeySet.all(),
-                    Arrays.asList("Fingerprint"));
+                    Collections.singletonList("Fingerprint"));
 
                 return null;
               });

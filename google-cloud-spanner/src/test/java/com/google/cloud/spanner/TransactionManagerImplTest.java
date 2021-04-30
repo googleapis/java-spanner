@@ -45,7 +45,6 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -244,7 +243,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             (Answer<List<Session>>)
                 invocation ->
-                    Arrays.asList(
+                    Collections.singletonList(
                         Session.newBuilder()
                             .setName((String) invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(
@@ -303,7 +302,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             (Answer<List<Session>>)
                 invocation ->
-                    Arrays.asList(
+                    Collections.singletonList(
                         Session.newBuilder()
                             .setName((String) invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(

@@ -67,7 +67,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -176,7 +176,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Timestamp timestamp =
         client.write(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
@@ -192,7 +192,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.HIGH));
 
@@ -209,7 +209,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     CommitResponse response =
         client.writeWithOptions(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
     assertNotNull(response);
@@ -223,7 +223,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Timestamp timestamp =
         client.writeAtLeastOnce(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
   }
@@ -234,7 +234,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
     assertNotNull(response);
@@ -255,7 +255,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.LOW));
 
@@ -273,7 +273,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.tag("app=spanner,env=test"));
 
@@ -413,7 +413,8 @@ public class DatabaseClientImplTest {
     runner.run(
         transaction ->
             transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.tag("app=spanner,env=test,action=batch")));
+                Collections.singletonList(UPDATE_STATEMENT),
+                Options.tag("app=spanner,env=test,action=batch")));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -1724,7 +1725,7 @@ public class DatabaseClientImplTest {
             assertThat(client.clientId).isEqualTo(prevClientId);
           }
           prevClientId = client.clientId;
-          client.singleUse().readRow("MyTable", Key.of(0), Arrays.asList("MyColumn"));
+          client.singleUse().readRow("MyTable", Key.of(0), Collections.singletonList("MyColumn"));
         } catch (Exception e) {
           // ignore
         }
@@ -2029,7 +2030,7 @@ public class DatabaseClientImplTest {
     runner.run(
         transaction ->
             transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH)));
+                Collections.singletonList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH)));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);

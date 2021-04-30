@@ -38,6 +38,7 @@ import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -277,9 +278,9 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingBoolArray() {
-    List<Boolean> beforeValue = Arrays.asList(true);
+    List<Boolean> beforeValue = Collections.singletonList(true);
     List<Boolean> chunkedValue = Arrays.asList(false, null, true, true, true, null, null, false);
-    List<Boolean> afterValue = Arrays.asList(true);
+    List<Boolean> afterValue = Collections.singletonList(true);
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -291,9 +292,9 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingInt64Array() {
-    List<Long> beforeValue = Arrays.asList(10L);
+    List<Long> beforeValue = Collections.singletonList(10L);
     List<Long> chunkedValue = Arrays.asList(1L, 2L, null, null, 5L, null, 7L, 8L);
-    List<Long> afterValue = Arrays.asList(20L);
+    List<Long> afterValue = Collections.singletonList(20L);
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -305,9 +306,9 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingFloat64Array() {
-    List<Double> beforeValue = Arrays.asList(10.0);
+    List<Double> beforeValue = Collections.singletonList(10.0);
     List<Double> chunkedValue = Arrays.asList(null, 2.0, 3.0, 4.0, null, 6.0, 7.0, null);
-    List<Double> afterValue = Arrays.asList(20.0);
+    List<Double> afterValue = Collections.singletonList(20.0);
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -319,9 +320,9 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingStringArray() {
-    List<String> beforeValue = Arrays.asList("before");
+    List<String> beforeValue = Collections.singletonList("before");
     List<String> chunkedValue = Arrays.asList("a", "b", null, "d", null, "f", null, "h");
-    List<String> afterValue = Arrays.asList("after");
+    List<String> afterValue = Collections.singletonList("after");
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -337,10 +338,10 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingBytesArray() {
-    List<ByteArray> beforeValue = Arrays.asList(b("before"));
+    List<ByteArray> beforeValue = Collections.singletonList(b("before"));
     List<ByteArray> chunkedValue =
         Arrays.asList(b("a"), b("b"), null, b("d"), null, b("f"), null, b("h"));
-    List<ByteArray> afterValue = Arrays.asList(b("after"));
+    List<ByteArray> afterValue = Collections.singletonList(b("after"));
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -359,11 +360,11 @@ public class GrpcResultSetTest {
     final Type elementType =
         Type.struct(
             Type.StructField.of("a", Type.string()), Type.StructField.of("b", Type.int64()));
-    List<Struct> beforeValue = Arrays.asList(s("before", 10));
+    List<Struct> beforeValue = Collections.singletonList(s("before", 10));
     List<Struct> chunkedValue =
         Arrays.asList(
             s("a", 1), s("b", 2), s("c", 3), null, s(null, 5), null, s("g", 7), s("h", 8));
-    List<Struct> afterValue = Arrays.asList(s("after", 20));
+    List<Struct> afterValue = Collections.singletonList(s("after", 20));
     doArrayTest(
         beforeValue,
         chunkedValue,
@@ -546,7 +547,7 @@ public class GrpcResultSetTest {
         Value.struct(s(null, 30)),
         Value.struct(structType, null),
         Value.structArray(structType, Arrays.asList(s("def", 10), null)),
-        Value.structArray(structType, Arrays.asList((Struct) null)),
+        Value.structArray(structType, Collections.singletonList((Struct) null)),
         Value.structArray(structType, null));
   }
 
@@ -558,7 +559,7 @@ public class GrpcResultSetTest {
                 Type.StructField.of("a", Type.string()), Type.StructField.of("b", Type.int64())));
 
     Struct nestedStruct = s("1", 2L);
-    Value struct = Value.structArray(structType, Arrays.asList(nestedStruct));
+    Value struct = Value.structArray(structType, Collections.singletonList(nestedStruct));
     verifySerialization(
         new Function<Value, com.google.protobuf.Value>() {
 

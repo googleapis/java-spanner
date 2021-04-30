@@ -28,6 +28,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -326,7 +327,7 @@ public class ConnectionOptionsTest {
     final String baseUri =
         "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true"))
-        .isEqualTo(Arrays.asList("autocommit"));
+        .isEqualTo(Collections.singletonList("autocommit"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;readonly=false"))
         .isEqualTo(Arrays.asList("autocommit", "readonly"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;READONLY=false"))

@@ -50,6 +50,7 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class SpannerOptionsTest {
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
         Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
-        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+        Collections.singletonList(stubSettings.batchCreateSessionsSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
             stubSettings.createSessionSettings(),
@@ -276,7 +277,7 @@ public class SpannerOptionsTest {
             stubSettings.getDatabaseSettings(),
             stubSettings.getDatabaseDdlSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
         Arrays.asList(
             stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
@@ -375,7 +376,7 @@ public class SpannerOptionsTest {
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
         Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =

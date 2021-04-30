@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -169,10 +170,14 @@ public class RetryOnInvalidatedSessionTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(
-        StatementResult.read("FOO", KeySet.all(), Arrays.asList("BAR"), READ_RESULTSET));
+        StatementResult.read(
+            "FOO", KeySet.all(), Collections.singletonList("BAR"), READ_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.read(
-            "FOO", KeySet.singleKey(Key.of()), Arrays.asList("BAR"), READ_ROW_RESULTSET));
+            "FOO",
+            KeySet.singleKey(Key.of()),
+            Collections.singletonList("BAR"),
+            READ_ROW_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
 
@@ -287,7 +292,7 @@ public class RetryOnInvalidatedSessionTest {
     invalidateSessionPool();
     int count = 0;
     try (ReadContext context = client.singleUse()) {
-      try (ResultSet rs = context.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+      try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -305,7 +310,7 @@ public class RetryOnInvalidatedSessionTest {
     int count = 0;
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs =
-          context.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+          context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -321,7 +326,7 @@ public class RetryOnInvalidatedSessionTest {
   public void singleUseReadRow() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.singleUse()) {
-      Struct row = context.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+      Struct row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -333,7 +338,8 @@ public class RetryOnInvalidatedSessionTest {
   public void singleUseReadRowUsingIndex() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.singleUse()) {
-      Struct row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+      Struct row =
+          context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -363,7 +369,7 @@ public class RetryOnInvalidatedSessionTest {
     invalidateSessionPool();
     int count = 0;
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
-      try (ResultSet rs = context.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+      try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -381,7 +387,7 @@ public class RetryOnInvalidatedSessionTest {
     int count = 0;
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs =
-          context.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+          context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -397,7 +403,7 @@ public class RetryOnInvalidatedSessionTest {
   public void singleUseReadOnlyTransactionReadRow() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
-      Struct row = context.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+      Struct row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -409,7 +415,8 @@ public class RetryOnInvalidatedSessionTest {
   public void singleUseReadOnlyTransactionReadRowUsingIndex() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
-      Struct row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+      Struct row =
+          context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -439,7 +446,7 @@ public class RetryOnInvalidatedSessionTest {
     invalidateSessionPool();
     int count = 0;
     try (ReadContext context = client.readOnlyTransaction()) {
-      try (ResultSet rs = context.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+      try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -457,7 +464,7 @@ public class RetryOnInvalidatedSessionTest {
     int count = 0;
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
-          context.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+          context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -473,7 +480,7 @@ public class RetryOnInvalidatedSessionTest {
   public void readOnlyTransactionReadRow() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.readOnlyTransaction()) {
-      Struct row = context.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+      Struct row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -485,7 +492,8 @@ public class RetryOnInvalidatedSessionTest {
   public void readOnlyTransactionReadRowUsingIndex() throws InterruptedException {
     invalidateSessionPool();
     try (ReadContext context = client.readOnlyTransaction()) {
-      Struct row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+      Struct row =
+          context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -517,14 +525,14 @@ public class RetryOnInvalidatedSessionTest {
   public void readOnlyTransactionReadNonRecoverable() throws InterruptedException {
     int count = 0;
     try (ReadContext context = client.readOnlyTransaction()) {
-      try (ResultSet rs = context.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+      try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
       }
       assertThat(count).isEqualTo(2);
       invalidateSessionPool();
-      try (ResultSet rs = context.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+      try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -537,7 +545,7 @@ public class RetryOnInvalidatedSessionTest {
     int count = 0;
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
-          context.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+          context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -545,7 +553,7 @@ public class RetryOnInvalidatedSessionTest {
       assertThat(count).isEqualTo(2);
       invalidateSessionPool();
       try (ResultSet rs =
-          context.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+          context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
         while (rs.next()) {
           count++;
         }
@@ -556,20 +564,21 @@ public class RetryOnInvalidatedSessionTest {
   @Test(expected = SessionNotFoundException.class)
   public void readOnlyTransactionReadRowNonRecoverable() throws InterruptedException {
     try (ReadContext context = client.readOnlyTransaction()) {
-      Struct row = context.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+      Struct row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       invalidateSessionPool();
-      row = context.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+      row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
     }
   }
 
   @Test(expected = SessionNotFoundException.class)
   public void readOnlyTransactionReadRowUsingIndexNonRecoverable() throws InterruptedException {
     try (ReadContext context = client.readOnlyTransaction()) {
-      Struct row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+      Struct row =
+          context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       invalidateSessionPool();
-      row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+      row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
     }
   }
 
@@ -642,7 +651,8 @@ public class RetryOnInvalidatedSessionTest {
           runner.run(
               transaction -> {
                 int count1 = 0;
-                try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+                try (ResultSet rs =
+                    transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
                   while (rs.next()) {
                     count1++;
                   }
@@ -666,7 +676,8 @@ public class RetryOnInvalidatedSessionTest {
               transaction -> {
                 int count1 = 0;
                 try (ResultSet rs =
-                    transaction.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+                    transaction.readUsingIndex(
+                        "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
                   while (rs.next()) {
                     count1++;
                   }
@@ -686,7 +697,9 @@ public class RetryOnInvalidatedSessionTest {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       Struct row =
-          runner.run(transaction -> transaction.readRow("FOO", Key.of(), Arrays.asList("BAR")));
+          runner.run(
+              transaction ->
+                  transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -702,7 +715,8 @@ public class RetryOnInvalidatedSessionTest {
       Struct row =
           runner.run(
               transaction ->
-                  transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR")));
+                  transaction.readRowUsingIndex(
+                      "FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
       assertThat(row.getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -729,7 +743,8 @@ public class RetryOnInvalidatedSessionTest {
     try {
       TransactionRunner runner = client.readWriteTransaction();
       long[] count =
-          runner.run(transaction -> transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT)));
+          runner.run(
+              transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
       assertThat(count.length).isEqualTo(1);
       assertThat(count[0]).isEqualTo(UPDATE_COUNT);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -805,7 +820,8 @@ public class RetryOnInvalidatedSessionTest {
                 public Integer run(TransactionContext transaction) throws Exception {
                   attempt++;
                   int count = 0;
-                  try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+                  try (ResultSet rs =
+                      transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
                     while (rs.next()) {
                       count++;
                     }
@@ -814,7 +830,8 @@ public class RetryOnInvalidatedSessionTest {
                   if (attempt == 1) {
                     invalidateSessionPool();
                   }
-                  try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+                  try (ResultSet rs =
+                      transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
                     while (rs.next()) {
                       count++;
                     }
@@ -844,7 +861,7 @@ public class RetryOnInvalidatedSessionTest {
                   int count = 0;
                   try (ResultSet rs =
                       transaction.readUsingIndex(
-                          "FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+                          "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
                     while (rs.next()) {
                       count++;
                     }
@@ -855,7 +872,7 @@ public class RetryOnInvalidatedSessionTest {
                   }
                   try (ResultSet rs =
                       transaction.readUsingIndex(
-                          "FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+                          "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
                     while (rs.next()) {
                       count++;
                     }
@@ -882,12 +899,13 @@ public class RetryOnInvalidatedSessionTest {
                 @Override
                 public Integer run(TransactionContext transaction) throws Exception {
                   attempt++;
-                  Struct row = transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+                  Struct row =
+                      transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
                   assertThat(row.getLong(0)).isEqualTo(1L);
                   if (attempt == 1) {
                     invalidateSessionPool();
                   }
-                  row = transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+                  row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
                   return attempt;
                 }
               });
@@ -911,12 +929,15 @@ public class RetryOnInvalidatedSessionTest {
                 public Integer run(TransactionContext transaction) throws Exception {
                   attempt++;
                   Struct row =
-                      transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+                      transaction.readRowUsingIndex(
+                          "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
                   assertThat(row.getLong(0)).isEqualTo(1L);
                   if (attempt == 1) {
                     invalidateSessionPool();
                   }
-                  row = transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+                  row =
+                      transaction.readRowUsingIndex(
+                          "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
                   return attempt;
                 }
               });
@@ -1011,7 +1032,8 @@ public class RetryOnInvalidatedSessionTest {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
-          try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+          try (ResultSet rs =
+              transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1040,7 +1062,8 @@ public class RetryOnInvalidatedSessionTest {
       while (true) {
         try {
           try (ResultSet rs =
-              transaction.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+              transaction.readUsingIndex(
+                  "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1068,7 +1091,7 @@ public class RetryOnInvalidatedSessionTest {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
-          row = transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+          row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1092,7 +1115,9 @@ public class RetryOnInvalidatedSessionTest {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
-          row = transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+          row =
+              transaction.readRowUsingIndex(
+                  "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1176,7 +1201,7 @@ public class RetryOnInvalidatedSessionTest {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
-          count = transaction.batchUpdate(Arrays.asList(UPDATE_STATEMENT));
+          count = transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1263,7 +1288,8 @@ public class RetryOnInvalidatedSessionTest {
         attempts++;
         int count = 0;
         try {
-          try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+          try (ResultSet rs =
+              transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1272,7 +1298,8 @@ public class RetryOnInvalidatedSessionTest {
           if (attempts == 1) {
             invalidateSessionPool();
           }
-          try (ResultSet rs = transaction.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+          try (ResultSet rs =
+              transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1303,7 +1330,8 @@ public class RetryOnInvalidatedSessionTest {
         int count = 0;
         try {
           try (ResultSet rs =
-              transaction.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+              transaction.readUsingIndex(
+                  "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1313,7 +1341,8 @@ public class RetryOnInvalidatedSessionTest {
             invalidateSessionPool();
           }
           try (ResultSet rs =
-              transaction.readUsingIndex("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"))) {
+              transaction.readUsingIndex(
+                  "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
             while (rs.next()) {
               count++;
             }
@@ -1341,12 +1370,12 @@ public class RetryOnInvalidatedSessionTest {
       while (true) {
         attempts++;
         try {
-          Struct row = transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+          Struct row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
           assertThat(row.getLong(0)).isEqualTo(1L);
           if (attempts == 1) {
             invalidateSessionPool();
           }
-          row = transaction.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+          row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1371,12 +1400,16 @@ public class RetryOnInvalidatedSessionTest {
       while (true) {
         attempts++;
         try {
-          Struct row = transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+          Struct row =
+              transaction.readRowUsingIndex(
+                  "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
           assertThat(row.getLong(0)).isEqualTo(1L);
           if (attempts == 1) {
             invalidateSessionPool();
           }
-          row = transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Arrays.asList("BAR"));
+          row =
+              transaction.readRowUsingIndex(
+                  "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1406,7 +1439,8 @@ public class RetryOnInvalidatedSessionTest {
   public void write() throws InterruptedException {
     invalidateSessionPool();
     try {
-      Timestamp timestamp = client.write(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
+      Timestamp timestamp =
+          client.write(Collections.singletonList(Mutation.delete("FOO", KeySet.all())));
       assertThat(timestamp).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -1419,7 +1453,7 @@ public class RetryOnInvalidatedSessionTest {
     invalidateSessionPool();
     try {
       Timestamp timestamp =
-          client.writeAtLeastOnce(Arrays.asList(Mutation.delete("FOO", KeySet.all())));
+          client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("FOO", KeySet.all())));
       assertThat(timestamp).isNotNull();
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -1435,13 +1469,15 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void asyncRunnerRead() throws InterruptedException {
     asyncRunner_withReadFunction(
-        input -> input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR")));
+        input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncRunnerReadUsingIndex() throws InterruptedException {
     asyncRunner_withReadFunction(
-        input -> input.readUsingIndexAsync("FOO", "IDX", KeySet.all(), Arrays.asList("BAR")));
+        input ->
+            input.readUsingIndexAsync(
+                "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   private void asyncRunner_withReadFunction(
@@ -1490,7 +1526,8 @@ public class RetryOnInvalidatedSessionTest {
     try {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Struct> row =
-          runner.runAsync(txn -> txn.readRowAsync("FOO", Key.of(), Arrays.asList("BAR")), executor);
+          runner.runAsync(
+              txn -> txn.readRowAsync("FOO", Key.of(), Collections.singletonList("BAR")), executor);
       assertThat(get(row).getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
     } catch (SessionNotFoundException e) {
@@ -1505,7 +1542,9 @@ public class RetryOnInvalidatedSessionTest {
       AsyncRunner runner = client.runAsync();
       ApiFuture<Struct> row =
           runner.runAsync(
-              txn -> txn.readRowUsingIndexAsync("FOO", "IDX", Key.of(), Arrays.asList("BAR")),
+              txn ->
+                  txn.readRowUsingIndexAsync(
+                      "FOO", "IDX", Key.of(), Collections.singletonList("BAR")),
               executor);
       assertThat(get(row).getLong(0)).isEqualTo(1L);
       assertThat(failOnInvalidatedSession).isFalse();
@@ -1573,13 +1612,15 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void asyncTransactionManagerAsyncRead() throws InterruptedException {
     asyncTransactionManager_readAsync(
-        input -> input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR")));
+        input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerAsyncReadUsingIndex() throws InterruptedException {
     asyncTransactionManager_readAsync(
-        input -> input.readUsingIndexAsync("FOO", "idx", KeySet.all(), Arrays.asList("BAR")));
+        input ->
+            input.readUsingIndexAsync(
+                "FOO", "idx", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   private void asyncTransactionManager_readAsync(
@@ -1639,13 +1680,14 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void asyncTransactionManagerRead() throws InterruptedException {
     asyncTransactionManager_readSync(
-        input -> input.read("FOO", KeySet.all(), Arrays.asList("BAR")));
+        input -> input.read("FOO", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadUsingIndex() throws InterruptedException {
     asyncTransactionManager_readSync(
-        input -> input.readUsingIndex("FOO", "idx", KeySet.all(), Arrays.asList("BAR")));
+        input ->
+            input.readUsingIndex("FOO", "idx", KeySet.all(), Collections.singletonList("BAR")));
   }
 
   private void asyncTransactionManager_readSync(final Function<TransactionContext, ResultSet> fn)
@@ -1688,7 +1730,8 @@ public class RetryOnInvalidatedSessionTest {
   public void asyncTransactionManagerReadRow() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
         input ->
-            ApiFutures.immediateFuture(input.readRow("FOO", Key.of("foo"), Arrays.asList("BAR"))));
+            ApiFutures.immediateFuture(
+                input.readRow("FOO", Key.of("foo"), Collections.singletonList("BAR"))));
   }
 
   @Test
@@ -1696,19 +1739,22 @@ public class RetryOnInvalidatedSessionTest {
     asyncTransactionManager_readRowFunction(
         input ->
             ApiFutures.immediateFuture(
-                input.readRowUsingIndex("FOO", "idx", Key.of("foo"), Arrays.asList("BAR"))));
+                input.readRowUsingIndex(
+                    "FOO", "idx", Key.of("foo"), Collections.singletonList("BAR"))));
   }
 
   @Test
   public void asyncTransactionManagerReadRowAsync() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        input -> input.readRowAsync("FOO", Key.of("foo"), Arrays.asList("BAR")));
+        input -> input.readRowAsync("FOO", Key.of("foo"), Collections.singletonList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadRowUsingIndexAsync() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        input -> input.readRowUsingIndexAsync("FOO", "idx", Key.of("foo"), Arrays.asList("BAR")));
+        input ->
+            input.readRowUsingIndexAsync(
+                "FOO", "idx", Key.of("foo"), Collections.singletonList("BAR")));
   }
 
   private void asyncTransactionManager_readRowFunction(

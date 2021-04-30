@@ -45,8 +45,8 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -325,7 +325,7 @@ public class InstanceAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       ListInstanceConfigsResponse.Builder builder =
           ListInstanceConfigsResponse.newBuilder()
-              .addAllInstanceConfigs(Arrays.asList(configs.get(i)));
+              .addAllInstanceConfigs(Collections.singletonList(configs.get(i)));
       if (i < (configs.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }
@@ -391,7 +391,8 @@ public class InstanceAdminGaxTest {
     }
     for (int i = 0; i < 2; i++) {
       ListInstancesResponse.Builder builder =
-          ListInstancesResponse.newBuilder().addAllInstances(Arrays.asList(instances.get(i)));
+          ListInstancesResponse.newBuilder()
+              .addAllInstances(Collections.singletonList(instances.get(i)));
       if (i < (instances.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }

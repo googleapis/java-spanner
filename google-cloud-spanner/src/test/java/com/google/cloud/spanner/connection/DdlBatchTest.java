@@ -226,7 +226,7 @@ public class DdlBatchTest {
   public void testWriteIterable() {
     DdlBatch batch = createSubject();
     try {
-      batch.writeAsync(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());

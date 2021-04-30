@@ -39,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
@@ -896,7 +897,7 @@ public abstract class AbstractConnectionImplTest {
       if (!isWriteAllowed() || !connection.isAutocommit()) {
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       }
-      connection.write(Arrays.asList(createTestMutation()));
+      connection.write(Collections.singletonList(createTestMutation()));
     }
   }
 
@@ -916,7 +917,7 @@ public abstract class AbstractConnectionImplTest {
       if (!isWriteAllowed() || connection.isAutocommit()) {
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       }
-      connection.bufferedWrite(Arrays.asList(createTestMutation()));
+      connection.bufferedWrite(Collections.singletonList(createTestMutation()));
     }
   }
 

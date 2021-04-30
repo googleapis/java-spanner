@@ -36,7 +36,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -80,7 +80,7 @@ public final class ITDMLTest {
 
   @Before
   public void increaseTestIdAndDeleteTestData() {
-    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
+    client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("T", KeySet.all())));
     id++;
   }
 
@@ -136,7 +136,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
 
@@ -147,7 +147,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
 
@@ -156,7 +156,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -166,21 +166,21 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
     executeUpdate(DML_COUNT, updateDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
     executeUpdate(DML_COUNT, deleteDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -210,7 +210,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(500);
 
@@ -229,7 +229,8 @@ public final class ITDMLTest {
           assertThat(rowCount).isEqualTo(1);
           assertThat(
                   transaction
-                      .readRow("T", Key.of(String.format("%d-boo2", id)), Arrays.asList("v"))
+                      .readRow(
+                          "T", Key.of(String.format("%d-boo2", id)), Collections.singletonList("v"))
                       .getLong(0))
               .isEqualTo(2 * 2);
           return null;
@@ -270,7 +271,7 @@ public final class ITDMLTest {
             .read(
                 "T",
                 KeySet.range(KeyRange.prefix(Key.of(String.format("%d-boo", id)))),
-                Arrays.asList("K"));
+                Collections.singletonList("K"));
     assertThat(resultSet.next()).isFalse();
   }
 
@@ -297,7 +298,9 @@ public final class ITDMLTest {
     KeySet.Builder keys = KeySet.newBuilder();
     keys.addKey(Key.of(key1)).addKey(Key.of(key2));
     ResultSet resultSet =
-        client.singleUse(TimestampBound.strong()).read("T", keys.build(), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .read("T", keys.build(), Collections.singletonList("K"));
     int rowCount = 0;
     while (resultSet.next()) {
       rowCount++;

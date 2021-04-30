@@ -375,7 +375,7 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
     rs.close();
     try {
       rs.getCurrentRowAsStruct();
@@ -390,7 +390,7 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
     try {
       rs.getCurrentRowAsStruct();
       fail("Expected exception");
@@ -404,7 +404,7 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     final AtomicInteger count = new AtomicInteger();
     AsyncResultSet rs = ResultSets.toAsyncResultSet(delegate);
@@ -433,7 +433,7 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
@@ -478,7 +478,7 @@ public class ResultSetsTest {
         ApiFutures.immediateFuture(
             ResultSets.forRows(
                 Type.struct(Type.StructField.of("f1", Type.string())),
-                Arrays.asList(Struct.newBuilder().set("f1").to("x").build())));
+                Collections.singletonList(Struct.newBuilder().set("f1").to("x").build())));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
