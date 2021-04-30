@@ -216,10 +216,9 @@ public abstract class AbstractMockServerTest {
   ITConnection createConnection(
       List<StatementExecutionInterceptor> interceptors,
       List<TransactionRetryListener> transactionRetryListeners) {
-    StringBuilder url = new StringBuilder(getBaseUrl());
     ConnectionOptions.Builder builder =
         ConnectionOptions.newBuilder()
-            .setUri(url.toString())
+            .setUri(getBaseUrl())
             .setStatementExecutionInterceptors(interceptors);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);

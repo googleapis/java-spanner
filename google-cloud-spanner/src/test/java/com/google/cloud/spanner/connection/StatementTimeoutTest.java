@@ -81,10 +81,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
   private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
   ITConnection createConnection() {
-    StringBuilder url = new StringBuilder(getBaseUrl());
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
-            .setUri(url.toString())
+            .setUri(getBaseUrl())
             .setConfigurator(
                 optionsConfigurator ->
                     optionsConfigurator
