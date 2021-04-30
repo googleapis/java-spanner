@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -879,8 +880,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               session.toBuilder().setApproximateLastUseTime(getCurrentGoogleTimestamp()).build());
         }
       }
-      Collections.sort(
-          res, (session1, session2) -> session1.getName().compareTo(session2.getName()));
+      res.sort(Comparator.comparing(Session::getName));
       responseObserver.onNext(ListSessionsResponse.newBuilder().addAllSessions(res).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
