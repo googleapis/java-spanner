@@ -582,7 +582,7 @@ public class DatabaseAdminClientTest {
         .containsExactly(backupWithLargestSize);
     // All backups with a create time after a certain timestamp and that are also ready.
     ts = backup2.getProto().getCreateTime().toString();
-    filter = String.format("create_time >= \"%s\" AND state:READY", ts.toString());
+    filter = String.format("create_time >= \"%s\" AND state:READY", ts);
     mockDatabaseAdmin.addFilterMatches(filter, backup2.getId().getName());
     assertThat(instance.listBackups(Options.filter(filter)).iterateAll()).containsExactly(backup2);
   }

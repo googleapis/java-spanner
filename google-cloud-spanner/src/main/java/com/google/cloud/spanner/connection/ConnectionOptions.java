@@ -710,14 +710,13 @@ public class ConnectionOptions {
       }
     }
     if (lenient) {
-      return String.format(
-          "Invalid properties found in connection URI: %s", invalidProperties.toString());
+      return String.format("Invalid properties found in connection URI: %s", invalidProperties);
     } else {
       Preconditions.checkArgument(
           invalidProperties.isEmpty(),
           String.format(
               "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
-              invalidProperties.toString()));
+              invalidProperties));
       return null;
     }
   }
