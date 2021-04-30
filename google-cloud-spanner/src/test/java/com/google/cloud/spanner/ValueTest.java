@@ -54,8 +54,7 @@ public class ValueTest {
   /** Returns an {@code Iterable} over {@code values} that is not a {@code Collection}. */
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
-    final List<T> list = Lists.newArrayList(values);
-    return list::iterator;
+    return Lists.newArrayList(values);
   }
 
   @Test
