@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -79,14 +78,7 @@ class AsyncRunnerImpl implements AsyncRunner {
   public ApiFuture<Timestamp> getCommitTimestamp() {
     checkState(commitResponse != null, "runAsync() has not yet been called");
     return ApiFutures.transform(
-        commitResponse,
-        new ApiFunction<CommitResponse, Timestamp>() {
-          @Override
-          public Timestamp apply(CommitResponse input) {
-            return input.getCommitTimestamp();
-          }
-        },
-        MoreExecutors.directExecutor());
+        commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
   }
 
   public ApiFuture<CommitResponse> getCommitResponse() {

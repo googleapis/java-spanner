@@ -83,7 +83,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -881,13 +880,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       Collections.sort(
-          res,
-          new Comparator<Session>() {
-            @Override
-            public int compare(Session o1, Session o2) {
-              return o1.getName().compareTo(o2.getName());
-            }
-          });
+          res, (session1, session2) -> session1.getName().compareTo(session2.getName()));
       responseObserver.onNext(ListSessionsResponse.newBuilder().addAllSessions(res).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
@@ -1420,13 +1413,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),
@@ -1472,13 +1459,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),

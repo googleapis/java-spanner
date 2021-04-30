@@ -285,18 +285,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         Type.bool(),
-        new Function<List<Boolean>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Boolean> input) {
-            return Value.boolArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Boolean>>() {
-          @Override
-          public List<Boolean> apply(StructReader input) {
-            return input.getBooleanList(0);
-          }
-        });
+        input -> Value.boolArray(input).toProto(),
+        input -> input.getBooleanList(0));
   }
 
   @Test
@@ -309,18 +299,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         Type.int64(),
-        new Function<List<Long>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Long> input) {
-            return Value.int64Array(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Long>>() {
-          @Override
-          public List<Long> apply(StructReader input) {
-            return input.getLongList(0);
-          }
-        });
+        input -> Value.int64Array(input).toProto(),
+        input -> input.getLongList(0));
   }
 
   @Test
@@ -333,18 +313,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         Type.float64(),
-        new Function<List<Double>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Double> input) {
-            return Value.float64Array(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Double>>() {
-          @Override
-          public List<Double> apply(StructReader input) {
-            return input.getDoubleList(0);
-          }
-        });
+        input -> Value.float64Array(input).toProto(),
+        input -> input.getDoubleList(0));
   }
 
   @Test
@@ -357,18 +327,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         Type.string(),
-        new Function<List<String>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<String> input) {
-            return Value.stringArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<String>>() {
-          @Override
-          public List<String> apply(StructReader input) {
-            return input.getStringList(0);
-          }
-        });
+        input -> Value.stringArray(input).toProto(),
+        input -> input.getStringList(0));
   }
 
   private static ByteArray b(String data) {
@@ -386,18 +346,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         Type.bytes(),
-        new Function<List<ByteArray>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<ByteArray> input) {
-            return Value.bytesArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<ByteArray>>() {
-          @Override
-          public List<ByteArray> apply(StructReader input) {
-            return input.getBytesList(0);
-          }
-        });
+        input -> Value.bytesArray(input).toProto(),
+        input -> input.getBytesList(0));
   }
 
   private static Struct s(String a, long b) {
@@ -419,18 +369,8 @@ public class GrpcResultSetTest {
         chunkedValue,
         afterValue,
         elementType,
-        new Function<List<Struct>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Struct> input) {
-            return Value.structArray(elementType, input).toProto();
-          }
-        },
-        new Function<StructReader, List<Struct>>() {
-          @Override
-          public List<Struct> apply(StructReader input) {
-            return input.getStructList(0);
-          }
-        });
+        input -> Value.structArray(elementType, input).toProto(),
+        input -> input.getStructList(0));
   }
 
   @Test

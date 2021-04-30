@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncTransactionManager;
@@ -40,7 +39,6 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -109,19 +107,17 @@ public class ITTransactionManagerAsyncTest {
         assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
         try {
           txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                      txn.buffer(
-                          Mutation.newInsertBuilder("T")
-                              .set("K")
-                              .to("Key1")
-                              .set("BoolValue")
-                              .to(true)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
+                  (AsyncTransactionFunction<Void, Void>)
+                      (transaction, ignored) -> {
+                        transaction.buffer(
+                            Mutation.newInsertBuilder("T")
+                                .set("K")
+                                .to("Key1")
+                                .set("BoolValue")
+                                .to(true)
+                                .build());
+                        return ApiFutures.immediateFuture(null);
+                      },
                   executor)
               .commitAsync()
               .get();
@@ -146,19 +142,17 @@ public class ITTransactionManagerAsyncTest {
       while (true) {
         try {
           txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                      txn.buffer(
-                          Mutation.newInsertBuilder("InvalidTable")
-                              .set("K")
-                              .to("Key1")
-                              .set("BoolValue")
-                              .to(true)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
+                  (AsyncTransactionFunction<Void, Void>)
+                      (transaction, ignored) -> {
+                        transaction.buffer(
+                            Mutation.newInsertBuilder("InvalidTable")
+                                .set("K")
+                                .to("Key1")
+                                .set("BoolValue")
+                                .to(true)
+                                .build());
+                        return ApiFutures.immediateFuture(null);
+                      },
                   executor)
               .commitAsync()
               .get();
@@ -191,19 +185,17 @@ public class ITTransactionManagerAsyncTest {
       TransactionContextFuture txn = manager.beginAsync();
       while (true) {
         txn.then(
-            new AsyncTransactionFunction<Void, Void>() {
-              @Override
-              public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                txn.buffer(
-                    Mutation.newInsertBuilder("T")
-                        .set("K")
-                        .to("Key2")
-                        .set("BoolValue")
-                        .to(true)
-                        .build());
-                return ApiFutures.immediateFuture(null);
-              }
-            },
+            (AsyncTransactionFunction<Void, Void>)
+                (transaction, ignored) -> {
+                  transaction.buffer(
+                      Mutation.newInsertBuilder("T")
+                          .set("K")
+                          .to("Key2")
+                          .set("BoolValue")
+                          .to(true)
+                          .build());
+                  return ApiFutures.immediateFuture(null);
+                },
             executor);
         try {
           manager.rollbackAsync();
@@ -241,39 +233,30 @@ public class ITTransactionManagerAsyncTest {
         try {
           AsyncTransactionStep<Void, Struct> txn1Step1 =
               txn1.then(
-                  new AsyncTransactionFunction<Void, Struct>() {
-                    @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
-                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
-                    }
-                  },
+                  (transaction, ignored) ->
+                      transaction.readRowAsync(
+                          "T", Key.of("Key3"), Arrays.asList("K", "BoolValue")),
                   executor);
           manager2 = client.transactionManagerAsync();
           txn2 = manager2.beginAsync();
           txn2Step1 =
               txn2.then(
-                  new AsyncTransactionFunction<Void, Struct>() {
-                    @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
-                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
-                    }
-                  },
+                  (transaction, ignored) ->
+                      transaction.readRowAsync(
+                          "T", Key.of("Key3"), Arrays.asList("K", "BoolValue")),
                   executor);
 
           AsyncTransactionStep<Struct, Void> txn1Step2 =
               txn1Step1.then(
-                  new AsyncTransactionFunction<Struct, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Struct input) {
-                      txn.buffer(
-                          Mutation.newUpdateBuilder("T")
-                              .set("K")
-                              .to("Key3")
-                              .set("BoolValue")
-                              .to(false)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newUpdateBuilder("T")
+                            .set("K")
+                            .to("Key3")
+                            .set("BoolValue")
+                            .to(false)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor);
 
@@ -300,18 +283,15 @@ public class ITTransactionManagerAsyncTest {
       }
       AsyncTransactionStep<Void, Void> txn2Step2 =
           txn2.then(
-              new AsyncTransactionFunction<Void, Void>() {
-                @Override
-                public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                  txn.buffer(
-                      Mutation.newUpdateBuilder("T")
-                          .set("K")
-                          .to("Key3")
-                          .set("BoolValue")
-                          .to(true)
-                          .build());
-                  return ApiFutures.immediateFuture(null);
-                }
+              (transaction, ignored) -> {
+                transaction.buffer(
+                    Mutation.newUpdateBuilder("T")
+                        .set("K")
+                        .to("Key3")
+                        .set("BoolValue")
+                        .to(true)
+                        .build());
+                return ApiFutures.immediateFuture(null);
               },
               executor);
       txn2Step2.commitAsync().get();

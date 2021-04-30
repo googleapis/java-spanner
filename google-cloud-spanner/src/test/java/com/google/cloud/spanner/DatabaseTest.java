@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.Database}. */
@@ -72,20 +71,14 @@ public class DatabaseTest {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
         .thenAnswer(
-            new Answer<Backup.Builder>() {
-              @Override
-              public Backup.Builder answer(InvocationOnMock invocation) {
-                return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
-              }
-            });
+            (Answer<Backup.Builder>)
+                invocation ->
+                    new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]));
     when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
         .thenAnswer(
-            new Answer<Database.Builder>() {
-              @Override
-              public Database.Builder answer(InvocationOnMock invocation) {
-                return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
-              }
-            });
+            (Answer<Database.Builder>)
+                invocation ->
+                    new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
   }
 
   @Test

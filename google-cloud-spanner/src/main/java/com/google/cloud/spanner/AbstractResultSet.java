@@ -32,7 +32,6 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -524,12 +523,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           // Use a view: element conversion is virtually free.
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, Boolean>() {
-                @Override
-                public Boolean apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
@@ -551,12 +545,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRING:
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, String>() {
-                @Override
-                public String apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case BYTES:
           {
             // Materialize list: element conversion is expensive and should happen only once.
@@ -1012,12 +1001,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
       final CountDownLatch latch = new CountDownLatch(1);
       final Context.CancellationListener listener =
-          new Context.CancellationListener() {
-            @Override
-            public void cancelled(Context context) {
-              // Wakeup on cancellation / DEADLINE_EXCEEDED.
-              latch.countDown();
-            }
+          ignored -> {
+            // Wakeup on cancellation / DEADLINE_EXCEEDED.
+            latch.countDown();
           };
 
       context.addListener(listener, DirectExecutor.INSTANCE);

@@ -37,7 +37,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -385,14 +384,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 try {
                   long[] res =
                       transaction.batchUpdate(
-                          Iterables.transform(
-                              updates,
-                              new Function<ParsedStatement, Statement>() {
-                                @Override
-                                public Statement apply(ParsedStatement input) {
-                                  return input.getStatement();
-                                }
-                              }));
+                          Iterables.transform(updates, ParsedStatement::getStatement));
                   state = UnitOfWorkState.COMMITTED;
                   return res;
                 } catch (Throwable t) {

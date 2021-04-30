@@ -18,13 +18,11 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.common.base.Stopwatch;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
-import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -54,12 +52,9 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
         .setProjectId("p")
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                input.usePlaintext();
-                return input;
-              }
+            input -> {
+              input.usePlaintext();
+              return input;
             })
         .setHost("http://localhost:" + getPort())
         .setCredentials(NoCredentials.getInstance())

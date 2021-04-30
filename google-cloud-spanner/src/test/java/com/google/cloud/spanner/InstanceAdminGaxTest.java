@@ -18,13 +18,10 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.common.base.Throwables;
@@ -253,12 +250,9 @@ public class InstanceAdminGaxTest {
     builder
         .getInstanceAdminStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettingsToUse);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettingsToUse);
+              return null;
             });
     if (!builder
         .getInstanceAdminStubSettingsBuilder()

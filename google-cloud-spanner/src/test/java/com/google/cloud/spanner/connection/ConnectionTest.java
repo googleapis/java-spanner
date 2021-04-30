@@ -27,9 +27,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -61,13 +59,7 @@ public class ConnectionTest {
     @Test
     public void testUseOptimizerVersionFromEnvironment() {
       try {
-        SpannerOptions.useEnvironment(
-            new SpannerOptions.SpannerEnvironment() {
-              @Override
-              public String getOptimizerVersion() {
-                return "20";
-              }
-            });
+        SpannerOptions.useEnvironment(() -> "20");
         try (Connection connection = createConnection()) {
           // Do a query and verify that the version from the environment is used.
           try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {
@@ -204,13 +196,9 @@ public class ConnectionTest {
     public void testMinSessions() throws InterruptedException, TimeoutException {
       try (Connection connection = createConnection()) {
         mockSpanner.waitForRequestsToContain(
-            new Predicate<AbstractMessage>() {
-              @Override
-              public boolean apply(AbstractMessage input) {
-                return input instanceof BatchCreateSessionsRequest
-                    && ((BatchCreateSessionsRequest) input).getSessionCount() == 1;
-              }
-            },
+            input ->
+                input instanceof BatchCreateSessionsRequest
+                    && ((BatchCreateSessionsRequest) input).getSessionCount() == 1,
             5000L);
       }
     }

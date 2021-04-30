@@ -27,7 +27,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
@@ -412,19 +411,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -458,19 +454,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -506,19 +499,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });

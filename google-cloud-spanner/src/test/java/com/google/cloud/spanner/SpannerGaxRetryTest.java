@@ -22,11 +22,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -161,12 +158,9 @@ public class SpannerGaxRetryTest {
     builder
         .getSpannerStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettings);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettings);
+              return null;
             });
     builder
         .getSpannerStubSettingsBuilder()

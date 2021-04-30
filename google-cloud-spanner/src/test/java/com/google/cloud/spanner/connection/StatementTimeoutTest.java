@@ -30,10 +30,8 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions.Builder;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
-import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.longrunning.Operation;
@@ -88,10 +86,8 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
         ConnectionOptions.newBuilder()
             .setUri(url.toString())
             .setConfigurator(
-                new SpannerOptionsConfigurator() {
-                  @Override
-                  public void configure(Builder options) {
-                    options
+                optionsConfigurator ->
+                    optionsConfigurator
                         .getDatabaseAdminStubSettingsBuilder()
                         .updateDatabaseDdlOperationSettings()
                         .setPollingAlgorithm(
@@ -101,9 +97,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                                     .setMaxRetryDelay(Duration.ofMillis(1L))
                                     .setRetryDelayMultiplier(1.0)
                                     .setTotalTimeout(Duration.ofMinutes(10L))
-                                    .build()));
-                  }
-                })
+                                    .build())))
             .build();
     return createITConnection(options);
   }

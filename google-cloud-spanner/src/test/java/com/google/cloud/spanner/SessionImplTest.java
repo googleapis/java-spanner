@@ -29,6 +29,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.StreamingCall;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
@@ -62,7 +63,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.SessionImpl}. */
@@ -435,14 +435,12 @@ public class SessionImplTest {
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
     Mockito.when(rpc.read(Mockito.<ReadRequest>any(), consumer.capture(), Mockito.eq(options)))
         .then(
-            new Answer<SpannerRpc.StreamingCall>() {
-              @Override
-              public SpannerRpc.StreamingCall answer(InvocationOnMock invocation) {
-                consumer.getValue().onPartialResultSet(myResultSet);
-                consumer.getValue().onCompleted();
-                return new NoOpStreamingCall();
-              }
-            });
+            (Answer<StreamingCall>)
+                invocation -> {
+                  consumer.getValue().onPartialResultSet(myResultSet);
+                  consumer.getValue().onCompleted();
+                  return new NoOpStreamingCall();
+                });
   }
 
   @Test

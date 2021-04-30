@@ -558,13 +558,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDefaultQueryOptions() {
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "");
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
@@ -579,13 +573,7 @@ public class SpannerOptionsTest {
         .isEqualTo(QueryOptions.getDefaultInstance());
 
     // Now simulate that the user has set an environment variable for the query optimizer version.
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "2";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "2");
     // Create options with '1' as the default query optimizer version. This should be overridden by
     // the environment variable.
     options =

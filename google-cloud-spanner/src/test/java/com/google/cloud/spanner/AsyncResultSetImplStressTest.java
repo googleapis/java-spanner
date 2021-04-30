@@ -24,9 +24,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.CursorState;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Type.StructField;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -176,14 +174,7 @@ public class AsyncResultSetImplStressTest {
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSetImpl impl =
             new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
-          List<Row> list =
-              impl.toList(
-                  new Function<StructReader, Row>() {
-                    @Override
-                    public Row apply(StructReader input) {
-                      return Row.create(input);
-                    }
-                  });
+          List<Row> list = impl.toList(Row::create);
           assertThat(list).containsExactlyElementsIn(createExpectedRows());
         }
       }
@@ -198,14 +189,7 @@ public class AsyncResultSetImplStressTest {
         try (AsyncResultSetImpl impl =
             new AsyncResultSetImpl(
                 executorProvider, createResultSetWithErrors(1.0 / resultSetSize), bufferSize)) {
-          List<Row> list =
-              impl.toList(
-                  new Function<StructReader, Row>() {
-                    @Override
-                    public Row apply(StructReader input) {
-                      return Row.create(input);
-                    }
-                  });
+          List<Row> list = impl.toList(Row::create);
           assertThat(list).containsExactlyElementsIn(createExpectedRows());
         } catch (SpannerException e) {
           assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -224,15 +208,7 @@ public class AsyncResultSetImplStressTest {
       for (int i = 0; i < TEST_RUNS; i++) {
         try (AsyncResultSet impl =
             new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
-          futures.add(
-              impl.toListAsync(
-                  new Function<StructReader, Row>() {
-                    @Override
-                    public Row apply(StructReader input) {
-                      return Row.create(input);
-                    }
-                  },
-                  executor));
+          futures.add(impl.toListAsync(Row::create, executor));
         }
       }
       List<List<Row>> lists = ApiFutures.allAsList(futures).get();
@@ -259,23 +235,20 @@ public class AsyncResultSetImplStressTest {
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // Randomly do something with the received data or not. Not calling tryNext() in
-                    // the onDataReady is not 'normal', but users may do it, and the result set
-                    // should be able to handle that.
-                    if (random.nextBoolean()) {
-                      CursorState state;
-                      while ((state = resultSet.tryNext()) == CursorState.OK) {
-                        builder.add(Row.create(resultSet));
-                      }
-                      if (state == CursorState.DONE) {
-                        future.set(builder.build());
-                      }
+                resultSet -> {
+                  // Randomly do something with the received data or not. Not calling tryNext() in
+                  // the onDataReady is not 'normal', but users may do it, and the result set
+                  // should be able to handle that.
+                  if (random.nextBoolean()) {
+                    CursorState state;
+                    while ((state = resultSet.tryNext()) == CursorState.OK) {
+                      builder.add(Row.create(resultSet));
                     }
-                    return CallbackResponse.CONTINUE;
+                    if (state == CursorState.DONE) {
+                      future.set(builder.build());
+                    }
                   }
+                  return CallbackResponse.CONTINUE;
                 });
             assertThat(future.get()).containsExactlyElementsIn(createExpectedRows());
           }
@@ -299,23 +272,20 @@ public class AsyncResultSetImplStressTest {
             ApiFuture<Void> res =
                 impl.setCallback(
                     executor,
-                    new ReadyCallback() {
-                      @Override
-                      public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                        switch (resultSet.tryNext()) {
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return random.nextBoolean()
-                                ? CallbackResponse.DONE
-                                : CallbackResponse.CONTINUE;
-                          case OK:
-                            return random.nextInt(resultSetSize) <= 2
-                                ? CallbackResponse.DONE
-                                : CallbackResponse.CONTINUE;
-                          default:
-                            throw new IllegalStateException();
-                        }
+                    resultSet -> {
+                      switch (resultSet.tryNext()) {
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return random.nextBoolean()
+                              ? CallbackResponse.DONE
+                              : CallbackResponse.CONTINUE;
+                        case OK:
+                          return random.nextInt(resultSetSize) <= 2
+                              ? CallbackResponse.DONE
+                              : CallbackResponse.CONTINUE;
+                        default:
+                          throw new IllegalStateException();
                       }
                     });
             assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
@@ -345,22 +315,19 @@ public class AsyncResultSetImplStressTest {
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    CursorState state;
-                    while ((state = resultSet.tryNext()) == CursorState.OK) {
-                      builder.add(Row.create(resultSet));
-                      // Randomly request the iterator to pause.
-                      if (random.nextBoolean()) {
-                        return CallbackResponse.PAUSE;
-                      }
+                resultSet -> {
+                  CursorState state;
+                  while ((state = resultSet.tryNext()) == CursorState.OK) {
+                    builder.add(Row.create(resultSet));
+                    // Randomly request the iterator to pause.
+                    if (random.nextBoolean()) {
+                      return CallbackResponse.PAUSE;
                     }
-                    if (state == CursorState.DONE) {
-                      future.set(builder.build());
-                    }
-                    return CallbackResponse.CONTINUE;
                   }
+                  if (state == CursorState.DONE) {
+                    future.set(builder.build());
+                  }
+                  return CallbackResponse.CONTINUE;
                 });
           }
         }
@@ -407,26 +374,23 @@ public class AsyncResultSetImplStressTest {
             final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
             impl.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      CursorState state;
-                      while ((state = resultSet.tryNext()) == CursorState.OK) {
-                        builder.add(Row.create(resultSet));
-                        // Randomly request the iterator to pause.
-                        if (random.nextBoolean()) {
-                          return CallbackResponse.PAUSE;
-                        }
+                resultSet -> {
+                  try {
+                    CursorState state;
+                    while ((state = resultSet.tryNext()) == CursorState.OK) {
+                      builder.add(Row.create(resultSet));
+                      // Randomly request the iterator to pause.
+                      if (random.nextBoolean()) {
+                        return CallbackResponse.PAUSE;
                       }
-                      if (state == CursorState.DONE) {
-                        future.set(builder.build());
-                      }
-                      return CallbackResponse.CONTINUE;
-                    } catch (SpannerException e) {
-                      future.setException(e);
-                      throw e;
                     }
+                    if (state == CursorState.DONE) {
+                      future.set(builder.build());
+                    }
+                    return CallbackResponse.CONTINUE;
+                  } catch (SpannerException e) {
+                    future.setException(e);
+                    throw e;
                   }
                 });
           }

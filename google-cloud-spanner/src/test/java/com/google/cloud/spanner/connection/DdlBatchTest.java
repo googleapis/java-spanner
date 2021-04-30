@@ -61,7 +61,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatcher;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
@@ -89,13 +88,11 @@ public class DdlBatchTest {
       if (waitForMillis > 0L) {
         when(operation.get())
             .thenAnswer(
-                new Answer<Void>() {
-                  @Override
-                  public Void answer(InvocationOnMock invocation) throws Throwable {
-                    Thread.sleep(waitForMillis);
-                    return null;
-                  }
-                });
+                (Answer<Void>)
+                    invocation -> {
+                      Thread.sleep(waitForMillis);
+                      return null;
+                    });
       } else if (exceptionOnGetResult) {
         when(operation.get())
             .thenThrow(

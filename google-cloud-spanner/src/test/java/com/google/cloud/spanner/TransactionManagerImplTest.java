@@ -39,8 +39,10 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
 import java.util.Arrays;
@@ -56,7 +58,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
@@ -241,43 +242,33 @@ public class TransactionManagerImplTest {
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                return Arrays.asList(
-                    com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0] + "/sessions/1")
-                        .setCreateTime(
-                            com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<List<Session>>)
+                invocation ->
+                    Arrays.asList(
+                        Session.newBuilder()
+                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setCreateTime(
+                                com.google.protobuf.Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<Transaction>>() {
-              @Override
-              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    Transaction.newBuilder()
-                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<Transaction>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        Transaction.newBuilder()
+                            .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                            .build()));
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
-              @Override
-              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
-                  InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    com.google.spanner.v1.CommitResponse.newBuilder()
-                        .setCommitTimestamp(
-                            com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        com.google.spanner.v1.CommitResponse.newBuilder()
+                            .setCommitTimestamp(
+                                com.google.protobuf.Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);
@@ -310,66 +301,54 @@ public class TransactionManagerImplTest {
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                return Arrays.asList(
-                    com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0] + "/sessions/1")
-                        .setCreateTime(
-                            com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<List<Session>>)
+                invocation ->
+                    Arrays.asList(
+                        Session.newBuilder()
+                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setCreateTime(
+                                com.google.protobuf.Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<Transaction>>() {
-              @Override
-              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    Transaction.newBuilder()
-                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<Transaction>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        Transaction.newBuilder()
+                            .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                            .build()));
     final AtomicInteger transactionsStarted = new AtomicInteger();
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<com.google.spanner.v1.ResultSet>() {
-              @Override
-              public com.google.spanner.v1.ResultSet answer(InvocationOnMock invocation) {
-                com.google.spanner.v1.ResultSet.Builder builder =
-                    com.google.spanner.v1.ResultSet.newBuilder()
-                        .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
-                ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
-                if (request.getTransaction() != null && request.getTransaction().hasBegin()) {
-                  transactionsStarted.incrementAndGet();
-                  builder.setMetadata(
-                      ResultSetMetadata.newBuilder()
-                          .setTransaction(
-                              Transaction.newBuilder()
-                                  .setId(ByteString.copyFromUtf8("test-tx"))
-                                  .build())
-                          .build());
-                }
-                return builder.build();
-              }
-            });
+            (Answer<ResultSet>)
+                invocation -> {
+                  ResultSet.Builder builder =
+                      ResultSet.newBuilder()
+                          .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
+                  ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
+                  if (request.getTransaction() != null && request.getTransaction().hasBegin()) {
+                    transactionsStarted.incrementAndGet();
+                    builder.setMetadata(
+                        ResultSetMetadata.newBuilder()
+                            .setTransaction(
+                                Transaction.newBuilder()
+                                    .setId(ByteString.copyFromUtf8("test-tx"))
+                                    .build())
+                            .build());
+                  }
+                  return builder.build();
+                });
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
-              @Override
-              public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
-                  InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    com.google.spanner.v1.CommitResponse.newBuilder()
-                        .setCommitTimestamp(
-                            com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        com.google.spanner.v1.CommitResponse.newBuilder()
+                            .setCommitTimestamp(
+                                com.google.protobuf.Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

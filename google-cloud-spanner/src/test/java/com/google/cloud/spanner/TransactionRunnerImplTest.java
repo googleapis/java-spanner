@@ -50,6 +50,7 @@ import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.grpc.Metadata;
 import io.grpc.Status;
@@ -70,7 +71,6 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /** Unit test for {@link com.google.cloud.spanner.SpannerImpl.TransactionRunnerImpl} */
@@ -103,25 +103,23 @@ public class TransactionRunnerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ResultSet>() {
-              @Override
-              public ResultSet answer(InvocationOnMock invocation) {
-                ResultSet.Builder builder =
-                    ResultSet.newBuilder()
-                        .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
-                ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
-                if (request.getTransaction().hasBegin()
-                    && request.getTransaction().getBegin().hasReadWrite()) {
-                  builder.setMetadata(
-                      ResultSetMetadata.newBuilder()
-                          .setTransaction(
-                              Transaction.newBuilder().setId(ByteString.copyFromUtf8("test")))
-                          .build());
-                  usedInlinedBegin = true;
-                }
-                return builder.build();
-              }
-            });
+            (Answer<ResultSet>)
+                invocation -> {
+                  ResultSet.Builder builder =
+                      ResultSet.newBuilder()
+                          .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
+                  ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
+                  if (request.getTransaction().hasBegin()
+                      && request.getTransaction().getBegin().hasReadWrite()) {
+                    builder.setMetadata(
+                        ResultSetMetadata.newBuilder()
+                            .setTransaction(
+                                Transaction.newBuilder().setId(ByteString.copyFromUtf8("test")))
+                            .build());
+                    usedInlinedBegin = true;
+                  }
+                  return builder.build();
+                });
     transactionRunner = new TransactionRunnerImpl(session);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
@@ -152,40 +150,33 @@ public class TransactionRunnerImplTest {
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                return Arrays.asList(
-                    com.google.spanner.v1.Session.newBuilder()
-                        .setName((String) invocation.getArguments()[0] + "/sessions/1")
-                        .setCreateTime(
-                            Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<List<Session>>)
+                invocation ->
+                    Arrays.asList(
+                        Session.newBuilder()
+                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setCreateTime(
+                                Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<Transaction>>() {
-              @Override
-              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    Transaction.newBuilder()
-                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<Transaction>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        Transaction.newBuilder()
+                            .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                            .build()));
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            new Answer<ApiFuture<CommitResponse>>() {
-              @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation) {
-                return ApiFutures.immediateFuture(
-                    CommitResponse.newBuilder()
-                        .setCommitTimestamp(
-                            Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
-                        .build());
-              }
-            });
+            (Answer<ApiFuture<CommitResponse>>)
+                invocation ->
+                    ApiFutures.immediateFuture(
+                        CommitResponse.newBuilder()
+                            .setCommitTimestamp(
+                                Timestamp.newBuilder()
+                                    .setSeconds(System.currentTimeMillis() * 1000))
+                            .build()));
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

@@ -51,7 +51,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
@@ -732,42 +731,22 @@ public class ITBackupTest {
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isTrue();
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isTrue();
   }
 }

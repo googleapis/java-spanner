@@ -20,14 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
@@ -258,19 +256,16 @@ public class InlineBeginTransactionTest {
                     try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
                       rs.setCallback(
                           executor,
-                          new ReadyCallback() {
-                            @Override
-                            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                              switch (resultSet.tryNext()) {
-                                case DONE:
-                                  return CallbackResponse.DONE;
-                                case NOT_READY:
-                                  return CallbackResponse.CONTINUE;
-                                case OK:
-                                  res.set(resultSet.getLong(0));
-                                default:
-                                  throw new IllegalStateException();
-                              }
+                          resultSet -> {
+                            switch (resultSet.tryNext()) {
+                              case DONE:
+                                return CallbackResponse.DONE;
+                              case NOT_READY:
+                                return CallbackResponse.CONTINUE;
+                              case OK:
+                                res.set(resultSet.getLong(0));
+                              default:
+                                throw new IllegalStateException();
                             }
                           });
                     }
@@ -353,12 +348,7 @@ public class InlineBeginTransactionTest {
         while (true) {
           AsyncTransactionStep<Void, Long> updateCount =
               txn.then(
-                  new AsyncTransactionFunction<Void, Long>() {
-                    @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
-                      return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                    }
-                  },
+                  (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
                   executor);
           CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
           try {
@@ -386,24 +376,17 @@ public class InlineBeginTransactionTest {
           try {
             AsyncTransactionStep<Void, Long> updateCount =
                 txn.then(
-                    new AsyncTransactionFunction<Void, Long>() {
-                      @Override
-                      public ApiFuture<Long> apply(TransactionContext txn, Void input) {
-                        return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                      }
-                    },
+                    (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
                     executor);
             if (first) {
               // Abort the transaction after the statement has been executed to ensure that the
               // transaction has actually been started before the test tries to abort it.
               updateCount.then(
-                  new AsyncTransactionFunction<Long, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Long input) {
-                      mockSpanner.abortAllTransactions();
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
+                  (AsyncTransactionFunction<Long, Void>)
+                      (ignored1, ignored2) -> {
+                        mockSpanner.abortAllTransactions();
+                        return ApiFutures.immediateFuture(null);
+                      },
                   MoreExecutors.directExecutor());
               first = false;
             }
@@ -430,13 +413,12 @@ public class InlineBeginTransactionTest {
         while (true) {
           try {
             txn.then(
-                    new AsyncTransactionFunction<Void, Void>() {
-                      @Override
-                      public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                        txn.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-                        return ApiFutures.immediateFuture(null);
-                      }
-                    },
+                    (AsyncTransactionFunction<Void, Void>)
+                        (transaction, ignored) -> {
+                          transaction.buffer(
+                              Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                          return ApiFutures.immediateFuture(null);
+                        },
                     executor)
                 .commitAsync()
                 .get();
@@ -461,20 +443,11 @@ public class InlineBeginTransactionTest {
           try {
             AsyncTransactionStep<Long, Long> updateCount =
                 txn.then(
-                        new AsyncTransactionFunction<Void, Long>() {
-                          @Override
-                          public ApiFuture<Long> apply(TransactionContext txn, Void input) {
-                            return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
-                          }
-                        },
+                        (transaction, ignored) ->
+                            transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
                         executor)
                     .then(
-                        new AsyncTransactionFunction<Long, Long>() {
-                          @Override
-                          public ApiFuture<Long> apply(TransactionContext txn, Long input) {
-                            return txn.executeUpdateAsync(UPDATE_STATEMENT);
-                          }
-                        },
+                        (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
                         executor);
             try {
               updateCount.commitAsync().get();
@@ -1161,19 +1134,16 @@ public class InlineBeginTransactionTest {
                       try (AsyncResultSet rs = txn.executeQueryAsync(SELECT1)) {
                         rs.setCallback(
                             executor,
-                            new ReadyCallback() {
-                              @Override
-                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                switch (resultSet.tryNext()) {
-                                  case DONE:
-                                    return CallbackResponse.DONE;
-                                  case NOT_READY:
-                                    return CallbackResponse.CONTINUE;
-                                  case OK:
-                                    res.set(resultSet.getLong(0));
-                                  default:
-                                    throw new IllegalStateException();
-                                }
+                            resultSet -> {
+                              switch (resultSet.tryNext()) {
+                                case DONE:
+                                  return CallbackResponse.DONE;
+                                case NOT_READY:
+                                  return CallbackResponse.CONTINUE;
+                                case OK:
+                                  res.set(resultSet.getLong(0));
+                                default:
+                                  throw new IllegalStateException();
                               }
                             });
                       }
@@ -1181,15 +1151,12 @@ public class InlineBeginTransactionTest {
                     }
                     return ApiFutures.transformAsync(
                         ApiFutures.allAsList(futures),
-                        new ApiAsyncFunction<List<Long>, Long>() {
-                          @Override
-                          public ApiFuture<Long> apply(List<Long> input) {
-                            long sum = 0L;
-                            for (Long l : input) {
-                              sum += l;
-                            }
-                            return ApiFutures.immediateFuture(sum);
+                        input -> {
+                          long sum = 0L;
+                          for (Long l : input) {
+                            sum += l;
                           }
+                          return ApiFutures.immediateFuture(sum);
                         },
                         MoreExecutors.directExecutor());
                   },
@@ -1495,23 +1462,20 @@ public class InlineBeginTransactionTest {
                     return SpannerApiFutures.get(
                         rs.setCallback(
                             executor,
-                            new ReadyCallback() {
-                              @Override
-                              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                try {
-                                  while (true) {
-                                    switch (resultSet.tryNext()) {
-                                      case OK:
-                                        break;
-                                      case DONE:
-                                        return CallbackResponse.DONE;
-                                      case NOT_READY:
-                                        return CallbackResponse.CONTINUE;
-                                    }
+                            resultSet -> {
+                              try {
+                                while (true) {
+                                  switch (resultSet.tryNext()) {
+                                    case OK:
+                                      break;
+                                    case DONE:
+                                      return CallbackResponse.DONE;
+                                    case NOT_READY:
+                                      return CallbackResponse.CONTINUE;
                                   }
-                                } catch (SpannerException e) {
-                                  return CallbackResponse.DONE;
                                 }
+                              } catch (SpannerException e) {
+                                return CallbackResponse.DONE;
                               }
                             }));
                   }

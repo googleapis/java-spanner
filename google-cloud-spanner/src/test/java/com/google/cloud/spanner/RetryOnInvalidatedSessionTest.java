@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -32,8 +31,6 @@ import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
@@ -1432,35 +1429,19 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncRunnerSelect() throws InterruptedException {
-    asyncRunner_withReadFunction(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.executeQueryAsync(SELECT1AND2);
-          }
-        });
+    asyncRunner_withReadFunction(input -> input.executeQueryAsync(SELECT1AND2));
   }
 
   @Test
   public void asyncRunnerRead() throws InterruptedException {
     asyncRunner_withReadFunction(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR")));
   }
 
   @Test
   public void asyncRunnerReadUsingIndex() throws InterruptedException {
     asyncRunner_withReadFunction(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.readUsingIndexAsync("FOO", "IDX", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readUsingIndexAsync("FOO", "IDX", KeySet.all(), Arrays.asList("BAR")));
   }
 
   private void asyncRunner_withReadFunction(
@@ -1477,31 +1458,21 @@ public class RetryOnInvalidatedSessionTest {
                 ApiFuture<Void> fut =
                     rs.setCallback(
                         queryExecutor,
-                        new ReadyCallback() {
-                          @Override
-                          public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                            while (true) {
-                              switch (resultSet.tryNext()) {
-                                case OK:
-                                  counter.incrementAndGet();
-                                  break;
-                                case DONE:
-                                  return CallbackResponse.DONE;
-                                case NOT_READY:
-                                  return CallbackResponse.CONTINUE;
-                              }
+                        resultSet -> {
+                          while (true) {
+                            switch (resultSet.tryNext()) {
+                              case OK:
+                                counter.incrementAndGet();
+                                break;
+                              case DONE:
+                                return CallbackResponse.DONE;
+                              case NOT_READY:
+                                return CallbackResponse.CONTINUE;
                             }
                           }
                         });
                 return ApiFutures.transform(
-                    fut,
-                    new ApiFunction<Void, Long>() {
-                      @Override
-                      public Long apply(Void input) {
-                        return counter.get();
-                      }
-                    },
-                    MoreExecutors.directExecutor());
+                    fut, input -> counter.get(), MoreExecutors.directExecutor());
               },
               executor);
       assertThat(get(count)).isEqualTo(2);
@@ -1596,35 +1567,19 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerAsyncSelect() throws InterruptedException {
-    asyncTransactionManager_readAsync(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.executeQueryAsync(SELECT1AND2);
-          }
-        });
+    asyncTransactionManager_readAsync(input -> input.executeQueryAsync(SELECT1AND2));
   }
 
   @Test
   public void asyncTransactionManagerAsyncRead() throws InterruptedException {
     asyncTransactionManager_readAsync(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readAsync("FOO", KeySet.all(), Arrays.asList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerAsyncReadUsingIndex() throws InterruptedException {
     asyncTransactionManager_readAsync(
-        new Function<TransactionContext, AsyncResultSet>() {
-          @Override
-          public AsyncResultSet apply(TransactionContext input) {
-            return input.readUsingIndexAsync("FOO", "idx", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readUsingIndexAsync("FOO", "idx", KeySet.all(), Arrays.asList("BAR")));
   }
 
   private void asyncTransactionManager_readAsync(
@@ -1638,39 +1593,26 @@ public class RetryOnInvalidatedSessionTest {
           final AtomicLong counter = new AtomicLong();
           AsyncTransactionStep<Void, Long> count =
               context.then(
-                  new AsyncTransactionFunction<Void, Long>() {
-                    @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
-                      AsyncResultSet rs = fn.apply(txn);
-                      ApiFuture<Void> fut =
-                          rs.setCallback(
-                              queryExecutor,
-                              new ReadyCallback() {
-                                @Override
-                                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                                  while (true) {
-                                    switch (resultSet.tryNext()) {
-                                      case OK:
-                                        counter.incrementAndGet();
-                                        break;
-                                      case DONE:
-                                        return CallbackResponse.DONE;
-                                      case NOT_READY:
-                                        return CallbackResponse.CONTINUE;
-                                    }
-                                  }
+                  (transaction, ignored) -> {
+                    AsyncResultSet rs = fn.apply(transaction);
+                    ApiFuture<Void> fut =
+                        rs.setCallback(
+                            queryExecutor,
+                            resultSet -> {
+                              while (true) {
+                                switch (resultSet.tryNext()) {
+                                  case OK:
+                                    counter.incrementAndGet();
+                                    break;
+                                  case DONE:
+                                    return CallbackResponse.DONE;
+                                  case NOT_READY:
+                                    return CallbackResponse.CONTINUE;
                                 }
-                              });
-                      return ApiFutures.transform(
-                          fut,
-                          new ApiFunction<Void, Long>() {
-                            @Override
-                            public Long apply(Void input) {
-                              return counter.get();
-                            }
-                          },
-                          MoreExecutors.directExecutor());
-                    }
+                              }
+                            });
+                    return ApiFutures.transform(
+                        fut, input -> counter.get(), MoreExecutors.directExecutor());
                   },
                   executor);
           CommitTimestampFuture ts = count.commitAsync();
@@ -1691,35 +1633,19 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void asyncTransactionManagerSelect() throws InterruptedException {
-    asyncTransactionManager_readSync(
-        new Function<TransactionContext, ResultSet>() {
-          @Override
-          public ResultSet apply(TransactionContext input) {
-            return input.executeQuery(SELECT1AND2);
-          }
-        });
+    asyncTransactionManager_readSync(input -> input.executeQuery(SELECT1AND2));
   }
 
   @Test
   public void asyncTransactionManagerRead() throws InterruptedException {
     asyncTransactionManager_readSync(
-        new Function<TransactionContext, ResultSet>() {
-          @Override
-          public ResultSet apply(TransactionContext input) {
-            return input.read("FOO", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.read("FOO", KeySet.all(), Arrays.asList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadUsingIndex() throws InterruptedException {
     asyncTransactionManager_readSync(
-        new Function<TransactionContext, ResultSet>() {
-          @Override
-          public ResultSet apply(TransactionContext input) {
-            return input.readUsingIndex("FOO", "idx", KeySet.all(), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readUsingIndex("FOO", "idx", KeySet.all(), Arrays.asList("BAR")));
   }
 
   private void asyncTransactionManager_readSync(final Function<TransactionContext, ResultSet> fn)
@@ -1732,17 +1658,14 @@ public class RetryOnInvalidatedSessionTest {
         try {
           AsyncTransactionStep<Void, Long> count =
               context.then(
-                  new AsyncTransactionFunction<Void, Long>() {
-                    @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
-                      long counter = 0L;
-                      try (ResultSet rs = fn.apply(txn)) {
-                        while (rs.next()) {
-                          counter++;
-                        }
+                  (transaction, ignored) -> {
+                    long counter = 0L;
+                    try (ResultSet rs = fn.apply(transaction)) {
+                      while (rs.next()) {
+                        counter++;
                       }
-                      return ApiFutures.immediateFuture(counter);
                     }
+                    return ApiFutures.immediateFuture(counter);
                   },
                   executor);
           CommitTimestampFuture ts = count.commitAsync();
@@ -1764,47 +1687,28 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void asyncTransactionManagerReadRow() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        new Function<TransactionContext, ApiFuture<Struct>>() {
-          @Override
-          public ApiFuture<Struct> apply(TransactionContext input) {
-            return ApiFutures.immediateFuture(
-                input.readRow("FOO", Key.of("foo"), Arrays.asList("BAR")));
-          }
-        });
+        input ->
+            ApiFutures.immediateFuture(input.readRow("FOO", Key.of("foo"), Arrays.asList("BAR"))));
   }
 
   @Test
   public void asyncTransactionManagerReadRowUsingIndex() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        new Function<TransactionContext, ApiFuture<Struct>>() {
-          @Override
-          public ApiFuture<Struct> apply(TransactionContext input) {
-            return ApiFutures.immediateFuture(
-                input.readRowUsingIndex("FOO", "idx", Key.of("foo"), Arrays.asList("BAR")));
-          }
-        });
+        input ->
+            ApiFutures.immediateFuture(
+                input.readRowUsingIndex("FOO", "idx", Key.of("foo"), Arrays.asList("BAR"))));
   }
 
   @Test
   public void asyncTransactionManagerReadRowAsync() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        new Function<TransactionContext, ApiFuture<Struct>>() {
-          @Override
-          public ApiFuture<Struct> apply(TransactionContext input) {
-            return input.readRowAsync("FOO", Key.of("foo"), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readRowAsync("FOO", Key.of("foo"), Arrays.asList("BAR")));
   }
 
   @Test
   public void asyncTransactionManagerReadRowUsingIndexAsync() throws InterruptedException {
     asyncTransactionManager_readRowFunction(
-        new Function<TransactionContext, ApiFuture<Struct>>() {
-          @Override
-          public ApiFuture<Struct> apply(TransactionContext input) {
-            return input.readRowUsingIndexAsync("FOO", "idx", Key.of("foo"), Arrays.asList("BAR"));
-          }
-        });
+        input -> input.readRowUsingIndexAsync("FOO", "idx", Key.of("foo"), Arrays.asList("BAR")));
   }
 
   private void asyncTransactionManager_readRowFunction(
@@ -1816,14 +1720,7 @@ public class RetryOnInvalidatedSessionTest {
       while (true) {
         try {
           AsyncTransactionStep<Void, Struct> row =
-              context.then(
-                  new AsyncTransactionFunction<Void, Struct>() {
-                    @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
-                      return fn.apply(txn);
-                    }
-                  },
-                  executor);
+              context.then((transaction, ignored) -> fn.apply(transaction), executor);
           CommitTimestampFuture ts = row.commitAsync();
           assertThat(get(ts)).isNotNull();
           assertThat(get(row)).isEqualTo(Struct.newBuilder().set("BAR").to(1L).build());
@@ -1843,49 +1740,28 @@ public class RetryOnInvalidatedSessionTest {
   @Test
   public void asyncTransactionManagerUpdateAsync() throws InterruptedException {
     asyncTransactionManager_updateFunction(
-        new Function<TransactionContext, ApiFuture<Long>>() {
-          @Override
-          public ApiFuture<Long> apply(TransactionContext input) {
-            return input.executeUpdateAsync(UPDATE_STATEMENT);
-          }
-        },
-        UPDATE_COUNT);
+        input -> input.executeUpdateAsync(UPDATE_STATEMENT), UPDATE_COUNT);
   }
 
   @Test
   public void asyncTransactionManagerUpdate() throws InterruptedException {
     asyncTransactionManager_updateFunction(
-        new Function<TransactionContext, ApiFuture<Long>>() {
-          @Override
-          public ApiFuture<Long> apply(TransactionContext input) {
-            return ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT));
-          }
-        },
-        UPDATE_COUNT);
+        input -> ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT)), UPDATE_COUNT);
   }
 
   @Test
   public void asyncTransactionManagerBatchUpdateAsync() throws InterruptedException {
     asyncTransactionManager_updateFunction(
-        new Function<TransactionContext, ApiFuture<long[]>>() {
-          @Override
-          public ApiFuture<long[]> apply(TransactionContext input) {
-            return input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT));
-          }
-        },
+        input -> input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
         new long[] {UPDATE_COUNT, UPDATE_COUNT});
   }
 
   @Test
   public void asyncTransactionManagerBatchUpdate() throws InterruptedException {
     asyncTransactionManager_updateFunction(
-        new Function<TransactionContext, ApiFuture<long[]>>() {
-          @Override
-          public ApiFuture<long[]> apply(TransactionContext input) {
-            return ApiFutures.immediateFuture(
-                input.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)));
-          }
-        },
+        input ->
+            ApiFutures.immediateFuture(
+                input.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT))),
         new long[] {UPDATE_COUNT, UPDATE_COUNT});
   }
 
@@ -1897,14 +1773,7 @@ public class RetryOnInvalidatedSessionTest {
       while (true) {
         try {
           AsyncTransactionStep<Void, T> res =
-              transaction.then(
-                  new AsyncTransactionFunction<Void, T>() {
-                    @Override
-                    public ApiFuture<T> apply(TransactionContext txn, Void input) {
-                      return fn.apply(txn);
-                    }
-                  },
-                  executor);
+              transaction.then((txn, input) -> fn.apply(txn), executor);
           CommitTimestampFuture ts = res.commitAsync();
           assertThat(get(res)).isEqualTo(expected);
           assertThat(get(ts)).isNotNull();

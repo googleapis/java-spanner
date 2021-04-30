@@ -120,14 +120,7 @@ public class AsyncResultSetImplTest {
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      List<Object> list =
-          rs.toList(
-              new Function<StructReader, Object>() {
-                @Override
-                public Object apply(StructReader input) {
-                  return new Object();
-                }
-              });
+      List<Object> list = rs.toList(ignored -> new Object());
       assertThat(list).hasSize(3);
     }
   }
@@ -141,13 +134,7 @@ public class AsyncResultSetImplTest {
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      rs.toList(
-          new Function<StructReader, Object>() {
-            @Override
-            public Object apply(StructReader input) {
-              return new Object();
-            }
-          });
+      rs.toList(ignored -> new Object());
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -163,15 +150,7 @@ public class AsyncResultSetImplTest {
     when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      ApiFuture<List<Object>> future =
-          rs.toListAsync(
-              new Function<StructReader, Object>() {
-                @Override
-                public Object apply(StructReader input) {
-                  return new Object();
-                }
-              },
-              executor);
+      ApiFuture<List<Object>> future = rs.toListAsync(ignored -> new Object(), executor);
       assertThat(future.get()).hasSize(3);
     }
     executor.shutdown();
@@ -187,15 +166,7 @@ public class AsyncResultSetImplTest {
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      rs.toListAsync(
-              new Function<StructReader, Object>() {
-                @Override
-                public Object apply(StructReader input) {
-                  return new Object();
-                }
-              },
-              executor)
-          .get();
+      rs.toListAsync(ignored -> new Object(), executor).get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -219,19 +190,16 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              callbackCounter.incrementAndGet();
-              CursorState state;
-              while ((state = resultSet.tryNext()) == CursorState.OK) {
-                rowCounter.incrementAndGet();
-              }
-              if (state == CursorState.DONE) {
-                finishedLatch.countDown();
-              }
-              return CallbackResponse.CONTINUE;
+          resultSet -> {
+            callbackCounter.incrementAndGet();
+            CursorState state;
+            while ((state = resultSet.tryNext()) == CursorState.OK) {
+              rowCounter.incrementAndGet();
             }
+            if (state == CursorState.DONE) {
+              finishedLatch.countDown();
+            }
+            return CallbackResponse.CONTINUE;
           });
     }
     finishedLatch.await();
@@ -254,17 +222,14 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                resultSet.tryNext();
-                receivedErr.push(new Exception("missing expected exception"));
-              } catch (SpannerException e) {
-                receivedErr.push(e);
-              }
-              return CallbackResponse.DONE;
+          resultSet -> {
+            try {
+              resultSet.tryNext();
+              receivedErr.push(new Exception("missing expected exception"));
+            } catch (SpannerException e) {
+              receivedErr.push(e);
             }
+            return CallbackResponse.DONE;
           });
     }
     Exception e = receivedErr.take();
@@ -290,19 +255,16 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                if (resultSet.tryNext() != CursorState.DONE) {
-                  rowCount.incrementAndGet();
-                  return CallbackResponse.CONTINUE;
-                }
-              } catch (SpannerException e) {
-                receivedErr.push(e);
+          resultSet -> {
+            try {
+              if (resultSet.tryNext() != CursorState.DONE) {
+                rowCount.incrementAndGet();
+                return CallbackResponse.CONTINUE;
               }
-              return CallbackResponse.DONE;
+            } catch (SpannerException e) {
+              receivedErr.push(e);
             }
+            return CallbackResponse.DONE;
           });
     }
     Exception e = receivedErr.take();
@@ -326,23 +288,20 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              callbackCounter.incrementAndGet();
-              CursorState state = resultSet.tryNext();
-              if (state == CursorState.OK) {
-                try {
-                  queue.put(new Object());
-                } catch (InterruptedException e) {
-                  // Finish early if an error occurs.
-                  return CallbackResponse.DONE;
-                }
-                return CallbackResponse.PAUSE;
+          resultSet -> {
+            callbackCounter.incrementAndGet();
+            CursorState state = resultSet.tryNext();
+            if (state == CursorState.OK) {
+              try {
+                queue.put(new Object());
+              } catch (InterruptedException e) {
+                // Finish early if an error occurs.
+                return CallbackResponse.DONE;
               }
-              finished.set(true);
-              return CallbackResponse.DONE;
+              return CallbackResponse.PAUSE;
             }
+            finished.set(true);
+            return CallbackResponse.DONE;
           });
       int rowCounter = 0;
       while (!finished.get()) {
@@ -371,32 +330,29 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              callbackCounter.incrementAndGet();
-              try {
-                CursorState state = resultSet.tryNext();
-                if (state == CursorState.OK) {
-                  try {
-                    queue.put(new Object());
-                  } catch (InterruptedException e) {
-                    // Finish early if an error occurs.
-                    return CallbackResponse.DONE;
-                  }
-                }
-                // Pause after 2 rows to make sure that no more data is consumed until the cancel
-                // call has been received.
-                return callbackCounter.get() == 2
-                    ? CallbackResponse.PAUSE
-                    : CallbackResponse.CONTINUE;
-              } catch (SpannerException e) {
-                if (e.getErrorCode() == ErrorCode.CANCELLED) {
-                  finished.set(true);
+          resultSet -> {
+            callbackCounter.incrementAndGet();
+            try {
+              CursorState state = resultSet.tryNext();
+              if (state == CursorState.OK) {
+                try {
+                  queue.put(new Object());
+                } catch (InterruptedException e) {
+                  // Finish early if an error occurs.
+                  return CallbackResponse.DONE;
                 }
               }
-              return CallbackResponse.DONE;
+              // Pause after 2 rows to make sure that no more data is consumed until the cancel
+              // call has been received.
+              return callbackCounter.get() == 2
+                  ? CallbackResponse.PAUSE
+                  : CallbackResponse.CONTINUE;
+            } catch (SpannerException e) {
+              if (e.getErrorCode() == ErrorCode.CANCELLED) {
+                finished.set(true);
+              }
             }
+            return CallbackResponse.DONE;
           });
       int rowCounter = 0;
       while (!finished.get()) {
@@ -426,12 +382,9 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              callbackCounter.incrementAndGet();
-              throw new RuntimeException("async test");
-            }
+          resultSet -> {
+            callbackCounter.incrementAndGet();
+            throw new RuntimeException("async test");
           });
       rs.getResult().get();
       fail("missing expected exception");
@@ -454,13 +407,10 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              // Not calling resultSet.tryNext() means that it will also never return DONE.
-              // Instead the callback indicates that it does not want any more rows.
-              return CallbackResponse.DONE;
-            }
+          resultSet -> {
+            // Not calling resultSet.tryNext() means that it will also never return DONE.
+            // Instead the callback indicates that it does not want any more rows.
+            return CallbackResponse.DONE;
           });
       rs.getResult().get(10L, TimeUnit.SECONDS);
     }

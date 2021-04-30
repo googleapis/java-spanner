@@ -40,7 +40,6 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -515,13 +514,11 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
+                  (AsyncTransactionFunction<Void, Void>)
+                      (txn, input) -> {
+                        txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                        return ApiFutures.immediateFuture(null);
+                      },
                   executor)
               .commitAsync());
     }
@@ -573,19 +570,16 @@ public class DatabaseClientImplTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });
@@ -651,19 +645,16 @@ public class DatabaseClientImplTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });
@@ -978,24 +969,21 @@ public class DatabaseClientImplTest {
           try (AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            rowCount.incrementAndGet();
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  try {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          rowCount.incrementAndGet();
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (Throwable t) {
-                      return CallbackResponse.DONE;
                     }
+                  } catch (Throwable t) {
+                    return CallbackResponse.DONE;
                   }
                 });
           }
@@ -1685,28 +1673,25 @@ public class DatabaseClientImplTest {
       resultSetClosed =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  try {
-                    while (true) {
-                      switch (rs.tryNext()) {
-                        case DONE:
-                          finished.set(true);
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          receivedResults.add(resultSet.getCurrentRowAsStruct());
-                          break;
-                        default:
-                          throw new IllegalStateException("Unknown cursor state");
-                      }
+              asyncResultSet -> {
+                try {
+                  while (true) {
+                    switch (rs.tryNext()) {
+                      case DONE:
+                        finished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        receivedResults.add(asyncResultSet.getCurrentRowAsStruct());
+                        break;
+                      default:
+                        throw new IllegalStateException("Unknown cursor state");
                     }
-                  } catch (Throwable t) {
-                    finished.setException(t);
-                    return CallbackResponse.DONE;
                   }
+                } catch (Throwable t) {
+                  finished.setException(t);
+                  return CallbackResponse.DONE;
                 }
               });
     }
@@ -2131,13 +2116,11 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
-                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
+                  (AsyncTransactionFunction<Void, Void>)
+                      (txn, input) -> {
+                        txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                        return ApiFutures.immediateFuture(null);
+                      },
                   executor)
               .commitAsync());
     }

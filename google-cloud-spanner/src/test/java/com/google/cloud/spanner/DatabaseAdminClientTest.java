@@ -20,7 +20,6 @@ import static com.google.cloud.spanner.testing.TimestampHelper.afterDays;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -196,13 +195,7 @@ public class DatabaseAdminClientTest {
     spanner =
         builder
             .setHost("http://localhost:" + server.getPort())
-            .setChannelConfigurator(
-                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-                  @Override
-                  public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                    return input.usePlaintext();
-                  }
-                })
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
             .setCredentials(NoCredentials.getInstance())
             .setProjectId(PROJECT_ID)
             .build()

@@ -33,7 +33,6 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -306,13 +305,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       List<? extends AbstractMessage> requests =
           Lists.newArrayList(
               Collections2.filter(
-                  mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest;
-                    }
-                  }));
+                  mockSpanner.getRequests(), input -> input instanceof ExecuteSqlRequest));
       // The entire transaction should be retried.
       assertThat(requests).hasSize(4);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
@@ -348,27 +341,24 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         finished =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // Indicate that the query has been executed.
-                    queryLatch.countDown();
-                    try {
-                      // Wait until the update is on its way.
-                      updateLatch.await(10L, TimeUnit.SECONDS);
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  // Indicate that the query has been executed.
+                  queryLatch.countDown();
+                  try {
+                    // Wait until the update is on its way.
+                    updateLatch.await(10L, TimeUnit.SECONDS);
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (InterruptedException e) {
-                      throw SpannerExceptionFactory.propagateInterrupt(e);
                     }
+                  } catch (InterruptedException e) {
+                    throw SpannerExceptionFactory.propagateInterrupt(e);
                   }
                 });
       }
@@ -395,13 +385,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       List<? extends AbstractMessage> requests =
           Lists.newArrayList(
               Collections2.filter(
-                  mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest;
-                    }
-                  }));
+                  mockSpanner.getRequests(), input -> input instanceof ExecuteSqlRequest));
       // The entire transaction should be retried, but will not succeed as the result of the update
       // statement was different during the retry.
       assertThat(requests).hasSize(4);
@@ -440,24 +424,21 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         res1 =
             rs.setCallback(
                 multiThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      latch.await(10L, TimeUnit.SECONDS);
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  try {
+                    latch.await(10L, TimeUnit.SECONDS);
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (Throwable t) {
-                      throw SpannerExceptionFactory.asSpannerException(t);
                     }
+                  } catch (Throwable t) {
+                    throw SpannerExceptionFactory.asSpannerException(t);
                   }
                 });
       }
@@ -591,13 +572,10 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         ApiFuture<Void> fut =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // The following line should throw AbortedDueToConcurrentModificationException.
-                    resultSet.tryNext();
-                    return CallbackResponse.DONE;
-                  }
+                resultSet -> {
+                  // The following line should throw AbortedDueToConcurrentModificationException.
+                  resultSet.tryNext();
+                  return CallbackResponse.DONE;
                 });
         try {
           assertThat(get(fut)).isNull();
@@ -613,12 +591,9 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         ApiFuture<Void> fut =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    resultSet.tryNext();
-                    return CallbackResponse.DONE;
-                  }
+                resultSet -> {
+                  resultSet.tryNext();
+                  return CallbackResponse.DONE;
                 });
         assertThat(get(fut)).isNull();
       }
@@ -668,19 +643,16 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });

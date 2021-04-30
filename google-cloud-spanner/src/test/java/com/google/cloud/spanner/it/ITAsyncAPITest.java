@@ -29,7 +29,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.AsyncRunner;
 import com.google.cloud.spanner.AsyncTransactionManager;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
@@ -49,7 +48,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
@@ -134,26 +132,23 @@ public class ITAsyncAPITest {
                 ALL_COLUMNS);
     resultSet.setCallback(
         executor,
-        new ReadyCallback() {
-          @Override
-          public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-            try {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case OK:
-                    fail("received unexpected data");
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  case DONE:
-                    assertThat(resultSet.getType()).isEqualTo(TABLE_TYPE);
-                    result.set(true);
-                    return CallbackResponse.DONE;
-                }
+        rs -> {
+          try {
+            while (true) {
+              switch (rs.tryNext()) {
+                case OK:
+                  fail("received unexpected data");
+                case NOT_READY:
+                  return CallbackResponse.CONTINUE;
+                case DONE:
+                  assertThat(rs.getType()).isEqualTo(TABLE_TYPE);
+                  result.set(true);
+                  return CallbackResponse.DONE;
               }
-            } catch (Throwable t) {
-              result.setException(t);
-              return CallbackResponse.DONE;
             }
+          } catch (Throwable t) {
+            result.setException(t);
+            return CallbackResponse.DONE;
           }
         });
     assertThat(result.get()).isTrue();
@@ -172,26 +167,23 @@ public class ITAsyncAPITest {
                 ALL_COLUMNS);
     resultSet.setCallback(
         executor,
-        new ReadyCallback() {
-          @Override
-          public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-            try {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case OK:
-                    fail("received unexpected data");
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  case DONE:
-                    assertThat(resultSet.getType()).isEqualTo(TABLE_TYPE);
-                    result.set(true);
-                    return CallbackResponse.DONE;
-                }
+        rs -> {
+          try {
+            while (true) {
+              switch (rs.tryNext()) {
+                case OK:
+                  fail("received unexpected data");
+                case NOT_READY:
+                  return CallbackResponse.CONTINUE;
+                case DONE:
+                  assertThat(rs.getType()).isEqualTo(TABLE_TYPE);
+                  result.set(true);
+                  return CallbackResponse.DONE;
               }
-            } catch (Throwable t) {
-              result.setException(t);
-              return CallbackResponse.DONE;
             }
+          } catch (Throwable t) {
+            result.setException(t);
+            return CallbackResponse.DONE;
           }
         });
     assertThat(result.get()).isTrue();
@@ -346,19 +338,17 @@ public class ITAsyncAPITest {
           get(
               context
                   .then(
-                      new AsyncTransactionFunction<Void, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext transaction, Void input) {
-                          transaction.buffer(
-                              Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
-                                  .set("Key")
-                                  .to("k_commit_stats")
-                                  .set("StringValue")
-                                  .to("Should return commit stats")
-                                  .build());
-                          return ApiFutures.immediateFuture(null);
-                        }
-                      },
+                      (AsyncTransactionFunction<Void, Void>)
+                          (transaction, ignored) -> {
+                            transaction.buffer(
+                                Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                                    .set("Key")
+                                    .to("k_commit_stats")
+                                    .set("StringValue")
+                                    .to("Should return commit stats")
+                                    .build());
+                            return ApiFutures.immediateFuture(null);
+                          },
                       executor)
                   .commitAsync());
           assertNotNull(get(manager.getCommitResponse()).getCommitStats());

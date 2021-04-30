@@ -30,10 +30,8 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 
-import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
@@ -95,12 +93,9 @@ public abstract class AbstractAsyncTransactionTest {
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelConfigurator(
-                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-                  @Override
-                  public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                    input.usePlaintext();
-                    return input;
-                  }
+                input -> {
+                  input.usePlaintext();
+                  return input;
                 })
             .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance())

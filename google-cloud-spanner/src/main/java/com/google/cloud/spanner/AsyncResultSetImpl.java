@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.ListenableFutureToApiFuture;
@@ -532,15 +531,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       final SettableApiFuture<List<T>> res = SettableApiFuture.<List<T>>create();
       CreateListCallback<T> callback = new CreateListCallback<>(res, transformer);
       ApiFuture<Void> finished = setCallback(executor, callback);
-      return ApiFutures.transformAsync(
-          finished,
-          new ApiAsyncFunction<Void, List<T>>() {
-            @Override
-            public ApiFuture<List<T>> apply(Void input) {
-              return res;
-            }
-          },
-          MoreExecutors.directExecutor());
+      return ApiFutures.transformAsync(finished, ignored -> res, MoreExecutors.directExecutor());
     }
   }
 

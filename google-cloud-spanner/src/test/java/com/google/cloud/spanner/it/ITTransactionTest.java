@@ -164,13 +164,7 @@ public class ITTransactionTest {
   public void basicsUsingRead() throws InterruptedException {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
 
-    doBasicsTest(
-        new ReadStrategy() {
-          @Override
-          public Struct read(ReadContext ctx, String key) {
-            return ctx.readRow("T", Key.of(key), Arrays.asList("V"));
-          }
-        });
+    doBasicsTest((context, key) -> context.readRow("T", Key.of(key), Arrays.asList("V")));
   }
 
   @Test
@@ -178,20 +172,17 @@ public class ITTransactionTest {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
 
     doBasicsTest(
-        new ReadStrategy() {
-          @Override
-          public Struct read(ReadContext ctx, String key) {
-            ResultSet resultSet =
-                ctx.executeQuery(
-                    Statement.newBuilder("SELECT V FROM T WHERE K = @key")
-                        .bind("key")
-                        .to(key)
-                        .build());
-            assertThat(resultSet.next()).isTrue();
-            Struct row = resultSet.getCurrentRowAsStruct();
-            assertThat(resultSet.next()).isFalse();
-            return row;
-          }
+        (context, key) -> {
+          ResultSet resultSet =
+              context.executeQuery(
+                  Statement.newBuilder("SELECT V FROM T WHERE K = @key")
+                      .bind("key")
+                      .to(key)
+                      .build());
+          assertThat(resultSet.next()).isTrue();
+          Struct row = resultSet.getCurrentRowAsStruct();
+          assertThat(resultSet.next()).isFalse();
+          return row;
         });
   }
 
@@ -276,82 +267,78 @@ public class ITTransactionTest {
     // second read, which will abort.  Both threads will mask SpannerExceptions to ensure that
     // the implementation does not require TransactionCallable to propagate them.
     Thread t1 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              client
-                  .readWriteTransaction()
-                  .run(
-                      transaction -> {
-                        try {
-                          Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
-                          t1Started.countDown();
-                          Uninterruptibles.awaitUninterruptibly(t2Running);
-                          transaction.buffer(
-                              Mutation.newUpdateBuilder("T")
-                                  .set("K")
-                                  .to(key1)
-                                  .set("V")
-                                  .to(row.getLong(0) + 1)
-                                  .build());
-                          return null;
-                        } catch (SpannerException e) {
-                          if (e.getErrorCode() == ErrorCode.ABORTED) {
-                            assertThat(e).isInstanceOf(AbortedException.class);
-                            assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                .isNotEqualTo(-1L);
+        new Thread(
+            () -> {
+              try {
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          try {
+                            Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            t1Started.countDown();
+                            Uninterruptibles.awaitUninterruptibly(t2Running);
+                            transaction.buffer(
+                                Mutation.newUpdateBuilder("T")
+                                    .set("K")
+                                    .to(key1)
+                                    .set("V")
+                                    .to(row.getLong(0) + 1)
+                                    .build());
+                            return null;
+                          } catch (SpannerException e) {
+                            if (e.getErrorCode() == ErrorCode.ABORTED) {
+                              assertThat(e).isInstanceOf(AbortedException.class);
+                              assertThat(((AbortedException) e).getRetryDelayInMillis())
+                                  .isNotEqualTo(-1L);
+                            }
+                            throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                          throw new RuntimeException("Swallowed exception: " + e.getMessage());
-                        }
-                      });
-              t1Result.set(null);
-            } catch (Throwable t) {
-              t1Result.setException(t);
-            } finally {
-              t1Done.countDown();
-            }
-          }
-        };
+                        });
+                t1Result.set(null);
+              } catch (Throwable t) {
+                t1Result.setException(t);
+              } finally {
+                t1Done.countDown();
+              }
+            });
     Thread t2 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              client
-                  .readWriteTransaction()
-                  .run(
-                      transaction -> {
-                        try {
-                          Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
-                          t2Running.countDown();
-                          Uninterruptibles.awaitUninterruptibly(t1Done);
-                          Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
-                          transaction.buffer(
-                              Mutation.newUpdateBuilder("T")
-                                  .set("K")
-                                  .to(key2)
-                                  .set("V")
-                                  .to(r1.getLong(0) + r2.getLong(0))
-                                  .build());
-                          return null;
-                        } catch (SpannerException e) {
-                          if (e.getErrorCode() == ErrorCode.ABORTED) {
-                            assertThat(e).isInstanceOf(AbortedException.class);
-                            assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                .isNotEqualTo(-1L);
+        new Thread(
+            () -> {
+              try {
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          try {
+                            Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            t2Running.countDown();
+                            Uninterruptibles.awaitUninterruptibly(t1Done);
+                            Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
+                            transaction.buffer(
+                                Mutation.newUpdateBuilder("T")
+                                    .set("K")
+                                    .to(key2)
+                                    .set("V")
+                                    .to(r1.getLong(0) + r2.getLong(0))
+                                    .build());
+                            return null;
+                          } catch (SpannerException e) {
+                            if (e.getErrorCode() == ErrorCode.ABORTED) {
+                              assertThat(e).isInstanceOf(AbortedException.class);
+                              assertThat(((AbortedException) e).getRetryDelayInMillis())
+                                  .isNotEqualTo(-1L);
+                            }
+                            throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                          throw new RuntimeException("Swallowed exception: " + e.getMessage());
-                        }
-                      });
-              t2Result.set(null);
-            } catch (Throwable t) {
-              t2Result.setException(t);
-            } finally {
-              t2Done.countDown();
-            }
-          }
-        };
+                        });
+                t2Result.set(null);
+              } catch (Throwable t) {
+                t2Result.setException(t);
+              } finally {
+                t2Done.countDown();
+              }
+            });
 
     t1.start();
     Uninterruptibles.awaitUninterruptibly(t1Started);

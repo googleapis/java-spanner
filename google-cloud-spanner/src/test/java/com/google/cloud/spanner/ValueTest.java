@@ -36,7 +36,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,12 +54,7 @@ public class ValueTest {
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
     final List<T> list = Lists.newArrayList(values);
-    return new Iterable<T>() {
-      @Override
-      public Iterator<T> iterator() {
-        return list.iterator();
-      }
-    };
+    return () -> list.iterator();
   }
 
   @Test
