@@ -154,7 +154,7 @@ public class TransactionRunnerImplTest {
                 invocation ->
                     Collections.singletonList(
                         Session.newBuilder()
-                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setName(invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(
                                 Timestamp.newBuilder()
                                     .setSeconds(System.currentTimeMillis() * 1000))

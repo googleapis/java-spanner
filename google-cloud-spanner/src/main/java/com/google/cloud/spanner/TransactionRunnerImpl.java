@@ -573,7 +573,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       if (exceptionToThrow.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
         if (exceptionToThrow instanceof AbortedException) {
-          delay = ((AbortedException) exceptionToThrow).getRetryDelayInMillis();
+          delay = exceptionToThrow.getRetryDelayInMillis();
         }
         if (delay == -1L) {
           txnLogger.log(
@@ -918,7 +918,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                       "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
               shouldRollback = false;
               if (e instanceof AbortedException) {
-                throw (AbortedException) e;
+                throw e;
               }
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.ABORTED, e.getMessage(), e);

@@ -48,7 +48,6 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -260,7 +259,7 @@ public class ConnectionImplTest {
     when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
-    when(dbClient.transactionManager((TransactionOption[]) Mockito.anyVararg()))
+    when(dbClient.transactionManager(Mockito.anyVararg()))
         .thenAnswer(
             (Answer<TransactionManager>)
                 invocation -> {

@@ -245,7 +245,7 @@ public class TransactionManagerImplTest {
                 invocation ->
                     Collections.singletonList(
                         Session.newBuilder()
-                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setName(invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(
                                 com.google.protobuf.Timestamp.newBuilder()
                                     .setSeconds(System.currentTimeMillis() * 1000))
@@ -304,7 +304,7 @@ public class TransactionManagerImplTest {
                 invocation ->
                     Collections.singletonList(
                         Session.newBuilder()
-                            .setName((String) invocation.getArguments()[0] + "/sessions/1")
+                            .setName(invocation.getArguments()[0] + "/sessions/1")
                             .setCreateTime(
                                 com.google.protobuf.Timestamp.newBuilder()
                                     .setSeconds(System.currentTimeMillis() * 1000))

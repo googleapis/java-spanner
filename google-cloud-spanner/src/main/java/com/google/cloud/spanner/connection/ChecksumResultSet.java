@@ -342,7 +342,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putDouble((Double) value);
             break;
           case NUMERIC:
-            String stringRepresentation = ((BigDecimal) value).toString();
+            String stringRepresentation = value.toString();
             into.putInt(stringRepresentation.length());
             into.putUnencodedChars(stringRepresentation);
             break;

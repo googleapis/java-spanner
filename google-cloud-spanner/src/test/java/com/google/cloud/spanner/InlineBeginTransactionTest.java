@@ -1262,10 +1262,9 @@ public class InlineBeginTransactionTest {
       assertThat(countTransactionsStarted()).isEqualTo(1);
       List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
-      assertThat(((ExecuteSqlRequest) requests.get(0)).getSql())
-          .isEqualTo(UPDATE_STATEMENT.getSql());
+      assertThat(requests.get(0).getSql()).isEqualTo(UPDATE_STATEMENT.getSql());
       assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
-      assertThat(((ExecuteSqlRequest) requests.get(1)).getSql()).isEqualTo(SELECT1.getSql());
+      assertThat(requests.get(1).getSql()).isEqualTo(SELECT1.getSql());
     }
 
     @Test
@@ -1290,14 +1289,14 @@ public class InlineBeginTransactionTest {
 
       List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
-      ExecuteSqlRequest request1 = (ExecuteSqlRequest) requests.get(0);
+      ExecuteSqlRequest request1 = requests.get(0);
       assertThat(request1.getSql()).isEqualTo(SELECT1_UNION_ALL_SELECT2.getSql());
       assertThat(request1.getTransaction().getBegin().hasReadWrite()).isTrue();
       assertThat(request1.getTransaction().getId()).isEqualTo(ByteString.EMPTY);
       assertThat(request1.getResumeToken()).isEqualTo(ByteString.EMPTY);
 
       assertThat(requests.get(1)).isInstanceOf(ExecuteSqlRequest.class);
-      ExecuteSqlRequest request2 = (ExecuteSqlRequest) requests.get(1);
+      ExecuteSqlRequest request2 = requests.get(1);
       assertThat(request2.getSql()).isEqualTo(SELECT1_UNION_ALL_SELECT2.getSql());
       assertThat(request2.getTransaction().hasBegin()).isFalse();
       assertThat(request2.getTransaction().getId()).isNotEqualTo(ByteString.EMPTY);

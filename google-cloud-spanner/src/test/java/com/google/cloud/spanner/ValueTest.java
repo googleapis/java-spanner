@@ -719,7 +719,7 @@ public class ValueTest {
 
   @Test
   public void numericArrayNull() {
-    Value v = Value.numericArray((Iterable<BigDecimal>) null);
+    Value v = Value.numericArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
@@ -1477,7 +1477,7 @@ public class ValueTest {
         Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1))));
     tester.addEqualityGroup(
         Value.numericArray(Collections.singletonList(BigDecimal.valueOf(3, 1))));
-    tester.addEqualityGroup(Value.numericArray((Iterable<BigDecimal>) null));
+    tester.addEqualityGroup(Value.numericArray(null));
 
     tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
@@ -1566,7 +1566,7 @@ public class ValueTest {
         Value.numericArray(
             BrokenSerializationList.of(
                 BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1), BigDecimal.valueOf(3, 1))));
-    reserializeAndAssert(Value.numericArray((Iterable<BigDecimal>) null));
+    reserializeAndAssert(Value.numericArray(null));
 
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));

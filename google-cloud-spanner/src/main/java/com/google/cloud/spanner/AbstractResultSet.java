@@ -224,7 +224,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                   + newValue.getKindCase());
         }
         if (kind == KindCase.STRING_VALUE) {
-          merged = (String) merged + newValue.getStringValue();
+          merged = merged + newValue.getStringValue();
         } else {
           concatLists(
               (List<com.google.protobuf.Value>) merged, newValue.getListValue().getValuesList());
