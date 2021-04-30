@@ -282,7 +282,9 @@ public class ITTransactionTest {
                     .run(
                         transaction -> {
                           try {
-                            Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            Struct row =
+                                transaction.readRow(
+                                    "T", Key.of(key1), Collections.singletonList("V"));
                             t1Started.countDown();
                             Uninterruptibles.awaitUninterruptibly(t2Running);
                             transaction.buffer(
@@ -318,10 +320,14 @@ public class ITTransactionTest {
                     .run(
                         transaction -> {
                           try {
-                            Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            Struct r1 =
+                                transaction.readRow(
+                                    "T", Key.of(key1), Collections.singletonList("V"));
                             t2Running.countDown();
                             Uninterruptibles.awaitUninterruptibly(t1Done);
-                            Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
+                            Struct r2 =
+                                transaction.readRow(
+                                    "T", Key.of(key2), Collections.singletonList("V"));
                             transaction.buffer(
                                 Mutation.newUpdateBuilder("T")
                                     .set("K")
