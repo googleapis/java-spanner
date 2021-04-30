@@ -101,7 +101,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     }
   }
 
-  private class TestCaseRunner {
+  private static class TestCaseRunner {
     private AbstractResultSet.GrpcResultSet resultSet;
     private SpannerRpc.ResultStreamConsumer consumer;
     private AbstractResultSet.GrpcStreamIterator stream;
