@@ -65,6 +65,8 @@ class CreateInstanceExample {
           instanceInfo.getId(), e.getMessage());
     } catch (InterruptedException e) {
       System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+    } finally {
+      spanner.close();
     }
   }
 }
