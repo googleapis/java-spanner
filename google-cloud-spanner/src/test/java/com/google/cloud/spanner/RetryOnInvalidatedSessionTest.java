@@ -567,7 +567,7 @@ public class RetryOnInvalidatedSessionTest {
       Struct row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       invalidateSessionPool();
-      row = context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
+      context.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
     }
   }
 
@@ -578,7 +578,7 @@ public class RetryOnInvalidatedSessionTest {
           context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
       assertThat(row.getLong(0)).isEqualTo(1L);
       invalidateSessionPool();
-      row = context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
+      context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
     }
   }
 
@@ -905,7 +905,7 @@ public class RetryOnInvalidatedSessionTest {
                   if (attempt == 1) {
                     invalidateSessionPool();
                   }
-                  row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
+                  transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
                   return attempt;
                 }
               });
@@ -935,9 +935,8 @@ public class RetryOnInvalidatedSessionTest {
                   if (attempt == 1) {
                     invalidateSessionPool();
                   }
-                  row =
-                      transaction.readRowUsingIndex(
-                          "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
+                  transaction.readRowUsingIndex(
+                      "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
                   return attempt;
                 }
               });
@@ -1375,7 +1374,7 @@ public class RetryOnInvalidatedSessionTest {
           if (attempts == 1) {
             invalidateSessionPool();
           }
-          row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
+          transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {
@@ -1407,9 +1406,7 @@ public class RetryOnInvalidatedSessionTest {
           if (attempts == 1) {
             invalidateSessionPool();
           }
-          row =
-              transaction.readRowUsingIndex(
-                  "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
+          transaction.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
           manager.commit();
           break;
         } catch (AbortedException e) {

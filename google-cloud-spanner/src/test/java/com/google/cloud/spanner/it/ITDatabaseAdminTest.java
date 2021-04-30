@@ -126,7 +126,7 @@ public class ITDatabaseAdminTest {
     dbAdminClient.dropDatabase(instanceId, dbId);
     dbs.clear();
     try {
-      db = dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
+      dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);

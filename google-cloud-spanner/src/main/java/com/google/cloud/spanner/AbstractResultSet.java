@@ -318,7 +318,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         KindCase lastKind = last.getKindCase();
         KindCase firstKind = first.getKindCase();
         if (isMergeable(lastKind) && lastKind == firstKind) {
-          com.google.protobuf.Value merged = null;
+          com.google.protobuf.Value merged;
           if (lastKind == KindCase.STRING_VALUE) {
             String lastStr = last.getStringValue();
             String firstStr = first.getStringValue();

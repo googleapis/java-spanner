@@ -280,8 +280,8 @@ public class ITBackupTest {
 
     // Ensure both backups have been created before we proceed.
     logger.info("Waiting for backup operations to finish");
-    Backup backup1 = null;
-    Backup backup2 = null;
+    Backup backup1;
+    Backup backup2;
     Stopwatch watch = Stopwatch.createStarted();
     try {
       backup1 = op1.get(6L, TimeUnit.MINUTES);

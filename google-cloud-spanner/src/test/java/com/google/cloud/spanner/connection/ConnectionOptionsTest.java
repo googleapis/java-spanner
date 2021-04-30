@@ -445,12 +445,11 @@ public class ConnectionOptionsTest {
     assertThat(options.getWarnings()).doesNotContain("lenient");
 
     try {
-      options =
-          ConnectionOptions.newBuilder()
-              .setUri(
-                  "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
-              .setCredentialsUrl(FILE_TEST_PATH)
-              .build();
+      ConnectionOptions.newBuilder()
+          .setUri(
+              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+          .setCredentialsUrl(FILE_TEST_PATH)
+          .build();
       fail("missing expected exception");
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("bar");

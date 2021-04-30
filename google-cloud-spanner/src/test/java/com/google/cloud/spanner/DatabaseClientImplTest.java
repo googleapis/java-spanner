@@ -909,7 +909,7 @@ public class DatabaseClientImplTest {
           assertNotNull(manager.getCommitTimestamp());
           break;
         } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+          manager.resetForRetry();
         }
       }
     }
@@ -930,7 +930,7 @@ public class DatabaseClientImplTest {
           assertEquals(1L, manager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+          manager.resetForRetry();
         }
       }
     }
@@ -952,7 +952,7 @@ public class DatabaseClientImplTest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          tx = txManager.resetForRetry();
+          txManager.resetForRetry();
         }
       }
     }
@@ -992,7 +992,7 @@ public class DatabaseClientImplTest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          tx = txManager.resetForRetry();
+          txManager.resetForRetry();
         }
       }
     }

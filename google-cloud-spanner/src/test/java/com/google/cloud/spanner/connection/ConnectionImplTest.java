@@ -406,7 +406,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("AUTOCOMMIT"), is(true));
 
       // set autocommit to false and assert that autocommit is false
-      res = subject.execute(Statement.of("set autocommit = false"));
+      subject.execute(Statement.of("set autocommit = false"));
       assertThat(subject.isAutocommit(), is(false));
       res = subject.execute(Statement.of("show variable autocommit"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
@@ -464,7 +464,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("READONLY"), is(false));
 
       // set read only to true and assert that read only is true
-      res = subject.execute(Statement.of("set readonly = true"));
+      subject.execute(Statement.of("set readonly = true"));
       assertThat(subject.isReadOnly(), is(true));
       res = subject.execute(Statement.of("show variable readonly"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
