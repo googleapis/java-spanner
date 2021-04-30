@@ -319,7 +319,7 @@ public class SessionImplTest {
             CommitResponse.newBuilder()
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
                 .build());
-    session.writeAtLeastOnce(Collections.<Mutation>emptyList());
+    session.writeAtLeastOnce(Collections.emptyList());
     try {
       ctx.read("Dummy", KeySet.all(), Collections.singletonList("C"));
       fail("Expected exception");

@@ -547,7 +547,7 @@ public class GrpcResultSetTest {
         Value.struct(s(null, 30)),
         Value.struct(structType, null),
         Value.structArray(structType, Arrays.asList(s("def", 10), null)),
-        Value.structArray(structType, Collections.singletonList((Struct) null)),
+        Value.structArray(structType, Collections.singletonList(null)),
         Value.structArray(structType, null));
   }
 

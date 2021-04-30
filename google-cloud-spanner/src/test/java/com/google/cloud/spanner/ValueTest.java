@@ -1503,8 +1503,8 @@ public class ValueTest {
         Value.structArray(structType1, Arrays.asList(structValue1, null)),
         Value.structArray(structType1, Arrays.asList(structValue2, null)));
     tester.addEqualityGroup(
-        Value.structArray(structType1, Collections.singletonList((Struct) null)),
-        Value.structArray(structType1, Collections.singletonList((Struct) null)));
+        Value.structArray(structType1, Collections.singletonList(null)),
+        Value.structArray(structType1, Collections.singletonList(null)));
     tester.addEqualityGroup(
         Value.structArray(structType1, null), Value.structArray(structType1, null));
     tester.addEqualityGroup(

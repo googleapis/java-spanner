@@ -317,9 +317,7 @@ public class ITQueryTest {
   public void bindBoolArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toBoolArray(Collections.<Boolean>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toBoolArray(Collections.emptyList()),
             Type.array(Type.bool()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBooleanList(0)).containsExactly();
@@ -348,7 +346,7 @@ public class ITQueryTest {
   public void bindInt64ArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toInt64Array(Collections.<Long>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toInt64Array(Collections.emptyList()),
             Type.array(Type.int64()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLongList(0)).containsExactly();
@@ -389,9 +387,7 @@ public class ITQueryTest {
   public void bindFloat64ArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toFloat64Array(Collections.<Double>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toFloat64Array(Collections.emptyList()),
             Type.array(Type.float64()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDoubleList(0)).containsExactly();
@@ -420,9 +416,7 @@ public class ITQueryTest {
   public void bindStringArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toStringArray(Collections.<String>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toStringArray(Collections.emptyList()),
             Type.array(Type.string()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly();
@@ -454,9 +448,7 @@ public class ITQueryTest {
   public void bindBytesArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toBytesArray(Collections.<ByteArray>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toBytesArray(Collections.emptyList()),
             Type.array(Type.bytes()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytesList(0)).isEmpty();
@@ -488,9 +480,7 @@ public class ITQueryTest {
   public void bindTimestampArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toTimestampArray(Collections.<Timestamp>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toTimestampArray(Collections.emptyList()),
             Type.array(Type.timestamp()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestampList(0)).containsExactly();
@@ -522,7 +512,7 @@ public class ITQueryTest {
   public void bindDateArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Collections.<Date>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Collections.emptyList()),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -555,9 +545,7 @@ public class ITQueryTest {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toNumericArray(Collections.<BigDecimal>emptyList()),
+            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(Collections.emptyList()),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0)).containsExactly();
