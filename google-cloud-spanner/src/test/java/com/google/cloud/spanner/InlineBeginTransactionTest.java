@@ -66,7 +66,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -175,7 +174,7 @@ public class InlineBeginTransactionTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     // Create a Spanner instance that will inline BeginTransaction calls. It also has no prepared
@@ -191,7 +190,7 @@ public class InlineBeginTransactionTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
     mockSpanner.reset();
     mockSpanner.clearRequests();
@@ -356,8 +355,7 @@ public class InlineBeginTransactionTest {
               txn.then(
                   new AsyncTransactionFunction<Void, Long>() {
                     @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                       return txn.executeUpdateAsync(UPDATE_STATEMENT);
                     }
                   },
@@ -390,8 +388,7 @@ public class InlineBeginTransactionTest {
                 txn.then(
                     new AsyncTransactionFunction<Void, Long>() {
                       @Override
-                      public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                          throws Exception {
+                      public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                         return txn.executeUpdateAsync(UPDATE_STATEMENT);
                       }
                     },
@@ -402,8 +399,7 @@ public class InlineBeginTransactionTest {
               updateCount.then(
                   new AsyncTransactionFunction<Long, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Long input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Long input) {
                       mockSpanner.abortAllTransactions();
                       return ApiFutures.immediateFuture(null);
                     }
@@ -436,8 +432,7 @@ public class InlineBeginTransactionTest {
             txn.then(
                     new AsyncTransactionFunction<Void, Void>() {
                       @Override
-                      public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                          throws Exception {
+                      public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                         txn.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
                         return ApiFutures.immediateFuture(null);
                       }
@@ -457,8 +452,7 @@ public class InlineBeginTransactionTest {
     }
 
     @Test
-    public void testAsyncTransactionManagerInlinedBeginTxWithError()
-        throws InterruptedException, ExecutionException {
+    public void testAsyncTransactionManagerInlinedBeginTxWithError() throws InterruptedException {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       try (AsyncTransactionManager txMgr = client.transactionManagerAsync()) {
@@ -469,8 +463,7 @@ public class InlineBeginTransactionTest {
                 txn.then(
                         new AsyncTransactionFunction<Void, Long>() {
                           @Override
-                          public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                              throws Exception {
+                          public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                             return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
                           }
                         },
@@ -478,8 +471,7 @@ public class InlineBeginTransactionTest {
                     .then(
                         new AsyncTransactionFunction<Long, Long>() {
                           @Override
-                          public ApiFuture<Long> apply(TransactionContext txn, Long input)
-                              throws Exception {
+                          public ApiFuture<Long> apply(TransactionContext txn, Long input) {
                             return txn.executeUpdateAsync(UPDATE_STATEMENT);
                           }
                         },
@@ -555,7 +547,7 @@ public class InlineBeginTransactionTest {
                     boolean firstAttempt = true;
 
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       if (firstAttempt) {
                         firstAttempt = false;
                         mockSpanner.putStatementResult(
@@ -587,7 +579,7 @@ public class InlineBeginTransactionTest {
                     boolean firstAttempt = true;
 
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       if (firstAttempt) {
                         firstAttempt = false;
                         mockSpanner.putStatementResult(
@@ -1191,7 +1183,7 @@ public class InlineBeginTransactionTest {
                         ApiFutures.allAsList(futures),
                         new ApiAsyncFunction<List<Long>, Long>() {
                           @Override
-                          public ApiFuture<Long> apply(List<Long> input) throws Exception {
+                          public ApiFuture<Long> apply(List<Long> input) {
                             long sum = 0L;
                             for (Long l : input) {
                               sum += l;
@@ -1280,8 +1272,7 @@ public class InlineBeginTransactionTest {
     }
 
     @Test
-    public void query_ThenUpdate_ThenConsumeResultSet()
-        throws InterruptedException, TimeoutException {
+    public void query_ThenUpdate_ThenConsumeResultSet() {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       assertThat(
               client
@@ -1355,7 +1346,7 @@ public class InlineBeginTransactionTest {
                 int attempt = 0;
 
                 @Override
-                public Void run(TransactionContext transaction) throws Exception {
+                public Void run(TransactionContext transaction) {
                   attempt++;
                   TransactionContextImpl impl = (TransactionContextImpl) transaction;
                   if (attempt == 1) {
@@ -1601,7 +1592,7 @@ public class InlineBeginTransactionTest {
                     int attempt = 0;
 
                     @Override
-                    public Long run(TransactionContext transaction) throws Exception {
+                    public Long run(TransactionContext transaction) {
                       if (attempt > 0) {
                         mockSpanner.putStatementResult(StatementResult.update(statement, 1L));
                       }

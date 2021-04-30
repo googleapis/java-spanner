@@ -105,7 +105,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             new Answer<ResultSet>() {
               @Override
-              public ResultSet answer(InvocationOnMock invocation) throws Throwable {
+              public ResultSet answer(InvocationOnMock invocation) {
                 ResultSet.Builder builder =
                     ResultSet.newBuilder()
                         .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
@@ -178,8 +178,7 @@ public class TransactionRunnerImplTest {
         .thenAnswer(
             new Answer<ApiFuture<CommitResponse>>() {
               @Override
-              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public ApiFuture<CommitResponse> answer(InvocationOnMock invocation) {
                 return ApiFutures.immediateFuture(
                     CommitResponse.newBuilder()
                         .setCommitTimestamp(

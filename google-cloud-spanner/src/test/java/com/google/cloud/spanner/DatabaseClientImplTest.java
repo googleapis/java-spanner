@@ -517,8 +517,7 @@ public class DatabaseClientImplTest {
               .then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.buffer(Mutation.delete("TEST", KeySet.all()));
                       return ApiFutures.immediateFuture(null);
                     }
@@ -596,7 +595,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void singleUseAsyncWithoutCallback() throws Exception {
+  public void singleUseAsyncWithoutCallback() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     int rowCount = 0;
@@ -906,7 +905,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testTransactionManager() throws Exception {
+  public void testTransactionManager() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager()) {
@@ -925,7 +924,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testTransactionManager_returnsCommitStats() throws InterruptedException {
+  public void testTransactionManager_returnsCommitStats() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
@@ -2130,8 +2129,7 @@ public class DatabaseClientImplTest {
               .then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.buffer(Mutation.delete("TEST", KeySet.all()));
                       return ApiFutures.immediateFuture(null);
                     }

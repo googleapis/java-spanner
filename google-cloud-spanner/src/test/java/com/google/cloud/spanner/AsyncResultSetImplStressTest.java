@@ -170,7 +170,7 @@ public class AsyncResultSetImplStressTest {
   }
 
   @Test
-  public void toList() throws Exception {
+  public void toList() {
     ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
       for (int i = 0; i < TEST_RUNS; i++) {
@@ -191,7 +191,7 @@ public class AsyncResultSetImplStressTest {
   }
 
   @Test
-  public void toListWithErrors() throws Exception {
+  public void toListWithErrors() {
     ExecutorProvider executorProvider = SpannerOptions.createDefaultAsyncExecutorProvider();
     for (int bufferSize = 1; bufferSize < resultSetSize * 2; bufferSize *= 2) {
       for (int i = 0; i < TEST_RUNS; i++) {

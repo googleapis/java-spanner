@@ -102,7 +102,7 @@ public class SpannerApiFuturesTest {
   public void testGetCancellationException() {
     ApiFuture<Void> fut =
         new ForwardingApiFuture<Void>(ApiFutures.<Void>immediateFuture(null)) {
-          public Void get() throws InterruptedException {
+          public Void get() {
             throw new CancellationException("test cancellation exception");
           }
         };

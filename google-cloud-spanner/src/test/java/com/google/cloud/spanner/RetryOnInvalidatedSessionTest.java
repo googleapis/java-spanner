@@ -1640,8 +1640,7 @@ public class RetryOnInvalidatedSessionTest {
               context.then(
                   new AsyncTransactionFunction<Void, Long>() {
                     @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                       AsyncResultSet rs = fn.apply(txn);
                       ApiFuture<Void> fut =
                           rs.setCallback(
@@ -1735,8 +1734,7 @@ public class RetryOnInvalidatedSessionTest {
               context.then(
                   new AsyncTransactionFunction<Void, Long>() {
                     @Override
-                    public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                       long counter = 0L;
                       try (ResultSet rs = fn.apply(txn)) {
                         while (rs.next()) {
@@ -1821,8 +1819,7 @@ public class RetryOnInvalidatedSessionTest {
               context.then(
                   new AsyncTransactionFunction<Void, Struct>() {
                     @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
                       return fn.apply(txn);
                     }
                   },
@@ -1903,7 +1900,7 @@ public class RetryOnInvalidatedSessionTest {
               transaction.then(
                   new AsyncTransactionFunction<Void, T>() {
                     @Override
-                    public ApiFuture<T> apply(TransactionContext txn, Void input) throws Exception {
+                    public ApiFuture<T> apply(TransactionContext txn, Void input) {
                       return fn.apply(txn);
                     }
                   },

@@ -269,7 +269,7 @@ public class TransactionManagerImplTest {
             new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
               public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
-                  InvocationOnMock invocation) throws Throwable {
+                  InvocationOnMock invocation) {
                 return ApiFutures.immediateFuture(
                     com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(
@@ -312,8 +312,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<List<com.google.spanner.v1.Session>>() {
               @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
                 return Arrays.asList(
                     com.google.spanner.v1.Session.newBuilder()
                         .setName((String) invocation.getArguments()[0] + "/sessions/1")
@@ -327,7 +326,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<ApiFuture<Transaction>>() {
               @Override
-              public ApiFuture<Transaction> answer(InvocationOnMock invocation) throws Throwable {
+              public ApiFuture<Transaction> answer(InvocationOnMock invocation) {
                 return ApiFutures.immediateFuture(
                     Transaction.newBuilder()
                         .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
@@ -339,8 +338,7 @@ public class TransactionManagerImplTest {
         .thenAnswer(
             new Answer<com.google.spanner.v1.ResultSet>() {
               @Override
-              public com.google.spanner.v1.ResultSet answer(InvocationOnMock invocation)
-                  throws Throwable {
+              public com.google.spanner.v1.ResultSet answer(InvocationOnMock invocation) {
                 com.google.spanner.v1.ResultSet.Builder builder =
                     com.google.spanner.v1.ResultSet.newBuilder()
                         .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
@@ -363,7 +361,7 @@ public class TransactionManagerImplTest {
             new Answer<ApiFuture<com.google.spanner.v1.CommitResponse>>() {
               @Override
               public ApiFuture<com.google.spanner.v1.CommitResponse> answer(
-                  InvocationOnMock invocation) throws Throwable {
+                  InvocationOnMock invocation) {
                 return ApiFutures.immediateFuture(
                     com.google.spanner.v1.CommitResponse.newBuilder()
                         .setCommitTimestamp(

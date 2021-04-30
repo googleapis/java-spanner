@@ -29,7 +29,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 // TODO(hzyi): add a public FakeOperationSnapshot in gax to support testing
 class OperationFutureUtil {
@@ -131,8 +130,7 @@ class OperationFutureUtil {
     }
 
     @Override
-    public V get(long time, TimeUnit unit)
-        throws ExecutionException, InterruptedException, TimeoutException {
+    public V get(long time, TimeUnit unit) throws ExecutionException, InterruptedException {
       return get();
     }
 
@@ -247,7 +245,7 @@ class OperationFutureUtil {
 
       @Override
       public ResponseT get(long time, TimeUnit unit)
-          throws ExecutionException, InterruptedException, TimeoutException {
+          throws ExecutionException, InterruptedException {
         return get();
       }
 

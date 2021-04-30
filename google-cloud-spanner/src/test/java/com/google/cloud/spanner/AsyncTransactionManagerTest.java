@@ -99,7 +99,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final ReadOption... options) {
       return new AsyncTransactionFunction<I, AsyncResultSet>() {
         @Override
-        public ApiFuture<AsyncResultSet> apply(TransactionContext txn, I input) throws Exception {
+        public ApiFuture<AsyncResultSet> apply(TransactionContext txn, I input) {
           return ApiFutures.immediateFuture(txn.readAsync(table, keys, columns, options));
         }
       };
@@ -109,7 +109,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final String table, final Key key, final Iterable<String> columns) {
       return new AsyncTransactionFunction<I, Struct>() {
         @Override
-        public ApiFuture<Struct> apply(TransactionContext txn, I input) throws Exception {
+        public ApiFuture<Struct> apply(TransactionContext txn, I input) {
           return txn.readRowAsync(table, key, columns);
         }
       };
@@ -122,7 +122,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     public static <I> AsyncTransactionFunction<I, Void> buffer(final Iterable<Mutation> mutations) {
       return new AsyncTransactionFunction<I, Void>() {
         @Override
-        public ApiFuture<Void> apply(TransactionContext txn, I input) throws Exception {
+        public ApiFuture<Void> apply(TransactionContext txn, I input) {
           txn.buffer(mutations);
           return ApiFutures.immediateFuture(null);
         }
@@ -137,7 +137,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final SettableApiFuture<Long> result, final Statement statement) {
       return new AsyncTransactionFunction<I, Long>() {
         @Override
-        public ApiFuture<Long> apply(TransactionContext txn, I input) throws Exception {
+        public ApiFuture<Long> apply(TransactionContext txn, I input) {
           ApiFuture<Long> updateCount = txn.executeUpdateAsync(statement);
           ApiFutures.addCallback(
               updateCount,
@@ -167,7 +167,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final SettableApiFuture<long[]> result, final Statement... statements) {
       return new AsyncTransactionFunction<I, long[]>() {
         @Override
-        public ApiFuture<long[]> apply(TransactionContext txn, I input) throws Exception {
+        public ApiFuture<long[]> apply(TransactionContext txn, I input) {
           ApiFuture<long[]> updateCounts = txn.batchUpdateAsync(Arrays.asList(statements));
           ApiFutures.addCallback(
               updateCounts,
@@ -336,8 +336,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   .then(
                       new AsyncTransactionFunction<Long, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Long input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext txn, Long input) {
                           if (attempt.get() == 1) {
                             mockSpanner.abortTransaction(txn);
                           }
@@ -369,8 +368,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               txn.then(
                       new AsyncTransactionFunction<Void, Long>() {
                         @Override
-                        public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                            throws Exception {
+                        public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                           // This fire-and-forget update statement should not fail the transaction.
                           // The exception will however cause the transaction to be retried, as the
                           // statement will not return a transaction id.
@@ -433,8 +431,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   .then(
                       new AsyncTransactionFunction<Struct, String>() {
                         @Override
-                        public ApiFuture<String> apply(TransactionContext txn, Struct input)
-                            throws Exception {
+                        public ApiFuture<String> apply(TransactionContext txn, Struct input) {
                           return ApiFutures.immediateFuture(input.getString("Value"));
                         }
                       },
@@ -442,8 +439,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   .then(
                       new AsyncTransactionFunction<String, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, String input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext txn, String input) {
                           assertThat(input).isEqualTo("v1");
                           return ApiFutures.immediateFuture(null);
                         }
@@ -473,8 +469,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   .then(
                       new AsyncTransactionFunction<Long, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Long input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext txn, Long input) {
                           throw new IllegalStateException("this should not be executed");
                         }
                       },
@@ -509,8 +504,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               txn.then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                           if (attempt.incrementAndGet() == 1) {
                             // Abort the first attempt.
                             mockSpanner.abortNextStatement();
@@ -550,8 +544,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               txn.then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                           if (attempt.incrementAndGet() == 1) {
                             mockSpanner.abortNextStatement();
                           }
@@ -627,8 +620,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       // Shoot-and-forget update. The commit will still wait for this request to
                       // finish.
                       txn.executeUpdateAsync(UPDATE_STATEMENT);
@@ -732,8 +724,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.batchUpdateAsync(
                           ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
                       return ApiFutures.immediateFuture(null);
@@ -771,8 +762,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, long[]>() {
                     @Override
-                    public ApiFuture<long[]> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<long[]> apply(TransactionContext txn, Void input) {
                       if (attempt.incrementAndGet() == 1) {
                         return txn.batchUpdateAsync(
                             ImmutableList.of(UPDATE_STATEMENT, UPDATE_ABORTED_STATEMENT));
@@ -813,8 +803,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, long[]>() {
                     @Override
-                    public ApiFuture<long[]> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<long[]> apply(TransactionContext txn, Void input) {
                       if (attempt.incrementAndGet() == 1) {
                         mockSpanner.abortNextStatement();
                       }
@@ -856,8 +845,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       if (attempt.get() > 0) {
                         // Set the result of the update statement back to 1 row.
                         mockSpanner.putStatementResult(
@@ -874,8 +862,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               .then(
                   new AsyncTransactionFunction<long[], Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, long[] input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, long[] input) {
                       if (attempt.incrementAndGet() == 1) {
                         mockSpanner.abortTransaction(txn);
                       }
@@ -915,8 +902,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       if (attempt.incrementAndGet() == 1) {
                         mockSpanner.abortNextStatement();
                       }
@@ -1006,8 +992,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
                       return ApiFutures.immediateFuture(null);
                     }
@@ -1043,8 +1028,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       .then(
                           new AsyncTransactionFunction<Struct, String>() {
                             @Override
-                            public ApiFuture<String> apply(TransactionContext txn, Struct input)
-                                throws Exception {
+                            public ApiFuture<String> apply(TransactionContext txn, Struct input) {
                               return ApiFutures.immediateFuture(input.getString("Value"));
                             }
                           },
@@ -1070,8 +1054,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               txn.then(
                   new AsyncTransactionFunction<Void, List<String>>() {
                     @Override
-                    public ApiFuture<List<String>> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<List<String>> apply(TransactionContext txn, Void input) {
                       return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
                           .toListAsync(
                               new Function<StructReader, String>() {
@@ -1110,8 +1093,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             txn.then(
                     new AsyncTransactionFunction<Void, Struct>() {
                       @Override
-                      public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                          throws Exception {
+                      public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
                         return txn.readRowAsync(
                             "Singers", Key.of(singerId), Collections.singleton(column));
                       }
@@ -1120,8 +1102,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                 .then(
                     new AsyncTransactionFunction<Struct, Void>() {
                       @Override
-                      public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-                          throws Exception {
+                      public ApiFuture<Void> apply(TransactionContext txn, Struct input) {
                         String name = input.getString(column);
                         txn.buffer(
                             Mutation.newUpdateBuilder("Singers")
@@ -1154,7 +1135,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           txnContextFuture.then(
               new AsyncTransactionFunction<Void, Long>() {
                 @Override
-                public ApiFuture<Long> apply(TransactionContext txn, Void input) throws Exception {
+                public ApiFuture<Long> apply(TransactionContext txn, Void input) {
                   return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
                 }
               },

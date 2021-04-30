@@ -187,7 +187,7 @@ class SessionPoolAsyncTransactionManager
         delegate,
         new ApiAsyncFunction<AsyncTransactionManagerImpl, Timestamp>() {
           @Override
-          public ApiFuture<Timestamp> apply(AsyncTransactionManagerImpl input) throws Exception {
+          public ApiFuture<Timestamp> apply(AsyncTransactionManagerImpl input) {
             final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
             ApiFutures.addCallback(
                 input.commitAsync(),
@@ -229,7 +229,7 @@ class SessionPoolAsyncTransactionManager
         delegate,
         new ApiAsyncFunction<AsyncTransactionManagerImpl, Void>() {
           @Override
-          public ApiFuture<Void> apply(AsyncTransactionManagerImpl input) throws Exception {
+          public ApiFuture<Void> apply(AsyncTransactionManagerImpl input) {
             ApiFuture<Void> res = input.rollbackAsync();
             res.addListener(() -> session.close(), MoreExecutors.directExecutor());
             return res;
@@ -253,8 +253,7 @@ class SessionPoolAsyncTransactionManager
                 delegate,
                 new ApiAsyncFunction<AsyncTransactionManagerImpl, TransactionContext>() {
                   @Override
-                  public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input)
-                      throws Exception {
+                  public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input) {
                     if (restartedAfterSessionNotFound) {
                       restartedAfterSessionNotFound = false;
                       return input.beginAsync();
@@ -291,8 +290,7 @@ class SessionPoolAsyncTransactionManager
         delegate,
         new ApiAsyncFunction<AsyncTransactionManagerImpl, CommitResponse>() {
           @Override
-          public ApiFuture<CommitResponse> apply(AsyncTransactionManagerImpl input)
-              throws Exception {
+          public ApiFuture<CommitResponse> apply(AsyncTransactionManagerImpl input) {
             return input.getCommitResponse();
           }
         },

@@ -536,7 +536,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
           finished,
           new ApiAsyncFunction<Void, List<T>>() {
             @Override
-            public ApiFuture<List<T>> apply(Void input) throws Exception {
+            public ApiFuture<List<T>> apply(Void input) {
               return res;
             }
           },

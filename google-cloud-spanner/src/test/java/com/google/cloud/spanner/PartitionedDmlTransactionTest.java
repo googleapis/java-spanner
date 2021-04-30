@@ -288,7 +288,7 @@ public class PartitionedDmlTransactionTest {
               long ticks = 0L;
 
               @Override
-              public Long answer(InvocationOnMock invocation) throws Throwable {
+              public Long answer(InvocationOnMock invocation) {
                 return TimeUnit.NANOSECONDS.convert(++ticks, TimeUnit.MINUTES);
               }
             });

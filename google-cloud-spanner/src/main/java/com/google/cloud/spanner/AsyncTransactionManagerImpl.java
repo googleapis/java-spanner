@@ -174,7 +174,7 @@ final class AsyncTransactionManagerImpl
           txn.rollbackAsync(),
           new ApiAsyncFunction<Empty, Void>() {
             @Override
-            public ApiFuture<Void> apply(Empty input) throws Exception {
+            public ApiFuture<Void> apply(Empty input) {
               return ApiFutures.immediateFuture(null);
             }
           },

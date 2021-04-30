@@ -197,7 +197,7 @@ public class ITDirectPathFallback {
     assertWithMessage("Failed to upgrade back to DirectPath").that(exerciseDirectPath()).isTrue();
   }
 
-  private boolean exerciseDirectPath() throws InterruptedException, TimeoutException {
+  private boolean exerciseDirectPath() throws InterruptedException {
     Stopwatch stopwatch = Stopwatch.createStarted();
     numDpAddrRead.set(0);
 

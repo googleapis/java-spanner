@@ -535,7 +535,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final Callable<Void> commitCallable =
       new Callable<Void>() {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
           checkAborted();
           get(txContextFuture).buffer(mutations);
           txManager.commit();
@@ -837,7 +837,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final Callable<Void> rollbackCallable =
       new Callable<Void>() {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
           try {
             if (state != UnitOfWorkState.ABORTED) {
               // Make sure the transaction has actually started before we try to rollback.

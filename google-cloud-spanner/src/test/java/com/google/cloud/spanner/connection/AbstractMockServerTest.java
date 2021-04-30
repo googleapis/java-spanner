@@ -156,7 +156,7 @@ public abstract class AbstractMockServerTest {
   }
 
   @AfterClass
-  public static void stopServer() throws Exception {
+  public static void stopServer() {
     server.shutdown();
   }
 

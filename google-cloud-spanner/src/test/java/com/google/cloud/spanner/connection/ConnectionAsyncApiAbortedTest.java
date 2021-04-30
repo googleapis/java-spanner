@@ -421,7 +421,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testQueriesAbortedMidway_ResultsChanged() throws InterruptedException {
+  public void testQueriesAbortedMidway_ResultsChanged() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
             mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),

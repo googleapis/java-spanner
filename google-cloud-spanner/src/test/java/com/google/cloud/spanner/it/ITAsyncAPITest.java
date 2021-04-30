@@ -348,8 +348,7 @@ public class ITAsyncAPITest {
                   .then(
                       new AsyncTransactionFunction<Void, Void>() {
                         @Override
-                        public ApiFuture<Void> apply(TransactionContext transaction, Void input)
-                            throws Exception {
+                        public ApiFuture<Void> apply(TransactionContext transaction, Void input) {
                           transaction.buffer(
                               Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
                                   .set("Key")

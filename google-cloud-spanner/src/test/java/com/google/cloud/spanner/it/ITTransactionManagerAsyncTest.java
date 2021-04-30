@@ -111,8 +111,7 @@ public class ITTransactionManagerAsyncTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.buffer(
                           Mutation.newInsertBuilder("T")
                               .set("K")
@@ -149,8 +148,7 @@ public class ITTransactionManagerAsyncTest {
           txn.then(
                   new AsyncTransactionFunction<Void, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                       txn.buffer(
                           Mutation.newInsertBuilder("InvalidTable")
                               .set("K")
@@ -195,7 +193,7 @@ public class ITTransactionManagerAsyncTest {
         txn.then(
             new AsyncTransactionFunction<Void, Void>() {
               @Override
-              public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
+              public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                 txn.buffer(
                     Mutation.newInsertBuilder("T")
                         .set("K")
@@ -245,8 +243,7 @@ public class ITTransactionManagerAsyncTest {
               txn1.then(
                   new AsyncTransactionFunction<Void, Struct>() {
                     @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
                       return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
                     }
                   },
@@ -257,8 +254,7 @@ public class ITTransactionManagerAsyncTest {
               txn2.then(
                   new AsyncTransactionFunction<Void, Struct>() {
                     @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                        throws Exception {
+                    public ApiFuture<Struct> apply(TransactionContext txn, Void input) {
                       return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
                     }
                   },
@@ -268,8 +264,7 @@ public class ITTransactionManagerAsyncTest {
               txn1Step1.then(
                   new AsyncTransactionFunction<Struct, Void>() {
                     @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-                        throws Exception {
+                    public ApiFuture<Void> apply(TransactionContext txn, Struct input) {
                       txn.buffer(
                           Mutation.newUpdateBuilder("T")
                               .set("K")
@@ -307,7 +302,7 @@ public class ITTransactionManagerAsyncTest {
           txn2.then(
               new AsyncTransactionFunction<Void, Void>() {
                 @Override
-                public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
+                public ApiFuture<Void> apply(TransactionContext txn, Void input) {
                   txn.buffer(
                       Mutation.newUpdateBuilder("T")
                           .set("K")

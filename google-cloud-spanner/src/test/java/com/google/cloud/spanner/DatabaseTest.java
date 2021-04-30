@@ -82,7 +82,7 @@ public class DatabaseTest {
         .thenAnswer(
             new Answer<Database.Builder>() {
               @Override
-              public Database.Builder answer(InvocationOnMock invocation) throws Throwable {
+              public Database.Builder answer(InvocationOnMock invocation) {
                 return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
               }
             });

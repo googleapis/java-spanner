@@ -658,7 +658,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
 
     @Override
-    public OperationFuture<ResponseT, MetadataT> call() throws Exception {
+    public OperationFuture<ResponseT, MetadataT> call() {
       acquireAdministrativeRequestsRateLimiter();
 
       return runWithRetryOnAdministrativeRequestsExceeded(
@@ -701,8 +701,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private Operation mostRecentOperation(
       OperationsLister lister,
       Function<Operation, Timestamp> getStartTimeFunction,
-      Timestamp initialCallTime)
-      throws InvalidProtocolBufferException {
+      Timestamp initialCallTime) {
     Operation res = null;
     Timestamp currMaxStartTime = null;
     String nextPageToken = null;

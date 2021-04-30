@@ -89,7 +89,7 @@ public abstract class AbstractAsyncTransactionTest {
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     spanner =
         SpannerOptions.newBuilder()
@@ -122,7 +122,7 @@ public abstract class AbstractAsyncTransactionTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.removeAllExecutionTimes();
