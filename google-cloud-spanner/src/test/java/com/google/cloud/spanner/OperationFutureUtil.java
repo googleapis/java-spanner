@@ -79,7 +79,7 @@ class OperationFutureUtil {
     }
   }
 
-  public static final <ResponseT extends Message, MetadataT extends Message>
+  public static <ResponseT extends Message, MetadataT extends Message>
       OperationSnapshot completedSnapshot(
           final String name, final ResponseT response, final MetadataT metadata) {
     return new OperationSnapshot() {
@@ -182,12 +182,12 @@ class OperationFutureUtil {
     }
   }
 
-  public static final <ResponseT> RetryingFuture<ResponseT> immediateRetryingFuture(
+  public static <ResponseT> RetryingFuture<ResponseT> immediateRetryingFuture(
       final ResponseT response) {
     return new ImmediateRetryingFuture(response);
   }
 
-  public static final <ResponseT extends Message, MetadataT extends Message>
+  public static <ResponseT extends Message, MetadataT extends Message>
       OperationFuture<ResponseT, MetadataT> immediateOperationFuture(
           final String name, final ResponseT response, final MetadataT metadata) {
     return immediateOperationFuture(completedSnapshot(name, response, metadata));
@@ -201,7 +201,7 @@ class OperationFutureUtil {
    * respectively.
    */
   @SuppressWarnings("unchecked")
-  public static final <ResponseT, MetadataT>
+  public static <ResponseT, MetadataT>
       OperationFuture<ResponseT, MetadataT> immediateOperationFuture(
           final OperationSnapshot completedSnapshot) {
 
