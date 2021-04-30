@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -348,12 +349,7 @@ public class ITAsyncExamplesTest {
             ApiFutures.allAsList(Arrays.asList(values1, values2)),
             input ->
                 Iterables.mergeSorted(
-                    input,
-                    (o1, o2) -> {
-                      // Compare based on numerical order (i.e. without the preceding 'v').
-                      return Integer.valueOf(o1.substring(1))
-                          .compareTo(Integer.valueOf(o2.substring(1)));
-                    }),
+                    input, Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }

@@ -36,6 +36,7 @@ import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -319,11 +320,8 @@ public class ReadAsyncTest {
             input ->
                 Iterables.mergeSorted(
                     input,
-                    (o1, o2) -> {
-                      // Return in numerical order (i.e. without the preceding 'v').
-                      return Integer.valueOf(o1.substring(1))
-                          .compareTo(Integer.valueOf(o2.substring(1)));
-                    }),
+                    // Return in numerical order (i.e. without the preceding 'v').
+                    Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }
