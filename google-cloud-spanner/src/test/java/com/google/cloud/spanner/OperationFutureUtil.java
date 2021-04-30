@@ -184,7 +184,7 @@ class OperationFutureUtil {
 
   public static <ResponseT> RetryingFuture<ResponseT> immediateRetryingFuture(
       final ResponseT response) {
-    return new ImmediateRetryingFuture(response);
+    return new ImmediateRetryingFuture<>(response);
   }
 
   public static <ResponseT extends Message, MetadataT extends Message>
