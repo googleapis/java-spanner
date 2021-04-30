@@ -1004,7 +1004,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.

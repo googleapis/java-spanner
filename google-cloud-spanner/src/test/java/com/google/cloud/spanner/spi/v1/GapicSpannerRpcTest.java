@@ -516,7 +516,6 @@ public class GapicSpannerRpcTest {
     }
   }
 
-  @SuppressWarnings("rawtypes")
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()

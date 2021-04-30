@@ -46,7 +46,6 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
 
   private final DatabaseId dbId = DatabaseId.of("p", "i", "d");
 
-  @SuppressWarnings("rawtypes")
   private SpannerOptions createOptions() {
     return SpannerOptions.newBuilder()
         .setProjectId("p")

@@ -107,7 +107,6 @@ public class DatabaseAdminClientTest {
     server.awaitTermination();
   }
 
-  @SuppressWarnings("rawtypes")
   @Before
   public void setUp() {
     mockDatabaseAdmin.reset();

@@ -313,7 +313,6 @@ public class SpannerPool {
     initialized = true;
   }
 
-  @SuppressWarnings("rawtypes")
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
