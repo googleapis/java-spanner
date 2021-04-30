@@ -671,12 +671,12 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
-    return value != null ? Boolean.parseBoolean(value) : false;
+    return Boolean.parseBoolean(value);
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
     String value = parseUriProperty(uri, "autoConfigEmulator");
-    return value != null ? Boolean.parseBoolean(value) : false;
+    return Boolean.parseBoolean(value);
   }
 
   @VisibleForTesting
