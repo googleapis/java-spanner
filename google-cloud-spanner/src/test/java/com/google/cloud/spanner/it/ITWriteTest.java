@@ -676,11 +676,7 @@ public class ITWriteTest {
   @Test
   public void writeNumericArrayEmpty() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
-    write(
-        baseInsert()
-            .set("NumericArrayValue")
-            .toNumericArray(ImmutableList.<BigDecimal>of())
-            .build());
+    write(baseInsert().set("NumericArrayValue").toNumericArray(ImmutableList.of()).build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0)).containsExactly();

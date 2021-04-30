@@ -162,7 +162,7 @@ public class DmlBatchTest {
 
     UnitOfWork tx = mock(UnitOfWork.class);
     when(tx.executeBatchUpdateAsync(anyListOf(ParsedStatement.class)))
-        .thenReturn(ApiFutures.<long[]>immediateFailedFuture(mock(SpannerException.class)));
+        .thenReturn(ApiFutures.immediateFailedFuture(mock(SpannerException.class)));
     batch = createSubject(tx);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));

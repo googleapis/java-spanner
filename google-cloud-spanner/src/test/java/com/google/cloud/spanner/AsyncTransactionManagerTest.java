@@ -116,7 +116,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
 
     public static <I> AsyncTransactionFunction<I, Long> executeUpdateAsync(Statement statement) {
-      return executeUpdateAsync(SettableApiFuture.<Long>create(), statement);
+      return executeUpdateAsync(SettableApiFuture.create(), statement);
     }
 
     public static <I> AsyncTransactionFunction<I, Long> executeUpdateAsync(
@@ -143,7 +143,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
     public static <I> AsyncTransactionFunction<I, long[]> batchUpdateAsync(
         final Statement... statements) {
-      return batchUpdateAsync(SettableApiFuture.<long[]>create(), statements);
+      return batchUpdateAsync(SettableApiFuture.create(), statements);
     }
 
     public static <I> AsyncTransactionFunction<I, long[]> batchUpdateAsync(
@@ -202,8 +202,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           CommitTimestampFuture commitTimestamp =
               transaction
                   .then(
-                      AsyncTransactionManagerHelper.<Void>buffer(
-                          Mutation.delete("FOO", Key.of("foo"))),
+                      AsyncTransactionManagerHelper.buffer(Mutation.delete("FOO", Key.of("foo"))),
                       executor)
                   .commitAsync();
           assertNotNull(commitTimestamp.get());
@@ -228,7 +227,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture commitTimestamp =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
+                      AsyncTransactionManagerHelper.executeUpdateAsync(
                           updateCount, UPDATE_STATEMENT),
                       executor)
                   .commitAsync();
@@ -253,7 +252,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture commitTimestamp =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
+                      AsyncTransactionManagerHelper.executeUpdateAsync(
                           updateCount, UPDATE_STATEMENT),
                       executor)
                   .commitAsync();
@@ -276,8 +275,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture commitTimestamp =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT),
+                      AsyncTransactionManagerHelper.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
                       executor)
                   .commitAsync();
           commitTimestamp.get();
@@ -307,7 +305,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           attempt.incrementAndGet();
           CommitTimestampFuture commitTimestamp =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
+                      AsyncTransactionManagerHelper.executeUpdateAsync(
                           updateCount, UPDATE_STATEMENT),
                       executor)
                   .then(
@@ -393,11 +391,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           CommitTimestampFuture ts =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
-                      executor)
+              txn.then(AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT), executor)
                   .then(
-                      AsyncTransactionManagerHelper.<Long>readRowAsync(
+                      AsyncTransactionManagerHelper.readRowAsync(
                           READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
                       executor)
                   .then(
@@ -428,8 +424,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture ts =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT),
+                      AsyncTransactionManagerHelper.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
                       executor)
                   .then(
                       (AsyncTransactionFunction<Long, Void>)
@@ -479,8 +474,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           },
                       executor)
                   .then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
-                      executor)
+                      AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT), executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
           break;
@@ -551,9 +545,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       TransactionContextFuture txn = mgr.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
-                  executor)
+          txn.then(AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT), executor)
               .commitAsync()
               .get();
           fail("missing expected exception");
@@ -606,7 +598,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
+                  AsyncTransactionManagerHelper.batchUpdateAsync(
                       result, UPDATE_STATEMENT, UPDATE_STATEMENT),
                   executor)
               .commitAsync()
@@ -630,7 +622,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture ts =
               txn.then(
-                      AsyncTransactionManagerHelper.<Void>batchUpdateAsync(res, UPDATE_STATEMENT),
+                      AsyncTransactionManagerHelper.batchUpdateAsync(res, UPDATE_STATEMENT),
                       executor)
                   .commitAsync();
           mockSpanner.unfreeze();
@@ -652,7 +644,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
+                  AsyncTransactionManagerHelper.batchUpdateAsync(
                       result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT),
                   executor)
               .commitAsync()
@@ -687,7 +679,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       },
                   executor)
               .then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
+                  AsyncTransactionManagerHelper.batchUpdateAsync(
                       result, UPDATE_STATEMENT, UPDATE_STATEMENT),
                   executor)
               .commitAsync()
@@ -803,7 +795,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       },
                   executor)
               .then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
+                  AsyncTransactionManagerHelper.batchUpdateAsync(
                       result, UPDATE_STATEMENT, UPDATE_STATEMENT),
                   executor)
               .then(
@@ -907,7 +899,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
+                  AsyncTransactionManagerHelper.batchUpdateAsync(
                       UPDATE_STATEMENT, UPDATE_STATEMENT),
                   executor)
               .commitAsync()
@@ -966,7 +958,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           val =
               step =
                   txn.then(
-                          AsyncTransactionManagerHelper.<Void>readRowAsync(
+                          AsyncTransactionManagerHelper.readRowAsync(
                               READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
                           executor)
                       .then(

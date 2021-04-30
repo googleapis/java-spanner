@@ -849,7 +849,7 @@ public class DatabaseClientImplTest {
         runner.runAsync(
             txn -> {
               txn.buffer(Mutation.delete("FOO", Key.of("foo")));
-              return ApiFutures.<Void>immediateFuture(null);
+              return ApiFutures.immediateFuture(null);
             },
             executor);
     assertNull(get(result));

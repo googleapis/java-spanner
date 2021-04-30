@@ -64,7 +64,7 @@ public class SpannerImplTest {
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
-    when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
+    when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     impl = new SpannerImpl(rpc, spannerOptions);
   }
 

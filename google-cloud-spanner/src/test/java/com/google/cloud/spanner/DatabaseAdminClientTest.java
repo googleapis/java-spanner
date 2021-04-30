@@ -640,7 +640,7 @@ public class DatabaseAdminClientTest {
     // + restores a database --> 2 operations.
     assertThat(client.listDatabaseOperations(INSTANCE_ID).iterateAll()).hasSize(3);
     // Create another database which should also create another operation.
-    client.createDatabase(INSTANCE_ID, "other-database", Collections.<String>emptyList()).get();
+    client.createDatabase(INSTANCE_ID, "other-database", Collections.emptyList()).get();
     assertThat(client.listDatabaseOperations(INSTANCE_ID).iterateAll()).hasSize(4);
     // Restore a backup. This should create 2 database operations: One to restore the database and
     // one to optimize it.
@@ -657,7 +657,7 @@ public class DatabaseAdminClientTest {
             .newInstanceBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
             .build();
     assertThat(instance.listDatabaseOperations().iterateAll()).hasSize(3);
-    instance.createDatabase("other-database", Collections.<String>emptyList()).get();
+    instance.createDatabase("other-database", Collections.emptyList()).get();
     assertThat(instance.listDatabaseOperations().iterateAll()).hasSize(4);
     client
         .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BCK_ID))
@@ -702,7 +702,7 @@ public class DatabaseAdminClientTest {
     assertThat(database.listDatabaseOperations().iterateAll()).hasSize(1);
     // Create another database which should also create another operation, but for a different
     // database.
-    client.createDatabase(INSTANCE_ID, "other-database", Collections.<String>emptyList()).get();
+    client.createDatabase(INSTANCE_ID, "other-database", Collections.emptyList()).get();
     assertThat(database.listDatabaseOperations().iterateAll()).hasSize(1);
     // Update the database DDL. This should create an operation for this database.
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
@@ -883,7 +883,7 @@ public class DatabaseAdminClientTest {
         SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     final String databaseId = "other-database-id";
     OperationFuture<Database, CreateDatabaseMetadata> op =
-        client.createDatabase(INSTANCE_ID, databaseId, Collections.<String>emptyList());
+        client.createDatabase(INSTANCE_ID, databaseId, Collections.emptyList());
     Database database = op.get();
     assertThat(database.getId().getName())
         .isEqualTo(
@@ -901,7 +901,7 @@ public class DatabaseAdminClientTest {
         SimulatedExecutionTime.ofException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     final String databaseId = "other-database-id";
     OperationFuture<Database, CreateDatabaseMetadata> op =
-        client.createDatabase(INSTANCE_ID, databaseId, Collections.<String>emptyList());
+        client.createDatabase(INSTANCE_ID, databaseId, Collections.emptyList());
     Database database = op.get();
     assertThat(database.getId().getName())
         .isEqualTo(

@@ -204,7 +204,7 @@ public class SessionClientTest {
   public void batchCreateSessionsDistributesMultipleRequestsOverChannels() {
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
-    final Map<String, String> labels = Collections.<String, String>emptyMap();
+    final Map<String, String> labels = Collections.emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
     final Set<Long> usedChannelHints = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(

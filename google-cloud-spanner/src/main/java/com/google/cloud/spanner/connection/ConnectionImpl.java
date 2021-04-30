@@ -237,8 +237,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(spannerPool);
     Preconditions.checkNotNull(ddlClient);
     Preconditions.checkNotNull(dbClient);
-    this.statementExecutor =
-        new StatementExecutor(Collections.<StatementExecutionInterceptor>emptyList());
+    this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);

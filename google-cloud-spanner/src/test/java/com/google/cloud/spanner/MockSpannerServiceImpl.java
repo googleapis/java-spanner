@@ -432,12 +432,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     public static SimulatedExecutionTime ofException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Collections.singletonList(exception), false, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Collections.singletonList(exception), true, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), true, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStreamException(Exception exception, long streamIndex) {
@@ -451,7 +451,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     public static SimulatedExecutionTime ofExceptions(Collection<? extends Exception> exceptions) {
-      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.<Long>emptySet());
+      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofMinimumAndRandomTimeAndExceptions(
@@ -459,16 +459,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         int randomExecutionTime,
         Collection<? extends Exception> exceptions) {
       return new SimulatedExecutionTime(
-          minimumExecutionTime,
-          randomExecutionTime,
-          exceptions,
-          false,
-          Collections.<Long>emptySet());
+          minimumExecutionTime, randomExecutionTime, exceptions, false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(int minimum, int random) {
-      this(
-          minimum, random, Collections.<Exception>emptyList(), false, Collections.<Long>emptySet());
+      this(minimum, random, Collections.emptyList(), false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(

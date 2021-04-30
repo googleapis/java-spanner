@@ -39,7 +39,6 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Mutation.Write;
 import com.google.spanner.v1.PartialResultSet;
-import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
@@ -81,7 +80,7 @@ public class SessionImplTest {
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
-    when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
+    when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
@@ -315,7 +314,7 @@ public class SessionImplTest {
   public void writeClosesOldSingleUseContext() throws ParseException {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.commit(Mockito.<CommitRequest>any(), Mockito.eq(options)))
+    Mockito.when(rpc.commit(Mockito.any(), Mockito.eq(options)))
         .thenReturn(
             CommitResponse.newBuilder()
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
@@ -364,7 +363,7 @@ public class SessionImplTest {
   public void prepareClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options)))
         .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
     session.prepareReadWriteTransaction();
     try {
@@ -433,7 +432,7 @@ public class SessionImplTest {
   private void mockRead(final PartialResultSet myResultSet) {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
-    Mockito.when(rpc.read(Mockito.<ReadRequest>any(), consumer.capture(), Mockito.eq(options)))
+    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options)))
         .then(
             (Answer<StreamingCall>)
                 invocation -> {
@@ -450,8 +449,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -470,8 +468,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -491,8 +488,7 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());

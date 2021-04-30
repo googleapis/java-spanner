@@ -203,9 +203,7 @@ public abstract class AbstractMockServerTest {
   }
 
   ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   ITConnection createConnection(

@@ -170,7 +170,7 @@ public class ReadWriteTransactionTest {
     return ReadWriteTransaction.newBuilder()
         .setDatabaseClient(client)
         .setRetryAbortsInternally(withRetry)
-        .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+        .setTransactionRetryListeners(Collections.emptyList())
         .withStatementExecutor(new StatementExecutor())
         .build();
   }
@@ -462,7 +462,7 @@ public class ReadWriteTransactionTest {
       ReadWriteTransaction subject =
           ReadWriteTransaction.newBuilder()
               .setRetryAbortsInternally(true)
-              .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+              .setTransactionRetryListeners(Collections.emptyList())
               .setDatabaseClient(client)
               .withStatementExecutor(new StatementExecutor())
               .build();
@@ -489,7 +489,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();
@@ -628,7 +628,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();

@@ -45,7 +45,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
-import io.grpc.MethodDescriptor;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -342,7 +341,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteStreamingSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
     } else {
       res = super.executeQueryAsync(statement, analyzeMode, options);
     }
@@ -397,7 +396,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteSqlMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -480,7 +479,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteBatchDmlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -579,7 +578,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 }
               },
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getCommitMethod()));
+              ImmutableList.of(SpannerGrpc.getCommitMethod()));
     } else {
       res =
           executeStatementAsync(

@@ -235,14 +235,11 @@ public abstract class ITAbstractSpannerTest {
    * @return the newly opened connection.
    */
   public ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   public ITConnection createConnection(AbortInterceptor interceptor) {
-    return createConnection(
-        Collections.singletonList(interceptor), Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.singletonList(interceptor), Collections.emptyList());
   }
 
   public ITConnection createConnection(

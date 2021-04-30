@@ -71,7 +71,7 @@ public class ITPitrUpdateDatabaseTest {
     databaseId = testHelper.getUniqueDatabaseId();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
 
-    createDatabase(dbAdminClient, instanceId, databaseId, Collections.<String>emptyList());
+    createDatabase(dbAdminClient, instanceId, databaseId, Collections.emptyList());
     metadata =
         updateVersionRetentionPeriod(
             dbAdminClient, instanceId, databaseId, VERSION_RETENTION_PERIOD);

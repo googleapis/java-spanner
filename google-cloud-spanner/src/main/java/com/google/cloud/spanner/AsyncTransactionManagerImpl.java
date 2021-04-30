@@ -70,7 +70,7 @@ final class AsyncTransactionManagerImpl
     if (txn != null) {
       txn.close();
     }
-    return MoreObjects.firstNonNull(res, ApiFutures.<Void>immediateFuture(null));
+    return MoreObjects.firstNonNull(res, ApiFutures.immediateFuture(null));
   }
 
   @Override

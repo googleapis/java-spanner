@@ -43,7 +43,6 @@ import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
-import io.grpc.MethodDescriptor;
 import java.util.concurrent.Callable;
 
 /**
@@ -355,8 +354,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.<MethodDescriptor<?, ?>>of(
-            SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<Long> executePartitionedUpdateAsync(final ParsedStatement update) {

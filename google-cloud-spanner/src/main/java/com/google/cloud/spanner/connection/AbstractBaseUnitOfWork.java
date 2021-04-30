@@ -139,8 +139,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
         applyStatementTimeoutToMethod == null
-            ? Collections.<MethodDescriptor<?, ?>>emptySet()
-            : ImmutableList.<MethodDescriptor<?, ?>>of(applyStatementTimeoutToMethod));
+            ? Collections.emptySet()
+            : ImmutableList.of(applyStatementTimeoutToMethod));
   }
 
   <T> ApiFuture<T> executeStatementAsync(

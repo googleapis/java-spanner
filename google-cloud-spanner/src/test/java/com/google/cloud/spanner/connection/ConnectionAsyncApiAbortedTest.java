@@ -114,8 +114,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
 
   ITConnection createConnection(TransactionRetryListener listener) {
     ITConnection connection =
-        super.createConnection(
-            ImmutableList.<StatementExecutionInterceptor>of(), ImmutableList.of(listener));
+        super.createConnection(ImmutableList.of(), ImmutableList.of(listener));
     connection.setAutocommit(false);
     return connection;
   }

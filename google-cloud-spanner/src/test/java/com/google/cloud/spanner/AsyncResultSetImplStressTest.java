@@ -232,7 +232,7 @@ public class AsyncResultSetImplStressTest {
           final SettableApiFuture<ImmutableList<Row>> future = SettableApiFuture.create();
           try (AsyncResultSetImpl impl =
               new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
-            final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
+            final ImmutableList.Builder<Row> builder = ImmutableList.builder();
             impl.setCallback(
                 executor,
                 resultSet -> {
@@ -312,7 +312,7 @@ public class AsyncResultSetImplStressTest {
           try (AsyncResultSetImpl impl =
               new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
             resultSets.add(impl);
-            final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
+            final ImmutableList.Builder<Row> builder = ImmutableList.builder();
             impl.setCallback(
                 executor,
                 resultSet -> {
@@ -371,7 +371,7 @@ public class AsyncResultSetImplStressTest {
           try (AsyncResultSetImpl impl =
               new AsyncResultSetImpl(executorProvider, createResultSet(), bufferSize)) {
             resultSets.add(impl);
-            final ImmutableList.Builder<Row> builder = ImmutableList.<Row>builder();
+            final ImmutableList.Builder<Row> builder = ImmutableList.builder();
             impl.setCallback(
                 executor,
                 resultSet -> {

@@ -109,7 +109,7 @@ public class ITDatabaseTest {
             .createDatabase(
                 db.getId().getInstanceId().getInstance(),
                 db.getId().getDatabase(),
-                Collections.<String>emptyList());
+                Collections.emptyList());
     Database newDb = op.get();
 
     // Queries using the same DatabaseClient should still return DatabaseNotFoundExceptions.
