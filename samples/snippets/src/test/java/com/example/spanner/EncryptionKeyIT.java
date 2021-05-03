@@ -22,6 +22,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -138,8 +139,8 @@ public class EncryptionKeyIT {
             + "/backups/" + backupId + " using encryption key " + key);
   }
 
-  private static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
-    private static final int MAX_ATTEMPTS = 10;
+  static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
+    private static final int MAX_ATTEMPTS = 20;
     private int attempts = 0;
 
     @Override
@@ -148,9 +149,11 @@ public class EncryptionKeyIT {
           && e.getMessage().contains("Please retry the operation once the pending")) {
         attempts++;
         if (attempts == MAX_ATTEMPTS) {
-          System.out.printf("Operation failed %d times because of other pending operations. "
-              + "Giving up operation.\n", attempts);
-          return false;
+          // Throw custom exception so it is easier to locate in the log why it went wrong.
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED,
+              String.format("Operation failed %d times because of other pending operations. "
+                  + "Giving up operation.\n", attempts),
+              e);
         }
         // Wait one minute before retrying.
         Uninterruptibles.sleepUninterruptibly(60L, TimeUnit.SECONDS);
