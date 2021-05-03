@@ -491,7 +491,14 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private static HeaderProvider headerProviderWithUserAgentFrom(HeaderProvider headerProvider) {
     final Map<String, String> headersWithUserAgent = new HashMap<>(headerProvider.getHeaders());
-    final String userAgent = headersWithUserAgent.get(USER_AGENT_KEY);
+    String userAgent = null;
+    for (Map.Entry<String, String> entry : headersWithUserAgent.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase(USER_AGENT_KEY)) {
+        userAgent = entry.getValue();
+        headersWithUserAgent.remove(entry.getKey());
+        break;
+      }
+    }
     headersWithUserAgent.put(
         USER_AGENT_KEY,
         userAgent == null ? DEFAULT_USER_AGENT : userAgent + " " + DEFAULT_USER_AGENT);
