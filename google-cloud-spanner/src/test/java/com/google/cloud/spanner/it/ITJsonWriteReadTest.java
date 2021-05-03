@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -56,8 +58,7 @@ public class ITJsonWriteReadTest {
 
   private static final String TABLE_NAME = "TestTable";
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   private static DatabaseClient databaseClient;
 
@@ -77,24 +78,32 @@ public class ITJsonWriteReadTest {
 
   @Test
   public void testWriteAndReadValidJsonValues() throws IOException {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+
     List<String> resources = getJsonFilePaths(RESOURCES_DIR + File.separator + VALID_JSON_DIR);
 
     long id = 0L;
     List<Mutation> mutations = new ArrayList<>();
     List<String> jsons = new ArrayList<>();
     for (String resource : resources) {
-      String jsonStr = Resources.toString(
-          Resources.getResource(this.getClass(), VALID_JSON_DIR + File.separator + resource),
-          StandardCharsets.UTF_8);
+      String jsonStr =
+          Resources.toString(
+              Resources.getResource(this.getClass(), VALID_JSON_DIR + File.separator + resource),
+              StandardCharsets.UTF_8);
       jsons.add(jsonStr);
-      Mutation mutation = Mutation.newInsertBuilder(TABLE_NAME).set("Id").to(id++).set("json")
-          .to(Value.json(jsonStr)).build();
+      Mutation mutation =
+          Mutation.newInsertBuilder(TABLE_NAME)
+              .set("Id")
+              .to(id++)
+              .set("json")
+              .to(Value.json(jsonStr))
+              .build();
       mutations.add(mutation);
     }
 
     databaseClient.write(mutations);
-    ResultSet resultSet = databaseClient.singleUse()
-        .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME));
+    ResultSet resultSet =
+        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME));
     for (int i = 0; i < id; i++) {
       resultSet.next();
       assertEquals(new String(jsons.get(i).getBytes()), resultSet.getJson("json"));
@@ -103,18 +112,25 @@ public class ITJsonWriteReadTest {
 
   @Test
   public void testWriteAndReadInvalidJsonValues() throws IOException {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+
     List<String> resources = getJsonFilePaths(RESOURCES_DIR + File.separator + INVALID_JSON_DIR);
 
     for (String resource : resources) {
-      String jsonStr = Resources.toString(
-          Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
-          StandardCharsets.UTF_8);
+      String jsonStr =
+          Resources.toString(
+              Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
+              StandardCharsets.UTF_8);
 
       try {
         databaseClient.write(
             Collections.singletonList(
-                Mutation.newInsertBuilder(TABLE_NAME).set("Id").to(100L).set("json")
-                    .to(Value.json(jsonStr)).build()));
+                Mutation.newInsertBuilder(TABLE_NAME)
+                    .set("Id")
+                    .to(100L)
+                    .set("json")
+                    .to(Value.json(jsonStr))
+                    .build()));
         fail(resource + " should be rejected.");
       } catch (Exception e) {
         // Expected
