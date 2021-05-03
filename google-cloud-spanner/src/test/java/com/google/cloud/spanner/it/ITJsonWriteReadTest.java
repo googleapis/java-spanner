@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.io.Resources;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITJsonWriteReadTest {
 
-  private static final String RESOURCES_DIR = "com/google/cloud/spanner/it";
+  private static final String RESOURCES_DIR = "com/google/cloud/spanner/it/valid";
   private static final String VALID_JSON_DIR = "valid";
   private static final String INVALID_JSON_DIR = "invalid";
 
@@ -76,14 +77,14 @@ public class ITJsonWriteReadTest {
 
   @Test
   public void testWriteAndReadValidJsonValues() throws IOException {
-    List<String> resources = getJsonFilePaths(RESOURCES_DIR + "/" + VALID_JSON_DIR);
+    List<String> resources = getJsonFilePaths(RESOURCES_DIR + File.separator + VALID_JSON_DIR);
 
     long id = 0L;
     List<Mutation> mutations = new ArrayList<>();
     List<String> jsons = new ArrayList<>();
     for (String resource : resources) {
       String jsonStr = Resources.toString(
-          Resources.getResource(this.getClass(), VALID_JSON_DIR + "/" + resource),
+          Resources.getResource(this.getClass(), VALID_JSON_DIR + File.separator + resource),
           StandardCharsets.UTF_8);
       jsons.add(jsonStr);
       Mutation mutation = Mutation.newInsertBuilder(TABLE_NAME).set("Id").to(id++).set("json")
@@ -102,11 +103,11 @@ public class ITJsonWriteReadTest {
 
   @Test
   public void testWriteAndReadInvalidJsonValues() throws IOException {
-    List<String> resources = getJsonFilePaths(RESOURCES_DIR + "/" + INVALID_JSON_DIR);
+    List<String> resources = getJsonFilePaths(RESOURCES_DIR + File.separator + INVALID_JSON_DIR);
 
     for (String resource : resources) {
       String jsonStr = Resources.toString(
-          Resources.getResource(this.getClass(), INVALID_JSON_DIR + "/" + resource),
+          Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
           StandardCharsets.UTF_8);
 
       try {
