@@ -30,8 +30,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class RestoreBackupWithEncryptionKey {
 
@@ -71,7 +69,7 @@ public class RestoreBackupWithEncryptionKey {
     Database database;
     try {
       System.out.println("Waiting for operation to complete...");
-      database = operation.get(1600, TimeUnit.SECONDS);
+      database = operation.get();
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
@@ -79,9 +77,6 @@ public class RestoreBackupWithEncryptionKey {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.
       throw SpannerExceptionFactory.propagateInterrupt(e);
-    } catch (TimeoutException e) {
-      // If the operation timed out propagates the timeout
-      throw SpannerExceptionFactory.propagateTimeout(e);
     }
 
     System.out.printf(

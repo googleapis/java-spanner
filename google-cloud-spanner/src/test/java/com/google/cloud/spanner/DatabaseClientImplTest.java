@@ -1417,6 +1417,51 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testGetInvalidatedClientMultipleTimes() {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+              .build()
+              .getService()) {
+        for (int run = 0; run < 2; run++) {
+          DatabaseClientImpl dbClient =
+              (DatabaseClientImpl)
+                  spanner.getDatabaseClient(
+                      DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+          for (int useClient = 0; useClient < 2; useClient++) {
+            // Using the same client multiple times should continue to return the same
+            // ResourceNotFoundException, even though the session pool has been invalidated.
+            try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+              rs.next();
+              fail("missing expected exception");
+            } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+              // The server should only receive one BatchCreateSessions request for each run as we
+              // have set MinSessions=0.
+              assertThat(mockSpanner.getRequests()).hasSize(run + 1);
+              assertThat(dbClient.pool.isValid()).isFalse();
+            }
+          }
+        }
+      }
+      mockSpanner.reset();
+      mockSpanner.removeAllExecutionTimes();
+    }
+  }
+
+  @Test
   public void testAllowNestedTransactions() throws InterruptedException {
     final DatabaseClientImpl client =
         (DatabaseClientImpl)

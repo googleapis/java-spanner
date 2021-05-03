@@ -19,6 +19,9 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -782,6 +785,63 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindStructWithBoolArrayFieldThatContainsNulls() {
+    Struct p =
+        Struct.newBuilder()
+            .set("boolArray")
+            .to(Value.boolArray(Arrays.asList(true, false, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.boolArray) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.bool())));
+    assertTrue(rows.get(0).isNull(0));
+    assertFalse(rows.get(1).getBoolean(0));
+    assertTrue(rows.get(2).getBoolean(0));
+  }
+
+  @Test
+  public void bindStructWithInt64ArrayFieldThatContainsNulls() {
+    Struct p =
+        Struct.newBuilder()
+            .set("int64Array")
+            .to(Value.int64Array(Arrays.asList(1L, 100L, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.int64Array) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.int64())));
+    assertTrue(rows.get(0).isNull(0));
+    assertEquals(1L, rows.get(1).getLong(0));
+    assertEquals(100L, rows.get(2).getLong(0));
+  }
+
+  @Test
+  public void bindStructWithFloat64ArrayFieldThatContainsNulls() {
+    Struct p =
+        Struct.newBuilder()
+            .set("float64Array")
+            .to(Value.float64Array(Arrays.asList(1d, 3.14d, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.float64Array) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.float64())));
+    assertTrue(rows.get(0).isNull(0));
+    assertEquals(1d, rows.get(1).getDouble(0), 0d);
+    assertEquals(3.14d, rows.get(2).getDouble(0), 0d);
+  }
+
+  @Test
   public void bindStructWithStructField() {
     Struct nestedStruct = Struct.newBuilder().set("ff1").to("abc").build();
     Struct p = Struct.newBuilder().set("f1").to(nestedStruct).build();
@@ -941,6 +1001,36 @@ public class ITQueryTest {
     assertThat(receivedStats).isNotNull();
     assertThat(receivedStats.hasQueryPlan()).isTrue();
     assertThat(receivedStats.hasQueryStats()).isTrue();
+  }
+
+  @Test
+  public void testSelectArrayOfStructs() {
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "WITH points AS\n"
+                        + "  (SELECT [1, 5] as point\n"
+                        + "   UNION ALL SELECT [2, 8] as point\n"
+                        + "   UNION ALL SELECT [3, 7] as point\n"
+                        + "   UNION ALL SELECT [4, 1] as point\n"
+                        + "   UNION ALL SELECT [5, 7] as point)\n"
+                        + "SELECT ARRAY(\n"
+                        + "  SELECT STRUCT(point)\n"
+                        + "  FROM points)\n"
+                        + "  AS coordinates"))) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getColumnCount(), 1);
+      assertThat(resultSet.getStructList(0))
+          .containsExactly(
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {1L, 5L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {2L, 8L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {3L, 7L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {4L, 1L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {5L, 7L})).build());
+      assertFalse(resultSet.next());
+    }
   }
 
   private List<Struct> resultRows(Statement statement, Type expectedRowType) {
