@@ -41,7 +41,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class BackupTest {
@@ -66,9 +65,7 @@ public class BackupTest {
   public void setUp() {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
-        .thenAnswer(
-            (Answer<Builder>)
-                invocation -> new Builder(dbClient, (BackupId) invocation.getArguments()[0]));
+        .thenAnswer(invocation -> new Builder(dbClient, (BackupId) invocation.getArguments()[0]));
   }
 
   @Test

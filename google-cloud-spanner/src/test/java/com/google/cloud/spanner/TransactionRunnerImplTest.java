@@ -25,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -59,7 +58,6 @@ import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,7 +69,6 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Answer;
 
 /** Unit test for {@link com.google.cloud.spanner.SpannerImpl.TransactionRunnerImpl} */
 @RunWith(JUnit4.class)
@@ -103,23 +100,22 @@ public class TransactionRunnerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            (Answer<ResultSet>)
-                invocation -> {
-                  ResultSet.Builder builder =
-                      ResultSet.newBuilder()
-                          .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
-                  ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
-                  if (request.getTransaction().hasBegin()
-                      && request.getTransaction().getBegin().hasReadWrite()) {
-                    builder.setMetadata(
-                        ResultSetMetadata.newBuilder()
-                            .setTransaction(
-                                Transaction.newBuilder().setId(ByteString.copyFromUtf8("test")))
-                            .build());
-                    usedInlinedBegin = true;
-                  }
-                  return builder.build();
-                });
+            invocation -> {
+              ResultSet.Builder builder =
+                  ResultSet.newBuilder()
+                      .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
+              ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
+              if (request.getTransaction().hasBegin()
+                  && request.getTransaction().getBegin().hasReadWrite()) {
+                builder.setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setTransaction(
+                            Transaction.newBuilder().setId(ByteString.copyFromUtf8("test")))
+                        .build());
+                usedInlinedBegin = true;
+              }
+              return builder.build();
+            });
     transactionRunner = new TransactionRunnerImpl(session);
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenReturn(
@@ -150,33 +146,28 @@ public class TransactionRunnerImplTest {
     when(rpc.batchCreateSessions(
             Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
         .thenAnswer(
-            (Answer<List<Session>>)
-                invocation ->
-                    Collections.singletonList(
-                        Session.newBuilder()
-                            .setName(invocation.getArguments()[0] + "/sessions/1")
-                            .setCreateTime(
-                                Timestamp.newBuilder()
-                                    .setSeconds(System.currentTimeMillis() * 1000))
-                            .build()));
+            invocation ->
+                Collections.singletonList(
+                    Session.newBuilder()
+                        .setName(invocation.getArguments()[0] + "/sessions/1")
+                        .setCreateTime(
+                            Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
+                        .build()));
     when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            (Answer<ApiFuture<Transaction>>)
-                invocation ->
-                    ApiFutures.immediateFuture(
-                        Transaction.newBuilder()
-                            .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
-                            .build()));
+            invocation ->
+                ApiFutures.immediateFuture(
+                    Transaction.newBuilder()
+                        .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
+                        .build()));
     when(rpc.commitAsync(Mockito.any(CommitRequest.class), Mockito.anyMap()))
         .thenAnswer(
-            (Answer<ApiFuture<CommitResponse>>)
-                invocation ->
-                    ApiFutures.immediateFuture(
-                        CommitResponse.newBuilder()
-                            .setCommitTimestamp(
-                                Timestamp.newBuilder()
-                                    .setSeconds(System.currentTimeMillis() * 1000))
-                            .build()));
+            invocation ->
+                ApiFutures.immediateFuture(
+                    CommitResponse.newBuilder()
+                        .setCommitTimestamp(
+                            Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
+                        .build()));
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

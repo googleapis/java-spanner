@@ -234,87 +234,80 @@ public class ConnectionImplTest {
     final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(mockResultSetWithStats);
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT)))
         .thenAnswer(
-            (Answer<ResultSet>)
-                invocation -> {
-                  if (select1ResultSet.nextCalled) {
-                    // create a new mock
-                    return new SimpleResultSet(createSelect1MockResultSet());
-                  }
-                  return select1ResultSet;
-                });
+            invocation -> {
+              if (select1ResultSet.nextCalled) {
+                // create a new mock
+                return new SimpleResultSet(createSelect1MockResultSet());
+              }
+              return select1ResultSet;
+            });
     when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
         .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
         .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.getReadTimestamp())
         .then(
-            (Answer<Timestamp>)
-                invocation -> {
-                  if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
-                    return Timestamp.now();
-                  }
-                  throw SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
-                });
+            invocation -> {
+              if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
+                return Timestamp.now();
+              }
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
+            });
     when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
     when(dbClient.transactionManager(Mockito.anyVararg()))
         .thenAnswer(
-            (Answer<TransactionManager>)
-                invocation -> {
-                  TransactionContext txContext = mock(TransactionContext.class);
-                  when(txContext.executeQuery(Statement.of(SELECT)))
-                      .thenAnswer(
-                          (Answer<ResultSet>)
-                              ignored -> {
-                                if (select1ResultSet.nextCalled) {
-                                  // create a new mock
-                                  return new SimpleResultSet(createSelect1MockResultSet());
-                                }
-                                return select1ResultSet;
-                              });
-                  when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                      .thenReturn(select1ResultSetWithStats);
-                  when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                      .thenReturn(select1ResultSetWithStats);
-                  when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                  return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
-                });
+            invocation -> {
+              TransactionContext txContext = mock(TransactionContext.class);
+              when(txContext.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+              return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
+            });
 
     when(dbClient.readOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenAnswer(
-            (Answer<ReadOnlyTransaction>)
-                invocation -> {
-                  ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
-                  when(tx.executeQuery(Statement.of(SELECT)))
-                      .thenAnswer(
-                          (Answer<ResultSet>)
-                              ignored -> {
-                                if (select1ResultSet.nextCalled) {
-                                  // create a new mock
-                                  return new SimpleResultSet(createSelect1MockResultSet());
-                                }
-                                return select1ResultSet;
-                              });
-                  when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                      .thenReturn(select1ResultSetWithStats);
-                  when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                      .thenReturn(select1ResultSetWithStats);
-                  when(tx.getReadTimestamp())
-                      .then(
-                          (Answer<Timestamp>)
-                              ignored -> {
-                                if (select1ResultSet.isNextCalled()
-                                    || select1ResultSetWithStats.isNextCalled()) {
-                                  return Timestamp.now();
-                                }
-                                throw SpannerExceptionFactory.newSpannerException(
-                                    ErrorCode.FAILED_PRECONDITION,
-                                    "No query has returned with any data yet");
-                              });
-                  return tx;
-                });
+            invocation -> {
+              ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
+              when(tx.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.getReadTimestamp())
+                  .then(
+                      ignored -> {
+                        if (select1ResultSet.isNextCalled()
+                            || select1ResultSetWithStats.isNextCalled()) {
+                          return Timestamp.now();
+                        }
+                        throw SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.FAILED_PRECONDITION,
+                            "No query has returned with any data yet");
+                      });
+              return tx;
+            });
 
     when(dbClient.readWriteTransaction())
         .thenAnswer(

@@ -35,7 +35,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class AutocommitDmlModeTest {
@@ -59,12 +58,11 @@ public class AutocommitDmlModeTest {
     when(dbClient.readWriteTransaction()).thenReturn(txRunner);
     when(txRunner.run(any(TransactionCallable.class)))
         .thenAnswer(
-            (Answer<Long>)
-                invocation -> {
-                  TransactionCallable<Long> callable =
-                      (TransactionCallable<Long>) invocation.getArguments()[0];
-                  return callable.run(txContext);
-                });
+            invocation -> {
+              TransactionCallable<Long> callable =
+                  (TransactionCallable<Long>) invocation.getArguments()[0];
+              return callable.run(txContext);
+            });
 
     TransactionManager txManager = mock(TransactionManager.class);
     when(txManager.begin()).thenReturn(txContext);

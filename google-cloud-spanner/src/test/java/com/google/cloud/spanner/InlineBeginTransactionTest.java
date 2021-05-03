@@ -26,7 +26,6 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
@@ -383,11 +382,10 @@ public class InlineBeginTransactionTest {
               // Abort the transaction after the statement has been executed to ensure that the
               // transaction has actually been started before the test tries to abort it.
               updateCount.then(
-                  (AsyncTransactionFunction<Long, Void>)
-                      (ignored1, ignored2) -> {
-                        mockSpanner.abortAllTransactions();
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (ignored1, ignored2) -> {
+                    mockSpanner.abortAllTransactions();
+                    return ApiFutures.immediateFuture(null);
+                  },
                   MoreExecutors.directExecutor());
               first = false;
             }
@@ -414,12 +412,10 @@ public class InlineBeginTransactionTest {
         while (true) {
           try {
             txn.then(
-                    (AsyncTransactionFunction<Void, Void>)
-                        (transaction, ignored) -> {
-                          transaction.buffer(
-                              Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
-                          return ApiFutures.immediateFuture(null);
-                        },
+                    (transaction, ignored) -> {
+                      transaction.buffer(Mutation.newInsertBuilder("FOO").set("ID").to(1L).build());
+                      return ApiFutures.immediateFuture(null);
+                    },
                     executor)
                 .commitAsync()
                 .get();

@@ -25,7 +25,6 @@ import static org.junit.Assume.assumeFalse;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncTransactionManager;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.Database;
@@ -108,17 +107,16 @@ public class ITTransactionManagerAsyncTest {
         assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, ignored) -> {
-                        transaction.buffer(
-                            Mutation.newInsertBuilder("T")
-                                .set("K")
-                                .to("Key1")
-                                .set("BoolValue")
-                                .to(true)
-                                .build());
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newInsertBuilder("T")
+                            .set("K")
+                            .to("Key1")
+                            .set("BoolValue")
+                            .to(true)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -143,17 +141,16 @@ public class ITTransactionManagerAsyncTest {
       while (true) {
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, ignored) -> {
-                        transaction.buffer(
-                            Mutation.newInsertBuilder("InvalidTable")
-                                .set("K")
-                                .to("Key1")
-                                .set("BoolValue")
-                                .to(true)
-                                .build());
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newInsertBuilder("InvalidTable")
+                            .set("K")
+                            .to("Key1")
+                            .set("BoolValue")
+                            .to(true)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -186,17 +183,16 @@ public class ITTransactionManagerAsyncTest {
       TransactionContextFuture txn = manager.beginAsync();
       while (true) {
         txn.then(
-            (AsyncTransactionFunction<Void, Void>)
-                (transaction, ignored) -> {
-                  transaction.buffer(
-                      Mutation.newInsertBuilder("T")
-                          .set("K")
-                          .to("Key2")
-                          .set("BoolValue")
-                          .to(true)
-                          .build());
-                  return ApiFutures.immediateFuture(null);
-                },
+            (transaction, ignored) -> {
+              transaction.buffer(
+                  Mutation.newInsertBuilder("T")
+                      .set("K")
+                      .to("Key2")
+                      .set("BoolValue")
+                      .to(true)
+                      .build());
+              return ApiFutures.immediateFuture(null);
+            },
             executor);
         try {
           manager.rollbackAsync();

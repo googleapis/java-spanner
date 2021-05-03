@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
@@ -75,19 +74,18 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
   private void setupMockSessionCreation() {
     doAnswer(
-            (Answer<Void>)
-                invocation -> {
-                  executor.submit(
-                      () -> {
-                        int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        for (int i = 0; i < sessionCount; i++) {
-                          consumer.onSessionReady(setupMockSession(mockSession()));
-                        }
-                      });
-                  return null;
-                })
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    SessionConsumerImpl consumer =
+                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                    for (int i = 0; i < sessionCount; i++) {
+                      consumer.onSessionReady(setupMockSession(mockSession()));
+                    }
+                  });
+              return null;
+            })
         .when(sessionClient)
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
@@ -99,15 +97,14 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
-            (Answer<ResultSet>)
-                invocation -> {
-                  Integer currentValue = pingedSessions.get(session.getName());
-                  if (currentValue == null) {
-                    currentValue = 0;
-                  }
-                  pingedSessions.put(session.getName(), ++currentValue);
-                  return mockResult;
-                });
+            invocation -> {
+              Integer currentValue = pingedSessions.get(session.getName());
+              if (currentValue == null) {
+                currentValue = 0;
+              }
+              pingedSessions.put(session.getName(), ++currentValue);
+              return mockResult;
+            });
     when(mockResult.next()).thenReturn(true);
     return session;
   }

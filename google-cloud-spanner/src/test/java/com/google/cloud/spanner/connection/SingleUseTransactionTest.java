@@ -371,11 +371,10 @@ public class SingleUseTransactionTest {
     when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
     when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
         .thenAnswer(
-            (Answer<Long>)
-                invocation -> {
-                  Thread.sleep(1000L);
-                  return VALID_UPDATE_COUNT;
-                });
+            invocation -> {
+              Thread.sleep(1000L);
+              return VALID_UPDATE_COUNT;
+            });
     when(txContext.executeUpdate(Statement.of(INVALID_UPDATE)))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "invalid update"));

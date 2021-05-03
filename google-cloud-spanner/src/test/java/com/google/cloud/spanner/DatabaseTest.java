@@ -39,7 +39,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.Database}. */
 @RunWith(JUnit4.class)
@@ -70,14 +69,11 @@ public class DatabaseTest {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
         .thenAnswer(
-            (Answer<Backup.Builder>)
-                invocation ->
-                    new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]));
+            invocation -> new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]));
     when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
         .thenAnswer(
-            (Answer<Database.Builder>)
-                invocation ->
-                    new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
+            invocation ->
+                new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
   }
 
   @Test

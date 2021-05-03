@@ -309,13 +309,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           updateCount, UPDATE_STATEMENT),
                       executor)
                   .then(
-                      (AsyncTransactionFunction<Long, Void>)
-                          (transaction, ignored) -> {
-                            if (attempt.get() == 1) {
-                              mockSpanner.abortTransaction(transaction);
-                            }
-                            return ApiFutures.immediateFuture(null);
-                          },
+                      (transaction, ignored) -> {
+                        if (attempt.get() == 1) {
+                          mockSpanner.abortTransaction(transaction);
+                        }
+                        return ApiFutures.immediateFuture(null);
+                      },
                       executor)
                   .commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
@@ -400,11 +399,10 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       (ignored, input) -> ApiFutures.immediateFuture(input.getString("Value")),
                       executor)
                   .then(
-                      (AsyncTransactionFunction<String, Void>)
-                          (ignored, input) -> {
-                            assertThat(input).isEqualTo("v1");
-                            return ApiFutures.immediateFuture(null);
-                          },
+                      (ignored, input) -> {
+                        assertThat(input).isEqualTo("v1");
+                        return ApiFutures.immediateFuture(null);
+                      },
                       executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
@@ -427,10 +425,9 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                       AsyncTransactionManagerHelper.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
                       executor)
                   .then(
-                      (AsyncTransactionFunction<Long, Void>)
-                          (ignored1, ignored2) -> {
-                            throw new IllegalStateException("this should not be executed");
-                          },
+                      (ignored1, ignored2) -> {
+                        throw new IllegalStateException("this should not be executed");
+                      },
                       executor)
                   .commitAsync();
           ts.get();
@@ -460,18 +457,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture ts =
               txn.then(
-                      (AsyncTransactionFunction<Void, Void>)
-                          (ignored1, ignored2) -> {
-                            if (attempt.incrementAndGet() == 1) {
-                              // Abort the first attempt.
-                              mockSpanner.abortNextStatement();
-                            } else {
-                              // Set the result of the update statement back to 1 row.
-                              mockSpanner.putStatementResult(
-                                  StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-                            }
-                            return ApiFutures.immediateFuture(null);
-                          },
+                      (ignored1, ignored2) -> {
+                        if (attempt.incrementAndGet() == 1) {
+                          // Abort the first attempt.
+                          mockSpanner.abortNextStatement();
+                        } else {
+                          // Set the result of the update statement back to 1 row.
+                          mockSpanner.putStatementResult(
+                              StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                        }
+                        return ApiFutures.immediateFuture(null);
+                      },
                       executor)
                   .then(
                       AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT), executor)
@@ -497,20 +493,19 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         try {
           CommitTimestampFuture ts =
               txn.then(
-                      (AsyncTransactionFunction<Void, Void>)
-                          (transaction, ignored) -> {
-                            if (attempt.incrementAndGet() == 1) {
-                              mockSpanner.abortNextStatement();
-                            }
-                            // This update statement will be aborted, but the error will not
-                            // propagated to the transaction runner and cause the transaction to
-                            // retry. Instead, the commit call will do that.
-                            transaction.executeUpdateAsync(UPDATE_STATEMENT);
-                            // Resolving this future will not resolve the result of the entire
-                            // transaction. The transaction result will be resolved when the commit
-                            // has actually finished successfully.
-                            return ApiFutures.immediateFuture(null);
-                          },
+                      (transaction, ignored) -> {
+                        if (attempt.incrementAndGet() == 1) {
+                          mockSpanner.abortNextStatement();
+                        }
+                        // This update statement will be aborted, but the error will not
+                        // propagated to the transaction runner and cause the transaction to
+                        // retry. Instead, the commit call will do that.
+                        transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                        // Resolving this future will not resolve the result of the entire
+                        // transaction. The transaction result will be resolved when the commit
+                        // has actually finished successfully.
+                        return ApiFutures.immediateFuture(null);
+                      },
                       executor)
                   .commitAsync();
           assertThat(ts.get()).isNotNull();
@@ -569,13 +564,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, input) -> {
-                        // Shoot-and-forget update. The commit will still wait for this request to
-                        // finish.
-                        transaction.executeUpdateAsync(UPDATE_STATEMENT);
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, input) -> {
+                    // Shoot-and-forget update. The commit will still wait for this request to
+                    // finish.
+                    transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -671,12 +665,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, ignored) -> {
-                        transaction.batchUpdateAsync(
-                            ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    transaction.batchUpdateAsync(
+                        ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .then(
                   AsyncTransactionManagerHelper.batchUpdateAsync(
@@ -784,28 +777,26 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final SettableApiFuture<long[]> result = SettableApiFuture.create();
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (ignored1, ignored2) -> {
-                        if (attempt.get() > 0) {
-                          // Set the result of the update statement back to 1 row.
-                          mockSpanner.putStatementResult(
-                              StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-                        }
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (ignored1, ignored2) -> {
+                    if (attempt.get() > 0) {
+                      // Set the result of the update statement back to 1 row.
+                      mockSpanner.putStatementResult(
+                          StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                    }
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .then(
                   AsyncTransactionManagerHelper.batchUpdateAsync(
                       result, UPDATE_STATEMENT, UPDATE_STATEMENT),
                   executor)
               .then(
-                  (AsyncTransactionFunction<long[], Void>)
-                      (transaction, ignored) -> {
-                        if (attempt.incrementAndGet() == 1) {
-                          mockSpanner.abortTransaction(transaction);
-                        }
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      mockSpanner.abortTransaction(transaction);
+                    }
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -837,21 +828,20 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, ignored) -> {
-                        if (attempt.incrementAndGet() == 1) {
-                          mockSpanner.abortNextStatement();
-                        }
-                        // This update statement will be aborted, but the error will not propagated
-                        // to the transaction manager and cause the transaction to retry. Instead,
-                        // the commit call will do that. Depending on the timing, that will happen
-                        // directly in the transaction manager if the ABORTED error has already been
-                        // returned by the batch update call before the commit call starts.
-                        // Otherwise, the backend will return an ABORTED error for the commit call.
-                        transaction.batchUpdateAsync(
-                            ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      mockSpanner.abortNextStatement();
+                    }
+                    // This update statement will be aborted, but the error will not propagated
+                    // to the transaction manager and cause the transaction to retry. Instead,
+                    // the commit call will do that. Depending on the timing, that will happen
+                    // directly in the transaction manager if the ABORTED error has already been
+                    // returned by the batch update call before the commit call starts.
+                    // Otherwise, the backend will return an ABORTED error for the commit call.
+                    transaction.batchUpdateAsync(
+                        ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -926,11 +916,10 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (transaction, ignored) -> {
-                        transaction.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (transaction, ignored) -> {
+                    transaction.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync()
               .get();
@@ -1016,16 +1005,15 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                             "Singers", Key.of(singerId), Collections.singleton(column)),
                     executor)
                 .then(
-                    (AsyncTransactionFunction<Struct, Void>)
-                        (transaction, input) -> {
-                          String name = input.getString(column);
-                          transaction.buffer(
-                              Mutation.newUpdateBuilder("Singers")
-                                  .set(column)
-                                  .to(name.toUpperCase())
-                                  .build());
-                          return ApiFutures.immediateFuture(null);
-                        },
+                    (transaction, input) -> {
+                      String name = input.getString(column);
+                      transaction.buffer(
+                          Mutation.newUpdateBuilder("Singers")
+                              .set(column)
+                              .to(name.toUpperCase())
+                              .build());
+                      return ApiFutures.immediateFuture(null);
+                    },
                     executor)
                 .commitAsync();
         try {

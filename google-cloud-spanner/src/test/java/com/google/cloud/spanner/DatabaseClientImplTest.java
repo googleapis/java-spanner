@@ -40,7 +40,6 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -515,11 +514,10 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (txn, input) -> {
-                        txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync());
     }
@@ -2117,11 +2115,10 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  (AsyncTransactionFunction<Void, Void>)
-                      (txn, input) -> {
-                        txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                        return ApiFutures.immediateFuture(null);
-                      },
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
                   executor)
               .commitAsync());
     }

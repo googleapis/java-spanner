@@ -31,7 +31,6 @@ import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncRunner;
 import com.google.cloud.spanner.AsyncTransactionManager;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -340,17 +339,16 @@ public class ITAsyncAPITest {
           get(
               context
                   .then(
-                      (AsyncTransactionFunction<Void, Void>)
-                          (transaction, ignored) -> {
-                            transaction.buffer(
-                                Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
-                                    .set("Key")
-                                    .to("k_commit_stats")
-                                    .set("StringValue")
-                                    .to("Should return commit stats")
-                                    .build());
-                            return ApiFutures.immediateFuture(null);
-                          },
+                      (transaction, ignored) -> {
+                        transaction.buffer(
+                            Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                                .set("Key")
+                                .to("k_commit_stats")
+                                .set("StringValue")
+                                .to("Should return commit stats")
+                                .build());
+                        return ApiFutures.immediateFuture(null);
+                      },
                       executor)
                   .commitAsync());
           assertNotNull(get(manager.getCommitResponse()).getCommitStats());
