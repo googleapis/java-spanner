@@ -61,6 +61,7 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITQueryTest {
+
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
   private static DatabaseClient client;
@@ -228,6 +229,19 @@ public class ITQueryTest {
 
   @Test
   public void bindJson() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v")
+                .bind("v")
+                .to(Value.json("{\"rating\":9,\"open\":true}")),
+            Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+  }
+
+  @Test
+  public void bindJsonEmpty() {
     assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json("{}")), Type.json());
@@ -450,10 +464,14 @@ public class ITQueryTest {
     assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(asList("{}", "[]", null)),
+            Statement.newBuilder("SELECT @v")
+                .bind("v")
+                .toJsonArray(asList("{}", "[]", "{\"rating\":9,\"open\":true}", null)),
             Type.array(Type.json()));
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getJsonList(0)).containsExactly("{}", "[]", null).inOrder();
+    assertThat(row.getJsonList(0))
+        .containsExactly("{}", "[]", "{\"open\":true,\"rating\":9}", null)
+        .inOrder();
   }
 
   @Test
@@ -464,7 +482,7 @@ public class ITQueryTest {
             Statement.newBuilder("SELECT @v").bind("v").toJsonArray(Collections.emptyList()),
             Type.array(Type.json()));
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getJsonList(0)).containsExactly();
+    assertThat(row.getJsonList(0)).isEqualTo(Collections.emptyList());
   }
 
   @Test
