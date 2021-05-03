@@ -4,15 +4,15 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "1d4eed45eb0b09c816912977393ff7a551eb82d6"
+        "sha": "1d2f478a6042cf8e4785111cfb3f1f6684b30b4b"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "3b236df084cf9222c529a2890f90e3a4ff0f2dfd",
-        "internalRef": "368426665"
+        "sha": "5a04154e7c7c0e98e0e4085f6e2c67bd5bff6ff8",
+        "internalRef": "371362703"
       }
     },
     {
@@ -57,7 +57,6 @@
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/ISSUE_TEMPLATE/support_request.md",
     ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/blunderbuss.yml",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
     ".github/snippet-bot.yml",
