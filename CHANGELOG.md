@@ -1,5 +1,12 @@
 # Changelog
 
+### [5.2.1](https://www.github.com/googleapis/java-spanner/compare/v5.2.0...v5.2.1) (2021-05-03)
+
+
+### Bug Fixes
+
+* allows setting user agent in any case ([#1122](https://www.github.com/googleapis/java-spanner/issues/1122)) ([bd87fa8](https://www.github.com/googleapis/java-spanner/commit/bd87fa80ee95b0449afbad58e9a224a581fc327e))
+
 ## [5.2.0](https://www.github.com/googleapis/java-spanner/compare/v5.1.0...v5.2.0) (2021-03-18)
 
 
