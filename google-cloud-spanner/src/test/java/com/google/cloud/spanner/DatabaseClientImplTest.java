@@ -894,32 +894,34 @@ public class DatabaseClientImplTest {
     executor.shutdown();
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void testTransactionManager() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
       while (true) {
-        TransactionContext transaction = manager.begin();
         try {
           transaction.executeUpdate(UPDATE_STATEMENT);
           manager.commit();
           assertNotNull(manager.getCommitTimestamp());
           break;
         } catch (AbortedException e) {
-          manager.resetForRetry();
+          transaction = manager.resetForRetry();
         }
       }
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void testTransactionManager_returnsCommitStats() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
+      TransactionContext transaction = manager.begin();
       while (true) {
-        TransactionContext transaction = manager.begin();
         try {
           transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
           manager.commit();
@@ -928,12 +930,13 @@ public class DatabaseClientImplTest {
           assertEquals(1L, manager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          manager.resetForRetry();
+          transaction = manager.resetForRetry();
         }
       }
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void transactionManagerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
@@ -941,16 +944,16 @@ public class DatabaseClientImplTest {
         spannerWithEmptySessionPool.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager txManager = client.transactionManager()) {
+      mockSpanner.unfreeze();
+      TransactionContext transaction = txManager.begin();
       while (true) {
-        mockSpanner.unfreeze();
-        TransactionContext tx = txManager.begin();
         try {
-          tx.executeUpdate(UPDATE_STATEMENT);
+          transaction.executeUpdate(UPDATE_STATEMENT);
           txManager.commit();
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          txManager.resetForRetry();
+          transaction = txManager.resetForRetry();
         }
       }
     }
@@ -962,10 +965,10 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     final AtomicInteger rowCount = new AtomicInteger();
     try (TransactionManager txManager = client.transactionManager()) {
+      TransactionContext transaction = txManager.begin();
       while (true) {
-        TransactionContext tx = txManager.begin();
         try {
-          try (AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
+          try (AsyncResultSet rs = transaction.executeQueryAsync(SELECT1)) {
             rs.setCallback(
                 executor,
                 resultSet -> {
@@ -990,7 +993,7 @@ public class DatabaseClientImplTest {
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          txManager.resetForRetry();
+          transaction = txManager.resetForRetry();
         }
       }
     }
