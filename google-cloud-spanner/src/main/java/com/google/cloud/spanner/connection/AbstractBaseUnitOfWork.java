@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -140,8 +139,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
         applyStatementTimeoutToMethod == null
-            ? Collections.<MethodDescriptor<?, ?>>emptySet()
-            : ImmutableList.<MethodDescriptor<?, ?>>of(applyStatementTimeoutToMethod));
+            ? Collections.emptySet()
+            : ImmutableList.of(applyStatementTimeoutToMethod));
   }
 
   <T> ApiFuture<T> executeStatementAsync(
@@ -228,12 +227,9 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         ApiFutures.catching(
             f,
             Throwable.class,
-            new ApiFunction<Throwable, T>() {
-              @Override
-              public T apply(Throwable input) {
-                input.addSuppressed(caller);
-                throw SpannerExceptionFactory.asSpannerException(input);
-              }
+            input -> {
+              input.addSuppressed(caller);
+              throw SpannerExceptionFactory.asSpannerException(input);
             },
             MoreExecutors.directExecutor());
     synchronized (this) {

@@ -21,7 +21,6 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -44,7 +43,6 @@ import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.RequestOptions;
-import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
@@ -575,7 +573,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       if (exceptionToThrow.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
         if (exceptionToThrow instanceof AbortedException) {
-          delay = ((AbortedException) exceptionToThrow).getRetryDelayInMillis();
+          delay = exceptionToThrow.getRetryDelayInMillis();
         }
         if (delay == -1L) {
           txnLogger.log(
@@ -671,35 +669,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       ApiFuture<Long> updateCount =
           ApiFutures.transform(
               resultSet,
-              new ApiFunction<com.google.spanner.v1.ResultSet, Long>() {
-                @Override
-                public Long apply(ResultSet input) {
-                  if (!input.hasStats()) {
-                    throw SpannerExceptionFactory.newSpannerException(
-                        ErrorCode.INVALID_ARGUMENT,
-                        "DML response missing stats possibly due to non-DML statement as input");
-                  }
-                  if (builder.getTransaction().hasBegin()
-                      && !(input.getMetadata().hasTransaction()
-                          && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
-                    throw SpannerExceptionFactory.newSpannerException(
-                        ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
-                  }
-                  // For standard DML, using the exact row count.
-                  return input.getStats().getRowCountExact();
+              input -> {
+                if (!input.hasStats()) {
+                  throw SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.INVALID_ARGUMENT,
+                      "DML response missing stats possibly due to non-DML statement as input");
                 }
+                if (builder.getTransaction().hasBegin()
+                    && !(input.getMetadata().hasTransaction()
+                        && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
+                  throw SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
+                }
+                // For standard DML, using the exact row count.
+                return input.getStats().getRowCountExact();
               },
               MoreExecutors.directExecutor());
       updateCount =
           ApiFutures.catching(
               updateCount,
               Throwable.class,
-              new ApiFunction<Throwable, Long>() {
-                @Override
-                public Long apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  throw onError(e, builder.getTransaction().hasBegin());
-                }
+              input -> {
+                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                throw onError(e, builder.getTransaction().hasBegin());
               },
               MoreExecutors.directExecutor());
       updateCount.addListener(
@@ -787,42 +779,36 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       ApiFuture<long[]> updateCounts =
           ApiFutures.transform(
               response,
-              new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
-                @Override
-                public long[] apply(ExecuteBatchDmlResponse batchDmlResponse) {
-                  long[] results = new long[batchDmlResponse.getResultSetsCount()];
-                  for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
-                    results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
-                    if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
-                      onTransactionMetadata(
-                          batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
-                          builder.getTransaction().hasBegin());
-                    }
+              batchDmlResponse -> {
+                long[] results = new long[batchDmlResponse.getResultSetsCount()];
+                for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
+                  results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
+                  if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
+                    onTransactionMetadata(
+                        batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
+                        builder.getTransaction().hasBegin());
                   }
-                  // If one of the DML statements was aborted, we should throw an aborted exception.
-                  // In all other cases, we should throw a BatchUpdateException.
-                  if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
-                    throw createAbortedExceptionForBatchDml(batchDmlResponse);
-                  } else if (batchDmlResponse.getStatus().getCode() != 0) {
-                    throw newSpannerBatchUpdateException(
-                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
-                        batchDmlResponse.getStatus().getMessage(),
-                        results);
-                  }
-                  return results;
                 }
+                // If one of the DML statements was aborted, we should throw an aborted exception.
+                // In all other cases, we should throw a BatchUpdateException.
+                if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
+                  throw createAbortedExceptionForBatchDml(batchDmlResponse);
+                } else if (batchDmlResponse.getStatus().getCode() != 0) {
+                  throw newSpannerBatchUpdateException(
+                      ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
+                      batchDmlResponse.getStatus().getMessage(),
+                      results);
+                }
+                return results;
               },
               MoreExecutors.directExecutor());
       updateCounts =
           ApiFutures.catching(
               updateCounts,
               Throwable.class,
-              new ApiFunction<Throwable, long[]>() {
-                @Override
-                public long[] apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  throw onError(e, builder.getTransaction().hasBegin());
-                }
+              input -> {
+                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                throw onError(e, builder.getTransaction().hasBegin());
               },
               MoreExecutors.directExecutor());
       updateCounts.addListener(this::decreaseAsyncOperations, MoreExecutors.directExecutor());
@@ -932,7 +918,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                       "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
               shouldRollback = false;
               if (e instanceof AbortedException) {
-                throw (AbortedException) e;
+                throw e;
               }
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.ABORTED, e.getMessage(), e);

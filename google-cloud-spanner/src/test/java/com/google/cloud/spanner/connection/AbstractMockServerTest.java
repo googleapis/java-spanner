@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -156,7 +155,7 @@ public abstract class AbstractMockServerTest {
   }
 
   @AfterClass
-  public static void stopServer() throws Exception {
+  public static void stopServer() {
     server.shutdown();
   }
 
@@ -204,25 +203,22 @@ public abstract class AbstractMockServerTest {
   }
 
   ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Arrays.<TransactionRetryListener>asList(transactionRetryListener));
+        Collections.singletonList(interceptor),
+        Collections.singletonList(transactionRetryListener));
   }
 
   ITConnection createConnection(
       List<StatementExecutionInterceptor> interceptors,
       List<TransactionRetryListener> transactionRetryListeners) {
-    StringBuilder url = new StringBuilder(getBaseUrl());
     ConnectionOptions.Builder builder =
         ConnectionOptions.newBuilder()
-            .setUri(url.toString())
+            .setUri(getBaseUrl())
             .setStatementExecutionInterceptors(interceptors);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);

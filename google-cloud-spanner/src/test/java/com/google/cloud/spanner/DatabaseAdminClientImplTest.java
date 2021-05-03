@@ -160,12 +160,12 @@ public class DatabaseAdminClientImplTest {
     when(rpc.createDatabase(
             INSTANCE_NAME,
             "CREATE DATABASE `" + DB_ID + "`",
-            Collections.<String>emptyList(),
+            Collections.emptyList(),
             new com.google.cloud.spanner.Database(
                 DatabaseId.of(DB_NAME), State.UNSPECIFIED, client)))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
-        client.createDatabase(INSTANCE_ID, DB_ID, Collections.<String>emptyList());
+        client.createDatabase(INSTANCE_ID, DB_ID, Collections.emptyList());
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
   }
@@ -184,13 +184,10 @@ public class DatabaseAdminClientImplTest {
             getEncryptedDatabaseProto(),
             CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
-            INSTANCE_NAME,
-            "CREATE DATABASE `" + DB_ID + "`",
-            Collections.<String>emptyList(),
-            database))
+            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
-        client.createDatabase(database, Collections.<String>emptyList());
+        client.createDatabase(database, Collections.emptyList());
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
   }
@@ -244,9 +241,9 @@ public class DatabaseAdminClientImplTest {
   public void listDatabases() {
     String pageToken = "token";
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getDatabaseProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseProto()), pageToken));
     when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getAnotherDatabaseProto()), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseProto()), ""));
     List<com.google.cloud.spanner.Database> dbs =
         Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
     assertThat(dbs.get(0).getId().getName()).isEqualTo(DB_NAME);
@@ -273,7 +270,7 @@ public class DatabaseAdminClientImplTest {
   public void listDatabaseErrorWithToken() {
     String pageToken = "token";
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getDatabaseProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseProto()), pageToken));
     when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
@@ -469,9 +466,9 @@ public class DatabaseAdminClientImplTest {
   public void listBackups() {
     String pageToken = "token";
     when(rpc.listBackups(INSTANCE_NAME, 1, null, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getBackupProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getBackupProto()), pageToken));
     when(rpc.listBackups(INSTANCE_NAME, 1, null, pageToken))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getAnotherBackupProto()), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherBackupProto()), ""));
     List<com.google.cloud.spanner.Backup> backups =
         Lists.newArrayList(client.listBackups(INSTANCE_ID, Options.pageSize(1)).iterateAll());
     assertThat(backups.get(0).getId().getName()).isEqualTo(BK_NAME);

@@ -21,7 +21,6 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
@@ -131,14 +130,7 @@ class StandardBenchmarkMockServer {
   }
 
   int countRequests(final Class<? extends AbstractMessage> type) {
-    return Collections2.filter(
-            mockSpanner.getRequests(),
-            new Predicate<AbstractMessage>() {
-              @Override
-              public boolean apply(AbstractMessage input) {
-                return input.getClass().equals(type);
-              }
-            })
+    return Collections2.filter(mockSpanner.getRequests(), input -> input.getClass().equals(type))
         .size();
   }
 }

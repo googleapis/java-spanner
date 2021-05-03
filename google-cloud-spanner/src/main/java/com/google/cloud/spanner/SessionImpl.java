@@ -59,13 +59,7 @@ class SessionImpl implements Session {
   private static final Tracer tracer = Tracing.getTracer();
 
   /** Keep track of running transactions on this session per thread. */
-  static final ThreadLocal<Boolean> hasPendingTransaction =
-      new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-          return false;
-        }
-      };
+  static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
 
   static void throwIfTransactionsPending() {
     if (hasPendingTransaction.get() == Boolean.TRUE) {

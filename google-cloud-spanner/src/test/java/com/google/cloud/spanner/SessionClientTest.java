@@ -26,6 +26,7 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,8 +52,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(Parameterized.class)
 public class SessionClientTest {
@@ -149,23 +148,20 @@ public class SessionClientTest {
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
-                Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
-                usedChannels.add(channelHint);
-                int sessionCount = invocation.getArgumentAt(1, Integer.class);
-                List<com.google.spanner.v1.Session> res = new ArrayList<>();
-                for (int i = 1; i <= sessionCount; i++) {
-                  res.add(
-                      com.google.spanner.v1.Session.newBuilder()
-                          .setName(String.format(sessionName, i))
-                          .putAllLabels(labels)
-                          .build());
-                }
-                return res;
+            invocation -> {
+              Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+              Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
+              usedChannels.add(channelHint);
+              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              List<com.google.spanner.v1.Session> res = new ArrayList<>();
+              for (int i = 1; i <= sessionCount; i++) {
+                res.add(
+                    com.google.spanner.v1.Session.newBuilder()
+                        .setName(String.format(sessionName, i))
+                        .putAllLabels(labels)
+                        .build());
               }
+              return res;
             });
 
     final AtomicInteger returnedSessionCount = new AtomicInteger();
@@ -206,29 +202,26 @@ public class SessionClientTest {
   public void batchCreateSessionsDistributesMultipleRequestsOverChannels() {
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
-    final Map<String, String> labels = Collections.<String, String>emptyMap();
+    final Map<String, String> labels = Collections.emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
     final Set<Long> usedChannelHints = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
-                Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
-                usedChannelHints.add(channelHint);
-                int sessionCount = invocation.getArgumentAt(1, Integer.class);
-                List<com.google.spanner.v1.Session> res = new ArrayList<>();
-                for (int i = 1; i <= sessionCount; i++) {
-                  res.add(
-                      com.google.spanner.v1.Session.newBuilder()
-                          .setName(String.format(sessionName, i))
-                          .putAllLabels(labels)
-                          .build());
-                }
-                return res;
+            invocation -> {
+              Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+              Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
+              usedChannelHints.add(channelHint);
+              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              List<com.google.spanner.v1.Session> res = new ArrayList<>();
+              for (int i = 1; i <= sessionCount; i++) {
+                res.add(
+                    com.google.spanner.v1.Session.newBuilder()
+                        .setName(String.format(sessionName, i))
+                        .putAllLabels(labels)
+                        .build());
               }
+              return res;
             });
 
     final AtomicInteger returnedSessionCount = new AtomicInteger();
@@ -296,25 +289,22 @@ public class SessionClientTest {
         when(rpc.batchCreateSessions(
                 Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
             .then(
-                new Answer<List<com.google.spanner.v1.Session>>() {
-                  @Override
-                  public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                    Map<SpannerRpc.Option, Object> options = invocation.getArgumentAt(3, Map.class);
-                    Long channelHint = (Long) options.get(SpannerRpc.Option.CHANNEL_HINT);
-                    if (errorOnChannels.contains(channelHint)) {
-                      throw SpannerExceptionFactory.newSpannerException(
-                          ErrorCode.RESOURCE_EXHAUSTED, "could not create any more sessions");
-                    } else {
-                      int sessionCount = invocation.getArgumentAt(1, Integer.class);
-                      List<com.google.spanner.v1.Session> res = new ArrayList<>();
-                      for (int i = 1; i <= sessionCount; i++) {
-                        res.add(
-                            com.google.spanner.v1.Session.newBuilder()
-                                .setName(String.format(sessionName, i))
-                                .build());
-                      }
-                      return res;
+                invocation -> {
+                  Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+                  Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
+                  if (errorOnChannels.contains(channelHint)) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.RESOURCE_EXHAUSTED, "could not create any more sessions");
+                  } else {
+                    int sessionCount = invocation.getArgumentAt(1, Integer.class);
+                    List<com.google.spanner.v1.Session> res = new ArrayList<>();
+                    for (int i = 1; i <= sessionCount; i++) {
+                      res.add(
+                          com.google.spanner.v1.Session.newBuilder()
+                              .setName(String.format(sessionName, i))
+                              .build());
                     }
+                    return res;
                   }
                 });
 
@@ -363,19 +353,16 @@ public class SessionClientTest {
     when(rpc.batchCreateSessions(
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
         .then(
-            new Answer<List<com.google.spanner.v1.Session>>() {
-              @Override
-              public List<com.google.spanner.v1.Session> answer(InvocationOnMock invocation) {
-                int sessionCount = invocation.getArgumentAt(1, Integer.class);
-                List<com.google.spanner.v1.Session> res = new ArrayList<>();
-                for (int i = 1; i <= Math.min(MAX_SESSIONS_PER_BATCH, sessionCount); i++) {
-                  res.add(
-                      com.google.spanner.v1.Session.newBuilder()
-                          .setName(String.format(sessionName, i))
-                          .build());
-                }
-                return res;
+            invocation -> {
+              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              List<com.google.spanner.v1.Session> res = new ArrayList<>();
+              for (int i = 1; i <= Math.min(MAX_SESSIONS_PER_BATCH, sessionCount); i++) {
+                res.add(
+                    com.google.spanner.v1.Session.newBuilder()
+                        .setName(String.format(sessionName, i))
+                        .build());
               }
+              return res;
             });
 
     final AtomicInteger returnedSessionCount = new AtomicInteger();

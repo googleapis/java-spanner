@@ -34,15 +34,13 @@ import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class BackupTest {
@@ -67,13 +65,7 @@ public class BackupTest {
   public void setUp() {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
-        .thenAnswer(
-            new Answer<Backup.Builder>() {
-              @Override
-              public Builder answer(InvocationOnMock invocation) {
-                return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
-              }
-            });
+        .thenAnswer(invocation -> new Builder(dbClient, (BackupId) invocation.getArguments()[0]));
   }
 
   @Test
@@ -288,7 +280,7 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     backup.testIAMPermissions(permissions);
     verify(dbClient).testBackupIAMPermissions("test-instance", "test-backup", permissions);
   }

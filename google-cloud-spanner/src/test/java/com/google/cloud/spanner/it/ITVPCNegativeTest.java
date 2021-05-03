@@ -49,7 +49,7 @@ import com.google.longrunning.OperationsSettings;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -189,7 +189,7 @@ public class ITVPCNegativeTest {
     ResultSet rs =
         databaseClient
             .singleUse()
-            .read("nonexistent-table", KeySet.all(), Arrays.asList("nonexistent-col"));
+            .read("nonexistent-table", KeySet.all(), Collections.singletonList("nonexistent-col"));
     try {
       // Tests that the initial create session request returns a permission denied.
       rs.next();

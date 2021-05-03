@@ -23,7 +23,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.HeaderProvider;
@@ -43,7 +42,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
-import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
@@ -64,10 +62,8 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.Contexts;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
@@ -319,13 +315,7 @@ public class GapicSpannerRpcTest {
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
-            .setCallCredentialsProvider(
-                new CallCredentialsProvider() {
-                  @Override
-                  public CallCredentials getCallCredentials() {
-                    return MoreCallCredentials.from(VARIABLE_CREDENTIALS);
-                  }
-                })
+            .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
@@ -348,13 +338,7 @@ public class GapicSpannerRpcTest {
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
-            .setCallCredentialsProvider(
-                new CallCredentialsProvider() {
-                  @Override
-                  public CallCredentials getCallCredentials() {
-                    return null;
-                  }
-                })
+            .setCallCredentialsProvider(() -> null)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options);
     assertThat(
@@ -511,13 +495,10 @@ public class GapicSpannerRpcTest {
   public void testCustomUserAgent() {
     for (String headerId : new String[] {"user-agent", "User-Agent", "USER-AGENT"}) {
       final HeaderProvider userAgentHeaderProvider =
-          new HeaderProvider() {
-            @Override
-            public Map<String, String> getHeaders() {
-              final Map<String, String> headers = new HashMap<>();
-              headers.put(headerId, "test-agent");
-              return headers;
-            }
+          () -> {
+            final Map<String, String> headers = new HashMap<>();
+            headers.put(headerId, "test-agent");
+            return headers;
           };
       final SpannerOptions options =
           createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
@@ -535,32 +516,22 @@ public class GapicSpannerRpcTest {
     }
   }
 
-  @SuppressWarnings("rawtypes")
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                input.usePlaintext();
-                return input;
-              }
+            input -> {
+              input.usePlaintext();
+              return input;
             })
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)
         // Also set a CallCredentialsProvider. These credentials should take precedence above
         // the static credentials.
-        .setCallCredentialsProvider(
-            new CallCredentialsProvider() {
-              @Override
-              public CallCredentials getCallCredentials() {
-                return MoreCallCredentials.from(VARIABLE_CREDENTIALS);
-              }
-            })
+        .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
         .build();
   }
 

@@ -218,6 +218,7 @@ public class SpannerRetryHelperTest {
                 try {
                   Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException e) {
+                  // Ignored exception
                 }
               }
             });

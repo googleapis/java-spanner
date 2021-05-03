@@ -19,10 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -172,12 +170,9 @@ public class SpanTest {
     builder
         .getSpannerStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettings);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettings);
+              return null;
             });
     builder
         .getSpannerStubSettingsBuilder()

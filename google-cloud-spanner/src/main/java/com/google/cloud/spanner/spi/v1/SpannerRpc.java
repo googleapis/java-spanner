@@ -123,7 +123,7 @@ public interface SpannerRpc extends ServiceRpc {
     public Paginated(@Nullable Iterable<T> results, @Nullable String nextPageToken) {
       // The generated HTTP client has null members when no results are present, rather than an
       // empty list.  Implicitly convert to an empty list to minimize the risk of NPEs.
-      this.results = (results == null) ? ImmutableList.<T>of() : results;
+      this.results = (results == null) ? ImmutableList.of() : results;
       this.nextPageToken =
           (nextPageToken == null || nextPageToken.isEmpty()) ? null : nextPageToken;
     }

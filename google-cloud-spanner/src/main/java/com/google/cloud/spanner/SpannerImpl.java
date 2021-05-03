@@ -244,7 +244,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   void close(long timeout, TimeUnit unit) {
-    List<ListenableFuture<Void>> closureFutures = null;
+    List<ListenableFuture<Void>> closureFutures;
     synchronized (this) {
       checkClosed();
       closedException = new ClosedException();

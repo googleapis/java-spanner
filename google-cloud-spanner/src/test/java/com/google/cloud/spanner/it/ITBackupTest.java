@@ -51,7 +51,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
@@ -62,7 +61,6 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -228,7 +226,8 @@ public class ITBackupTest {
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
             testHelper.getUniqueDatabaseId() + "_db2",
-            Arrays.asList("CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+            Collections.singletonList(
+                "CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     // Make sure all databases are created before we try to create any backups.
     Database db1 = dbOp1.get();
     Database db2 = dbOp2.get();
@@ -237,7 +236,7 @@ public class ITBackupTest {
     // Insert some data into db2 to make sure the backup will have a size>0.
     DatabaseClient client = testHelper.getDatabaseClient(db2);
     client.writeAtLeastOnce(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("BAR")
                 .set("ID")
                 .to(1L)
@@ -281,8 +280,8 @@ public class ITBackupTest {
 
     // Ensure both backups have been created before we proceed.
     logger.info("Waiting for backup operations to finish");
-    Backup backup1 = null;
-    Backup backup2 = null;
+    Backup backup1;
+    Backup backup2;
     Stopwatch watch = Stopwatch.createStarted();
     try {
       backup1 = op1.get(6L, TimeUnit.MINUTES);
@@ -320,7 +319,7 @@ public class ITBackupTest {
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertOrUpdateBuilder("BAR")
                     .set("ID")
                     .to(2L)
@@ -732,42 +731,22 @@ public class ITBackupTest {
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isTrue();
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isTrue();
   }
 }

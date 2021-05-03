@@ -45,7 +45,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
-import io.grpc.MethodDescriptor;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -342,7 +341,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteStreamingSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
     } else {
       res = super.executeQueryAsync(statement, analyzeMode, options);
     }
@@ -397,7 +396,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteSqlMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -480,7 +479,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getExecuteBatchDmlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -535,7 +534,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final Callable<Void> commitCallable =
       new Callable<Void>() {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
           checkAborted();
           get(txContextFuture).buffer(mutations);
           txManager.commit();
@@ -579,7 +578,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 }
               },
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.<MethodDescriptor<?, ?>>of(SpannerGrpc.getCommitMethod()));
+              ImmutableList.of(SpannerGrpc.getCommitMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -837,7 +836,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final Callable<Void> rollbackCallable =
       new Callable<Void>() {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
           try {
             if (state != UnitOfWorkState.ABORTED) {
               // Make sure the transaction has actually started before we try to rollback.

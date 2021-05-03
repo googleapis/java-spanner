@@ -25,7 +25,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -123,7 +122,7 @@ public class InlineBeginBenchmark {
           .build();
     }
 
-    SpannerOptions createRealServerOptions() throws IOException {
+    SpannerOptions createRealServerOptions() {
       return SpannerOptions.newBuilder()
           .setSessionPoolOption(
               SessionPoolOptions.newBuilder().setWriteSessionsFraction(writeFraction).build())

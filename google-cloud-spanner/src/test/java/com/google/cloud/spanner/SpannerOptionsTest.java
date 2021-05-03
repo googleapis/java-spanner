@@ -50,6 +50,7 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class SpannerOptionsTest {
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
         Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
-        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+        Collections.singletonList(stubSettings.batchCreateSessionsSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
             stubSettings.createSessionSettings(),
@@ -276,7 +277,7 @@ public class SpannerOptionsTest {
             stubSettings.getDatabaseSettings(),
             stubSettings.getDatabaseDdlSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
         Arrays.asList(
             stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
@@ -375,7 +376,7 @@ public class SpannerOptionsTest {
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
         Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =
@@ -558,13 +559,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDefaultQueryOptions() {
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "");
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
@@ -579,13 +574,7 @@ public class SpannerOptionsTest {
         .isEqualTo(QueryOptions.getDefaultInstance());
 
     // Now simulate that the user has set an environment variable for the query optimizer version.
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "2";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "2");
     // Create options with '1' as the default query optimizer version. This should be overridden by
     // the environment variable.
     options =

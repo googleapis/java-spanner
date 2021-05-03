@@ -19,7 +19,6 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.oauth2.ComputeEngineCredentials;
@@ -124,15 +123,12 @@ public class ITDirectPathFallback {
             .setEndpoint(DIRECT_PATH_ENDPOINT)
             .setPoolSize(1)
             .setChannelConfigurator(
-                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-                  @Override
-                  public ManagedChannelBuilder apply(ManagedChannelBuilder builder) {
-                    injectNettyChannelHandler(builder);
-                    // Fail fast when blackhole is active
-                    builder.keepAliveTime(1, TimeUnit.SECONDS);
-                    builder.keepAliveTimeout(1, TimeUnit.SECONDS);
-                    return builder;
-                  }
+                managedChannelBuilder -> {
+                  injectNettyChannelHandler(managedChannelBuilder);
+                  // Fail fast when blackhole is active
+                  managedChannelBuilder.keepAliveTime(1, TimeUnit.SECONDS);
+                  managedChannelBuilder.keepAliveTimeout(1, TimeUnit.SECONDS);
+                  return managedChannelBuilder;
                 })
             .build());
     // Forcefully ignore GOOGLE_APPLICATION_CREDENTIALS
@@ -197,7 +193,7 @@ public class ITDirectPathFallback {
     assertWithMessage("Failed to upgrade back to DirectPath").that(exerciseDirectPath()).isTrue();
   }
 
-  private boolean exerciseDirectPath() throws InterruptedException, TimeoutException {
+  private boolean exerciseDirectPath() throws InterruptedException {
     Stopwatch stopwatch = Stopwatch.createStarted();
     numDpAddrRead.set(0);
 

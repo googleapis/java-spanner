@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -41,7 +40,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,12 +62,9 @@ public class SpannerPool {
   private static final Logger logger = Logger.getLogger(SpannerPool.class.getName());
 
   private static final Function<Spanner, Void> DEFAULT_CLOSE_FUNCTION =
-      new Function<Spanner, Void>() {
-        @Override
-        public Void apply(Spanner spanner) {
-          spanner.close();
-          return null;
-        }
+      spanner -> {
+        spanner.close();
+        return null;
       };
 
   /**
@@ -305,13 +300,10 @@ public class SpannerPool {
     if (this.closeSpannerAfterMillisecondsUnused > 0) {
       this.closerService =
           Executors.newSingleThreadScheduledExecutor(
-              new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                  Thread thread = new Thread(r, "close-unused-spanners-worker");
-                  thread.setDaemon(true);
-                  return thread;
-                }
+              runnable -> {
+                Thread thread = new Thread(runnable, "close-unused-spanners-worker");
+                thread.setDaemon(true);
+                return thread;
               });
       this.closerService.scheduleAtFixedRate(
           new CloseUnusedSpannersRunnable(),
@@ -322,7 +314,6 @@ public class SpannerPool {
     initialized = true;
   }
 
-  @SuppressWarnings("rawtypes")
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
@@ -339,14 +330,7 @@ public class SpannerPool {
       // Credentials may not be sent over a plain text channel.
       builder.setCredentials(NoCredentials.getInstance());
       // Set a custom channel configurator to allow http instead of https.
-      builder.setChannelConfigurator(
-          new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-            @Override
-            public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-              input.usePlaintext();
-              return input;
-            }
-          });
+      builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);

@@ -37,14 +37,12 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
-import io.grpc.MethodDescriptor;
 import java.util.concurrent.Callable;
 
 /**
@@ -356,8 +354,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.<MethodDescriptor<?, ?>>of(
-            SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<Long> executePartitionedUpdateAsync(final ParsedStatement update) {
@@ -385,14 +382,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 try {
                   long[] res =
                       transaction.batchUpdate(
-                          Iterables.transform(
-                              updates,
-                              new Function<ParsedStatement, Statement>() {
-                                @Override
-                                public Statement apply(ParsedStatement input) {
-                                  return input.getStatement();
-                                }
-                              }));
+                          Iterables.transform(updates, ParsedStatement::getStatement));
                   state = UnitOfWorkState.COMMITTED;
                   return res;
                 } catch (Throwable t) {

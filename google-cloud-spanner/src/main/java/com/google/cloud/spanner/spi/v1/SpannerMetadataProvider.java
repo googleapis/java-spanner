@@ -18,7 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.common.collect.ImmutableMap;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -61,7 +61,8 @@ class SpannerMetadataProvider {
     return ImmutableMap.<String, List<String>>builder()
         .put(
             resourceHeaderKey,
-            Arrays.asList(getResourceHeaderValue(resourceTokenTemplate, defaultResourceToken)))
+            Collections.singletonList(
+                getResourceHeaderValue(resourceTokenTemplate, defaultResourceToken)))
         .build();
   }
 

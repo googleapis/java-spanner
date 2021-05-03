@@ -38,7 +38,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -150,7 +150,7 @@ public class AbortedTest extends AbstractMockServerTest {
         createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
       connection.execute(INSERT_STATEMENT);
       try {
-        connection.executeBatchUpdate(Arrays.asList(invalidStatement));
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
@@ -230,7 +230,7 @@ public class AbortedTest extends AbstractMockServerTest {
     try (ITConnection connection =
         createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
       try {
-        connection.executeBatchUpdate(Arrays.asList(invalidStatement));
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
@@ -246,8 +246,7 @@ public class AbortedTest extends AbstractMockServerTest {
 
   ITConnection createConnection(TransactionRetryListener listener) {
     ITConnection connection =
-        super.createConnection(
-            ImmutableList.<StatementExecutionInterceptor>of(), ImmutableList.of(listener));
+        super.createConnection(ImmutableList.of(), ImmutableList.of(listener));
     connection.setAutocommit(false);
     return connection;
   }

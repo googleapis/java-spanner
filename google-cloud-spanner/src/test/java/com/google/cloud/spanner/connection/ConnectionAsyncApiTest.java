@@ -34,7 +34,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -57,28 +56,16 @@ import org.junit.runners.JUnit4;
 public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   private static final ExecutorService executor = Executors.newSingleThreadExecutor();
   private static final Function<Connection, Void> AUTOCOMMIT =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          input.setAutocommit(true);
-          return null;
-        }
+      input -> {
+        input.setAutocommit(true);
+        return null;
       };
   private static final Function<Connection, Void> READ_ONLY =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          input.setReadOnly(true);
-          return null;
-        }
+      input -> {
+        input.setReadOnly(true);
+        return null;
       };
-  private static final Function<Connection, Void> READ_WRITE =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          return null;
-        }
-      };
+  private static final Function<Connection, Void> READ_WRITE = input -> null;
 
   @AfterClass
   public static void stopExecutor() {
@@ -282,13 +269,9 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           Lists.newArrayList(
               Collections2.filter(
                   mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest
-                          || input instanceof ExecuteBatchDmlRequest;
-                    }
-                  }));
+                  input ->
+                      input instanceof ExecuteSqlRequest
+                          || input instanceof ExecuteBatchDmlRequest));
       assertThat(requests).hasSize(4);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
@@ -361,18 +344,15 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           connection.executeQueryAsync(Statement.of("SHOW VARIABLE AUTOCOMMIT"))) {
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      autocommit.set(resultSet.getBoolean("AUTOCOMMIT"));
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    autocommit.set(resultSet.getBoolean("AUTOCOMMIT"));
                 }
               }
             });
@@ -453,25 +433,22 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           res =
               rs.setCallback(
                   executor,
-                  new ReadyCallback() {
-                    @Override
-                    public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                      try {
-                        while (true) {
-                          switch (resultSet.tryNext()) {
-                            case OK:
-                              rowCount.incrementAndGet();
-                              break;
-                            case DONE:
-                              return CallbackResponse.DONE;
-                            case NOT_READY:
-                              return CallbackResponse.CONTINUE;
-                          }
+                  resultSet -> {
+                    try {
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            rowCount.incrementAndGet();
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
                         }
-                      } catch (SpannerException e) {
-                        receivedTimeout.set(e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED);
-                        throw e;
                       }
+                    } catch (SpannerException e) {
+                      receivedTimeout.set(e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED);
+                      throw e;
                     }
                   });
         }
@@ -777,19 +754,16 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
         res =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case OK:
-                          rowCount.incrementAndGet();
-                          break;
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                      }
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
                     }
                   }
                 });

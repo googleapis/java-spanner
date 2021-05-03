@@ -120,7 +120,7 @@ public class ReadWriteTransactionWithInlineBeginTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     spanner =
@@ -134,7 +134,7 @@ public class ReadWriteTransactionWithInlineBeginTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     spanner.close();
   }
 

@@ -246,7 +246,7 @@ public class ConnectionOptions {
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
           new HashSet<>(
-              Arrays.asList(
+              Collections.singletonList(
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""))));
   private static final Set<ConnectionProperty> INTERNAL_VALID_PROPERTIES =
       Sets.union(VALID_PROPERTIES, INTERNAL_PROPERTIES);
@@ -671,12 +671,12 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
-    return value != null ? Boolean.parseBoolean(value) : false;
+    return Boolean.parseBoolean(value);
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
     String value = parseUriProperty(uri, "autoConfigEmulator");
-    return value != null ? Boolean.parseBoolean(value) : false;
+    return Boolean.parseBoolean(value);
   }
 
   @VisibleForTesting
@@ -710,14 +710,13 @@ public class ConnectionOptions {
       }
     }
     if (lenient) {
-      return String.format(
-          "Invalid properties found in connection URI: %s", invalidProperties.toString());
+      return String.format("Invalid properties found in connection URI: %s", invalidProperties);
     } else {
       Preconditions.checkArgument(
           invalidProperties.isEmpty(),
           String.format(
               "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
-              invalidProperties.toString()));
+              invalidProperties));
       return null;
     }
   }

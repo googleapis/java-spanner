@@ -360,7 +360,7 @@ public class SpannerPoolTest {
   private static final long MILLISECOND = TimeUnit.NANOSECONDS.convert(1L, TimeUnit.MILLISECONDS);
 
   @Test
-  public void testAutomaticCloser() throws InterruptedException {
+  public void testAutomaticCloser() {
     FakeTicker ticker = new FakeTicker();
     SpannerPool pool = createSubjectAndMocks(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS, ticker);
     Spanner spanner1;

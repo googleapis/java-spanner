@@ -22,13 +22,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -51,8 +48,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Stress test for {@code SessionPool} which does multiple operations on the pool, making some of
@@ -98,29 +93,26 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(mockSpanner.getSessionClient(db)).thenReturn(sessionClient);
     when(mockSpanner.getOptions()).thenReturn(spannerOptions);
     doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                createExecutor.submit(
-                    () -> {
-                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                      for (int s = 0; s < sessionCount; s++) {
-                        SessionImpl session;
-                        synchronized (lock) {
-                          session = mockSession();
-                          setupSession(session);
-                          sessions.put(session.getName(), false);
-                          if (sessions.size() > maxAliveSessions) {
-                            maxAliveSessions = sessions.size();
-                          }
+            invocation -> {
+              createExecutor.submit(
+                  () -> {
+                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    for (int s = 0; s < sessionCount; s++) {
+                      SessionImpl session;
+                      synchronized (lock) {
+                        session = mockSession();
+                        setupSession(session);
+                        sessions.put(session.getName(), false);
+                        if (sessions.size() > maxAliveSessions) {
+                          maxAliveSessions = sessions.size();
                         }
-                        SessionConsumerImpl consumer =
-                            invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                        consumer.onSessionReady(session);
                       }
-                    });
-                return null;
-              }
+                      SessionConsumerImpl consumer =
+                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(session);
+                    }
+                  });
+              return null;
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(
@@ -133,56 +125,45 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
-            new Answer<ResultSet>() {
-
-              @Override
-              public ResultSet answer(InvocationOnMock invocation) {
-                resetTransaction(session);
-                return mockResult;
-              }
+            invocation -> {
+              resetTransaction(session);
+              return mockResult;
             });
     when(mockResult.next()).thenReturn(true);
     doAnswer(
-            new Answer<ApiFuture<Empty>>() {
-
-              @Override
-              public ApiFuture<Empty> answer(InvocationOnMock invocation) {
-                synchronized (lock) {
-                  if (expiredSessions.contains(session.getName())) {
-                    return ApiFutures.immediateFailedFuture(
-                        SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName()));
-                  }
-                  if (sessions.remove(session.getName()) == null) {
-                    setFailed(closedSessions.get(session.getName()));
-                  }
-                  closedSessions.put(session.getName(), new Exception("Session closed at:"));
-                  if (sessions.size() < minSessionsWhenSessionClosed) {
-                    minSessionsWhenSessionClosed = sessions.size();
-                  }
+            invocation -> {
+              synchronized (lock) {
+                if (expiredSessions.contains(session.getName())) {
+                  return ApiFutures.immediateFailedFuture(
+                      SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName()));
                 }
-                return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+                if (sessions.remove(session.getName()) == null) {
+                  setFailed(closedSessions.get(session.getName()));
+                }
+                closedSessions.put(session.getName(), new Exception("Session closed at:"));
+                if (sessions.size() < minSessionsWhenSessionClosed) {
+                  minSessionsWhenSessionClosed = sessions.size();
+                }
               }
+              return ApiFutures.immediateFuture(Empty.getDefaultInstance());
             })
         .when(session)
         .asyncClose();
 
     doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(InvocationOnMock invocation) {
-                if (random.nextInt(100) < 10) {
-                  expireSession(session);
-                  throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());
-                }
-                String name = session.getName();
-                synchronized (lock) {
-                  if (sessions.put(name, true)) {
-                    setFailed();
-                  }
-                  session.readyTransactionId = ByteString.copyFromUtf8("foo");
-                }
-                return null;
+            invocation -> {
+              if (random.nextInt(100) < 10) {
+                expireSession(session);
+                throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());
               }
+              String name = session.getName();
+              synchronized (lock) {
+                if (sessions.put(name, true)) {
+                  setFailed();
+                }
+                session.readyTransactionId = ByteString.copyFromUtf8("foo");
+              }
+              return null;
             })
         .when(session)
         .prepareReadWriteTransaction();
@@ -239,14 +220,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         SessionPool.createPool(
             builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock);
     pool.idleSessionRemovedListener =
-        new Function<PooledSession, Void>() {
-          @Override
-          public Void apply(PooledSession pooled) {
-            String name = pooled.getName();
-            synchronized (lock) {
-              sessions.remove(name);
-              return null;
-            }
+        pooled -> {
+          String name = pooled.getName();
+          synchronized (lock) {
+            sessions.remove(name);
+            return null;
           }
         };
     for (int i = 0; i < concurrentThreads; i++) {

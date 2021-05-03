@@ -38,14 +38,7 @@ class ClientSideStatementValueConverters {
 
     /** Create an map using the name of the enum elements as keys. */
     private CaseInsensitiveEnumMap(Class<E> elementType) {
-      this(
-          elementType,
-          new Function<E, String>() {
-            @Override
-            public String apply(E input) {
-              return input.name();
-            }
-          });
+      this(elementType, Enum::name);
     }
 
     /** Create a map using the specific function to get the key per enum value. */
@@ -231,14 +224,7 @@ class ClientSideStatementValueConverters {
   static class TransactionModeConverter
       implements ClientSideStatementValueConverter<TransactionMode> {
     private final CaseInsensitiveEnumMap<TransactionMode> values =
-        new CaseInsensitiveEnumMap<>(
-            TransactionMode.class,
-            new Function<TransactionMode, String>() {
-              @Override
-              public String apply(TransactionMode input) {
-                return input.getStatementString();
-              }
-            });
+        new CaseInsensitiveEnumMap<>(TransactionMode.class, TransactionMode::getStatementString);
 
     public TransactionModeConverter(String allowedValues) {}
 

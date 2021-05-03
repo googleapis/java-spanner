@@ -36,7 +36,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,13 +54,7 @@ public class ValueTest {
   /** Returns an {@code Iterable} over {@code values} that is not a {@code Collection}. */
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
-    final List<T> list = Lists.newArrayList(values);
-    return new Iterable<T>() {
-      @Override
-      public Iterator<T> iterator() {
-        return list.iterator();
-      }
-    };
+    return Lists.newArrayList(values);
   }
 
   @Test
@@ -569,7 +563,7 @@ public class ValueTest {
 
   @Test
   public void boolArrayTryGetInt64Array() {
-    Value value = Value.boolArray(Arrays.asList(true));
+    Value value = Value.boolArray(Collections.singletonList(true));
     try {
       value.getInt64Array();
       fail("Expected exception");
@@ -630,7 +624,7 @@ public class ValueTest {
 
   @Test
   public void int64ArrayTryGetBool() {
-    Value value = Value.int64Array(Arrays.asList(1234L));
+    Value value = Value.int64Array(Collections.singletonList(1234L));
     try {
       value.getBool();
       fail("Expected exception");
@@ -702,7 +696,7 @@ public class ValueTest {
 
   @Test
   public void float64ArrayTryGetInt64Array() {
-    Value value = Value.float64Array(Arrays.asList(.1));
+    Value value = Value.float64Array(Collections.singletonList(.1));
     try {
       value.getInt64Array();
       fail("Expected exception");
@@ -724,7 +718,7 @@ public class ValueTest {
 
   @Test
   public void numericArrayNull() {
-    Value v = Value.numericArray((Iterable<BigDecimal>) null);
+    Value v = Value.numericArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
@@ -738,7 +732,7 @@ public class ValueTest {
 
   @Test
   public void numericArrayTryGetInt64Array() {
-    Value value = Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1)));
+    Value value = Value.numericArray(Collections.singletonList(BigDecimal.valueOf(1, 1)));
 
     try {
       value.getInt64Array();
@@ -771,7 +765,7 @@ public class ValueTest {
 
   @Test
   public void stringArrayTryGetBytesArray() {
-    Value value = Value.stringArray(Arrays.asList("a"));
+    Value value = Value.stringArray(Collections.singletonList("a"));
     try {
       value.getBytesArray();
       fail("Expected exception");
@@ -805,7 +799,7 @@ public class ValueTest {
 
   @Test
   public void bytesArrayTryGetStringArray() {
-    Value value = Value.bytesArray(Arrays.asList(newByteArray("a")));
+    Value value = Value.bytesArray(Collections.singletonList(newByteArray("a")));
     try {
       value.getStringArray();
       fail("Expected exception");
@@ -879,7 +873,8 @@ public class ValueTest {
     Value v2 = Value.struct(struct.getType(), struct);
     assertThat(v2).isEqualTo(v1);
     try {
-      Value.struct(Type.struct(Arrays.asList(StructField.of("f3", Type.string()))), struct);
+      Value.struct(
+          Type.struct(Collections.singletonList(StructField.of("f3", Type.string()))), struct);
       fail("Expected exception");
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage().contains("Mismatch between struct value and type."));
@@ -1449,7 +1444,7 @@ public class ValueTest {
     tester.addEqualityGroup(Value.struct(structValue1), Value.struct(structValue2));
 
     Type structType1 = structValue1.getType();
-    Type structType2 = Type.struct(Arrays.asList(StructField.of("f1", Type.string())));
+    Type structType2 = Type.struct(Collections.singletonList(StructField.of("f1", Type.string())));
     tester.addEqualityGroup(Value.struct(structType1, null), Value.struct(structType1, null));
     tester.addEqualityGroup(Value.struct(structType2, null), Value.struct(structType2, null));
 
@@ -1458,7 +1453,7 @@ public class ValueTest {
         Value.boolArray(new boolean[] {false, true}),
         Value.boolArray(new boolean[] {true, false, true, false}, 1, 2),
         Value.boolArray(plainIterable(false, true)));
-    tester.addEqualityGroup(Value.boolArray(Arrays.asList(false)));
+    tester.addEqualityGroup(Value.boolArray(Collections.singletonList(false)));
     tester.addEqualityGroup(Value.boolArray((Iterable<Boolean>) null));
 
     tester.addEqualityGroup(
@@ -1466,7 +1461,7 @@ public class ValueTest {
         Value.int64Array(new long[] {1L, 2L}),
         Value.int64Array(new long[] {0L, 1L, 2L, 3L}, 1, 2),
         Value.int64Array(plainIterable(1L, 2L)));
-    tester.addEqualityGroup(Value.int64Array(Arrays.asList(3L)));
+    tester.addEqualityGroup(Value.int64Array(Collections.singletonList(3L)));
     tester.addEqualityGroup(Value.int64Array((Iterable<Long>) null));
 
     tester.addEqualityGroup(
@@ -1474,23 +1469,24 @@ public class ValueTest {
         Value.float64Array(new double[] {.1, .2}),
         Value.float64Array(new double[] {.0, .1, .2, .3}, 1, 2),
         Value.float64Array(plainIterable(.1, .2)));
-    tester.addEqualityGroup(Value.float64Array(Arrays.asList(.3)));
+    tester.addEqualityGroup(Value.float64Array(Collections.singletonList(.3)));
     tester.addEqualityGroup(Value.float64Array((Iterable<Double>) null));
 
     tester.addEqualityGroup(
         Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1))));
-    tester.addEqualityGroup(Value.numericArray(Arrays.asList(BigDecimal.valueOf(3, 1))));
-    tester.addEqualityGroup(Value.numericArray((Iterable<BigDecimal>) null));
+    tester.addEqualityGroup(
+        Value.numericArray(Collections.singletonList(BigDecimal.valueOf(3, 1))));
+    tester.addEqualityGroup(Value.numericArray(null));
 
     tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
-    tester.addEqualityGroup(Value.stringArray(Arrays.asList("c")));
+    tester.addEqualityGroup(Value.stringArray(Collections.singletonList("c")));
     tester.addEqualityGroup(Value.stringArray(null));
 
     tester.addEqualityGroup(
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))),
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))));
-    tester.addEqualityGroup(Value.bytesArray(Arrays.asList(newByteArray("c"))));
+    tester.addEqualityGroup(Value.bytesArray(Collections.singletonList(newByteArray("c"))));
     tester.addEqualityGroup(Value.bytesArray(null));
 
     tester.addEqualityGroup(
@@ -1507,8 +1503,8 @@ public class ValueTest {
         Value.structArray(structType1, Arrays.asList(structValue1, null)),
         Value.structArray(structType1, Arrays.asList(structValue2, null)));
     tester.addEqualityGroup(
-        Value.structArray(structType1, Arrays.asList((Struct) null)),
-        Value.structArray(structType1, Arrays.asList((Struct) null)));
+        Value.structArray(structType1, Collections.singletonList(null)),
+        Value.structArray(structType1, Collections.singletonList(null)));
     tester.addEqualityGroup(
         Value.structArray(structType1, null), Value.structArray(structType1, null));
     tester.addEqualityGroup(
@@ -1569,7 +1565,7 @@ public class ValueTest {
         Value.numericArray(
             BrokenSerializationList.of(
                 BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1), BigDecimal.valueOf(3, 1))));
-    reserializeAndAssert(Value.numericArray((Iterable<BigDecimal>) null));
+    reserializeAndAssert(Value.numericArray(null));
 
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));

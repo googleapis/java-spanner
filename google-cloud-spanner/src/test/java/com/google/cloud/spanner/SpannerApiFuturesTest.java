@@ -83,7 +83,7 @@ public class SpannerApiFuturesTest {
   @Test
   public void testGetInterruptedException() {
     ApiFuture<Void> fut =
-        new ForwardingApiFuture<Void>(ApiFutures.<Void>immediateFuture(null)) {
+        new ForwardingApiFuture<Void>(ApiFutures.immediateFuture(null)) {
           public Void get() throws InterruptedException {
             throw new InterruptedException("test interrupted exception");
           }
@@ -101,8 +101,8 @@ public class SpannerApiFuturesTest {
   @Test
   public void testGetCancellationException() {
     ApiFuture<Void> fut =
-        new ForwardingApiFuture<Void>(ApiFutures.<Void>immediateFuture(null)) {
-          public Void get() throws InterruptedException {
+        new ForwardingApiFuture<Void>(ApiFutures.immediateFuture(null)) {
+          public Void get() {
             throw new CancellationException("test cancellation exception");
           }
         };

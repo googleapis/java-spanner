@@ -31,7 +31,6 @@ import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -40,8 +39,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.Database}. */
 @RunWith(JUnit4.class)
@@ -72,20 +69,11 @@ public class DatabaseTest {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
         .thenAnswer(
-            new Answer<Backup.Builder>() {
-              @Override
-              public Backup.Builder answer(InvocationOnMock invocation) {
-                return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
-              }
-            });
+            invocation -> new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]));
     when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
         .thenAnswer(
-            new Answer<Database.Builder>() {
-              @Override
-              public Database.Builder answer(InvocationOnMock invocation) throws Throwable {
-                return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
-              }
-            });
+            invocation ->
+                new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
   }
 
   @Test
@@ -175,7 +163,7 @@ public class DatabaseTest {
     Database database =
         new Database(
             DatabaseId.of("test-project", "test-instance", "test-database"), State.READY, dbClient);
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     database.testIAMPermissions(permissions);
     verify(dbClient).testDatabaseIAMPermissions("test-instance", "test-database", permissions);
   }

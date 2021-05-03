@@ -64,13 +64,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(
-          new Function<Session, CommitResponse>() {
-            @Override
-            public CommitResponse apply(Session session) {
-              return session.writeWithOptions(mutations, options);
-            }
-          });
+      return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
@@ -91,12 +85,7 @@ class DatabaseClientImpl implements DatabaseClient {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
-          new Function<Session, CommitResponse>() {
-            @Override
-            public CommitResponse apply(Session session) {
-              return session.writeAtLeastOnceWithOptions(mutations, options);
-            }
-          });
+          session -> session.writeAtLeastOnceWithOptions(mutations, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
@@ -221,13 +210,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
     Span span = tracer.spanBuilder(PARTITION_DML_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(
-          new Function<Session, Long>() {
-            @Override
-            public Long apply(Session session) {
-              return session.executePartitionedUpdate(stmt, options);
-            }
-          });
+      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;

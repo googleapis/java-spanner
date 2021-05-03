@@ -658,7 +658,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
 
     @Override
-    public OperationFuture<ResponseT, MetadataT> call() throws Exception {
+    public OperationFuture<ResponseT, MetadataT> call() {
       acquireAdministrativeRequestsRateLimiter();
 
       return runWithRetryOnAdministrativeRequestsExceeded(
@@ -701,8 +701,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private Operation mostRecentOperation(
       OperationsLister lister,
       Function<Operation, Timestamp> getStartTimeFunction,
-      Timestamp initialCallTime)
-      throws InvalidProtocolBufferException {
+      Timestamp initialCallTime) {
     Operation res = null;
     Timestamp currMaxStartTime = null;
     String nextPageToken = null;
@@ -981,38 +980,30 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             DatabaseAdminGrpc.getCreateDatabaseMethod(),
             instanceName,
-            new OperationsLister() {
-              @Override
-              public Paginated<Operation> listOperations(String nextPageToken) {
-                return listDatabaseOperations(
+            nextPageToken ->
+                listDatabaseOperations(
                     instanceName,
                     0,
                     String.format(
                         "(metadata.@type:type.googleapis.com/%s) AND (name:%s/operations/)",
                         CreateDatabaseMetadata.getDescriptor().getFullName(),
                         String.format("%s/databases/%s", instanceName, databaseId)),
-                    nextPageToken);
-              }
-            },
-            new Function<Operation, Timestamp>() {
-              @Override
-              public Timestamp apply(Operation input) {
-                if (input.getDone() && input.hasResponse()) {
-                  try {
-                    Timestamp createTime =
-                        input.getResponse().unpack(Database.class).getCreateTime();
-                    if (Timestamp.getDefaultInstance().equals(createTime)) {
-                      // Create time was not returned by the server (proto objects never return
-                      // null, instead they return the default instance). Return null from this
-                      // method to indicate that there is no known create time.
-                      return null;
-                    }
-                  } catch (InvalidProtocolBufferException e) {
+                    nextPageToken),
+            input -> {
+              if (input.getDone() && input.hasResponse()) {
+                try {
+                  Timestamp createTime = input.getResponse().unpack(Database.class).getCreateTime();
+                  if (Timestamp.getDefaultInstance().equals(createTime)) {
+                    // Create time was not returned by the server (proto objects never return
+                    // null, instead they return the default instance). Return null from this
+                    // method to indicate that there is no known create time.
                     return null;
                   }
+                } catch (InvalidProtocolBufferException e) {
+                  return null;
                 }
-                return null;
               }
+              return null;
             });
     return RetryHelper.runWithRetries(
         callable,
@@ -1152,31 +1143,24 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             DatabaseAdminGrpc.getCreateBackupMethod(),
             instanceName,
-            new OperationsLister() {
-              @Override
-              public Paginated<Operation> listOperations(String nextPageToken) {
-                return listBackupOperations(
+            nextPageToken ->
+                listBackupOperations(
                     instanceName,
                     0,
                     String.format(
                         "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
                         CreateBackupMetadata.getDescriptor().getFullName(),
                         String.format("%s/backups/%s", instanceName, backupId)),
-                    nextPageToken);
-              }
-            },
-            new Function<Operation, Timestamp>() {
-              @Override
-              public Timestamp apply(Operation input) {
-                try {
-                  return input
-                      .getMetadata()
-                      .unpack(CreateBackupMetadata.class)
-                      .getProgress()
-                      .getStartTime();
-                } catch (InvalidProtocolBufferException e) {
-                  return null;
-                }
+                    nextPageToken),
+            input -> {
+              try {
+                return input
+                    .getMetadata()
+                    .unpack(CreateBackupMetadata.class)
+                    .getProgress()
+                    .getStartTime();
+              } catch (InvalidProtocolBufferException e) {
+                return null;
               }
             });
     return RetryHelper.runWithRetries(
@@ -1211,31 +1195,24 @@ public class GapicSpannerRpc implements SpannerRpc {
                 requestBuilder.build(),
                 DatabaseAdminGrpc.getRestoreDatabaseMethod(),
                 databaseInstanceName,
-                new OperationsLister() {
-                  @Override
-                  public Paginated<Operation> listOperations(String nextPageToken) {
-                    return listDatabaseOperations(
+                nextPageToken ->
+                    listDatabaseOperations(
                         databaseInstanceName,
                         0,
                         String.format(
                             "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
                             RestoreDatabaseMetadata.getDescriptor().getFullName(),
                             String.format("%s/databases/%s", databaseInstanceName, databaseId)),
-                        nextPageToken);
-                  }
-                },
-                new Function<Operation, Timestamp>() {
-                  @Override
-                  public Timestamp apply(Operation input) {
-                    try {
-                      return input
-                          .getMetadata()
-                          .unpack(RestoreDatabaseMetadata.class)
-                          .getProgress()
-                          .getStartTime();
-                    } catch (InvalidProtocolBufferException e) {
-                      return null;
-                    }
+                        nextPageToken),
+                input -> {
+                  try {
+                    return input
+                        .getMetadata()
+                        .unpack(RestoreDatabaseMetadata.class)
+                        .getProgress()
+                        .getStartTime();
+                  } catch (InvalidProtocolBufferException e) {
+                    return null;
                   }
                 });
     return RetryHelper.runWithRetries(

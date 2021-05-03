@@ -371,12 +371,9 @@ public class SingleUseTransactionTest {
     when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
     when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
         .thenAnswer(
-            new Answer<Long>() {
-              @Override
-              public Long answer(InvocationOnMock invocation) throws Throwable {
-                Thread.sleep(1000L);
-                return VALID_UPDATE_COUNT;
-              }
+            invocation -> {
+              Thread.sleep(1000L);
+              return VALID_UPDATE_COUNT;
             });
     when(txContext.executeUpdate(Statement.of(INVALID_UPDATE)))
         .thenThrow(
@@ -695,6 +692,7 @@ public class SingleUseTransactionTest {
         get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
         fail("missing expected exception");
       } catch (IllegalStateException e) {
+        // Expected exception
       }
     }
 
@@ -708,6 +706,7 @@ public class SingleUseTransactionTest {
       get(subject.executeDdlAsync(ddl));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
@@ -719,6 +718,7 @@ public class SingleUseTransactionTest {
       get(subject.executeUpdateAsync(update));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -728,6 +728,7 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -738,6 +739,7 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Arrays.asList(mutation, mutation)));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
   }
 

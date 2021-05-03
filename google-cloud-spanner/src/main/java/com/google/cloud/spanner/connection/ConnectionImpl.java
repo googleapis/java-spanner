@@ -18,7 +18,6 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
@@ -238,8 +237,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(spannerPool);
     Preconditions.checkNotNull(ddlClient);
     Preconditions.checkNotNull(dbClient);
-    this.statementExecutor =
-        new StatementExecutor(Collections.<StatementExecutionInterceptor>emptyList());
+    this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -287,14 +285,7 @@ class ConnectionImpl implements Connection {
       leakedException = null;
       spannerPool.removeConnection(options, this);
       return ApiFutures.transform(
-          ApiFutures.allAsList(futures),
-          new ApiFunction<List<Void>, Void>() {
-            @Override
-            public Void apply(List<Void> input) {
-              return null;
-            }
-          },
-          MoreExecutors.directExecutor());
+          ApiFutures.allAsList(futures), ignored -> null, MoreExecutors.directExecutor());
     }
     return ApiFutures.immediateFuture(null);
   }
