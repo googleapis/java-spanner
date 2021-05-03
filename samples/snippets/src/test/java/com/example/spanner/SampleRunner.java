@@ -16,20 +16,39 @@
 
 package com.example.spanner;
 
+import com.google.cloud.spanner.SpannerException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
 
-/**
- * Runs a sample and captures the output as a String.
- */
+/** Runs a sample and captures the output as a String. */
 public class SampleRunner {
   public static String runSample(Callable<Void> sample) throws Exception {
+    return runSampleWithRetry(sample, e -> false);
+  }
+
+  /**
+   * Runs a sample and retries it if the given predicate returns true for a given
+   * {@link SpannerException}. The predicate can return different answers for the same error, for
+   * example by only allowing the retry of a certain error a specific number of times.
+   */
+  public static String runSampleWithRetry(Callable<Void> sample,
+      Predicate<SpannerException> shouldRetry) throws Exception {
     final PrintStream stdOut = System.out;
     final ByteArrayOutputStream bout = new ByteArrayOutputStream();
     final PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    sample.call();
+    while (true) {
+      try {
+        sample.call();
+        break;
+      } catch (SpannerException e) {
+        if (!shouldRetry.test(e)) {
+          throw e;
+        }
+      }
+    }
     System.setOut(stdOut);
     return bout.toString();
   }

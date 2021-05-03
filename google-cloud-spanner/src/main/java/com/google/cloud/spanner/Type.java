@@ -116,7 +116,7 @@ public final class Type implements Serializable {
 
   /**
    * Returns the descriptor for the {@code DATE} type: a timezone independent date in the range
-   * [1678-01-01, 2262-01-01).
+   * [0001-01-01, 9999-12-31).
    */
   public static Type date() {
     return TYPE_DATE;

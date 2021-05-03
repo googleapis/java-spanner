@@ -1638,9 +1638,9 @@ public abstract class Value implements Serializable {
             Type elementType = fieldType.getArrayElementType();
             switch (elementType.getCode()) {
               case BOOL:
-                return Value.boolArray(value.getBooleanArray(fieldIndex));
+                return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
-                return Value.int64Array(value.getLongArray(fieldIndex));
+                return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
               case JSON:
@@ -1648,7 +1648,7 @@ public abstract class Value implements Serializable {
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
-                return Value.float64Array(value.getDoubleArray(fieldIndex));
+                return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:
                 return Value.numericArray(value.getBigDecimalList(fieldIndex));
               case DATE:
