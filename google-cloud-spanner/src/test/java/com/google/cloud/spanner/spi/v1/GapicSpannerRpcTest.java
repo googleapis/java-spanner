@@ -25,6 +25,7 @@ import static org.junit.Assume.assumeTrue;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -151,6 +152,7 @@ public class GapicSpannerRpcTest {
   private Server server;
   private InetSocketAddress address;
   private final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+  private Metadata seenHeaders;
 
   @BeforeClass
   public static void checkNotEmulator() {
@@ -183,6 +185,7 @@ public class GapicSpannerRpcTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    seenHeaders = headers;
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
@@ -500,6 +503,34 @@ public class GapicSpannerRpcTest {
     assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
 
     assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
+  }
+
+  @Test
+  public void testCustomUserAgent() {
+    for (final String headerId : new String[] {"user-agent", "User-Agent", "USER-AGENT"}) {
+      final HeaderProvider userAgentHeaderProvider =
+          new HeaderProvider() {
+            @Override
+            public Map<String, String> getHeaders() {
+              final Map<String, String> headers = new HashMap<>();
+              headers.put(headerId, "test-agent");
+              return headers;
+            }
+          };
+      final SpannerOptions options =
+          createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
+      try (Spanner spanner = options.getService()) {
+        final DatabaseClient databaseClient =
+            spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+          rs.next();
+        }
+
+        assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+            .contains("test-agent");
+      }
+    }
   }
 
   @SuppressWarnings("rawtypes")
