@@ -509,27 +509,29 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testCustomUserAgent() {
-    final HeaderProvider userAgentHeaderProvider =
-        new HeaderProvider() {
-          @Override
-          public Map<String, String> getHeaders() {
-            final Map<String, String> headers = new HashMap<>();
-            headers.put("user-agent", "test-agent");
-            return headers;
-          }
-        };
-    final SpannerOptions options =
-        createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
-    try (Spanner spanner = options.getService()) {
-      final DatabaseClient databaseClient =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    for (String headerId : new String[] {"user-agent", "User-Agent", "USER-AGENT"}) {
+      final HeaderProvider userAgentHeaderProvider =
+          new HeaderProvider() {
+            @Override
+            public Map<String, String> getHeaders() {
+              final Map<String, String> headers = new HashMap<>();
+              headers.put(headerId, "test-agent");
+              return headers;
+            }
+          };
+      final SpannerOptions options =
+          createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
+      try (Spanner spanner = options.getService()) {
+        final DatabaseClient databaseClient =
+            spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
 
-      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
-        rs.next();
+        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+          rs.next();
+        }
+
+        assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+            .contains("test-agent " + defaultUserAgent);
       }
-
-      assertThat(seenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
-          .contains("test-agent " + defaultUserAgent);
     }
   }
 

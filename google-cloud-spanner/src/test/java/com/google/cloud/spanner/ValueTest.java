@@ -32,6 +32,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -1124,6 +1126,399 @@ public class ValueTest {
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("must have type STRUCT<ff1 STRING, ff2 INT64>");
     }
+  }
+
+  @Test
+  public void testValueToProto() {
+    // BASE types.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setBoolValue(true).build(),
+        Value.bool(true).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setBoolValue(false).build(),
+        Value.bool(false).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.bool(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("1").build(),
+        Value.int64(1L).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.int64(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build(),
+        Value.float64(3.14d).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.float64(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("test").build(),
+        Value.string("test").toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.string(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("{}").build(),
+        Value.json("{}").toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.json(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue(ByteArray.copyFrom("test").toBase64())
+            .build(),
+        Value.bytes(ByteArray.copyFrom("test")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.bytes(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("3.14").build(),
+        Value.numeric(new BigDecimal("3.14")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.numeric(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("2010-02-28").build(),
+        Value.date(Date.fromYearMonthDay(2010, 2, 28)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.date(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue("2012-04-10T15:16:17.123456789Z")
+            .build(),
+        Value.timestamp(Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.timestamp(null).toProto());
+
+    // ARRAY types.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setBoolValue(true).build(),
+                            com.google.protobuf.Value.newBuilder().setBoolValue(false).build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.boolArray(Arrays.asList(true, false, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("1").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.int64Array(Arrays.asList(1L, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.float64Array(Arrays.asList(3.14d, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("test").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.stringArray(Arrays.asList("test", null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("{}").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.jsonArray(Arrays.asList("{}", null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(ByteArray.copyFrom("test").toBase64())
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.bytesArray(Arrays.asList(ByteArray.copyFrom("test"), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("3.14").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.numericArray(Arrays.asList(new BigDecimal("3.14"), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2010-02-28")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2012-04-10T15:16:17.123456789Z")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.timestampArray(
+                Arrays.asList(Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z"), null))
+            .toProto());
+
+    // STRUCT type with array field.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setBoolValue(true)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setBoolValue(false)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.boolArray(Arrays.asList(true, false, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("1")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(Struct.newBuilder().add(Value.int64Array(Arrays.asList(1L, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(3.14d)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.float64Array(Arrays.asList(3.14d, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("test")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.stringArray(Arrays.asList("test", null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue(
+                                                    ByteArray.copyFrom("test").toBase64())
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.bytesArray(Arrays.asList(ByteArray.copyFrom("test"), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("3.14")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.numericArray(Arrays.asList(new BigDecimal("3.14"), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("2010-02-28")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("2012-04-10T15:16:17.123456789Z")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(
+                        Value.timestampArray(
+                            Arrays.asList(
+                                Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z"), null)))
+                    .build())
+            .toProto());
   }
 
   @Test
