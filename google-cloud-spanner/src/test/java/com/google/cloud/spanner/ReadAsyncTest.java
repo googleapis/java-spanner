@@ -372,8 +372,7 @@ public class ReadAsyncTest {
                 resultSet -> {
                   try {
                     // Make sure the uneven result set has returned the first before we start the
-                    // even
-                    // results.
+                    // even results.
                     unevenReturnedFirstRow.await();
                     while (true) {
                       switch (resultSet.tryNext()) {

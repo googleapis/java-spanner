@@ -407,11 +407,9 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(
           executor,
-          resultSet -> {
-            // Not calling resultSet.tryNext() means that it will also never return DONE.
-            // Instead the callback indicates that it does not want any more rows.
-            return CallbackResponse.DONE;
-          });
+          // Not calling resultSet.tryNext() means that it will also never return DONE.
+          // Instead the callback indicates that it does not want any more rows.
+          ignored -> CallbackResponse.DONE);
       rs.getResult().get(10L, TimeUnit.SECONDS);
     }
   }

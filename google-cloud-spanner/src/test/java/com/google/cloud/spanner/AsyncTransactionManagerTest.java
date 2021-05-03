@@ -843,13 +843,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                           mockSpanner.abortNextStatement();
                         }
                         // This update statement will be aborted, but the error will not propagated
-                        // to
-                        // the transaction manager and cause the transaction to retry. Instead, the
-                        // commit call will do that. Depending on the timing, that will happen
+                        // to the transaction manager and cause the transaction to retry. Instead,
+                        // the commit call will do that. Depending on the timing, that will happen
                         // directly in the transaction manager if the ABORTED error has already been
                         // returned by the batch update call before the commit call starts.
-                        // Otherwise,
-                        // the backend will return an ABORTED error for the commit call.
+                        // Otherwise, the backend will return an ABORTED error for the commit call.
                         transaction.batchUpdateAsync(
                             ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
                         return ApiFutures.immediateFuture(null);

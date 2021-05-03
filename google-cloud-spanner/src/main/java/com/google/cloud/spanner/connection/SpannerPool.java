@@ -30,6 +30,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Iterables;
+import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -329,11 +330,7 @@ public class SpannerPool {
       // Credentials may not be sent over a plain text channel.
       builder.setCredentials(NoCredentials.getInstance());
       // Set a custom channel configurator to allow http instead of https.
-      builder.setChannelConfigurator(
-          input -> {
-            input.usePlaintext();
-            return input;
-          });
+      builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
     }
     if (options.getConfigurator() != null) {
       options.getConfigurator().configure(builder);

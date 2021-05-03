@@ -252,7 +252,7 @@ public class ITClosedSessionTest {
           }
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          manager.resetForRetry();
+          txn = manager.resetForRetry();
         }
       }
     }

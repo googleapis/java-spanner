@@ -2394,10 +2394,8 @@ class SessionPool {
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
-        sessionPool -> {
-          // TODO: Remove metric.
-          return 0L;
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
@@ -2417,9 +2415,7 @@ class SessionPool {
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,
-        sessionPool -> {
-          // TODO: Remove metric.
-          return 0L;
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
   }
 }

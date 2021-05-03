@@ -23,6 +23,7 @@ import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.common.base.Stopwatch;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +51,7 @@ public class SpannerOptionsThreadTest extends AbstractMockServerTest {
     return SpannerOptions.newBuilder()
         .setProjectId("p")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
         .setHost("http://localhost:" + getPort())
         .setCredentials(NoCredentials.getInstance())
         .build();
