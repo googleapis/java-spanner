@@ -1,5 +1,12 @@
 # Changelog
 
+### [4.0.3](https://www.github.com/googleapis/java-spanner/compare/v4.0.2...v4.0.3) (2021-05-03)
+
+
+### Bug Fixes
+
+* allows setting user agent in any case ([#1121](https://www.github.com/googleapis/java-spanner/issues/1121)) ([d6d6e8d](https://www.github.com/googleapis/java-spanner/commit/d6d6e8dec3a9290df6121e6c1dec7702796b6162))
+
 ### [4.0.2](https://www.github.com/googleapis/java-spanner/compare/v4.0.1...v4.0.2) (2021-02-23)
 
 
