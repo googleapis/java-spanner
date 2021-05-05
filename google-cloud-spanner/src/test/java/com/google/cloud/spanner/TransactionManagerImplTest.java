@@ -17,8 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -86,42 +87,27 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.begin()).isEqualTo(txn);
     assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
-    try {
-      manager.begin();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.begin());
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void commitBeforeBeginFails() {
-    try {
-      manager.commit();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.commit());
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void rollbackBeforeBeginFails() {
-    try {
-      manager.rollback();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.rollback());
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void resetBeforeBeginFails() {
-    try {
-      manager.resetForRetry();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> manager.resetForRetry());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -150,12 +136,9 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
-    try {
-      manager.resetForRetry();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> manager.resetForRetry());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -163,12 +146,9 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "")).when(txn).commit();
-    try {
-      manager.commit();
-      fail("Expected AbortedException");
-    } catch (AbortedException e) {
-      assertThat(manager.getState()).isEqualTo(TransactionState.ABORTED);
-    }
+    assertThrows(AbortedException.class, () -> manager.commit());
+    assertEquals(TransactionState.ABORTED, manager.getState());
+
     txn = Mockito.mock(TransactionRunnerImpl.TransactionContextImpl.class);
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     assertThat(manager.resetForRetry()).isEqualTo(txn);
@@ -180,18 +160,12 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "")).when(txn).commit();
-    try {
-      manager.commit();
-      fail("Expected AbortedException");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
-    }
-    try {
-      manager.resetForRetry();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> manager.commit());
+    assertEquals(ErrorCode.UNKNOWN, e.getErrorCode());
+
+    IllegalStateException illegal =
+        assertThrows(IllegalStateException.class, () -> manager.resetForRetry());
+    assertNotNull(illegal.getMessage());
   }
 
   @Test
@@ -199,12 +173,8 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.commit();
-    try {
-      manager.rollback();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.rollback());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -212,12 +182,8 @@ public class TransactionManagerImplTest {
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     manager.begin();
     manager.rollback();
-    try {
-      manager.commit();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> manager.commit());
+    assertNotNull(e.getMessage());
   }
 
   @SuppressWarnings("unchecked")

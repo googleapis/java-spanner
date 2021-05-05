@@ -26,8 +26,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +47,7 @@ import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -883,14 +884,12 @@ public class DatabaseClientImplTest {
         runner.runAsync(
             txn -> ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT)),
             executor);
-    try {
-      fut.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-    }
+
+    ExecutionException e = assertThrows(ExecutionException.class, () -> fut.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+
     executor.shutdown();
   }
 
@@ -1066,20 +1065,18 @@ public class DatabaseClientImplTest {
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
 
       // Normal DML should timeout.
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  transaction.executeUpdate(UPDATE_STATEMENT);
-                  return null;
-                });
-        fail("expected DEADLINE_EXCEEDED");
-      } catch (SpannerException e) {
-        if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-          fail("expected DEADLINE_EXCEEDED");
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            transaction.executeUpdate(UPDATE_STATEMENT);
+                            return null;
+                          }));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -1101,14 +1098,10 @@ public class DatabaseClientImplTest {
       // PDML should timeout with these settings.
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
-      try {
-        client.executePartitionedUpdate(UPDATE_STATEMENT);
-        fail("expected DEADLINE_EXCEEDED");
-      } catch (SpannerException e) {
-        if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-          fail("expected DEADLINE_EXCEEDED");
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class, () -> client.executePartitionedUpdate(UPDATE_STATEMENT));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
 
       // Normal DML should not timeout.
       mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
@@ -1156,14 +1149,14 @@ public class DatabaseClientImplTest {
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
       mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
-      try {
-        client
-            .readWriteTransaction()
-            .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
-        fail("missing expected DEADLINE_EXCEEDED exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     }
   }
@@ -1250,19 +1243,13 @@ public class DatabaseClientImplTest {
                     DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
         // The create session failure should propagate to the client and not retry.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          rs.next();
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          assertThrows(ResourceNotFoundException.class, () -> rs.next());
           // The server should only receive one BatchCreateSessions request.
           assertThat(mockSpanner.getRequests()).hasSize(1);
         }
-        try {
-          dbClient.readWriteTransaction();
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // No additional requests should have been sent by the client.
-          assertThat(mockSpanner.getRequests()).hasSize(1);
-        }
+        assertThrows(ResourceNotFoundException.class, () -> dbClient.readWriteTransaction());
+        // No additional requests should have been sent by the client.
+        assertThat(mockSpanner.getRequests()).hasSize(1);
       }
       mockSpanner.reset();
       mockSpanner.removeAllExecutionTimes();
@@ -1356,36 +1343,22 @@ public class DatabaseClientImplTest {
 
         // All subsequent calls should fail with a DatabaseNotFoundException.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          while (rs.next()) {}
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // Expected exception
+          assertThrows(ResourceNotFoundException.class, () -> rs.next());
         }
-        try {
-          dbClient.readWriteTransaction().run(transaction -> null);
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // Expected exception
-        }
+        assertThrows(
+            ResourceNotFoundException.class,
+            () -> dbClient.readWriteTransaction().run(transaction -> null));
 
         // Now simulate that the database has been re-created. The database client should still
-        // throw
-        // DatabaseNotFoundExceptions, as it is not the same database. The server should not receive
-        // any new requests.
+        // throw DatabaseNotFoundExceptions, as it is not the same database. The server should not
+        // receive any new requests.
         mockSpanner.reset();
         // All subsequent calls should fail with a DatabaseNotFoundException.
-        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          while (rs.next()) {}
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // Expected exception
-        }
-        try {
-          dbClient.readWriteTransaction().run(transaction -> null);
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // Expected exception
-        }
+        assertThrows(
+            ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+        assertThrows(
+            ResourceNotFoundException.class,
+            () -> dbClient.readWriteTransaction().run(transaction -> null));
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
         // return the same instance, but not when the instance has been invalidated by a
@@ -1434,15 +1407,13 @@ public class DatabaseClientImplTest {
           for (int useClient = 0; useClient < 2; useClient++) {
             // Using the same client multiple times should continue to return the same
             // ResourceNotFoundException, even though the session pool has been invalidated.
-            try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-              rs.next();
-              fail("missing expected exception");
-            } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-              // The server should only receive one BatchCreateSessions request for each run as we
-              // have set MinSessions=0.
-              assertThat(mockSpanner.getRequests()).hasSize(run + 1);
-              assertThat(dbClient.pool.isValid()).isFalse();
-            }
+            assertThrows(
+                ResourceNotFoundException.class,
+                () -> dbClient.singleUse().executeQuery(SELECT1).next());
+            // The server should only receive one BatchCreateSessions request for each run as we
+            // have set MinSessions=0.
+            assertThat(mockSpanner.getRequests()).hasSize(run + 1);
+            assertThat(dbClient.pool.isValid()).isFalse();
           }
         }
       }
@@ -1747,13 +1718,9 @@ public class DatabaseClientImplTest {
       DatabaseClient client = spanner.getDatabaseClient(databaseId);
       // The following call is non-blocking and will not generate an exception.
       ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      try {
-        // Actually trying to get any results will cause an exception.
-        rs.next();
-        fail("missing PERMISSION_DENIED exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PERMISSION_DENIED);
-      }
+      // Actually trying to get any results will cause an exception.
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
     }
   }
 
@@ -1769,9 +1736,7 @@ public class DatabaseClientImplTest {
             .singleUse()
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id'");
       // The error message should normally not include the parameter values to prevent sensitive
@@ -1790,9 +1755,7 @@ public class DatabaseClientImplTest {
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
       logger.setLevel(Level.FINEST);
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       // With log level set to FINEST the error should also include the parameter values.
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id {id: 1}'");
@@ -1810,9 +1773,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs =
         client.singleUse().read("FOO", KeySet.singleKey(Key.of(1L)), ImmutableList.of("BAR"))) {
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).doesNotContain("Statement:");
     }
@@ -1833,9 +1794,7 @@ public class DatabaseClientImplTest {
             () -> {
               // Query should fail with a timeout.
               try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-                rs.next();
-                fail("missing expected DEADLINE_EXCEEDED exception");
-              } catch (SpannerException e) {
+                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
               }
               // Update should succeed.
@@ -1857,10 +1816,7 @@ public class DatabaseClientImplTest {
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-        while (rs.next()) {
-          fail("Missing expected exception");
-        }
-      } catch (SpannerException e) {
+        SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
       }
     } finally {

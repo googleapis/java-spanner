@@ -16,9 +16,11 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -446,14 +448,9 @@ public class InlineBeginTransactionTest {
                     .then(
                         (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
                         executor);
-            try {
-              updateCount.commitAsync().get();
-              fail("missing expected exception");
-            } catch (ExecutionException e) {
-              assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-              SpannerException se = (SpannerException) e.getCause();
-              assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-            }
+            SpannerException e =
+                assertThrows(SpannerException.class, () -> get(updateCount.commitAsync()));
+            assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
             break;
           } catch (AbortedException e) {
             txn = txMgr.resetForRetryAsync();
@@ -696,12 +693,11 @@ public class InlineBeginTransactionTest {
               .readWriteTransaction()
               .run(
                   transaction -> {
-                    try {
-                      transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                    }
+                    SpannerException e =
+                        assertThrows(
+                            SpannerException.class,
+                            () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
+                    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
                     return transaction.executeUpdate(UPDATE_STATEMENT);
                   });
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
@@ -733,24 +729,25 @@ public class InlineBeginTransactionTest {
                   .asRuntimeException()));
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  try {
-                    transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                    fail("missing expected exception");
-                  } catch (SpannerException e) {
-                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                  }
-                  return null;
-                });
-        fail("Missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-        assertThat(e.getMessage()).contains("Begin transaction failed due to an internal error");
-      }
+      SpannerException outerException =
+          assertThrows(
+              SpannerException.class,
+              () -> {
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          SpannerException innerException =
+                              assertThrows(
+                                  SpannerException.class,
+                                  () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
+                          assertEquals(ErrorCode.INVALID_ARGUMENT, innerException.getErrorCode());
+                          return null;
+                        });
+              });
+      assertEquals(ErrorCode.INTERNAL, outerException.getErrorCode());
+      assertThat(outerException.getMessage())
+          .contains("Begin transaction failed due to an internal error");
       // The transaction will be retried because the first statement that also tried to include the
       // BeginTransaction statement failed and did not return a transaction. That forces a retry of
       // the entire transaction with an explicit BeginTransaction RPC.
@@ -765,14 +762,14 @@ public class InlineBeginTransactionTest {
     public void testInlinedBeginTxWithUncaughtError() {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      try {
-        client
-            .readWriteTransaction()
-            .run(transaction -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT)));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
       // The first update will start a transaction, but then fail the update statement. This will
       // start a transaction on the mock server, but that transaction will never be returned to the
       // client.
@@ -789,20 +786,21 @@ public class InlineBeginTransactionTest {
     public void testInlinedBeginTxWithUncaughtErrorAfterSuccessfulBegin() {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  // This statement will start a transaction.
-                  transaction.executeUpdate(UPDATE_STATEMENT);
-                  // This statement will fail and cause a rollback as the exception is not caught.
-                  return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            // This statement will start a transaction.
+                            transaction.executeUpdate(UPDATE_STATEMENT);
+                            // This statement will fail and cause a rollback as the exception is not
+                            // caught.
+                            return transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
+                          }));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(2);
@@ -819,14 +817,14 @@ public class InlineBeginTransactionTest {
               .readWriteTransaction()
               .run(
                   transaction -> {
-                    try {
-                      transaction.batchUpdate(
-                          ImmutableList.of(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT));
-                      fail("missing expected exception");
-                    } catch (SpannerBatchUpdateException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                      assertThat(e.getUpdateCounts()).hasLength(0);
-                    }
+                    SpannerBatchUpdateException e =
+                        assertThrows(
+                            SpannerBatchUpdateException.class,
+                            () ->
+                                transaction.batchUpdate(
+                                    ImmutableList.of(INVALID_UPDATE_STATEMENT, UPDATE_STATEMENT)));
+                    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+                    assertEquals(0, e.getUpdateCounts().length);
                     return null;
                   });
       assertThat(res).isNull();
@@ -847,23 +845,19 @@ public class InlineBeginTransactionTest {
               .readWriteTransaction()
               .run(
                   transaction -> {
-                    try {
-                      transaction.batchUpdate(
-                          ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
-                      fail("missing expected exception");
-                      // The following line is needed as the compiler does not know that this is
-                      // unreachable.
-                      return -1L;
-                    } catch (SpannerBatchUpdateException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-                      assertThat(e.getUpdateCounts()).hasLength(1);
-                      return e.getUpdateCounts()[0];
-                    }
+                    SpannerBatchUpdateException e =
+                        assertThrows(
+                            SpannerBatchUpdateException.class,
+                            () ->
+                                transaction.batchUpdate(
+                                    ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT)));
+                    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+                    assertEquals(1, e.getUpdateCounts().length);
+                    return e.getUpdateCounts()[0];
                   });
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
       // Although the batch DML returned an error, that error was for the second statement. That
-      // means
-      // that the transaction was started by the first statement.
+      // means that the transaction was started by the first statement.
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
@@ -880,10 +874,8 @@ public class InlineBeginTransactionTest {
               .run(
                   transaction -> {
                     try (ResultSet rs = transaction.executeQuery(INVALID_SELECT)) {
-                      while (rs.next()) {}
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+                      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
                     }
                     return null;
                   });
@@ -906,8 +898,7 @@ public class InlineBeginTransactionTest {
       RandomResultSetGenerator generator = new RandomResultSetGenerator(2);
       mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
       // The first PartialResultSet will be returned successfully, and then a DATA_LOSS exception
-      // will
-      // be returned.
+      // will be returned.
       mockSpanner.setExecuteStreamingSqlExecutionTime(
           SimulatedExecutionTime.ofStreamException(Status.DATA_LOSS.asRuntimeException(), 1));
       DatabaseClient client =
@@ -918,10 +909,9 @@ public class InlineBeginTransactionTest {
               .run(
                   transaction -> {
                     try (ResultSet rs = transaction.executeQuery(statement)) {
-                      while (rs.next()) {}
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DATA_LOSS);
+                      assertTrue(rs.next());
+                      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+                      assertEquals(ErrorCode.DATA_LOSS, e.getErrorCode());
                     }
                     return null;
                   });
@@ -1059,7 +1049,6 @@ public class InlineBeginTransactionTest {
       assertThat(countTransactionsStarted()).isEqualTo(1);
     }
 
-    @SuppressWarnings("resource")
     @Test
     public void testTransactionManagerInlinedBeginTxWithError() {
       DatabaseClient client =
@@ -1067,14 +1056,13 @@ public class InlineBeginTransactionTest {
       try (TransactionManager txMgr = client.transactionManager()) {
         TransactionContext txn = txMgr.begin();
         while (true) {
+          final TransactionContext txnToUse = txn;
           try {
-            try {
-              txn.executeUpdate(INVALID_UPDATE_STATEMENT);
-              fail("missing expected exception");
-            } catch (SpannerException e) {
-              assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-            }
-            assertThat(txn.executeUpdate(UPDATE_STATEMENT)).isEqualTo(UPDATE_COUNT);
+            SpannerException e =
+                assertThrows(
+                    SpannerException.class, () -> txnToUse.executeUpdate(INVALID_UPDATE_STATEMENT));
+            assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+            assertEquals(UPDATE_COUNT, txnToUse.executeUpdate(UPDATE_STATEMENT));
             txMgr.commit();
             break;
           } catch (AbortedException e) {
@@ -1086,28 +1074,19 @@ public class InlineBeginTransactionTest {
       // the entire transaction, and the retry will do an explicit BeginTransaction RPC.
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       // The first statement will start a transaction, but it will never be returned to the client
-      // as
-      // the update statement fails.
+      // as the update statement fails.
       assertThat(countTransactionsStarted()).isEqualTo(2);
     }
 
-    @SuppressWarnings("resource")
     @Test
     public void testTransactionManagerInlinedBeginTxWithUncaughtError() {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       try (TransactionManager txMgr = client.transactionManager()) {
         TransactionContext txn = txMgr.begin();
-        while (true) {
-          try {
-            txn.executeUpdate(INVALID_UPDATE_STATEMENT);
-            fail("missing expected exception");
-          } catch (AbortedException e) {
-            txn = txMgr.resetForRetry();
-          }
-        }
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+        SpannerException e =
+            assertThrows(SpannerException.class, () -> txn.executeUpdate(INVALID_UPDATE_STATEMENT));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
       }
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countTransactionsStarted()).isEqualTo(1);
@@ -1349,21 +1328,22 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  try (ResultSet rs = transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
-                    while (rs.next()) {}
-                  }
-                  return null;
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            try (ResultSet rs =
+                                transaction.executeQuery(SELECT1_UNION_ALL_SELECT2)) {
+                              while (rs.next()) {}
+                            }
+                            return null;
+                          }));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1375,19 +1355,18 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  transaction.readRow("FOO", Key.of(1L), Collections.singletonList("BAR"));
-                  return null;
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction ->
+                              transaction.readRow(
+                                  "FOO", Key.of(1L), Collections.singletonList("BAR"))));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ReadRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1399,19 +1378,15 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  transaction.executeUpdate(UPDATE_STATEMENT);
-                  return null;
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1423,19 +1398,19 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT));
-                  return null;
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT));
+                            return null;
+                          }));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1448,39 +1423,41 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction -> {
-                  try (AsyncResultSet rs =
-                      transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
-                    return SpannerApiFutures.get(
-                        rs.setCallback(
-                            executor,
-                            resultSet -> {
-                              try {
-                                while (true) {
-                                  switch (resultSet.tryNext()) {
-                                    case OK:
-                                      break;
-                                    case DONE:
-                                      return CallbackResponse.DONE;
-                                    case NOT_READY:
-                                      return CallbackResponse.CONTINUE;
-                                  }
-                                }
-                              } catch (SpannerException e) {
-                                return CallbackResponse.DONE;
-                              }
-                            }));
-                  }
-                });
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException outerException =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            try (AsyncResultSet rs =
+                                transaction.executeQueryAsync(SELECT1_UNION_ALL_SELECT2)) {
+                              return SpannerApiFutures.get(
+                                  rs.setCallback(
+                                      executor,
+                                      resultSet -> {
+                                        try {
+                                          while (true) {
+                                            switch (resultSet.tryNext()) {
+                                              case OK:
+                                                break;
+                                              case DONE:
+                                                return CallbackResponse.DONE;
+                                              case NOT_READY:
+                                                return CallbackResponse.CONTINUE;
+                                            }
+                                          }
+                                        } catch (SpannerException e) {
+                                          return CallbackResponse.DONE;
+                                        }
+                                      }));
+                            }
+                          }));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, outerException.getErrorCode());
+      assertThat(outerException.getMessage())
+          .contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
+
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1492,17 +1469,18 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction ->
-                    SpannerApiFutures.get(transaction.executeUpdateAsync(UPDATE_STATEMENT)));
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction ->
+                              SpannerApiFutures.get(
+                                  transaction.executeUpdateAsync(UPDATE_STATEMENT))));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteSqlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1514,18 +1492,19 @@ public class InlineBeginTransactionTest {
       // This will cause the first statement that requests a transaction to not return a transaction
       // id.
       mockSpanner.ignoreNextInlineBeginRequest();
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                transaction ->
-                    SpannerApiFutures.get(
-                        transaction.batchUpdateAsync(Collections.singletonList(UPDATE_STATEMENT))));
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-        assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction ->
+                              SpannerApiFutures.get(
+                                  transaction.batchUpdateAsync(
+                                      Collections.singletonList(UPDATE_STATEMENT)))));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).contains(AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
       assertThat(countRequests(ExecuteBatchDmlRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(0);
@@ -1591,12 +1570,14 @@ public class InlineBeginTransactionTest {
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       // The CANCELLED error is thrown both on the first and second attempt. The second attempt will
       // not be retried, as it did not include a BeginTransaction option.
-      try {
-        client.readWriteTransaction().run(transaction -> transaction.executeUpdate(statement));
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(statement)));
+      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
       assertEquals(1, countRequests(BeginTransactionRequest.class));
       // The update statement will be executed 2 times:
       assertEquals(2, countRequests(ExecuteSqlRequest.class));

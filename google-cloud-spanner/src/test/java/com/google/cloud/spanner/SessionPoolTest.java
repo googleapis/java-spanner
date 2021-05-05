@@ -23,7 +23,10 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSION
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -168,17 +171,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void testClosedPoolIncludesClosedException() {
     pool = createPool();
-    assertThat(pool.isValid()).isTrue();
+    assertTrue(pool.isValid());
     closePoolWithStacktrace();
-    try {
-      pool.getSession();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
-      StringWriter sw = new StringWriter();
-      e.getCause().printStackTrace(new PrintWriter(sw));
-      assertThat(sw.toString()).contains("closePoolWithStacktrace");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
+    assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+    StringWriter sw = new StringWriter();
+    e.getCause().printStackTrace(new PrintWriter(sw));
+    assertThat(sw.toString()).contains("closePoolWithStacktrace");
   }
 
   private void closePoolWithStacktrace() {
@@ -411,12 +410,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Suppress expected leakedSession warning.
     leakedSession.clearLeakedException();
     pool.closeAsync(new SpannerImpl.ClosedException());
-    try {
-      pool.getSession();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -452,12 +447,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
-    try {
-      pool.getSession().get();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession().get());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -482,12 +473,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     pool = createPool();
     Session session1 = pool.getSession();
-    try {
-      pool.getSession();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession());
+    assertEquals(ErrorCode.RESOURCE_EXHAUSTED, e.getErrorCode());
     session1.close();
     session1 = pool.getSession();
     assertThat(session1).isNotNull();

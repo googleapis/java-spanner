@@ -17,7 +17,8 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -270,12 +271,8 @@ public class ResumableStreamIteratorTest {
     Iterator<String> strings = stringIterator(resumableStreamIterator);
     assertThat(strings.next()).isEqualTo("a");
     assertThat(strings.next()).isEqualTo("b");
-    try {
-      assertThat(strings.next()).isNotEqualTo("X");
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> strings.next());
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
   }
 
   @Test
@@ -378,12 +375,8 @@ public class ResumableStreamIteratorTest {
         .thenThrow(new RetryableException(ErrorCode.UNAVAILABLE, "failed by test"));
 
     assertThat(consumeAtMost(3, resumableStreamIterator)).containsExactly("a", "b", "c").inOrder();
-    try {
-      resumableStreamIterator.next();
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNAVAILABLE);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resumableStreamIterator.next());
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNAVAILABLE);
   }
 
   @Test

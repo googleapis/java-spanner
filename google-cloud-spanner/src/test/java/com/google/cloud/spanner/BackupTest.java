@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -208,12 +208,9 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    try {
-      backup.updateExpireTime();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> backup.updateExpireTime());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -233,12 +230,8 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    try {
-      backup.restore(null);
-      fail("Expected exception");
-    } catch (NullPointerException e) {
-      assertNull(e.getMessage());
-    }
+    NullPointerException e = assertThrows(NullPointerException.class, () -> backup.restore(null));
+    assertNull(e.getMessage());
   }
 
   @Test
