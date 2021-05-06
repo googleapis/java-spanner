@@ -18,7 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -111,24 +112,16 @@ public class GrpcResultSetTest {
     SpannerException t =
         SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED, "outatime");
     consumer.onError(t);
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      assertThat(ex.getMessage()).contains("outatime");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    assertThat(e.getMessage()).contains("outatime");
   }
 
   @Test
   public void noMetadata() {
     consumer.onCompleted();
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -207,12 +200,8 @@ public class GrpcResultSetTest {
             .setChunkedValue(true)
             .build());
     consumer.onCompleted();
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test

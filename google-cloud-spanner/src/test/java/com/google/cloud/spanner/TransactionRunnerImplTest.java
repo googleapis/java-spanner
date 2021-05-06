@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -220,30 +222,24 @@ public class TransactionRunnerImplTest {
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, ""));
     doThrow(error).when(txn).commit();
     final AtomicInteger numCalls = new AtomicInteger(0);
-    try {
-      transactionRunner.run(
-          transaction -> {
-            numCalls.incrementAndGet();
-            return null;
-          });
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
-    }
-    assertThat(numCalls.get()).isEqualTo(1);
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> transactionRunner.run(transaction -> numCalls.incrementAndGet()));
+    assertEquals(ErrorCode.UNKNOWN, e.getErrorCode());
+    assertEquals(1, numCalls.get());
     verify(txn, never()).ensureTxn();
     verify(txn, times(1)).commit();
   }
 
   @Test
   public void runResourceExhaustedNoRetry() {
-    try {
-      runTransaction(
-          new StatusRuntimeException(Status.fromCodeValue(Status.Code.RESOURCE_EXHAUSTED.value())));
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      // expected.
-    }
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runTransaction(
+                new StatusRuntimeException(
+                    Status.fromCodeValue(Status.Code.RESOURCE_EXHAUSTED.value()))));
     verify(txn).rollback();
   }
 
@@ -257,14 +253,12 @@ public class TransactionRunnerImplTest {
 
   @Test
   public void batchDmlFailedPrecondition() {
-    try {
-      batchDmlException(Code.FAILED_PRECONDITION_VALUE);
-      fail("Expected exception");
-    } catch (SpannerBatchUpdateException e) {
-      assertThat(e.getUpdateCounts().length).isEqualTo(1);
-      assertThat(e.getUpdateCounts()[0]).isEqualTo(1L);
-      assertThat(e.getCode() == Code.FAILED_PRECONDITION_VALUE);
-    }
+    SpannerBatchUpdateException e =
+        assertThrows(
+            SpannerBatchUpdateException.class,
+            () -> batchDmlException(Code.FAILED_PRECONDITION_VALUE));
+    assertArrayEquals(new long[] {1L}, e.getUpdateCounts());
+    assertEquals(Code.FAILED_PRECONDITION_VALUE, e.getCode());
   }
 
   @SuppressWarnings("unchecked")

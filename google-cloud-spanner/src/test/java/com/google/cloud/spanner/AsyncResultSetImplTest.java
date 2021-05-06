@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,24 +68,13 @@ public class AsyncResultSetImplTest {
     rs.close();
 
     // The following methods are not allowed to call after closing the result set.
-    try {
-      rs.setCallback(mock(Executor.class), mock(ReadyCallback.class));
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      // Expected exception
-    }
-    try {
-      rs.toList(mock(Function.class));
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      // Expected exception
-    }
-    try {
-      rs.toListAsync(mock(Function.class), mock(Executor.class));
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      // Expected exception
-    }
+    assertThrows(
+        IllegalStateException.class,
+        () -> rs.setCallback(mock(Executor.class), mock(ReadyCallback.class)));
+    assertThrows(IllegalStateException.class, () -> rs.toList(mock(Function.class)));
+    assertThrows(
+        IllegalStateException.class,
+        () -> rs.toListAsync(mock(Function.class), mock(Executor.class)));
 
     // The following methods are allowed on a closed result set.
     AsyncResultSetImpl rs2 =
@@ -103,13 +92,8 @@ public class AsyncResultSetImplTest {
         new AsyncResultSetImpl(
             mockedProvider, mock(ResultSet.class), AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
       rs.setCallback(mock(Executor.class), mock(ReadyCallback.class));
-      try {
-        rs.tryNext();
-        fail("missing expected exception");
-      } catch (IllegalStateException e) {
-        assertThat(e.getMessage())
-            .contains("tryNext may only be called from a DataReady callback.");
-      }
+      IllegalStateException e = assertThrows(IllegalStateException.class, () -> rs.tryNext());
+      assertThat(e.getMessage()).contains("tryNext may only be called from a DataReady callback.");
     }
   }
 
@@ -134,9 +118,8 @@ public class AsyncResultSetImplTest {
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      rs.toList(ignored -> new Object());
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e =
+          assertThrows(SpannerException.class, () -> rs.toList(ignored -> new Object()));
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("invalid query");
     }
@@ -166,9 +149,10 @@ public class AsyncResultSetImplTest {
                 ErrorCode.INVALID_ARGUMENT, "invalid query"));
     try (AsyncResultSetImpl rs =
         new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
-      rs.toListAsync(ignored -> new Object(), executor).get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
+      ExecutionException e =
+          assertThrows(
+              ExecutionException.class,
+              () -> rs.toListAsync(ignored -> new Object(), executor).get());
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -386,9 +370,7 @@ public class AsyncResultSetImplTest {
             callbackCounter.incrementAndGet();
             throw new RuntimeException("async test");
           });
-      rs.getResult().get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
+      ExecutionException e = assertThrows(ExecutionException.class, () -> rs.getResult().get());
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);

@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
@@ -440,34 +440,31 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInvalidTransport() {
-    try {
-      SpannerOptions.newBuilder().setTransportOptions(Mockito.mock(TransportOptions.class));
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SpannerOptions.newBuilder()
+                    .setTransportOptions(Mockito.mock(TransportOptions.class)));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testInvalidSessionLabels() {
     Map<String, String> labels = new HashMap<>();
     labels.put("env", null);
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(labels);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(labels));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testNullSessionLabels() {
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(null);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(null));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
@@ -614,12 +611,8 @@ public class SpannerOptionsTest {
                 .build()
                 .getCompressorName())
         .isNull();
-    try {
-      SpannerOptions.newBuilder().setCompressorName("foo");
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      // ignore, this is the expected exception.
-    }
+    assertThrows(
+        IllegalArgumentException.class, () -> SpannerOptions.newBuilder().setCompressorName("foo"));
   }
 
   @Test

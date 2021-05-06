@@ -20,8 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -35,42 +35,30 @@ public class OptionsTest {
 
   @Test
   public void negativeLimitsNotAllowed() {
-    try {
-      Options.limit(-1);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.limit(-1));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void zeroLimitNotAllowed() {
-    try {
-      Options.limit(0);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.limit(0));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void negativePrefetchChunksNotAllowed() {
-    try {
-      Options.prefetchChunks(-1);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.prefetchChunks(-1));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void zeroPrefetchChunksNotAllowed() {
-    try {
-      Options.prefetchChunks(0);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.prefetchChunks(0));
+    assertNotNull(e.getMessage());
   }
 
   @Test

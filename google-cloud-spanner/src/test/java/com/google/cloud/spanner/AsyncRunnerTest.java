@@ -18,8 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -54,23 +54,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    try {
-      runner.getCommitTimestamp();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    try {
-      runner.getCommitResponse();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
@@ -103,15 +97,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     AsyncRunner runner = client().runAsync();
     ApiFuture<Long> updateCount =
         runner.runAsync(txn -> txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT), executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      assertThat(se.getMessage()).contains("invalid statement");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(se.getMessage()).contains("invalid statement");
   }
 
   @Test
@@ -233,15 +223,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               return txn.executeUpdateAsync(UPDATE_STATEMENT);
             },
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      assertThat(se.getMessage()).contains("mutation limit exceeded");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
   @Test
@@ -295,15 +281,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             txn ->
                 txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT)),
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      assertThat(se.getMessage()).contains("invalid statement");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(se.getMessage()).contains("invalid statement");
   }
 
   @Test
@@ -423,15 +405,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
             },
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      assertThat(se.getMessage()).contains("mutation limit exceeded");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
   @Test

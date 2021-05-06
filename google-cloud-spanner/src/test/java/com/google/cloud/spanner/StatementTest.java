@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.common.collect.ImmutableMap;
@@ -102,47 +102,32 @@ public class StatementTest {
   public void incompleteBinding() {
     Statement.Builder builder = Statement.newBuilder("SELECT @v");
     builder.bind("v");
-    try {
-      builder.build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> builder.build());
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void bindingInProgress() {
     Statement.Builder builder = Statement.newBuilder("SELECT @v");
     builder.bind("v");
-    try {
-      builder.bind("y");
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> builder.bind("y"));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void alreadyBound() {
     ValueBinder<Statement.Builder> binder = Statement.newBuilder("SELECT @v").bind("v");
     binder.to("abc");
-    try {
-      binder.to("xyz");
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> binder.to("xyz"));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void bindCommitTimestampFails() {
     ValueBinder<Statement.Builder> binder = Statement.newBuilder("SELECT @v").bind("v");
-    try {
-      binder.to(Value.COMMIT_TIMESTAMP);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> binder.to(Value.COMMIT_TIMESTAMP));
+    assertNotNull(e.getMessage());
   }
 
   @Test

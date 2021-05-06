@@ -18,7 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.longrunning.Operation.newBuilder;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -87,12 +88,8 @@ public class OperationTest {
     assertThat(op.isDone()).isTrue();
     assertThat(op.isSuccessful()).isFalse();
     assertThat(op.getMetadata()).isNull();
-    try {
-      op.getResult();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> op.getResult());
+    assertEquals(ErrorCode.NOT_FOUND, e.getErrorCode());
   }
 
   @Test
@@ -179,13 +176,13 @@ public class OperationTest {
     Operation<Database, String> op = Operation.create(rpc, proto, new ParserImpl(), clock);
     when(rpc.getOperation("op1")).thenReturn(proto);
     when(clock.nanoTime()).thenReturn(0L, 50_000_000L, 100_000_000L, 150_000_000L);
-    try {
-      op.waitFor(
-          RetryOption.totalTimeout(Duration.ofMillis(100L)),
-          RetryOption.initialRetryDelay(Duration.ZERO));
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                op.waitFor(
+                    RetryOption.totalTimeout(Duration.ofMillis(100L)),
+                    RetryOption.initialRetryDelay(Duration.ZERO)));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
   }
 }

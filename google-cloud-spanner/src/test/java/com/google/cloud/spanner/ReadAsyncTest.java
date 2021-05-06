@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.*;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -43,7 +45,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -130,15 +131,9 @@ public class ReadAsyncTest {
                     ErrorCode.CANCELLED, "Don't want the data");
               });
     }
-    try {
-      result.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      assertThat(se.getMessage()).contains("Don't want the data");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(result));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+    assertThat(e.getMessage()).contains("Don't want the data");
   }
 
   @Test
@@ -198,12 +193,7 @@ public class ReadAsyncTest {
         invalidClient
             .singleUse(TimestampBound.strong())
             .readRowAsync(READ_TABLE_NAME, Key.of("k99"), READ_COLUMN_NAMES);
-    try {
-      row.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(DatabaseNotFoundException.class);
-    }
+    assertThrows(DatabaseNotFoundException.class, () -> get(row));
   }
 
   @Test
@@ -217,15 +207,9 @@ public class ReadAsyncTest {
         client
             .singleUse(TimestampBound.strong())
             .readRowAsync("BadTableName", Key.of("k1"), READ_COLUMN_NAMES);
-    try {
-      row.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-      assertThat(se.getMessage()).contains("BadTableName");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(row));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    assertThat(e.getMessage()).contains("BadTableName");
   }
 
   /**
@@ -448,14 +432,8 @@ public class ReadAsyncTest {
       rs.cancel();
     }
     cancelled.countDown();
-    try {
-      res.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      assertThat(values).containsExactly("v1");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(res));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+    assertThat(values).containsExactly("v1");
   }
 }

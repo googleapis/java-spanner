@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -256,14 +256,12 @@ public class DatabaseAdminClientImplTest {
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
-    try {
-      client.listDatabases(INSTANCE_ID, Options.pageSize(1));
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getMessage()).contains(INSTANCE_NAME);
-      // Assert that the call was done without a page token.
-      assertThat(e.getMessage()).contains("with pageToken <null>");
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> client.listDatabases(INSTANCE_ID, Options.pageSize(1)));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains("with pageToken <null>");
   }
 
   @Test
@@ -274,14 +272,15 @@ public class DatabaseAdminClientImplTest {
     when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
-    try {
-      Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getMessage()).contains(INSTANCE_NAME);
-      // Assert that the call was done without a page token.
-      assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                Lists.newArrayList(
+                    client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll()));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
   }
 
   @Test

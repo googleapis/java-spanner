@@ -22,10 +22,11 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -271,26 +272,15 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void asyncTransactionManagerInvalidUpdate() throws Exception {
     try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       TransactionContextFuture txn = manager.beginAsync();
-      while (true) {
-        try {
-          CommitTimestampFuture commitTimestamp =
-              txn.then(
-                      AsyncTransactionManagerHelper.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
-                      executor)
-                  .commitAsync();
-          commitTimestamp.get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          manager.rollbackAsync();
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-          assertThat(se.getMessage()).contains("invalid statement");
-          break;
-        }
-      }
+      CommitTimestampFuture commitTimestamp =
+          txn.then(
+                  (transaction, ignored) ->
+                      transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
+                  executor)
+              .commitAsync();
+      SpannerException e = assertThrows(SpannerException.class, () -> get(commitTimestamp));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("invalid statement");
     }
   }
 
@@ -538,22 +528,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                 .asRuntimeException()));
     try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT), executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-          assertThat(se.getMessage()).contains("mutation limit exceeded");
-          break;
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      txn.then(
+                              AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
   }
 
@@ -635,25 +620,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     SettableApiFuture<long[]> result = SettableApiFuture.create();
     try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  AsyncTransactionManagerHelper.batchUpdateAsync(
-                      result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-          assertThat(se.getMessage()).contains("invalid statement");
-          break;
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      txn.then(
+                              AsyncTransactionManagerHelper.batchUpdateAsync(
+                                  result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("invalid statement");
     }
   }
 
@@ -884,25 +862,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                 .asRuntimeException()));
     try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  AsyncTransactionManagerHelper.batchUpdateAsync(
-                      UPDATE_STATEMENT, UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-          assertThat(se.getMessage()).contains("mutation limit exceeded");
-          break;
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      txn.then(
+                              AsyncTransactionManagerHelper.batchUpdateAsync(
+                                  UPDATE_STATEMENT, UPDATE_STATEMENT),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
