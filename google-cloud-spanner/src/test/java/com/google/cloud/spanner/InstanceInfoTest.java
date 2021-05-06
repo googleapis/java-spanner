@@ -31,10 +31,11 @@ public class InstanceInfoTest {
 
   @Test
   public void testEmptyBuilder() {
-    InstanceInfo.Builder builder = new InstanceInfo.Builder();
+    InstanceId id = InstanceId.of("test-project", "test-instance");
+    InstanceInfo.Builder builder = InstanceInfo.newBuilder(id);
     InstanceInfo info = builder.build();
     assertNull(info.getDisplayName());
-    assertNull(info.getId());
+    assertEquals(InstanceId.of("test-project", "test-instance"),info.getId());
     assertNull(info.getInstanceConfigId());
     assertNull(info.getState());
     assertEquals(0, info.getNodeCount());
@@ -47,7 +48,7 @@ public class InstanceInfoTest {
     InstanceId id = new InstanceId("test-project", "test-instance");
     InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
     InstanceInfo info =
-        new InstanceInfo.Builder(id)
+        InstanceInfo.newBuilder(id)
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
@@ -79,7 +80,7 @@ public class InstanceInfoTest {
     InstanceId id = new InstanceId("test-project", "test-instance");
     InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
     InstanceInfo info =
-        new InstanceInfo.Builder(id)
+        InstanceInfo.newBuilder(id)
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
@@ -106,7 +107,7 @@ public class InstanceInfoTest {
     InstanceConfigId configId2 = new InstanceConfigId("test-project", "other-test-instance-config");
 
     InstanceInfo instance =
-        new InstanceInfo.Builder(id)
+        InstanceInfo.newBuilder(id)
             .setInstanceConfigId(configId1)
             .setDisplayName("test instance")
             .setNodeCount(1)
@@ -116,7 +117,7 @@ public class InstanceInfoTest {
             .addLabel("region", "us")
             .build();
     InstanceInfo instance2 =
-        new InstanceInfo.Builder(id)
+        InstanceInfo.newBuilder(id)
             .setInstanceConfigId(configId1)
             .setDisplayName("test instance")
             .setNodeCount(1)
@@ -126,7 +127,7 @@ public class InstanceInfoTest {
             .addLabel("env", "prod")
             .build();
     InstanceInfo instance3 =
-        new InstanceInfo.Builder(id)
+        InstanceInfo.newBuilder(id)
             .setInstanceConfigId(configId2)
             .setDisplayName("other test instance")
             .setNodeCount(1)
