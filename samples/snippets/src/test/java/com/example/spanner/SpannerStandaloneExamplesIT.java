@@ -67,7 +67,8 @@ public class SpannerStandaloneExamplesIT {
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
-    SpannerOptions options = SpannerOptions.newBuilder().build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
     if (instanceId == null) {
@@ -107,6 +108,7 @@ public class SpannerStandaloneExamplesIT {
     String projectId = spanner.getOptions().getProjectId();
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    client.write(Collections.singleton(Mutation.delete("Singers", KeySet.all())));
     client.write(Collections.singleton(Mutation.delete("Venues", KeySet.all())));
   }
 
@@ -118,6 +120,15 @@ public class SpannerStandaloneExamplesIT {
             () ->
                 CustomTimeoutAndRetrySettingsExample.executeSqlWithCustomTimeoutAndRetrySettings(
                     projectId, instanceId, databaseId));
+    assertThat(out).contains("1 record inserted.");
+  }
+
+  @Test
+  public void executeSqlWithTimeout_shouldWriteData() {
+    String projectId = spanner.getOptions().getProjectId();
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    String out = runExample(() -> StatementTimeoutExample.executeSqlWithTimeout(client));
     assertThat(out).contains("1 record inserted.");
   }
 

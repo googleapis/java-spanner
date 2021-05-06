@@ -80,6 +80,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
+  private static final String LIQUIBASE_API_CLIENT_LIB_TOKEN = "sp-liq";
+
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final ImmutableSet<String> SCOPES =
@@ -102,6 +104,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
   private final boolean autoThrottleAdministrativeRequests;
+  private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -124,7 +127,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -159,28 +162,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Context context =
    *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try {
-   *           client
-   *               .readWriteTransaction()
-   *               .run(
-   *                   new TransactionCallable<long[]>() {
-   *                     public long[] run(TransactionContext transaction) throws Exception {
-   *                       return transaction.batchUpdate(
-   *                           ImmutableList.of(statement1, statement2));
-   *                     }
-   *                   });
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // handle timeout exception.
-   *           }
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
-  public static interface CallContextConfigurator {
+  public interface CallContextConfigurator {
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -282,24 +283,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *             SpannerCallContextTimeoutConfigurator.create()
    *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try (ResultSet rs =
-   *             client
-   *                 .singleUse()
-   *                 .executeQuery(
-   *                     Statement.of(
-   *                         "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
-   *           while (rs.next()) {
-   *             System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
-   *           }
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // Handle timeout.
-   *           }
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
@@ -473,7 +472,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
   static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
@@ -555,6 +554,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -576,7 +576,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
@@ -610,7 +610,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
             JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN);
+            HIBERNATE_API_CLIENT_LIB_TOKEN,
+            LIQUIBASE_API_CLIENT_LIB_TOKEN);
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -632,6 +633,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
     private boolean autoThrottleAdministrativeRequests = false;
+    private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
@@ -678,6 +680,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
@@ -890,6 +893,21 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Instructs the client library to track the first request of each read/write transaction. This
+     * statement will include a BeginTransaction option and will return a transaction id as part of
+     * its result. All other statements in the same transaction must wait for this first statement
+     * to finish before they can proceed. By setting this option the client library will throw a
+     * {@link SpannerException} with {@link ErrorCode#DEADLINE_EXCEEDED} for any subsequent
+     * statement that has waited for at least 60 seconds for the first statement to return a
+     * transaction id, including the stacktrace of the initial statement that should have returned a
+     * transaction id.
+     */
+    public Builder setTrackTransactionStarter() {
+      this.trackTransactionStarter = true;
+      return this;
+    }
+
+    /**
      * Sets the default {@link QueryOptions} that will be used for all queries on the specified
      * database. Query options can also be specified on a per-query basis and as environment
      * variables. The precedence of these settings are:
@@ -961,7 +979,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {
@@ -986,7 +1004,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -997,13 +1014,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setHost(emulatorHost);
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
-        this.setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder builder) {
-                return builder.usePlaintext();
-              }
-            });
+        this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
@@ -1079,6 +1090,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public boolean isTrackTransactionStarter() {
+    return trackTransactionStarter;
   }
 
   public CallCredentialsProvider getCallCredentialsProvider() {

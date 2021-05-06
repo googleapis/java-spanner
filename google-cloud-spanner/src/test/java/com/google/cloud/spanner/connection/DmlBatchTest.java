@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.mock;
@@ -34,6 +35,7 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -113,10 +115,29 @@ public class DmlBatchTest {
   }
 
   @Test
+  public void testGetCommitResponse() {
+    DmlBatch batch = createSubject();
+    get(batch.runBatchAsync());
+    try {
+      batch.getCommitResponse();
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testGetCommitResponseOrNull() {
+    DmlBatch batch = createSubject();
+    get(batch.runBatchAsync());
+    assertNull(batch.getCommitResponseOrNull());
+  }
+
+  @Test
   public void testWriteIterable() {
     DmlBatch batch = createSubject();
     try {
-      batch.writeAsync(Arrays.asList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -141,7 +162,7 @@ public class DmlBatchTest {
 
     UnitOfWork tx = mock(UnitOfWork.class);
     when(tx.executeBatchUpdateAsync(anyListOf(ParsedStatement.class)))
-        .thenReturn(ApiFutures.<long[]>immediateFailedFuture(mock(SpannerException.class)));
+        .thenReturn(ApiFutures.immediateFailedFuture(mock(SpannerException.class)));
     batch = createSubject(tx);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));

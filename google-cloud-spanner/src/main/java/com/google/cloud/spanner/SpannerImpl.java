@@ -25,6 +25,7 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
@@ -92,9 +93,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private final CloseableExecutorProvider asyncExecutorProvider;
 
   @GuardedBy("this")
-  private final List<DatabaseClientImpl> invalidatedDbClients = new ArrayList<>();
-
-  @GuardedBy("this")
   private final Map<DatabaseId, SessionClient> sessionClients = new HashMap<>();
 
   private final DatabaseAdminClient dbAdminClient;
@@ -104,7 +102,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
    * This exception will be thrown if a user tries to use any resources that were returned by this
    * Spanner instance after the instance has been closed. This makes it easier to track down the
-   * code that (accidently) closed the Spanner instance.
+   * code that (accidentally) closed the Spanner instance.
    */
   static final class ClosedException extends RuntimeException {
     private static final long serialVersionUID = 1451131180314064914L;
@@ -203,9 +201,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       checkClosed();
       String clientId = null;
       if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
-        // Move the invalidated client to a separate list, so we can close it together with the
-        // other database clients when the Spanner instance is closed.
-        invalidatedDbClients.add(dbClients.get(db));
+        // Close the invalidated client and remove it.
+        dbClients.get(db).closeAsync(new ClosedException());
         clientId = dbClients.get(db).clientId;
         dbClients.remove(db);
       }
@@ -247,13 +244,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   void close(long timeout, TimeUnit unit) {
-    List<ListenableFuture<Void>> closureFutures = null;
+    List<ListenableFuture<Void>> closureFutures;
     synchronized (this) {
       checkClosed();
       closedException = new ClosedException();
       closureFutures = new ArrayList<>();
-      invalidatedDbClients.addAll(dbClients.values());
-      for (DatabaseClientImpl dbClient : invalidatedDbClients) {
+      for (DatabaseClientImpl dbClient : dbClients.values()) {
         closureFutures.add(dbClient.closeAsync(closedException));
       }
       dbClients.clear();
@@ -269,7 +265,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       sessionClients.clear();
       asyncExecutorProvider.close();
       try {
-        gapicRpc.shutdown();
+        if (timeout == Long.MAX_VALUE || !(gapicRpc instanceof GapicSpannerRpc)) {
+          gapicRpc.shutdown();
+        } else {
+          ((GapicSpannerRpc) gapicRpc).shutdownNow();
+        }
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Failed to close channels", e);
       }
@@ -295,7 +295,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       for (T proto : nextPage.getResults()) {
         results.add(fromProto(proto));
       }
-      return new PageImpl<S>(this, nextPageToken, results);
+      return new PageImpl<>(this, nextPageToken, results);
     }
 
     void setNextPageToken(String nextPageToken) {

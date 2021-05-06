@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -54,54 +55,43 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public Timestamp write(final Iterable<Mutation> mutations) throws SpannerException {
+    return writeWithOptions(mutations).getCommitTimestamp();
+  }
+
+  @Override
+  public CommitResponse writeWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(
-          new Function<Session, Timestamp>() {
-            @Override
-            public Timestamp apply(Session session) {
-              return session.write(mutations);
-            }
-          });
+      return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
-  }
-
-  @Override
-  public CommitResponse writeWithOptions(Iterable<Mutation> mutations, TransactionOption... options)
-      throws SpannerException {
-    final Timestamp commitTimestamp = write(mutations);
-    return new CommitResponse(commitTimestamp);
   }
 
   @Override
   public Timestamp writeAtLeastOnce(final Iterable<Mutation> mutations) throws SpannerException {
+    return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
+  }
+
+  @Override
+  public CommitResponse writeAtLeastOnceWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
-          new Function<Session, Timestamp>() {
-            @Override
-            public Timestamp apply(Session session) {
-              return session.writeAtLeastOnce(mutations);
-            }
-          });
+          session -> session.writeAtLeastOnceWithOptions(mutations, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }
-  }
-
-  @Override
-  public CommitResponse writeAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-    final Timestamp commitTimestamp = writeAtLeastOnce(mutations);
-    return new CommitResponse(commitTimestamp);
   }
 
   @Override
@@ -171,10 +161,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public TransactionRunner readWriteTransaction() {
+  public TransactionRunner readWriteTransaction(TransactionOption... options) {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getSession().readWriteTransaction();
+      return getSession().readWriteTransaction(options);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -184,10 +174,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public TransactionManager transactionManager() {
+  public TransactionManager transactionManager(TransactionOption... options) {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getSession().transactionManager();
+      return getSession().transactionManager(options);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -195,10 +185,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public AsyncRunner runAsync() {
+  public AsyncRunner runAsync(TransactionOption... options) {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getSession().runAsync();
+      return getSession().runAsync(options);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -206,10 +196,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public AsyncTransactionManager transactionManagerAsync() {
+  public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return getSession().transactionManagerAsync();
+      return getSession().transactionManagerAsync(options);
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;
@@ -217,16 +207,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public long executePartitionedUpdate(final Statement stmt) {
+  public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
     Span span = tracer.spanBuilder(PARTITION_DML_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return runWithSessionRetry(
-          new Function<Session, Long>() {
-            @Override
-            public Long apply(Session session) {
-              return session.executePartitionedUpdate(stmt);
-            }
-          });
+      return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
     } catch (RuntimeException e) {
       TraceUtil.endSpanWithFailure(span, e);
       throw e;

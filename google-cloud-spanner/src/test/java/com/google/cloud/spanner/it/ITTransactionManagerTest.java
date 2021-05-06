@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -29,6 +30,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -37,6 +39,7 @@ import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -89,7 +92,7 @@ public class ITTransactionManagerTest {
           assertThat(row.getBoolean(1)).isTrue();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -113,7 +116,7 @@ public class ITTransactionManagerTest {
           manager.commit();
           fail("Expected exception");
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         } catch (SpannerException e) {
           // expected
@@ -143,7 +146,7 @@ public class ITTransactionManagerTest {
           manager.rollback();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -158,12 +161,12 @@ public class ITTransactionManagerTest {
   @Test
   public void abortAndRetry() throws InterruptedException {
     assumeFalse(
-        "Emulator does not support more than 1 simultanous transaction. "
-            + "This test would therefore loop indefinetly on the emulator.",
+        "Emulator does not support more than 1 simultaneous transaction. "
+            + "This test would therefore loop indefinitely on the emulator.",
         isUsingEmulator());
 
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));
     try (TransactionManager manager1 = client.transactionManager()) {
       TransactionContext txn1 = manager1.begin();
@@ -186,7 +189,7 @@ public class ITTransactionManagerTest {
           manager1.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           // It is possible that it was txn2 that aborted.
           // In that case we should just retry without resetting anything.
           if (manager1.getState() == TransactionState.ABORTED) {
@@ -210,6 +213,33 @@ public class ITTransactionManagerTest {
       assertThat(row.getString(0)).isEqualTo("Key3");
       assertThat(row.getBoolean(1)).isTrue();
       manager2.close();
+    }
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  public void testTransactionManagerReturnsCommitStats() throws InterruptedException {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        transaction.buffer(
+            Mutation.newInsertBuilder("T")
+                .set("K")
+                .to("KeyCommitStats")
+                .set("BoolValue")
+                .to(true)
+                .build());
+        try {
+          manager.commit();
+          assertNotNull(manager.getCommitResponse().getCommitStats());
+          assertEquals(2L, manager.getCommitResponse().getCommitStats().getMutationCount());
+          break;
+        } catch (AbortedException e) {
+          Thread.sleep(e.getRetryDelayInMillis());
+          transaction = manager.resetForRetry();
+        }
+      }
     }
   }
 }

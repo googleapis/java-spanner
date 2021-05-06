@@ -28,10 +28,10 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -78,13 +78,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      * Called when transaction metadata is seen. This method may be invoked at most once. If the
      * method is invoked, it will precede {@link #onError(SpannerException)} or {@link #onDone()}.
      */
-    void onTransactionMetadata(Transaction transaction) throws SpannerException;
+    void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId)
+        throws SpannerException;
 
-    /** Called when the read finishes with an error. */
-    void onError(SpannerException e, boolean withBeginTransaction);
+    /** Called when the read finishes with an error. Returns the error that should be thrown. */
+    SpannerException onError(SpannerException e, boolean withBeginTransaction);
 
     /** Called when the read finishes normally. */
-    void onDone();
+    void onDone(boolean withBeginTransaction);
   }
 
   @VisibleForTesting
@@ -117,7 +118,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         if (currRow == null) {
           ResultSetMetadata metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
-            listener.onTransactionMetadata(metadata.getTransaction());
+            listener.onTransactionMetadata(
+                metadata.getTransaction(), iterator.isWithBeginTransaction());
+          } else if (iterator.isWithBeginTransaction()) {
+            // The query should have returned a transaction.
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
           }
           currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
         }
@@ -126,8 +132,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           statistics = iterator.getStats();
         }
         return hasNext;
-      } catch (SpannerException e) {
-        throw yieldError(e, iterator.isWithBeginTransaction() && currRow == null);
+      } catch (Throwable t) {
+        throw yieldError(
+            SpannerExceptionFactory.asSpannerException(t),
+            iterator.isWithBeginTransaction() && currRow == null);
       }
     }
 
@@ -139,6 +147,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     public void close() {
+      listener.onDone(iterator.isWithBeginTransaction());
       iterator.close("ResultSet closed");
       closed = true;
     }
@@ -150,9 +159,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     private SpannerException yieldError(SpannerException e, boolean beginTransaction) {
+      SpannerException toThrow = listener.onError(e, beginTransaction);
       close();
-      listener.onError(e, beginTransaction);
-      throw e;
+      throw toThrow;
     }
   }
   /**
@@ -199,7 +208,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       Object merged =
           kind == KindCase.STRING_VALUE
               ? value.getStringValue()
-              : new ArrayList<com.google.protobuf.Value>(value.getListValue().getValuesList());
+              : new ArrayList<>(value.getListValue().getValuesList());
       while (current.getChunkedValue() && pos == current.getValuesCount()) {
         if (!ensureReady(StreamValue.RESULT)) {
           throw newSpannerException(
@@ -215,7 +224,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                   + newValue.getKindCase());
         }
         if (kind == KindCase.STRING_VALUE) {
-          merged = (String) merged + newValue.getStringValue();
+          merged = merged + newValue.getStringValue();
         } else {
           concatLists(
               (List<com.google.protobuf.Value>) merged, newValue.getListValue().getValuesList());
@@ -309,7 +318,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         KindCase lastKind = last.getKindCase();
         KindCase firstKind = first.getKindCase();
         if (isMergeable(lastKind) && lastKind == firstKind) {
-          com.google.protobuf.Value merged = null;
+          com.google.protobuf.Value merged;
           if (lastKind == KindCase.STRING_VALUE) {
             String lastStr = last.getStringValue();
             String firstStr = first.getStringValue();
@@ -514,12 +523,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           // Use a view: element conversion is virtually free.
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, Boolean>() {
-                @Override
-                public Boolean apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
@@ -541,12 +545,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRING:
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, String>() {
-                @Override
-                public String apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case BYTES:
           {
             // Materialize list: element conversion is expensive and should happen only once.
@@ -671,6 +670,62 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected Value getValueInternal(int columnIndex) {
+      final List<Type.StructField> structFields = getType().getStructFields();
+      final StructField structField = structFields.get(columnIndex);
+      final Type columnType = structField.getType();
+      final boolean isNull = rowData.get(columnIndex) == null;
+      switch (columnType.getCode()) {
+        case BOOL:
+          return Value.bool(isNull ? null : getBooleanInternal(columnIndex));
+        case INT64:
+          return Value.int64(isNull ? null : getLongInternal(columnIndex));
+        case NUMERIC:
+          return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
+        case FLOAT64:
+          return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
+        case STRING:
+          return Value.string(isNull ? null : getStringInternal(columnIndex));
+        case BYTES:
+          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+        case TIMESTAMP:
+          return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
+        case DATE:
+          return Value.date(isNull ? null : getDateInternal(columnIndex));
+        case STRUCT:
+          return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case ARRAY:
+          switch (columnType.getArrayElementType().getCode()) {
+            case BOOL:
+              return Value.boolArray(isNull ? null : getBooleanListInternal(columnIndex));
+            case INT64:
+              return Value.int64Array(isNull ? null : getLongListInternal(columnIndex));
+            case NUMERIC:
+              return Value.numericArray(isNull ? null : getBigDecimalListInternal(columnIndex));
+            case FLOAT64:
+              return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
+            case STRING:
+              return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
+            case BYTES:
+              return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
+            case TIMESTAMP:
+              return Value.timestampArray(isNull ? null : getTimestampListInternal(columnIndex));
+            case DATE:
+              return Value.dateArray(isNull ? null : getDateListInternal(columnIndex));
+            case STRUCT:
+              return Value.structArray(
+                  columnType.getArrayElementType(),
+                  isNull ? null : getStructListInternal(columnIndex));
+            default:
+              throw new IllegalArgumentException(
+                  "Invalid array value type " + this.type.getArrayElementType());
+          }
+        default:
+          throw new IllegalArgumentException("Invalid value type " + this.type);
+      }
+    }
+
+    @Override
     protected Struct getStructInternal(int columnIndex) {
       return (Struct) rowData.get(columnIndex);
     }
@@ -777,7 +832,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final Statement statement;
 
     private SpannerRpc.StreamingCall call;
-    private boolean withBeginTransaction;
+    private volatile boolean withBeginTransaction;
     private SpannerException error;
 
     @VisibleForTesting
@@ -880,12 +935,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         error = e;
         addToStream(END_OF_STREAM);
       }
-
-      // Visible only for testing.
-      @VisibleForTesting
-      void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
-        GrpcStreamIterator.this.setCall(call, withBeginTransaction);
-      }
     }
   }
 
@@ -952,12 +1001,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
       final CountDownLatch latch = new CountDownLatch(1);
       final Context.CancellationListener listener =
-          new Context.CancellationListener() {
-            @Override
-            public void cancelled(Context context) {
-              // Wakeup on cancellation / DEADLINE_EXCEEDED.
-              latch.countDown();
-            }
+          ignored -> {
+            // Wakeup on cancellation / DEADLINE_EXCEEDED.
+            latch.countDown();
           };
 
       context.addListener(listener, DirectExecutor.INSTANCE);
@@ -1071,6 +1117,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 backoffSleep(context, backOff);
               }
             }
+
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
@@ -1274,6 +1321,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected Date getDateInternal(int columnIndex) {
     return currRow().getDateInternal(columnIndex);
+  }
+
+  @Override
+  protected Value getValueInternal(int columnIndex) {
+    return currRow().getValueInternal(columnIndex);
   }
 
   @Override

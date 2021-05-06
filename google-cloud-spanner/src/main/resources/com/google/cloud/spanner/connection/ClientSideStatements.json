@@ -77,6 +77,23 @@
 	  "exampleStatements": ["show variable optimizer_version"]
 	},
 	{
+	  "name": "SHOW VARIABLE RETURN_COMMIT_STATS",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+return_commit_stats\\s*\\z",
+	  "method": "statementShowReturnCommitStats",
+	  "exampleStatements": ["show variable return_commit_stats"]
+	},
+	{
+	  "name": "SHOW VARIABLE COMMIT_RESPONSE",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+commit_response\\s*\\z",
+	  "method": "statementShowCommitResponse",
+	  "exampleStatements": ["show variable commit_response"],
+	  "examplePrerequisiteStatements": ["update foo set bar=1"]
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -262,6 +279,20 @@
 	    "separator": "=",
 	    "allowedValues": "'((\\d{1,20})|(LATEST)|())'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "SET RETURN_COMMIT_STATS = TRUE|FALSE",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+return_commit_stats\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetReturnCommitStats",
+	  "exampleStatements": ["set return_commit_stats = true", "set return_commit_stats = false"],
+	  "setStatement": {
+	    "propertyName": "RETURN_COMMIT_STATS",
+	    "separator": "=",
+	    "allowedValues": "(TRUE|FALSE)",
+	    "converterName": "ClientSideStatementValueConverters$BooleanConverter"
 	  }
 	}
 	]

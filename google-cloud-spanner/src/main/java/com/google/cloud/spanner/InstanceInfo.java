@@ -65,7 +65,7 @@ public class InstanceInfo {
   }
 
   /** State of the Instance. */
-  public static enum State {
+  public enum State {
     UNSPECIFIED,
     CREATING,
     READY

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,6 +46,8 @@ public class RemoteSpannerHelper {
   private final InstanceId instanceId;
   private static int dbSeq;
   private static int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final AtomicInteger backupSeq = new AtomicInteger();
+  private static int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private final List<Database> dbs = new ArrayList<>();
 
   protected RemoteSpannerHelper(SpannerOptions options, InstanceId instanceId, Spanner client) {
@@ -101,6 +104,13 @@ public class RemoteSpannerHelper {
   }
 
   /**
+   * Returns a backup id which is guaranteed to be unique within the context of this environment.
+   */
+  public String getUniqueBackupId() {
+    return String.format("testbck_%06d_%04d", backupPrefix, backupSeq.incrementAndGet());
+  }
+
+  /**
    * Creates a test database defined by {@code statements} in the test instance. A {@code CREATE
    * DATABASE ...} statement should not be included; an appropriate name will be chosen and the
    * statement generated accordingly.
@@ -141,11 +151,12 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} bound to the given instance ID. All databases created
    * using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(InstanceId instanceId) throws Throwable {
+  public static RemoteSpannerHelper create(InstanceId instanceId) {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
             .setAutoThrottleAdministrativeRequests()
+            .setTrackTransactionStarter()
             .build();
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
@@ -155,8 +166,7 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} for the given option and bound to the given instance ID.
    * All databases created using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId)
-      throws Throwable {
+  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId) {
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
   }

@@ -21,7 +21,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,7 +81,7 @@ class DdlClient {
 
   /** Execute a single DDL statement. */
   OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(String ddl) {
-    return executeDdl(Arrays.asList(ddl));
+    return executeDdl(Collections.singletonList(ddl));
   }
 
   /** Execute a list of DDL statements as one operation. */

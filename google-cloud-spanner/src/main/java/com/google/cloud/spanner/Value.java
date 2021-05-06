@@ -75,7 +75,7 @@ public abstract class Value implements Serializable {
   private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
   private static final String NULL_STRING = "NULL";
-  private static final char LIST_SEPERATOR = ',';
+  private static final char LIST_SEPARATOR = ',';
   private static final char LIST_OPEN = '[';
   private static final char LIST_CLOSE = ']';
   private static final long serialVersionUID = -5289864325087675338L;
@@ -543,7 +543,7 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  abstract List<Struct> getStructArray();
+  public abstract List<Struct> getStructArray();
 
   @Override
   public String toString() {
@@ -1194,7 +1194,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         if (nulls != null && nulls.get(i)) {
           b.append(NULL_STRING);
@@ -1378,7 +1378,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < value.size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         T v = value.get(i);
         if (v == null) {
@@ -1550,15 +1550,15 @@ public abstract class Value implements Serializable {
             Type elementType = fieldType.getArrayElementType();
             switch (elementType.getCode()) {
               case BOOL:
-                return Value.boolArray(value.getBooleanArray(fieldIndex));
+                return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
-                return Value.int64Array(value.getLongArray(fieldIndex));
+                return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
-                return Value.float64Array(value.getDoubleArray(fieldIndex));
+                return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:
                 return Value.numericArray(value.getBigDecimalList(fieldIndex));
               case DATE:
@@ -1597,7 +1597,7 @@ public abstract class Value implements Serializable {
   }
 
   private static class StructArrayImpl extends AbstractArrayValue<Struct> {
-    private static final Joiner joiner = Joiner.on(LIST_SEPERATOR).useForNull(NULL_STRING);
+    private static final Joiner joiner = Joiner.on(LIST_SEPARATOR).useForNull(NULL_STRING);
 
     private StructArrayImpl(Type elementType, @Nullable List<Struct> values) {
       super(values == null, elementType, values);

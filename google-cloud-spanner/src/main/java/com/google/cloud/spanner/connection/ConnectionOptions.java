@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * Internal connection API for Google Cloud Spanner. This class may introduce breaking changes
@@ -143,19 +144,26 @@ public class ConnectionOptions {
     }
   }
 
+  private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
+      new LocalConnectionChecker();
   private static final boolean DEFAULT_USE_PLAIN_TEXT = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
+  private static final String DEFAULT_MIN_SESSIONS = null;
+  private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
+  private static final boolean DEFAULT_LENIENT = false;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
   /** Name of the 'autocommit' connection property. */
@@ -170,12 +178,18 @@ public class ConnectionOptions {
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
+  /** Name of the 'minSessions' connection property. */
+  public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
+  /** Name of the 'numChannels' connection property. */
+  public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
   /** Custom user agent string is only for other Google libraries. */
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Name of the 'lenientMode' connection property. */
+  public static final String LENIENT_PROPERTY_NAME = "lenient";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -201,6 +215,12 @@ public class ConnectionOptions {
                       OAUTH_TOKEN_PROPERTY_NAME,
                       "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file."),
                   ConnectionProperty.createStringProperty(
+                      MIN_SESSIONS_PROPERTY_NAME,
+                      "The minimum number of sessions in the backing session pool. The default is 100."),
+                  ConnectionProperty.createStringProperty(
+                      MAX_SESSIONS_PROPERTY_NAME,
+                      "The maximum number of sessions in the backing session pool. The default is 400."),
+                  ConnectionProperty.createStringProperty(
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
                   ConnectionProperty.createBooleanProperty(
@@ -212,12 +232,21 @@ public class ConnectionOptions {
                       "The custom user-agent property name to use when communicating with Cloud Spanner. This property is intended for internal library usage, and should not be set by applications."),
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_VERSION_PROPERTY_NAME,
-                      "Sets the default query optimizer version to use for this connection."))));
+                      "Sets the default query optimizer version to use for this connection."),
+                  ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
+                  ConnectionProperty.createBooleanProperty(
+                      "autoConfigEmulator",
+                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). The instance and database in the connection string will automatically be created if these do not yet exist on the emulator.",
+                      false),
+                  ConnectionProperty.createBooleanProperty(
+                      LENIENT_PROPERTY_NAME,
+                      "Silently ignore unknown properties in the connection string/properties (true/false)",
+                      DEFAULT_LENIENT))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
           new HashSet<>(
-              Arrays.asList(
+              Collections.singletonList(
                   ConnectionProperty.createStringProperty(USER_AGENT_PROPERTY_NAME, ""))));
   private static final Set<ConnectionProperty> INTERNAL_VALID_PROPERTIES =
       Sets.union(VALID_PROPERTIES, INTERNAL_PROPERTIES);
@@ -319,9 +348,20 @@ public class ConnectionOptions {
      *       true.
      *   <li>readonly (boolean): Sets the initial readonly mode for the connection. Default is
      *       false.
+     *   <li>minSessions (int): Sets the minimum number of sessions in the backing session pool.
+     *   <li>maxSessions (int): Sets the maximum number of sessions in the backing session pool.
+     *   <li>numChannels (int): Sets the number of gRPC channels to use for the connection.
      *   <li>retryAbortsInternally (boolean): Sets the initial retryAbortsInternally mode for the
      *       connection. Default is true.
      *   <li>optimizerVersion (string): Sets the query optimizer version to use for the connection.
+     *   <li>autoConfigEmulator (boolean): Automatically configures the connection to connect to the
+     *       Cloud Spanner emulator. If no host and port is specified in the connection string, the
+     *       connection will automatically use the default emulator host/port combination
+     *       (localhost:9010). Plain text communication will be enabled and authentication will be
+     *       disabled. The instance and database in the connection string will automatically be
+     *       created on the emulator if any of them do not yet exist. Any existing instance or
+     *       database on the emulator will remain untouched. No other configuration is needed in
+     *       order to connect to the emulator than setting this property.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.
@@ -416,6 +456,7 @@ public class ConnectionOptions {
   }
 
   private final String uri;
+  private final String warnings;
   private final String credentialsUrl;
   private final String oauthToken;
   private final Credentials fixedCredentials;
@@ -428,8 +469,12 @@ public class ConnectionOptions {
   private final Credentials credentials;
   private final SessionPoolOptions sessionPoolOptions;
   private final Integer numChannels;
+  private final Integer minSessions;
+  private final Integer maxSessions;
   private final String userAgent;
   private final QueryOptions queryOptions;
+  private final boolean returnCommitStats;
+  private final boolean autoConfigEmulator;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -441,10 +486,9 @@ public class ConnectionOptions {
     Matcher matcher = Builder.SPANNER_URI_PATTERN.matcher(builder.uri);
     Preconditions.checkArgument(
         matcher.find(), String.format("Invalid connection URI specified: %s", builder.uri));
-    checkValidProperties(builder.uri);
+    this.warnings = checkValidProperties(builder.uri);
 
     this.uri = builder.uri;
-    this.sessionPoolOptions = builder.sessionPoolOptions;
     this.credentialsUrl =
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.oauthToken =
@@ -455,17 +499,15 @@ public class ConnectionOptions {
         (builder.credentials == null && this.credentialsUrl == null) || this.oauthToken == null,
         "Cannot specify both credentials and an OAuth token.");
 
-    this.usePlainText = parseUsePlainText(this.uri);
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
+    this.returnCommitStats = parseReturnCommitStats(this.uri);
+    this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
+    this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
 
-    this.host =
-        matcher.group(Builder.HOST_GROUP) == null
-            ? DEFAULT_HOST
-            : (usePlainText ? PLAIN_TEXT_PROTOCOL : HOST_PROTOCOL)
-                + matcher.group(Builder.HOST_GROUP);
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
@@ -483,19 +525,12 @@ public class ConnectionOptions {
     } else {
       this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
     }
-    String numChannelsValue = parseNumChannels(builder.uri);
-    if (numChannelsValue != null) {
-      try {
-        this.numChannels = Integer.valueOf(numChannelsValue);
-      } catch (NumberFormatException e) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Invalid numChannels value specified: " + numChannelsValue,
-            e);
-      }
-    } else {
-      this.numChannels = null;
-    }
+    this.minSessions =
+        parseIntegerProperty(MIN_SESSIONS_PROPERTY_NAME, parseMinSessions(builder.uri));
+    this.maxSessions =
+        parseIntegerProperty(MAX_SESSIONS_PROPERTY_NAME, parseMaxSessions(builder.uri));
+    this.numChannels =
+        parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -509,6 +544,53 @@ public class ConnectionOptions {
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
+
+    if (this.minSessions != null || this.maxSessions != null) {
+      SessionPoolOptions.Builder sessionPoolOptionsBuilder =
+          builder.sessionPoolOptions == null
+              ? SessionPoolOptions.newBuilder()
+              : builder.sessionPoolOptions.toBuilder();
+      if (this.minSessions != null) {
+        sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
+      }
+      if (this.maxSessions != null) {
+        sessionPoolOptionsBuilder.setMaxSessions(this.maxSessions);
+      }
+      this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
+    } else {
+      this.sessionPoolOptions = builder.sessionPoolOptions;
+    }
+  }
+
+  private static String determineHost(
+      Matcher matcher, boolean autoConfigEmulator, boolean usePlainText) {
+    if (matcher.group(Builder.HOST_GROUP) == null) {
+      if (autoConfigEmulator) {
+        return DEFAULT_EMULATOR_HOST;
+      } else {
+        return DEFAULT_HOST;
+      }
+    } else {
+      if (usePlainText) {
+        return PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      } else {
+        return HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
+      }
+    }
+  }
+
+  private static Integer parseIntegerProperty(String propertyName, String value) {
+    if (value != null) {
+      try {
+        return Integer.valueOf(value);
+      } catch (NumberFormatException e) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            String.format("Invalid %s value specified: %s", propertyName, value),
+            e);
+      }
+    }
+    return null;
   }
 
   SpannerOptionsConfigurator getConfigurator() {
@@ -523,25 +605,25 @@ public class ConnectionOptions {
   @VisibleForTesting
   static boolean parseUsePlainText(String uri) {
     String value = parseUriProperty(uri, USE_PLAIN_TEXT_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_USE_PLAIN_TEXT;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_PLAIN_TEXT;
   }
 
   @VisibleForTesting
   static boolean parseAutocommit(String uri) {
     String value = parseUriProperty(uri, AUTOCOMMIT_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_AUTOCOMMIT;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTOCOMMIT;
   }
 
   @VisibleForTesting
   static boolean parseReadOnly(String uri) {
     String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_READONLY;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
   }
 
   @VisibleForTesting
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
-    return value != null ? Boolean.valueOf(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
   }
 
   @VisibleForTesting
@@ -554,6 +636,18 @@ public class ConnectionOptions {
   static String parseOAuthToken(String uri) {
     String value = parseUriProperty(uri, OAUTH_TOKEN_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OAUTH_TOKEN;
+  }
+
+  @VisibleForTesting
+  static String parseMinSessions(String uri) {
+    String value = parseUriProperty(uri, MIN_SESSIONS_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_MIN_SESSIONS;
+  }
+
+  @VisibleForTesting
+  static String parseMaxSessions(String uri) {
+    String value = parseUriProperty(uri, MAX_SESSIONS_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_MAX_SESSIONS;
   }
 
   @VisibleForTesting
@@ -575,6 +669,23 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseReturnCommitStats(String uri) {
+    String value = parseUriProperty(uri, "returnCommitStats");
+    return Boolean.parseBoolean(value);
+  }
+
+  static boolean parseAutoConfigEmulator(String uri) {
+    String value = parseUriProperty(uri, "autoConfigEmulator");
+    return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static boolean parseLenient(String uri) {
+    String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -586,9 +697,10 @@ public class ConnectionOptions {
 
   /** Check that only valid properties have been specified. */
   @VisibleForTesting
-  static void checkValidProperties(String uri) {
+  static String checkValidProperties(String uri) {
     String invalidProperties = "";
     List<String> properties = parseProperties(uri);
+    boolean lenient = parseLenient(uri);
     for (String property : properties) {
       if (!INTERNAL_VALID_PROPERTIES.contains(ConnectionProperty.createEmptyProperty(property))) {
         if (invalidProperties.length() > 0) {
@@ -597,9 +709,16 @@ public class ConnectionOptions {
         invalidProperties = invalidProperties + property;
       }
     }
-    Preconditions.checkArgument(
-        invalidProperties.isEmpty(),
-        "Invalid properties found in connection URI: " + invalidProperties.toString());
+    if (lenient) {
+      return String.format("Invalid properties found in connection URI: %s", invalidProperties);
+    } else {
+      Preconditions.checkArgument(
+          invalidProperties.isEmpty(),
+          String.format(
+              "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
+              invalidProperties));
+      return null;
+    }
   }
 
   @VisibleForTesting
@@ -621,6 +740,7 @@ public class ConnectionOptions {
    * @return a new {@link Connection} to the database referenced by this {@link ConnectionOptions}
    */
   public Connection getConnection() {
+    LOCAL_CONNECTION_CHECKER.checkLocalConnection(this);
     return new ConnectionImpl(this);
   }
 
@@ -645,6 +765,24 @@ public class ConnectionOptions {
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */
   public SessionPoolOptions getSessionPoolOptions() {
     return sessionPoolOptions;
+  }
+
+  /**
+   * The minimum number of sessions in the backing session pool of this connection. The session pool
+   * is shared between all connections in the same JVM that connect to the same Cloud Spanner
+   * database using the same connection settings.
+   */
+  public Integer getMinSessions() {
+    return minSessions;
+  }
+
+  /**
+   * The maximum number of sessions in the backing session pool of this connection. The session pool
+   * is shared between all connections in the same JVM that connect to the same Cloud Spanner
+   * database using the same connection settings.
+   */
+  public Integer getMaxSessions() {
+    return maxSessions;
   }
 
   /** The number of channels to use for the connection. */
@@ -706,6 +844,12 @@ public class ConnectionOptions {
     return retryAbortsInternally;
   }
 
+  /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */
+  @Nullable
+  public String getWarnings() {
+    return warnings;
+  }
+
   /** Use http instead of https. Only valid for (local) test servers. */
   boolean isUsePlainText() {
     return usePlainText;
@@ -722,6 +866,21 @@ public class ConnectionOptions {
   /** The {@link QueryOptions} to use for the connection. */
   QueryOptions getQueryOptions() {
     return queryOptions;
+  }
+
+  /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
+  public boolean isReturnCommitStats() {
+    return returnCommitStats;
+  }
+
+  /**
+   * Whether connections created by this {@link ConnectionOptions} will automatically try to connect
+   * to the emulator using the default host/port of the emulator, and automatically create the
+   * instance and database that is specified in the connection string if these do not exist on the
+   * emulator instance.
+   */
+  public boolean isAutoConfigEmulator() {
+    return autoConfigEmulator;
   }
 
   /** Interceptors that should be executed after each statement */

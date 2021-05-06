@@ -24,6 +24,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -37,6 +41,8 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
@@ -55,7 +61,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
-import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
@@ -84,11 +89,13 @@ public class ConnectionImplTest {
 
   static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
+    private final boolean returnCommitStats;
 
-    private SimpleTransactionManager(TransactionContext txContext) {
+    private SimpleTransactionManager(TransactionContext txContext, boolean returnCommitStats) {
       this.txContext = txContext;
+      this.returnCommitStats = returnCommitStats;
     }
 
     @Override
@@ -99,7 +106,15 @@ public class ConnectionImplTest {
 
     @Override
     public void commit() {
-      commitTimestamp = Timestamp.now();
+      Timestamp commitTimestamp = Timestamp.now();
+      commitResponse = mock(CommitResponse.class);
+      when(commitResponse.getCommitTimestamp()).thenReturn(commitTimestamp);
+      if (returnCommitStats) {
+        CommitStats stats = mock(CommitStats.class);
+        when(commitResponse.hasCommitStats()).thenReturn(true);
+        when(stats.getMutationCount()).thenReturn(5L);
+        when(commitResponse.getCommitStats()).thenReturn(stats);
+      }
       state = TransactionState.COMMITTED;
     }
 
@@ -115,7 +130,12 @@ public class ConnectionImplTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -198,7 +218,7 @@ public class ConnectionImplTest {
     }
   }
 
-  public static ConnectionImpl createConnection(ConnectionOptions options) {
+  public static ConnectionImpl createConnection(final ConnectionOptions options) {
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))
@@ -214,15 +234,12 @@ public class ConnectionImplTest {
     final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(mockResultSetWithStats);
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT)))
         .thenAnswer(
-            new Answer<ResultSet>() {
-              @Override
-              public ResultSet answer(InvocationOnMock invocation) {
-                if (select1ResultSet.nextCalled) {
-                  // create a new mock
-                  return new SimpleResultSet(createSelect1MockResultSet());
-                }
-                return select1ResultSet;
+            invocation -> {
+              if (select1ResultSet.nextCalled) {
+                // create a new mock
+                return new SimpleResultSet(createSelect1MockResultSet());
               }
+              return select1ResultSet;
             });
     when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
         .thenReturn(select1ResultSetWithStats);
@@ -230,84 +247,66 @@ public class ConnectionImplTest {
         .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.getReadTimestamp())
         .then(
-            new Answer<Timestamp>() {
-              @Override
-              public Timestamp answer(InvocationOnMock invocation) {
-                if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
-                  return Timestamp.now();
-                }
-                throw SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
+            invocation -> {
+              if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
+                return Timestamp.now();
               }
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
             });
     when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
-    when(dbClient.transactionManager())
+    when(dbClient.transactionManager(Mockito.anyVararg()))
         .thenAnswer(
-            new Answer<TransactionManager>() {
-              @Override
-              public TransactionManager answer(InvocationOnMock invocation) {
-                TransactionContext txContext = mock(TransactionContext.class);
-                when(txContext.executeQuery(Statement.of(SELECT)))
-                    .thenAnswer(
-                        new Answer<ResultSet>() {
-                          @Override
-                          public ResultSet answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.nextCalled) {
-                              // create a new mock
-                              return new SimpleResultSet(createSelect1MockResultSet());
-                            }
-                            return select1ResultSet;
-                          }
-                        });
-                when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                    .thenReturn(select1ResultSetWithStats);
-                when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                    .thenReturn(select1ResultSetWithStats);
-                when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                return new SimpleTransactionManager(txContext);
-              }
+            invocation -> {
+              TransactionContext txContext = mock(TransactionContext.class);
+              when(txContext.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+              return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
             });
 
     when(dbClient.readOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenAnswer(
-            new Answer<ReadOnlyTransaction>() {
-              @Override
-              public ReadOnlyTransaction answer(InvocationOnMock invocation) {
-                ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
-                when(tx.executeQuery(Statement.of(SELECT)))
-                    .thenAnswer(
-                        new Answer<ResultSet>() {
-                          @Override
-                          public ResultSet answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.nextCalled) {
-                              // create a new mock
-                              return new SimpleResultSet(createSelect1MockResultSet());
-                            }
-                            return select1ResultSet;
-                          }
-                        });
-                when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                    .thenReturn(select1ResultSetWithStats);
-                when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                    .thenReturn(select1ResultSetWithStats);
-                when(tx.getReadTimestamp())
-                    .then(
-                        new Answer<Timestamp>() {
-                          @Override
-                          public Timestamp answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.isNextCalled()
-                                || select1ResultSetWithStats.isNextCalled()) {
-                              return Timestamp.now();
-                            }
-                            throw SpannerExceptionFactory.newSpannerException(
-                                ErrorCode.FAILED_PRECONDITION,
-                                "No query has returned with any data yet");
-                          }
-                        });
-                return tx;
-              }
+            invocation -> {
+              ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
+              when(tx.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.getReadTimestamp())
+                  .then(
+                      ignored -> {
+                        if (select1ResultSet.isNextCalled()
+                            || select1ResultSetWithStats.isNextCalled()) {
+                          return Timestamp.now();
+                        }
+                        throw SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.FAILED_PRECONDITION,
+                            "No query has returned with any data yet");
+                      });
+              return tx;
             });
 
     when(dbClient.readWriteTransaction())
@@ -315,33 +314,36 @@ public class ConnectionImplTest {
             new Answer<TransactionRunner>() {
               @Override
               public TransactionRunner answer(InvocationOnMock invocation) {
-                TransactionRunner runner =
-                    new TransactionRunner() {
-                      private Timestamp commitTimestamp;
+                return new TransactionRunner() {
+                  private CommitResponse commitResponse;
 
-                      @Override
-                      public <T> T run(TransactionCallable<T> callable) {
-                        this.commitTimestamp = Timestamp.now();
-                        TransactionContext tx = mock(TransactionContext.class);
-                        when(tx.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                        try {
-                          return callable.run(tx);
-                        } catch (Exception e) {
-                          throw SpannerExceptionFactory.newSpannerException(e);
-                        }
-                      }
+                  @Override
+                  public <T> T run(TransactionCallable<T> callable) {
+                    commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+                    TransactionContext transaction = mock(TransactionContext.class);
+                    when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                    try {
+                      return callable.run(transaction);
+                    } catch (Exception e) {
+                      throw SpannerExceptionFactory.newSpannerException(e);
+                    }
+                  }
 
-                      @Override
-                      public Timestamp getCommitTimestamp() {
-                        return commitTimestamp;
-                      }
+                  @Override
+                  public Timestamp getCommitTimestamp() {
+                    return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+                  }
 
-                      @Override
-                      public TransactionRunner allowNestedTransaction() {
-                        return this;
-                      }
-                    };
-                return runner;
+                  @Override
+                  public CommitResponse getCommitResponse() {
+                    return commitResponse;
+                  }
+
+                  @Override
+                  public TransactionRunner allowNestedTransaction() {
+                    return this;
+                  }
+                };
               }
             });
     return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
@@ -396,7 +398,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("AUTOCOMMIT"), is(true));
 
       // set autocommit to false and assert that autocommit is false
-      res = subject.execute(Statement.of("set autocommit = false"));
+      subject.execute(Statement.of("set autocommit = false"));
       assertThat(subject.isAutocommit(), is(false));
       res = subject.execute(Statement.of("show variable autocommit"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
@@ -454,7 +456,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("READONLY"), is(false));
 
       // set read only to true and assert that read only is true
-      res = subject.execute(Statement.of("set readonly = true"));
+      subject.execute(Statement.of("set readonly = true"));
       assertThat(subject.isReadOnly(), is(true));
       res = subject.execute(Statement.of("show variable readonly"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
@@ -606,6 +608,70 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testExecuteSetReturnCommitStats() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      StatementResult result = subject.execute(Statement.of("set return_commit_stats=true"));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
+      assertTrue(subject.isReturnCommitStats());
+
+      result = subject.execute(Statement.of("set return_commit_stats=false"));
+      assertEquals(ResultType.NO_RESULT, result.getResultType());
+      assertFalse(subject.isReturnCommitStats());
+    }
+  }
+
+  @Test
+  public void testExecuteSetReturnCommitStatsInvalidValue() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      try {
+        subject.execute(Statement.of("set return_commit_stats=yes"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteGetReturnCommitStats() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse(subject.isReturnCommitStats());
+
+      StatementResult returnCommitStatsFalse =
+          subject.execute(Statement.of("show variable return_commit_stats"));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsFalse.getResultType());
+      assertTrue(returnCommitStatsFalse.getResultSet().next());
+      assertFalse(returnCommitStatsFalse.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
+
+      subject.execute(Statement.of("set return_commit_stats=true"));
+      StatementResult returnCommitStatsTrue =
+          subject.execute(Statement.of("show variable return_commit_stats"));
+      assertEquals(ResultType.RESULT_SET, returnCommitStatsTrue.getResultType());
+      assertTrue(returnCommitStatsTrue.getResultSet().next());
+      assertTrue(returnCommitStatsTrue.getResultSet().getBoolean("RETURN_COMMIT_STATS"));
+    }
+  }
+
+  @Test
   public void testExecuteSetStatementTimeout() {
     try (ConnectionImpl subject =
         createConnection(
@@ -731,6 +797,43 @@ public class ConnectionImplTest {
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
       assertThat(res.getResultSet().next(), is(true));
       assertThat(res.getResultSet().getTimestamp("COMMIT_TIMESTAMP"), is(notNullValue()));
+    }
+  }
+
+  @Test
+  public void testExecuteGetCommitResponse() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      subject.beginTransaction();
+      subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
+      subject.commit();
+      StatementResult response = subject.execute(Statement.of("show variable commit_response"));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
+      assertTrue(response.getResultSet().next());
+      assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
+      assertTrue(response.getResultSet().isNull("MUTATION_COUNT"));
+      assertFalse(response.getResultSet().next());
+    }
+
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";returnCommitStats=true")
+                .build())) {
+      subject.beginTransaction();
+      subject.executeQuery(Statement.of(AbstractConnectionImplTest.SELECT)).next();
+      subject.commit();
+      StatementResult response = subject.execute(Statement.of("show variable commit_response"));
+      assertEquals(ResultType.RESULT_SET, response.getResultType());
+      assertTrue(response.getResultSet().next());
+      assertNotNull(response.getResultSet().getTimestamp("COMMIT_TIMESTAMP"));
+      assertFalse(response.getResultSet().isNull("MUTATION_COUNT"));
+      assertFalse(response.getResultSet().next());
     }
   }
 
@@ -1101,12 +1204,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "Updates should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(UPDATE));
-            }
-          },
+          connection -> connection.execute(Statement.of(UPDATE)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
 
@@ -1119,12 +1217,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "DDL should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(DDL));
-            }
-          },
+          connection -> connection.execute(Statement.of(DDL)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
     }
@@ -1148,12 +1241,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "Updates should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(UPDATE));
-            }
-          },
+          connection -> connection.execute(Statement.of(UPDATE)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
       subject.commit();
@@ -1168,12 +1256,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "DDL should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(DDL));
-            }
-          },
+          connection -> connection.execute(Statement.of(DDL)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
     }

@@ -37,6 +37,7 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -89,7 +90,7 @@ public class ITCommitTimestampTest {
   }
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Collections.singletonList(m));
   }
 
   private Struct readRow(DatabaseClient client, String table, Key key, String... columns) {
@@ -269,9 +270,9 @@ public class ITCommitTimestampTest {
   }
 
   // 1) Write timestamps in the past
-  // 2) Set all interleaved tables allow_commmit_timestamp=true
+  // 2) Set all interleaved tables allow_commit_timestamp=true
   // 3) Use commit timestamp in all tables
-  // 4) Set all interleaved tables allow_commmit_timestamp=null
+  // 4) Set all interleaved tables allow_commit_timestamp=null
   // 5) Write timestamps in the future
   @Test
   public void interleavedTable() throws Exception {
@@ -302,7 +303,7 @@ public class ITCommitTimestampTest {
   }
 
   // In interleaved table, use of commit timestamp in child table is not allowed
-  // if parent tables are not allow_commmit_timestamp=true
+  // if parent tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy1() {
     Database db =
@@ -312,12 +313,11 @@ public class ITCommitTimestampTest {
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
     DatabaseClient client = testHelper.getDatabaseClient(db);
-    db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertOrUpdateBuilder("T3")
                   .set("ts")
                   .to(Value.COMMIT_TIMESTAMP)
@@ -329,7 +329,7 @@ public class ITCommitTimestampTest {
   }
 
   // In interleaved table, use of commit timestamp in parent table is not
-  // allowed if child tables are not allow_commmit_timestamp=true
+  // allowed if child tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy2() {
     Database db =
@@ -340,12 +340,11 @@ public class ITCommitTimestampTest {
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
     DatabaseClient client = testHelper.getDatabaseClient(db);
-    db.getId().getDatabase();
 
     // error_catalog error CommitTimestampOptionNotEnabled
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertOrUpdateBuilder("T1")
                   .set("ts")
                   .to(Value.COMMIT_TIMESTAMP)

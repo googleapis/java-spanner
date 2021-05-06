@@ -30,10 +30,8 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions.Builder;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
-import com.google.cloud.spanner.connection.ConnectionOptions.SpannerOptionsConfigurator;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.longrunning.Operation;
@@ -44,7 +42,6 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -81,18 +78,15 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
    * still high enough that it would normally not be exceeded for a statement that is executed
    * directly.
    */
-  private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 20;
+  private static final int TIMEOUT_FOR_SLOW_STATEMENTS = 50;
 
   ITConnection createConnection() {
-    StringBuilder url = new StringBuilder(getBaseUrl());
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
-            .setUri(url.toString())
+            .setUri(getBaseUrl())
             .setConfigurator(
-                new SpannerOptionsConfigurator() {
-                  @Override
-                  public void configure(Builder options) {
-                    options
+                optionsConfigurator ->
+                    optionsConfigurator
                         .getDatabaseAdminStubSettingsBuilder()
                         .updateDatabaseDdlOperationSettings()
                         .setPollingAlgorithm(
@@ -102,9 +96,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                                     .setMaxRetryDelay(Duration.ofMillis(1L))
                                     .setRetryDelayMultiplier(1.0)
                                     .setTotalTimeout(Duration.ofMinutes(10L))
-                                    .build()));
-                  }
-                })
+                                    .build())))
             .build();
     return createITConnection(options);
   }
@@ -525,19 +517,16 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<Boolean> future =
         executor.submit(
-            new Callable<Boolean>() {
-              @Override
-              public Boolean call() {
-                try (Connection connection = createConnection()) {
-                  consumer.accept(connection);
-                  connection.setStatementTimeout(10000L, TimeUnit.MILLISECONDS);
+            () -> {
+              try (Connection connection = createConnection()) {
+                consumer.accept(connection);
+                connection.setStatementTimeout(10000L, TimeUnit.MILLISECONDS);
 
-                  latch.countDown();
-                  try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
-                  return false;
-                } catch (SpannerException e) {
-                  return e.getErrorCode() == ErrorCode.CANCELLED;
-                }
+                latch.countDown();
+                try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
+                return false;
+              } catch (SpannerException e) {
+                return e.getErrorCode() == ErrorCode.CANCELLED;
               }
             });
     latch.await(10L, TimeUnit.SECONDS);
@@ -635,12 +624,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.setAutocommit(true);
       connection.setReadOnly(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(SELECT_RANDOM_STATEMENT);
@@ -663,12 +649,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.setAutocommit(true);
       connection.setReadOnly(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
 
       try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
@@ -697,12 +680,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.setReadOnly(true);
       connection.setAutocommit(false);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(SELECT_RANDOM_STATEMENT);
@@ -725,12 +705,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.setReadOnly(true);
       connection.setAutocommit(false);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(Statement.of(SLOW_SELECT));
@@ -764,12 +741,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(SELECT_RANDOM_STATEMENT);
@@ -791,12 +765,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(SELECT_RANDOM_STATEMENT);
@@ -825,12 +796,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.execute(INSERT_STATEMENT);
@@ -852,12 +820,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(CommitRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(CommitRequest.class);
+            connection.cancel();
           });
       connection.execute(INSERT_STATEMENT);
       fail("Missing expected exception");
@@ -877,12 +842,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       connection.executeQuery(SELECT_RANDOM_STATEMENT);
       fail("Missing expected exception");
@@ -902,12 +864,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              waitForRequestsToContain(ExecuteSqlRequest.class);
-              connection.cancel();
-            }
+          () -> {
+            waitForRequestsToContain(ExecuteSqlRequest.class);
+            connection.cancel();
           });
       try {
         connection.executeQuery(SELECT_RANDOM_STATEMENT);
@@ -972,12 +931,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
       connection.startBatchDdl();
       connection.execute(Statement.of(SLOW_DDL));
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
-              connection.cancel();
-            }
+          () -> {
+            Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
+            connection.cancel();
           });
       connection.runBatch();
       fail("Missing expected exception");
@@ -996,12 +952,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
-              connection.cancel();
-            }
+          () -> {
+            Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
+            connection.cancel();
           });
       connection.execute(Statement.of(SLOW_DDL));
       fail("Missing expected exception");

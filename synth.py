@@ -89,4 +89,7 @@ java.common_templates(excludes=[
     'samples/snapshot/pom.xml',
     'samples/snippets/pom.xml',
     '.github/CODEOWNERS',
+    '.github/sync-repo-settings.yaml',
+    '.github/release-please.yml',
+    '.github/blunderbuss.yml',
 ])

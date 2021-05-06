@@ -1,7 +1,480 @@
 # Changelog
 
+## [6.4.0](https://www.github.com/googleapis/java-spanner/compare/v6.3.3...v6.4.0) (2021-04-29)
+
+
+### Features
+
+* adds getValue to ResultSet ([#1073](https://www.github.com/googleapis/java-spanner/issues/1073)) ([7792c90](https://www.github.com/googleapis/java-spanner/commit/7792c9085a6e4ce1fb9fe2f8df4279f30539d87e))
+
+
+### Bug Fixes
+
+* allow using case-insensitive user-agent key ([#1110](https://www.github.com/googleapis/java-spanner/issues/1110)) ([f4f9e43](https://www.github.com/googleapis/java-spanner/commit/f4f9e43ce102788b81c032df8da223108e484252))
+* check for timeout in connection after last statement finished ([#1086](https://www.github.com/googleapis/java-spanner/issues/1086)) ([aec0b54](https://www.github.com/googleapis/java-spanner/commit/aec0b541672d66fe0c34816b1c1b5a6bdeffccd1)), closes [#1077](https://www.github.com/googleapis/java-spanner/issues/1077)
+* check for timeout in connection after last statement finished ([#1086](https://www.github.com/googleapis/java-spanner/issues/1086)) ([51d753c](https://www.github.com/googleapis/java-spanner/commit/51d753c507e7248132eb5d6ea2c4b735542eda49)), closes [#1077](https://www.github.com/googleapis/java-spanner/issues/1077)
+* do not keep references to invalidated clients ([#1093](https://www.github.com/googleapis/java-spanner/issues/1093)) ([b4595a6](https://www.github.com/googleapis/java-spanner/commit/b4595a6b52417c716f8e70563bb5a7ef05067707)), closes [#1089](https://www.github.com/googleapis/java-spanner/issues/1089)
+* prevent potential NullPointerException in Struct with Array field that contains null elements ([#1107](https://www.github.com/googleapis/java-spanner/issues/1107)) ([c414abb](https://www.github.com/googleapis/java-spanner/commit/c414abb9ec59f8200ba20e08846e442321de76bd)), closes [#1106](https://www.github.com/googleapis/java-spanner/issues/1106)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.2.1 ([#1104](https://www.github.com/googleapis/java-spanner/issues/1104)) ([37ca990](https://www.github.com/googleapis/java-spanner/commit/37ca9905bb150d1791e70103e002261e40261b05))
+* update dependency com.google.cloud:google-cloud-trace to v1.3.3 ([#1103](https://www.github.com/googleapis/java-spanner/issues/1103)) ([b4327c0](https://www.github.com/googleapis/java-spanner/commit/b4327c0666bb97d1d591b5ce65a6ecdc51f5a49d))
+
+
+### Documentation
+
+* fix javadoc for Date type ([#1102](https://www.github.com/googleapis/java-spanner/issues/1102)) ([ce095f7](https://www.github.com/googleapis/java-spanner/commit/ce095f7b0c196e03ea248eeb9c5060f4f430d8c4))
+* use default timeout for restore operation ([#1109](https://www.github.com/googleapis/java-spanner/issues/1109)) ([3f3c13e](https://www.github.com/googleapis/java-spanner/commit/3f3c13e7fcbf08b8ab6f0d11d7451b3ae86c9500)), closes [#1019](https://www.github.com/googleapis/java-spanner/issues/1019)
+
+### [6.3.3](https://www.github.com/googleapis/java-spanner/compare/v6.3.2...v6.3.3) (2021-04-24)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v1 ([#1095](https://www.github.com/googleapis/java-spanner/issues/1095)) ([a21e0bb](https://www.github.com/googleapis/java-spanner/commit/a21e0bbafad086f29d3c719b9e4a7690c1cac129))
+
+### [6.3.2](https://www.github.com/googleapis/java-spanner/compare/v6.3.1...v6.3.2) (2021-04-20)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v1.3.2 ([#1081](https://www.github.com/googleapis/java-spanner/issues/1081)) ([e145c95](https://www.github.com/googleapis/java-spanner/commit/e145c9531d70af6c11be9f682fb52708d0dcb569))
+
+### [6.3.1](https://www.github.com/googleapis/java-spanner/compare/v6.3.0...v6.3.1) (2021-04-20)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.21.1 ([#1074](https://www.github.com/googleapis/java-spanner/issues/1074)) ([ccd8cd1](https://www.github.com/googleapis/java-spanner/commit/ccd8cd1fb96c9d2046cc9c3ec4f35d8e45ebb5f5))
+
+## [6.3.0](https://www.github.com/googleapis/java-spanner/compare/v6.2.1...v6.3.0) (2021-04-19)
+
+
+### Features
+
+* async work as functional interface ([#1068](https://www.github.com/googleapis/java-spanner/issues/1068)) ([734fb60](https://www.github.com/googleapis/java-spanner/commit/734fb6095819bde94ea482b02a8e77983f2a5449))
+* **spanner:** add `progress` field to `UpdateDatabaseDdlMetadata` ([#1063](https://www.github.com/googleapis/java-spanner/issues/1063)) ([7992342](https://www.github.com/googleapis/java-spanner/commit/7992342bffc273ad8249e7564ae9ef51764bf83c))
+* transaction callable as functional interface ([#1066](https://www.github.com/googleapis/java-spanner/issues/1066)) ([b036a77](https://www.github.com/googleapis/java-spanner/commit/b036a77196886f16d2738e70f676ccc99a52874c))
+
+
+### Bug Fixes
+
+* release scripts from issuing overlapping phases ([#1064](https://www.github.com/googleapis/java-spanner/issues/1064)) ([2f6fe5e](https://www.github.com/googleapis/java-spanner/commit/2f6fe5e87cc4c9ae26a6f2867411004a8c2b39fe))
+
+
+### Dependencies
+
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.29 ([#1014](https://www.github.com/googleapis/java-spanner/issues/1014)) ([81ee9b0](https://www.github.com/googleapis/java-spanner/commit/81ee9b02d5846f6569f588d3b17da4faf2f2dae9))
+
+### [6.2.1](https://www.github.com/googleapis/java-spanner/compare/v6.2.0...v6.2.1) (2021-04-13)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.2.0 ([#1054](https://www.github.com/googleapis/java-spanner/issues/1054)) ([0b59b94](https://www.github.com/googleapis/java-spanner/commit/0b59b946b31c4b5ca95a2c279bdc835f23f1a923))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.21.0 ([#1045](https://www.github.com/googleapis/java-spanner/issues/1045)) ([94dcb46](https://www.github.com/googleapis/java-spanner/commit/94dcb468e807516f07777fc62faff345441ccdf6))
+* update dependency com.google.cloud:google-cloud-trace to v1.3.1 ([#1050](https://www.github.com/googleapis/java-spanner/issues/1050)) ([cbb1038](https://www.github.com/googleapis/java-spanner/commit/cbb103846e33210c914f51f64e1e47f32ff775da))
+
+## [6.2.0](https://www.github.com/googleapis/java-spanner/compare/v6.1.0...v6.2.0) (2021-04-07)
+
+
+### Features
+
+* add support for tagging ([#576](https://www.github.com/googleapis/java-spanner/issues/576)) ([2a9086f](https://www.github.com/googleapis/java-spanner/commit/2a9086fcc7e8caae55f71bf5616b2d0db18681d3))
+* Support query hints for DML statements ([#1030](https://www.github.com/googleapis/java-spanner/issues/1030)) ([6a58433](https://www.github.com/googleapis/java-spanner/commit/6a58433919d9f69e91639a1b52cbbc1151ca6804))
+
+
+### Bug Fixes
+
+* local connection checker ignores exceptions ([#1036](https://www.github.com/googleapis/java-spanner/issues/1036)) ([2d61bc4](https://www.github.com/googleapis/java-spanner/commit/2d61bc410b7c680169129725bcc11069c2390505))
+
+## [6.1.0](https://www.github.com/googleapis/java-spanner/compare/v6.0.0...v6.1.0) (2021-03-31)
+
+
+### Features
+
+* support RPC priority ([#676](https://www.github.com/googleapis/java-spanner/issues/676)) ([0bc9972](https://www.github.com/googleapis/java-spanner/commit/0bc9972b140d6a3de9c5481a4b73ecba3e139656))
+
+
+### Bug Fixes
+
+* plain text when testing emulator connection ([#1020](https://www.github.com/googleapis/java-spanner/issues/1020)) ([1e6e23f](https://www.github.com/googleapis/java-spanner/commit/1e6e23f8d64cd16d5e5034c89c65283b3b0cae89))
+* retry cancelled error on first statement in transaction ([#999](https://www.github.com/googleapis/java-spanner/issues/999)) ([a95f6f8](https://www.github.com/googleapis/java-spanner/commit/a95f6f8dc21d27133a0150ea8df963e2bc543e40)), closes [#938](https://www.github.com/googleapis/java-spanner/issues/938)
+* transaction retries should not timeout ([#1009](https://www.github.com/googleapis/java-spanner/issues/1009)) ([6d9c3b8](https://www.github.com/googleapis/java-spanner/commit/6d9c3b884357ddc4d314ebdfac5fc6dda2de3b49)), closes [#1008](https://www.github.com/googleapis/java-spanner/issues/1008)
+* update link and directory ([#1012](https://www.github.com/googleapis/java-spanner/issues/1012)) ([865bf01](https://www.github.com/googleapis/java-spanner/commit/865bf011093341382a2c70f5530e9f7ef58b2d5a))
+
+
+### Dependencies
+
+* update dependency org.openjdk.jmh:jmh-core to v1.29 ([#1013](https://www.github.com/googleapis/java-spanner/issues/1013)) ([a71079f](https://www.github.com/googleapis/java-spanner/commit/a71079f5bb7f209f6afe6f5bc21a58d39e131086))
+
+
+### Documentation
+
+* improve error messages ([#1011](https://www.github.com/googleapis/java-spanner/issues/1011)) ([7dacfdc](https://www.github.com/googleapis/java-spanner/commit/7dacfdc7ca1219a0ddf5929d7b46860b46e3c300))
+* new libraries-bom ([#1025](https://www.github.com/googleapis/java-spanner/issues/1025)) ([3485252](https://www.github.com/googleapis/java-spanner/commit/3485252ce3d98a01fca1b6a9e1ca031283440b5e))
+
+## [6.0.0](https://www.github.com/googleapis/java-spanner/compare/v5.2.0...v6.0.0) (2021-03-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* add closeAsync() method to Connection (#984)
+* drops support of Java 7 (#946)
+* customer-managed encryption keys for Spanner (#666)
+
+### Features
+
+* add closeAsync() method to Connection ([#984](https://www.github.com/googleapis/java-spanner/issues/984)) ([e7ec96e](https://www.github.com/googleapis/java-spanner/commit/e7ec96ec09a9d273d4f576356d3e4c6cbbb6de9e))
+* customer-managed encryption keys for Spanner ([#666](https://www.github.com/googleapis/java-spanner/issues/666)) ([8338116](https://www.github.com/googleapis/java-spanner/commit/8338116dffe847931cae1212333af04338ea1d45))
+* drops support of Java 7 ([#946](https://www.github.com/googleapis/java-spanner/issues/946)) ([7af1951](https://www.github.com/googleapis/java-spanner/commit/7af19514dfae5f87ba50572d8867568d2c09daab))
+
+## [5.2.0](https://www.github.com/googleapis/java-spanner/compare/v5.1.0...v5.2.0) (2021-03-18)
+
+
+### Features
+
+* add autoConfigEmulator connection option ([#931](https://www.github.com/googleapis/java-spanner/issues/931)) ([32fdd60](https://www.github.com/googleapis/java-spanner/commit/32fdd606f392bc97dab7f37b1c566b3954839f7e))
+
+
+### Bug Fixes
+
+* all throwables should be ignored in shutdown hook ([#950](https://www.github.com/googleapis/java-spanner/issues/950)) ([213dddc](https://www.github.com/googleapis/java-spanner/commit/213dddcb4f84e19be2f98115493208e3af819485)), closes [#949](https://www.github.com/googleapis/java-spanner/issues/949)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.1.0 ([#953](https://www.github.com/googleapis/java-spanner/issues/953)) ([f991c87](https://www.github.com/googleapis/java-spanner/commit/f991c875d7ec62d19d048576263c5714d4d48a3f))
+* update dependency com.google.cloud:google-cloud-trace to v1.3.0 ([#947](https://www.github.com/googleapis/java-spanner/issues/947)) ([c1d560b](https://www.github.com/googleapis/java-spanner/commit/c1d560ba4e799953aff6ba146f6f1b679a4b75b7))
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.28 ([#924](https://www.github.com/googleapis/java-spanner/issues/924)) ([693fe5d](https://www.github.com/googleapis/java-spanner/commit/693fe5d4df3d279edb8f6f7f9879366980fd81d8))
+
+## [5.1.0](https://www.github.com/googleapis/java-spanner/compare/v5.0.0...v5.1.0) (2021-03-10)
+
+
+### Features
+
+* add client lib token for Liquibase ([#925](https://www.github.com/googleapis/java-spanner/issues/925)) ([0d93d92](https://www.github.com/googleapis/java-spanner/commit/0d93d92fcd7c8bb2ffd3198560c4be3e4afc4990))
+* adds samples for PITR ([#837](https://www.github.com/googleapis/java-spanner/issues/837)) ([55fa0cc](https://www.github.com/googleapis/java-spanner/commit/55fa0ccca4faf44da8f9a3553ab4b35574c14830))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.14 ([#919](https://www.github.com/googleapis/java-spanner/issues/919)) ([178500c](https://www.github.com/googleapis/java-spanner/commit/178500c7e48cbdeb45f657d9c413e9afdacefbab))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.20.1 ([#944](https://www.github.com/googleapis/java-spanner/issues/944)) ([b74b764](https://www.github.com/googleapis/java-spanner/commit/b74b7648343dc789b60fb2636615f288b6e6c854))
+* update dependency org.json:json to v20210307 ([#943](https://www.github.com/googleapis/java-spanner/issues/943)) ([4088981](https://www.github.com/googleapis/java-spanner/commit/4088981314097647e3ed79f2c748545cac6fc34e))
+* update dependency org.openjdk.jmh:jmh-core to v1.28 ([#923](https://www.github.com/googleapis/java-spanner/issues/923)) ([b4d6e5a](https://www.github.com/googleapis/java-spanner/commit/b4d6e5ac762393b70b684159d11a55edf8f2fba7))
+
+## [5.0.0](https://www.github.com/googleapis/java-spanner/compare/v4.0.2...v5.0.0) (2021-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* add CommitStats to Connection API (#608)
+
+### Features
+
+* add CommitStats to Connection API ([#608](https://www.github.com/googleapis/java-spanner/issues/608)) ([b2b1191](https://www.github.com/googleapis/java-spanner/commit/b2b1191763cd47ca39849bdf93292ed5ef3e0c8a))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.20.0 ([#917](https://www.github.com/googleapis/java-spanner/issues/917)) ([aca9d45](https://www.github.com/googleapis/java-spanner/commit/aca9d45c4e86c45a75e6b5e0d3794e7ac97bdf1a))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.13 ([#918](https://www.github.com/googleapis/java-spanner/issues/918)) ([8843998](https://www.github.com/googleapis/java-spanner/commit/8843998a1c5ddb9228fa16162e0ea13f859f7f35))
+
+### [4.0.2](https://www.github.com/googleapis/java-spanner/compare/v4.0.1...v4.0.2) (2021-02-23)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.13 ([#901](https://www.github.com/googleapis/java-spanner/issues/901)) ([10749c7](https://www.github.com/googleapis/java-spanner/commit/10749c7a074d33c853b0f11a0e6c6ee5f09e75c9))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.12 ([#896](https://www.github.com/googleapis/java-spanner/issues/896)) ([84ee6e0](https://www.github.com/googleapis/java-spanner/commit/84ee6e0d442a29893e1ac77fa7882ed0407c9a7d))
+
+### [4.0.1](https://www.github.com/googleapis/java-spanner/compare/v4.0.0...v4.0.1) (2021-02-22)
+
+
+### Bug Fixes
+
+* wrong use of getRetryDelayInMillis() / 1000 in documentation and retry loops ([#885](https://www.github.com/googleapis/java-spanner/issues/885)) ([a55d7ce](https://www.github.com/googleapis/java-spanner/commit/a55d7ce64fff434151c1c3af0796d290e9db7470)), closes [#874](https://www.github.com/googleapis/java-spanner/issues/874)
+
+
+### Documentation
+
+* Add OpenCensus to OpenTelemetry shim to README ([#879](https://www.github.com/googleapis/java-spanner/issues/879)) ([b58d73d](https://www.github.com/googleapis/java-spanner/commit/b58d73ddb768c0d33d149ed8bc84f5af618514e1))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.19.0 ([#895](https://www.github.com/googleapis/java-spanner/issues/895)) ([e3e2c95](https://www.github.com/googleapis/java-spanner/commit/e3e2c95936f40a7954639a95c84cc9495e318e55))
+
+## [4.0.0](https://www.github.com/googleapis/java-spanner/compare/v3.3.2...v4.0.0) (2021-02-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Point In Time Recovery (PITR) (#452)
+* add support for CommitStats (#544)
+
+### Features
+
+* add option for returning Spanner commit stats ([#817](https://www.github.com/googleapis/java-spanner/issues/817)) ([80d3585](https://www.github.com/googleapis/java-spanner/commit/80d3585870b81949ec641291e5a88fe391f78e27))
+* add support for CommitStats ([#544](https://www.github.com/googleapis/java-spanner/issues/544)) ([44aa384](https://www.github.com/googleapis/java-spanner/commit/44aa384429056dd6c6563351c43fe7dcac451008))
+* allow session pool settings in connection url ([#821](https://www.github.com/googleapis/java-spanner/issues/821)) ([e1e9152](https://www.github.com/googleapis/java-spanner/commit/e1e915289755e5f46ba07569d85afda5df5e3f0d))
+* generate sample code in the Java microgenerator ([#859](https://www.github.com/googleapis/java-spanner/issues/859)) ([7cdfb82](https://www.github.com/googleapis/java-spanner/commit/7cdfb82b40487600547d0bad92119508161ca689))
+* Point In Time Recovery (PITR) ([#452](https://www.github.com/googleapis/java-spanner/issues/452)) ([ab14a5e](https://www.github.com/googleapis/java-spanner/commit/ab14a5ec2dc2b7e2141305b5326f436eb6eee76f))
+
+
+### Bug Fixes
+
+* allows user-agent header with header provider ([#871](https://www.github.com/googleapis/java-spanner/issues/871)) ([3de7e2a](https://www.github.com/googleapis/java-spanner/commit/3de7e2a91349cac5d79a32d2cda7ca727140f0bf))
+* make compiled statements immutable ([#843](https://www.github.com/googleapis/java-spanner/issues/843)) ([118d1b3](https://www.github.com/googleapis/java-spanner/commit/118d1b31f5f7771023766fd72a8229db80f1f5a2))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.12 ([#854](https://www.github.com/googleapis/java-spanner/issues/854)) ([58cebd8](https://www.github.com/googleapis/java-spanner/commit/58cebd85a9d82bd1526b9eae98892181f1a022f1))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.11 ([#825](https://www.github.com/googleapis/java-spanner/issues/825)) ([49c8c5d](https://www.github.com/googleapis/java-spanner/commit/49c8c5d241803565fa9ff96ba55f3eb00ed5b85e))
+
+
+### Documentation
+
+* libraries-bom 16.4.0 ([#867](https://www.github.com/googleapis/java-spanner/issues/867)) ([5af3673](https://www.github.com/googleapis/java-spanner/commit/5af36739532037360dfd504a4a0988562550526c))
+
+### [3.3.2](https://www.github.com/googleapis/java-spanner/compare/v3.3.1...v3.3.2) (2021-01-18)
+
+
+### Bug Fixes
+
+* closes pool maintainer on invalidation ([#784](https://www.github.com/googleapis/java-spanner/issues/784)) ([d122ed9](https://www.github.com/googleapis/java-spanner/commit/d122ed9662c9f01efd7d2a9797b1252f0427089c))
+* UNAVAILABLE error on first query could cause transaction to get stuck ([#807](https://www.github.com/googleapis/java-spanner/issues/807)) ([c7dc6e6](https://www.github.com/googleapis/java-spanner/commit/c7dc6e6b11af76cb5db1f160c4466a5d75b524b2)), closes [#799](https://www.github.com/googleapis/java-spanner/issues/799)
+
+
+### Dependencies
+
+* update opencensus.version to v0.28.3 ([#806](https://www.github.com/googleapis/java-spanner/issues/806)) ([77910a0](https://www.github.com/googleapis/java-spanner/commit/77910a04e0fa42c90064fd533b6c13fe0372fb1e))
+
+### [3.3.1](https://www.github.com/googleapis/java-spanner/compare/v3.3.0...v3.3.1) (2021-01-14)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Bug Fixes
+
+* blanks span for session keepAlive traces ([#797](https://www.github.com/googleapis/java-spanner/issues/797)) ([1a86e4f](https://www.github.com/googleapis/java-spanner/commit/1a86e4fd5b6198c300c13eba4d3d9d91c12c43f7))
+* mark transaction as invalid if no tx is returned before RS is closed ([#791](https://www.github.com/googleapis/java-spanner/issues/791)) ([e02e5a7](https://www.github.com/googleapis/java-spanner/commit/e02e5a7d95c0e92d9f13640dd2afe5b899f4e56d))
+* remove time series before adding it ([#766](https://www.github.com/googleapis/java-spanner/issues/766)) ([90255ea](https://www.github.com/googleapis/java-spanner/commit/90255ea7a1cc70ba4f4ab48551c509f503981540)), closes [#202](https://www.github.com/googleapis/java-spanner/issues/202)
+* safeguard against statements errors when requesting tx ([#800](https://www.github.com/googleapis/java-spanner/issues/800)) ([c4776e4](https://www.github.com/googleapis/java-spanner/commit/c4776e42ad4a2795b0bfc6e1a9fb10c40d64a809))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.17.1 ([#794](https://www.github.com/googleapis/java-spanner/issues/794)) ([f0beabb](https://www.github.com/googleapis/java-spanner/commit/f0beabb228a4f555e1bcb1817a14e8074a54ef8c))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.18.0 ([#796](https://www.github.com/googleapis/java-spanner/issues/796)) ([1a71e50](https://www.github.com/googleapis/java-spanner/commit/1a71e503c68eb10ca140fe93f281a0474ddf21d3))
+
+## [3.3.0](https://www.github.com/googleapis/java-spanner/compare/v3.2.1...v3.3.0) (2021-01-07)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Features
+
+* attempt DirectPath by default ([#770](https://www.github.com/googleapis/java-spanner/issues/770)) ([dc02244](https://www.github.com/googleapis/java-spanner/commit/dc02244d5ad29715f0c5d4c0ba8070659744c512))
+
+
+### Bug Fixes
+
+* Set up DirectPath e2e tests correctly ([#780](https://www.github.com/googleapis/java-spanner/issues/780)) ([9b94c6e](https://www.github.com/googleapis/java-spanner/commit/9b94c6ef54776fdb8868acf04e371599b7500d57))
+
+### [3.2.1](https://www.github.com/googleapis/java-spanner/compare/v3.2.0...v3.2.1) (2021-01-06)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Bug Fixes
+
+* grpc-alts is used not only in tests ([#761](https://www.github.com/googleapis/java-spanner/issues/761)) ([72d93d5](https://www.github.com/googleapis/java-spanner/commit/72d93d5aa9a301c64c9d572d10211882a359e414))
+
+
+### Dependencies
+
+* grpc-alts is only used for tests ([#757](https://www.github.com/googleapis/java-spanner/issues/757)) ([c8ef46f](https://www.github.com/googleapis/java-spanner/commit/c8ef46f2637b58cc71d023764cdc11a7414d855f))
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.11 ([#754](https://www.github.com/googleapis/java-spanner/issues/754)) ([ee2de33](https://www.github.com/googleapis/java-spanner/commit/ee2de3356038cef429eb4d3fa67656e68994bc46))
+
+
+### Documentation
+
+* add sample for timeout for one RPC ([#707](https://www.github.com/googleapis/java-spanner/issues/707)) ([056f54f](https://www.github.com/googleapis/java-spanner/commit/056f54f3cc10d103151fccba569d46796a103591))
+* cleanup inner region tags ([#764](https://www.github.com/googleapis/java-spanner/issues/764)) ([90ad9d6](https://www.github.com/googleapis/java-spanner/commit/90ad9d614bc1950f46d148930e06bde93aeb2098))
+* documents resume on update database ddl ([#767](https://www.github.com/googleapis/java-spanner/issues/767)) ([aeb255d](https://www.github.com/googleapis/java-spanner/commit/aeb255d2e5998ebb6f3eb7f655f63c957d5d92bd))
+
+## [3.2.0](https://www.github.com/googleapis/java-spanner/compare/v3.1.3...v3.2.0) (2020-12-17)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Features
+
+* include client version in user agent header ([#747](https://www.github.com/googleapis/java-spanner/issues/747)) ([fc63bc3](https://www.github.com/googleapis/java-spanner/commit/fc63bc3f1bd9cdd83156cc63548b544188de6592))
+* introduce TransactionOptions and UpdateOptions ([#716](https://www.github.com/googleapis/java-spanner/issues/716)) ([5c96fab](https://www.github.com/googleapis/java-spanner/commit/5c96fab6d1c19518d52d0a7f0d634f0526066f03))
+
+
+### Bug Fixes
+
+* reduce the probability of RESOURCE_EXHAUSTED errors during tests ([#734](https://www.github.com/googleapis/java-spanner/issues/734)) ([cd946d7](https://www.github.com/googleapis/java-spanner/commit/cd946d71501a2af7a2b3bb986ef75272c3ed92e1)), closes [#733](https://www.github.com/googleapis/java-spanner/issues/733)
+
+
+### Documentation
+
+* homogenize region tags ([#752](https://www.github.com/googleapis/java-spanner/issues/752)) ([2b3775a](https://www.github.com/googleapis/java-spanner/commit/2b3775a02466176695d7b88312b17c1aeedfbc16))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.17.0 ([#751](https://www.github.com/googleapis/java-spanner/issues/751)) ([f52776f](https://www.github.com/googleapis/java-spanner/commit/f52776f3af1c9653bfdd38aa1dac1a0d1e727b7f))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.10 ([#759](https://www.github.com/googleapis/java-spanner/issues/759)) ([405c4cc](https://www.github.com/googleapis/java-spanner/commit/405c4cc1af42d4440157438986c8911695ee32d6))
+
+### [3.1.3](https://www.github.com/googleapis/java-spanner/compare/v3.1.2...v3.1.3) (2020-12-14)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.16.1 ([09968d5](https://www.github.com/googleapis/java-spanner/commit/09968d5092268b6ac2083b6914185f5e73d23648))
+
+### [3.1.2](https://www.github.com/googleapis/java-spanner/compare/v3.1.1...v3.1.2) (2020-12-14)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.9 ([#710](https://www.github.com/googleapis/java-spanner/issues/710)) ([37a636d](https://www.github.com/googleapis/java-spanner/commit/37a636d989d2783875065b89141e532064f2647b))
+
+### [3.1.1](https://www.github.com/googleapis/java-spanner/compare/v3.1.0...v3.1.1) (2020-12-10)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v1.2.8 ([#699](https://www.github.com/googleapis/java-spanner/issues/699)) ([e3289bd](https://www.github.com/googleapis/java-spanner/commit/e3289bdf1f5c723c88f4e719c4a7a15f5d131556))
+
+## [3.1.0](https://www.github.com/googleapis/java-spanner/compare/v3.0.5...v3.1.0) (2020-12-10)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Features
+
+* allow lenient mode for connection properties ([#671](https://www.github.com/googleapis/java-spanner/issues/671)) ([f6a8ba6](https://www.github.com/googleapis/java-spanner/commit/f6a8ba6baff53ededf890e3f22a8e49402c98775))
+* retry admin request limit exceeded error ([#669](https://www.github.com/googleapis/java-spanner/issues/669)) ([3f9f74a](https://www.github.com/googleapis/java-spanner/commit/3f9f74aed52bce681b4bfd10d1006e5fa05b7cc9)), closes [#655](https://www.github.com/googleapis/java-spanner/issues/655)
+
+
+### Bug Fixes
+
+* fixes changelog of upgrade 2.0.0 ([#672](https://www.github.com/googleapis/java-spanner/issues/672)) ([c035546](https://www.github.com/googleapis/java-spanner/commit/c0355462d839a1e38a4efec9e4019272a76d822f))
+* transaction retry could fail if tx contained failed statements ([#688](https://www.github.com/googleapis/java-spanner/issues/688)) ([f78c64e](https://www.github.com/googleapis/java-spanner/commit/f78c64e3e2bee6d6ed1f44a0b2e57249cba0e6d0)), closes [#685](https://www.github.com/googleapis/java-spanner/issues/685)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v0.16.0 ([#680](https://www.github.com/googleapis/java-spanner/issues/680)) ([81cba9a](https://www.github.com/googleapis/java-spanner/commit/81cba9ade891aa65176d4be137f902651499b05c))
+* update dependency com.google.cloud:google-cloud-trace to v1.2.7 ([#646](https://www.github.com/googleapis/java-spanner/issues/646)) ([0e17be0](https://www.github.com/googleapis/java-spanner/commit/0e17be0f81483eba4570faf884388cb43a42d84d))
+* update dependency org.openjdk.jmh:jmh-core to v1.27 ([#691](https://www.github.com/googleapis/java-spanner/issues/691)) ([a2e82e4](https://www.github.com/googleapis/java-spanner/commit/a2e82e424802f1544443ee29588bd1fabe3f38c3))
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.27 ([#692](https://www.github.com/googleapis/java-spanner/issues/692)) ([bca15c2](https://www.github.com/googleapis/java-spanner/commit/bca15c226a914c8728a6a52083dd1ff074cc97e8))
+
+### [3.0.5](https://www.github.com/googleapis/java-spanner/compare/v3.0.4...v3.0.5) (2020-11-19)
+
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
+
+### Bug Fixes
+
+* delete stale sample databases ([#622](https://www.github.com/googleapis/java-spanner/issues/622)) ([7584baa](https://www.github.com/googleapis/java-spanner/commit/7584baa8b7051764f1055ddb1616069e7d591b64))
+* does not generate codeowners ([#631](https://www.github.com/googleapis/java-spanner/issues/631)) ([9e133a9](https://www.github.com/googleapis/java-spanner/commit/9e133a972f648ee804f324bbf55163849cb478b8))
+* query could hang transaction if ResultSet#next() is not called ([#643](https://www.github.com/googleapis/java-spanner/issues/643)) ([48f92e3](https://www.github.com/googleapis/java-spanner/commit/48f92e3d1b26644bde62a8d864cec96c3c71687d)), closes [#641](https://www.github.com/googleapis/java-spanner/issues/641)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.0.8 ([#644](https://www.github.com/googleapis/java-spanner/issues/644)) ([447a99b](https://www.github.com/googleapis/java-spanner/commit/447a99b9a6ccdfd3855505fca13e849fb9513943))
+
 ### [3.0.4](https://www.github.com/googleapis/java-spanner/compare/v3.0.3...v3.0.4) (2020-11-17)
 
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
 
 ### Reverts
 
@@ -9,6 +482,15 @@
 
 ### [3.0.3](https://www.github.com/googleapis/java-spanner/compare/v3.0.2...v3.0.3) (2020-11-16)
 
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
 
 ### Dependencies
 
@@ -16,6 +498,15 @@
 
 ### [3.0.2](https://www.github.com/googleapis/java-spanner/compare/v3.0.1...v3.0.2) (2020-11-13)
 
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
 
 ### Bug Fixes
 
@@ -39,6 +530,15 @@
 
 ### [3.0.1](https://www.github.com/googleapis/java-spanner/compare/v3.0.0...v3.0.1) (2020-10-28)
 
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
 
 ### Bug Fixes
 
@@ -54,6 +554,15 @@
 
 ## [3.0.0](https://www.github.com/googleapis/java-spanner/compare/v2.0.2...v3.0.0) (2020-10-23)
 
+### ⚠ IMPORTANT: Known issue with this version of the client
+
+Since [v3.0.0](https://github.com/googleapis/java-spanner/releases/tag/v3.0.0), transactions can get stuck if the Spanner backend returns a retryable error when consuming the first record of a read / query in a transaction.
+
+A [fix](https://github.com/googleapis/java-spanner/pull/807) is submitted and available in version [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2)
+
+**Please use [v3.3.2](https://github.com/googleapis/java-spanner/releases/tag/v3.3.2) instead of this version.**
+
+Apologies for the inconvenience.
 
 ### ⚠ BREAKING CHANGES
 
@@ -123,7 +632,7 @@
 
 ### ⚠ BREAKING CHANGES
 
-* ensure next release is major (#428)
+* Remove Guava ImmutableList from API surface ([#411](https://www.github.com/googleapis/java-spanner/issues/411)) ([b35304e](https://www.github.com/googleapis/java-spanner/commit/b35304ede5c980c3c042b89247058cc5a4ab1488))
 
 ### Features
 
@@ -133,7 +642,6 @@
 ### Bug Fixes
 
 * fix aborted handling of batchUpdateAsync ([#421](https://www.github.com/googleapis/java-spanner/issues/421)) ([6154008](https://www.github.com/googleapis/java-spanner/commit/61540085c971d7885e4938b486e051a1ed9cf35f))
-* Remove Guava ImmutableList from API surface ([#411](https://www.github.com/googleapis/java-spanner/issues/411)) ([b35304e](https://www.github.com/googleapis/java-spanner/commit/b35304ede5c980c3c042b89247058cc5a4ab1488))
 * uses old version of gax-grpc method ([#426](https://www.github.com/googleapis/java-spanner/issues/426)) ([fe6dc79](https://www.github.com/googleapis/java-spanner/commit/fe6dc796db6aa4c28832457ca54e6952a4b51c7e))
 
 

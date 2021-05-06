@@ -34,7 +34,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -101,7 +101,7 @@ public class ITReadOnlyTxnTest {
     String value = "v" + i;
     Mutation m = Mutation.newInsertOrUpdateBuilder(TABLE_NAME).set("StringValue").to(value).build();
     long minCommitNanoTime = System.nanoTime();
-    Timestamp timestamp = client.writeAtLeastOnce(Arrays.asList(m));
+    Timestamp timestamp = client.writeAtLeastOnce(Collections.singletonList(m));
     if (historyBuilder != null) {
       historyBuilder.add(new History(timestamp, value, minCommitNanoTime));
     }
@@ -114,7 +114,7 @@ public class ITReadOnlyTxnTest {
   }
 
   private static Struct readRow(ReadContext ctx) {
-    return ctx.readRow(TABLE_NAME, Key.of(), Arrays.asList("StringValue"));
+    return ctx.readRow(TABLE_NAME, Key.of(), Collections.singletonList("StringValue"));
   }
 
   private static Struct queryRow(ReadContext ctx) {

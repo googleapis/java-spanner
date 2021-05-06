@@ -118,6 +118,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * Required. The database whose schema we wish to get.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * </pre>
    *
    * <code>
@@ -143,6 +145,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * Required. The database whose schema we wish to get.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
    * </pre>
    *
    * <code>
@@ -489,6 +493,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * Required. The database whose schema we wish to get.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
      * </pre>
      *
      * <code>
@@ -513,6 +519,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * Required. The database whose schema we wish to get.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
      * </pre>
      *
      * <code>
@@ -537,6 +545,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * Required. The database whose schema we wish to get.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
      * </pre>
      *
      * <code>
@@ -560,6 +570,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * Required. The database whose schema we wish to get.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
      * </pre>
      *
      * <code>
@@ -579,6 +591,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * Required. The database whose schema we wish to get.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`
      * </pre>
      *
      * <code>

@@ -68,7 +68,8 @@ public class SpannerSampleIT {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    SpannerOptions options = SpannerOptions.newBuilder().build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = spanner.getDatabaseAdminClient();
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
@@ -399,18 +400,14 @@ public class SpannerSampleIT {
   public void testCreateInstanceSample() {
     String instanceId = formatForTest("sample-inst");
     String out =
-        runSampleRunnable(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  CreateInstanceExample.createInstance(
-                      dbId.getInstanceId().getProject(), instanceId);
-                } finally {
-                  spanner.getInstanceAdminClient().deleteInstance(instanceId);
-                }
-              }
-            });
+        runSampleRunnable(() -> {
+          try {
+            CreateInstanceExample.createInstance(
+                dbId.getInstanceId().getProject(), instanceId);
+          } finally {
+            spanner.getInstanceAdminClient().deleteInstance(instanceId);
+          }
+        });
     assertThat(out)
         .contains(
             String.format(

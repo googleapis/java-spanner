@@ -61,7 +61,7 @@ public class ReadOnlyStalenessUtil {
     private final String abbreviation;
     private final TimeUnit unit;
 
-    private TimeUnitAbbreviation(String abbreviation, TimeUnit unit) {
+    TimeUnitAbbreviation(String abbreviation, TimeUnit unit) {
       this.abbreviation = abbreviation;
       this.unit = unit;
     }
@@ -97,7 +97,7 @@ public class ReadOnlyStalenessUtil {
    * Internal interface that is used to generalize getting a time duration from Cloud Spanner
    * read-only staleness settings.
    */
-  static interface DurationValueGetter {
+  interface DurationValueGetter {
     long getDuration(TimeUnit unit);
 
     boolean hasDuration();
@@ -196,7 +196,7 @@ public class ReadOnlyStalenessUtil {
    */
   static String durationToString(DurationValueGetter function) {
     TimeUnit unit = getAppropriateTimeUnit(function);
-    return String.valueOf(function.getDuration(unit)) + getTimeUnitAbbreviation(unit);
+    return function.getDuration(unit) + getTimeUnitAbbreviation(unit);
   }
 
   /**

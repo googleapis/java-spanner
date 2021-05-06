@@ -49,7 +49,7 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * {@link ApiFuture} that returns a {@link TransactionContext} and that supports chaining of
    * multiple {@link TransactionContextFuture}s to form a transaction.
    */
-  public interface TransactionContextFuture extends ApiFuture<TransactionContext> {
+  interface TransactionContextFuture extends ApiFuture<TransactionContext> {
     /**
      * Sets the first step to execute as part of this transaction after the transaction has started
      * using the specified executor. {@link MoreExecutors#directExecutor()} can be be used for
@@ -65,7 +65,7 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * is executed using an {@link AsyncTransactionManager}. This future is returned by the call to
    * {@link AsyncTransactionStep#commitAsync()} of the last step in the transaction.
    */
-  public interface CommitTimestampFuture extends ApiFuture<Timestamp> {
+  interface CommitTimestampFuture extends ApiFuture<Timestamp> {
     /**
      * Returns the commit timestamp of the transaction. Getting this value should always be done in
      * order to ensure that the transaction succeeded. If any of the steps in the transaction fails
@@ -125,7 +125,7 @@ public interface AsyncTransactionManager extends AutoCloseable {
    *         })
    * }</pre>
    */
-  public interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
+  interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
     /**
      * Adds a step to the transaction chain that should be executed using the specified executor.
      * This step is guaranteed to be executed only after the previous step executed successfully.
@@ -150,11 +150,11 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * parameters. The method should return an {@link ApiFuture} that will return the result of this
    * step.
    */
-  public interface AsyncTransactionFunction<I, O> {
+  interface AsyncTransactionFunction<I, O> {
     /**
-     * {@link #apply(TransactionContext, Object)} is called when this transaction step is executed.
-     * The input value is the result of the previous step, and this method will only be called if
-     * the previous step executed successfully.
+     * This method is called when this transaction step is executed. The input value is the result
+     * of the previous step, and this method will only be called if the previous step executed
+     * successfully.
      *
      * @param txn the {@link TransactionContext} that can be used to execute statements.
      * @param input the result of the previous transaction step.
@@ -190,6 +190,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
 
   /** Returns the state of the transaction. */
   TransactionState getState();
+
+  /** Returns the {@link CommitResponse} of this transaction. */
+  ApiFuture<CommitResponse> getCommitResponse();
 
   /**
    * Closes the manager. If there is an active transaction, it will be rolled back. Underlying

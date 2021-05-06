@@ -1,11 +1,11 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.instance.v1;
 
 import com.google.api.core.ApiFunction;
@@ -61,7 +62,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Generated;
 
-// AUTO-GENERATED DOCUMENTATION AND SERVICE
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
  * Service Description: Cloud Spanner Instance Admin API
  *
@@ -84,16 +85,14 @@ import javax.annotation.Generated;
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
  *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
  *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
  * }
- * </code>
- * </pre>
+ * }</pre>
  *
- * <p>Note: close() needs to be called on the instanceAdminClient object to clean up resources such
+ * <p>Note: close() needs to be called on the InstanceAdminClient object to clean up resources such
  * as threads. In the example above, try-with-resources is used, which automatically calls close().
  *
  * <p>The surface of this class includes several types of Java methods for each of the API's
@@ -121,30 +120,25 @@ import javax.annotation.Generated;
  *
  * <p>To customize credentials:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
  *         .build();
- * InstanceAdminClient instanceAdminClient =
- *     InstanceAdminClient.create(instanceAdminSettings);
- * </code>
- * </pre>
+ * InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+ * }</pre>
  *
- * To customize the endpoint:
+ * <p>To customize the endpoint:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder().setEndpoint(myEndpoint).build();
- * InstanceAdminClient instanceAdminClient =
- *     InstanceAdminClient.create(instanceAdminSettings);
- * </code>
- * </pre>
+ * InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+ * }</pre>
+ *
+ * <p>Please refer to the GitHub repository's samples for more quickstart code snippets.
  */
-@Generated("by gapic-generator")
-@BetaApi
+@Generated("by gapic-generator-java")
 public class InstanceAdminClient implements BackgroundResource {
   private final InstanceAdminSettings settings;
   private final InstanceAdminStub stub;
@@ -166,7 +160,7 @@ public class InstanceAdminClient implements BackgroundResource {
 
   /**
    * Constructs an instance of InstanceAdminClient, using the given stub for making calls. This is
-   * for advanced usage - prefer to use InstanceAdminSettings}.
+   * for advanced usage - prefer using create(InstanceAdminSettings).
    */
   @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final InstanceAdminClient create(InstanceAdminStub stub) {
@@ -204,562 +198,24 @@ public class InstanceAdminClient implements BackgroundResource {
    * Returns the OperationsClient that can be used to query the status of a long-running operation
    * returned by another API method call.
    */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
   public final OperationsClient getOperationsClient() {
     return operationsClient;
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
-   * resources. Its state is `CREATING`.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
-   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
-   * rejected.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
-   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
-   * instance's allocated resource levels are readable via the API. &#42; The instance's state
-   * becomes `READY`.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   String instanceId = "";
-   *   Instance instance = Instance.newBuilder().build();
-   *   Instance response = instanceAdminClient.createInstanceAsync(parent, instanceId, instance).get();
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project in which to create the instance. Values are of
-   *     the form `projects/&lt;project&gt;`.
-   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
-   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
-   * @param instance Required. The instance to create. The name may be omitted, but if specified
-   *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
-      ProjectName parent, String instanceId, Instance instance) {
-    CreateInstanceRequest request =
-        CreateInstanceRequest.newBuilder()
-            .setParent(parent == null ? null : parent.toString())
-            .setInstanceId(instanceId)
-            .setInstance(instance)
-            .build();
-    return createInstanceAsync(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
-   * resources. Its state is `CREATING`.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
-   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
-   * rejected.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
-   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
-   * instance's allocated resource levels are readable via the API. &#42; The instance's state
-   * becomes `READY`.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   String instanceId = "";
-   *   Instance instance = Instance.newBuilder().build();
-   *   Instance response = instanceAdminClient.createInstanceAsync(parent.toString(), instanceId, instance).get();
-   * }
-   * </code></pre>
-   *
-   * @param parent Required. The name of the project in which to create the instance. Values are of
-   *     the form `projects/&lt;project&gt;`.
-   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
-   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
-   * @param instance Required. The instance to create. The name may be omitted, but if specified
-   *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
-      String parent, String instanceId, Instance instance) {
-    CreateInstanceRequest request =
-        CreateInstanceRequest.newBuilder()
-            .setParent(parent)
-            .setInstanceId(instanceId)
-            .setInstance(instance)
-            .build();
-    return createInstanceAsync(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
-   * resources. Its state is `CREATING`.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
-   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
-   * rejected.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
-   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
-   * instance's allocated resource levels are readable via the API. &#42; The instance's state
-   * becomes `READY`.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   String instanceId = "";
-   *   Instance instance = Instance.newBuilder().build();
-   *   CreateInstanceRequest request = CreateInstanceRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .setInstanceId(instanceId)
-   *     .setInstance(instance)
-   *     .build();
-   *   Instance response = instanceAdminClient.createInstanceAsync(request).get();
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
-      CreateInstanceRequest request) {
-    return createInstanceOperationCallable().futureCall(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
-   * resources. Its state is `CREATING`.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
-   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
-   * rejected.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
-   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
-   * instance's allocated resource levels are readable via the API. &#42; The instance's state
-   * becomes `READY`.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   String instanceId = "";
-   *   Instance instance = Instance.newBuilder().build();
-   *   CreateInstanceRequest request = CreateInstanceRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .setInstanceId(instanceId)
-   *     .setInstance(instance)
-   *     .build();
-   *   OperationFuture&lt;Instance, CreateInstanceMetadata&gt; future = instanceAdminClient.createInstanceOperationCallable().futureCall(request);
-   *   // Do something
-   *   Instance response = future.get();
-   * }
-   * </code></pre>
-   */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationCallable() {
-    return stub.createInstanceOperationCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Creates an instance and begins preparing it to begin serving. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the named instance already exists,
-   * `CreateInstance` returns `ALREADY_EXISTS`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
-   * resources. Its state is `CREATING`.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
-   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
-   * rejected.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
-   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
-   * instance's allocated resource levels are readable via the API. &#42; The instance's state
-   * becomes `READY`.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   String instanceId = "";
-   *   Instance instance = Instance.newBuilder().build();
-   *   CreateInstanceRequest request = CreateInstanceRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .setInstanceId(instanceId)
-   *     .setInstance(instance)
-   *     .build();
-   *   ApiFuture&lt;Operation&gt; future = instanceAdminClient.createInstanceCallable().futureCall(request);
-   *   // Do something
-   *   Operation response = future.get();
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
-    return stub.createInstanceCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
-   * requested, billing is based on the newly-requested level.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation sets its metadata's
-   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
-   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
-   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
-   * continues to give the pre-request resource levels.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
-   * than the requested levels). &#42; All newly-reserved resources are available for serving the
-   * instance's tables. &#42; The instance's new resource levels are readable via the API.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Authorization requires `spanner.instances.update` permission on resource
-   * [name][google.spanner.admin.instance.v1.Instance.name].
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   Instance instance = Instance.newBuilder().build();
-   *   FieldMask fieldMask = FieldMask.newBuilder().build();
-   *   Instance response = instanceAdminClient.updateInstanceAsync(instance, fieldMask).get();
-   * }
-   * </code></pre>
-   *
-   * @param instance Required. The instance to update, which must always include the instance name.
-   *     Otherwise, only fields mentioned in
-   *     [field_mask][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be
-   *     included.
-   * @param fieldMask Required. A mask specifying which fields in
-   *     [Instance][google.spanner.admin.instance.v1.Instance] should be updated. The field mask
-   *     must always be specified; this prevents any future fields in
-   *     [Instance][google.spanner.admin.instance.v1.Instance] from being erased accidentally by
-   *     clients that do not know about them.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public final OperationFuture<Instance, UpdateInstanceMetadata> updateInstanceAsync(
-      Instance instance, FieldMask fieldMask) {
-    UpdateInstanceRequest request =
-        UpdateInstanceRequest.newBuilder().setInstance(instance).setFieldMask(fieldMask).build();
-    return updateInstanceAsync(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
-   * requested, billing is based on the newly-requested level.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation sets its metadata's
-   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
-   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
-   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
-   * continues to give the pre-request resource levels.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
-   * than the requested levels). &#42; All newly-reserved resources are available for serving the
-   * instance's tables. &#42; The instance's new resource levels are readable via the API.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Authorization requires `spanner.instances.update` permission on resource
-   * [name][google.spanner.admin.instance.v1.Instance.name].
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   Instance instance = Instance.newBuilder().build();
-   *   FieldMask fieldMask = FieldMask.newBuilder().build();
-   *   UpdateInstanceRequest request = UpdateInstanceRequest.newBuilder()
-   *     .setInstance(instance)
-   *     .setFieldMask(fieldMask)
-   *     .build();
-   *   Instance response = instanceAdminClient.updateInstanceAsync(request).get();
-   * }
-   * </code></pre>
-   *
-   * @param request The request object containing all of the parameters for the API call.
-   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
-   */
-  @BetaApi(
-      "The surface for long-running operations is not stable yet and may change in the future.")
-  public final OperationFuture<Instance, UpdateInstanceMetadata> updateInstanceAsync(
-      UpdateInstanceRequest request) {
-    return updateInstanceOperationCallable().futureCall(request);
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
-   * requested, billing is based on the newly-requested level.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation sets its metadata's
-   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
-   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
-   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
-   * continues to give the pre-request resource levels.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
-   * than the requested levels). &#42; All newly-reserved resources are available for serving the
-   * instance's tables. &#42; The instance's new resource levels are readable via the API.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Authorization requires `spanner.instances.update` permission on resource
-   * [name][google.spanner.admin.instance.v1.Instance.name].
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   Instance instance = Instance.newBuilder().build();
-   *   FieldMask fieldMask = FieldMask.newBuilder().build();
-   *   UpdateInstanceRequest request = UpdateInstanceRequest.newBuilder()
-   *     .setInstance(instance)
-   *     .setFieldMask(fieldMask)
-   *     .build();
-   *   OperationFuture&lt;Instance, UpdateInstanceMetadata&gt; future = instanceAdminClient.updateInstanceOperationCallable().futureCall(request);
-   *   // Do something
-   *   Instance response = future.get();
-   * }
-   * </code></pre>
-   */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public final OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationCallable() {
-    return stub.updateInstanceOperationCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
-  /**
-   * Updates an instance, and begins allocating or releasing resources as requested. The returned
-   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
-   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
-   *
-   * <p>Immediately upon completion of this request:
-   *
-   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
-   * requested, billing is based on the newly-requested level.
-   *
-   * <p>Until completion of the returned operation:
-   *
-   * <p>&#42; Cancelling the operation sets its metadata's
-   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
-   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
-   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
-   * continues to give the pre-request resource levels.
-   *
-   * <p>Upon completion of the returned operation:
-   *
-   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
-   * than the requested levels). &#42; All newly-reserved resources are available for serving the
-   * instance's tables. &#42; The instance's new resource levels are readable via the API.
-   *
-   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
-   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
-   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
-   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
-   * [response][google.longrunning.Operation.response] field type is
-   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
-   *
-   * <p>Authorization requires `spanner.instances.update` permission on resource
-   * [name][google.spanner.admin.instance.v1.Instance.name].
-   *
-   * <p>Sample code:
-   *
-   * <pre><code>
-   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   Instance instance = Instance.newBuilder().build();
-   *   FieldMask fieldMask = FieldMask.newBuilder().build();
-   *   UpdateInstanceRequest request = UpdateInstanceRequest.newBuilder()
-   *     .setInstance(instance)
-   *     .setFieldMask(fieldMask)
-   *     .build();
-   *   ApiFuture&lt;Operation&gt; future = instanceAdminClient.updateInstanceCallable().futureCall(request);
-   *   // Do something
-   *   Operation response = future.get();
-   * }
-   * </code></pre>
-   */
-  public final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
-    return stub.updateInstanceCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param parent Required. The name of the project for which a list of supported instance
    *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
@@ -773,20 +229,20 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstanceConfigs(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent.toString()).iterateAll()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param parent Required. The name of the project for which a list of supported instance
    *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
@@ -798,23 +254,25 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstanceConfigs(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(request).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -824,46 +282,52 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstanceConfigsPagedCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   ApiFuture&lt;ListInstanceConfigsPagedResponse&gt; future = instanceAdminClient.listInstanceConfigsPagedCallable().futureCall(request);
-   *   // Do something
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<InstanceConfig> future =
+   *       instanceAdminClient.listInstanceConfigsPagedCallable().futureCall(request);
+   *   // Do something.
    *   for (InstanceConfig element : future.get().iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
       listInstanceConfigsPagedCallable() {
     return stub.listInstanceConfigsPagedCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstanceConfigsRequest request = ListInstanceConfigsRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
    *   while (true) {
-   *     ListInstanceConfigsResponse response = instanceAdminClient.listInstanceConfigsCallable().call(request);
-   *     for (InstanceConfig element : response.getInstanceConfigsList()) {
+   *     ListInstanceConfigsResponse response =
+   *         instanceAdminClient.listInstanceConfigsCallable().call(request);
+   *     for (InstanceConfig element : response.getResponsesList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -874,25 +338,25 @@ public class InstanceAdminClient implements BackgroundResource {
    *     }
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable() {
     return stub.listInstanceConfigsCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance configuration.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the requested instance configuration. Values are of the form
    *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
@@ -906,18 +370,18 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstanceConfig(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance configuration.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name.toString());
+   *   String name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString();
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the requested instance configuration. Values are of the form
    *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
@@ -928,21 +392,21 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstanceConfig(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance configuration.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
+   *   GetInstanceConfigRequest request =
+   *       GetInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .build();
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -951,42 +415,43 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstanceConfigCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance configuration.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-   *   GetInstanceConfigRequest request = GetInstanceConfigRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   ApiFuture&lt;InstanceConfig&gt; future = instanceAdminClient.getInstanceConfigCallable().futureCall(request);
-   *   // Do something
+   *   GetInstanceConfigRequest request =
+   *       GetInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .build();
+   *   ApiFuture<InstanceConfig> future =
+   *       instanceAdminClient.getInstanceConfigCallable().futureCall(request);
+   *   // Do something.
    *   InstanceConfig response = future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
     return stub.getInstanceConfigCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param parent Required. The name of the project for which a list of instances is requested.
    *     Values are of the form `projects/&lt;project&gt;`.
@@ -1000,20 +465,20 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstances(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   for (Instance element : instanceAdminClient.listInstances(parent.toString()).iterateAll()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param parent Required. The name of the project for which a list of instances is requested.
    *     Values are of the form `projects/&lt;project&gt;`.
@@ -1024,23 +489,26 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstances(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
    *   for (Instance element : instanceAdminClient.listInstances(request).iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1049,46 +517,53 @@ public class InstanceAdminClient implements BackgroundResource {
     return listInstancesPagedCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
-   *   ApiFuture&lt;ListInstancesPagedResponse&gt; future = instanceAdminClient.listInstancesPagedCallable().futureCall(request);
-   *   // Do something
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   ApiFuture<Instance> future =
+   *       instanceAdminClient.listInstancesPagedCallable().futureCall(request);
+   *   // Do something.
    *   for (Instance element : future.get().iterateAll()) {
    *     // doThingsWith(element);
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable() {
     return stub.listInstancesPagedCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ProjectName parent = ProjectName.of("[PROJECT]");
-   *   ListInstancesRequest request = ListInstancesRequest.newBuilder()
-   *     .setParent(parent.toString())
-   *     .build();
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
    *   while (true) {
    *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
-   *     for (Instance element : response.getInstancesList()) {
+   *     for (Instance element : response.getResponsesList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -1099,24 +574,24 @@ public class InstanceAdminClient implements BackgroundResource {
    *     }
    *   }
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
     return stub.listInstancesCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Instance response = instanceAdminClient.getInstance(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the requested instance. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -1128,18 +603,18 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstance(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Instance response = instanceAdminClient.getInstance(name.toString());
+   *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   Instance response = instanceAdminClient.getInstance(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the requested instance. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -1150,21 +625,22 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstance(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
+   *   GetInstanceRequest request =
+   *       GetInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
    *   Instance response = instanceAdminClient.getInstance(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1173,29 +649,551 @@ public class InstanceAdminClient implements BackgroundResource {
     return getInstanceCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance.
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetInstanceRequest request = GetInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   ApiFuture&lt;Instance&gt; future = instanceAdminClient.getInstanceCallable().futureCall(request);
-   *   // Do something
+   *   GetInstanceRequest request =
+   *       GetInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Instance> future = instanceAdminClient.getInstanceCallable().futureCall(request);
+   *   // Do something.
    *   Instance response = future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return stub.getInstanceCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance and begins preparing it to begin serving. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the named instance already exists,
+   * `CreateInstance` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
+   * resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
+   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
+   * rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
+   * instance's allocated resource levels are readable via the API. &#42; The instance's state
+   * becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   String instanceId = "instanceId902024336";
+   *   Instance instance = Instance.newBuilder().build();
+   *   Instance response =
+   *       instanceAdminClient.createInstanceAsync(parent, instanceId, instance).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the project in which to create the instance. Values are of
+   *     the form `projects/&lt;project&gt;`.
+   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
+   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
+   * @param instance Required. The instance to create. The name may be omitted, but if specified
+   *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
+      ProjectName parent, String instanceId, Instance instance) {
+    CreateInstanceRequest request =
+        CreateInstanceRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setInstanceId(instanceId)
+            .setInstance(instance)
+            .build();
+    return createInstanceAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance and begins preparing it to begin serving. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the named instance already exists,
+   * `CreateInstance` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
+   * resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
+   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
+   * rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
+   * instance's allocated resource levels are readable via the API. &#42; The instance's state
+   * becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   String instanceId = "instanceId902024336";
+   *   Instance instance = Instance.newBuilder().build();
+   *   Instance response =
+   *       instanceAdminClient.createInstanceAsync(parent, instanceId, instance).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the project in which to create the instance. Values are of
+   *     the form `projects/&lt;project&gt;`.
+   * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
+   *     `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in length.
+   * @param instance Required. The instance to create. The name may be omitted, but if specified
+   *     must be `&lt;parent&gt;/instances/&lt;instance_id&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
+      String parent, String instanceId, Instance instance) {
+    CreateInstanceRequest request =
+        CreateInstanceRequest.newBuilder()
+            .setParent(parent)
+            .setInstanceId(instanceId)
+            .setInstance(instance)
+            .build();
+    return createInstanceAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance and begins preparing it to begin serving. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the named instance already exists,
+   * `CreateInstance` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
+   * resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
+   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
+   * rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
+   * instance's allocated resource levels are readable via the API. &#42; The instance's state
+   * becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   Instance response = instanceAdminClient.createInstanceAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Instance, CreateInstanceMetadata> createInstanceAsync(
+      CreateInstanceRequest request) {
+    return createInstanceOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance and begins preparing it to begin serving. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the named instance already exists,
+   * `CreateInstance` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
+   * resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
+   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
+   * rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
+   * instance's allocated resource levels are readable via the API. &#42; The instance's state
+   * becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Instance, CreateInstanceMetadata> future =
+   *       instanceAdminClient.createInstanceOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Instance response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationCallable() {
+    return stub.createInstanceOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance and begins preparing it to begin serving. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the named instance already exists,
+   * `CreateInstance` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance is readable via the API, with all requested attributes but no allocated
+   * resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance immediately unreadable via the API.
+   * &#42; The instance can be deleted. &#42; All other attempts to modify the instance are
+   * rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can be created in the instance. &#42; The
+   * instance's allocated resource levels are readable via the API. &#42; The instance's state
+   * becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.createInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
+    return stub.createInstanceCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance, and begins allocating or releasing resources as requested. The returned
+   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
+   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
+   * requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
+   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
+   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
+   * continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance's tables. &#42; The instance's new resource levels are readable via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Authorization requires `spanner.instances.update` permission on resource
+   * [name][google.spanner.admin.instance.v1.Instance.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   Instance instance = Instance.newBuilder().build();
+   *   FieldMask fieldMask = FieldMask.newBuilder().build();
+   *   Instance response = instanceAdminClient.updateInstanceAsync(instance, fieldMask).get();
+   * }
+   * }</pre>
+   *
+   * @param instance Required. The instance to update, which must always include the instance name.
+   *     Otherwise, only fields mentioned in
+   *     [field_mask][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be
+   *     included.
+   * @param fieldMask Required. A mask specifying which fields in
+   *     [Instance][google.spanner.admin.instance.v1.Instance] should be updated. The field mask
+   *     must always be specified; this prevents any future fields in
+   *     [Instance][google.spanner.admin.instance.v1.Instance] from being erased accidentally by
+   *     clients that do not know about them.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Instance, UpdateInstanceMetadata> updateInstanceAsync(
+      Instance instance, FieldMask fieldMask) {
+    UpdateInstanceRequest request =
+        UpdateInstanceRequest.newBuilder().setInstance(instance).setFieldMask(fieldMask).build();
+    return updateInstanceAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance, and begins allocating or releasing resources as requested. The returned
+   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
+   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
+   * requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
+   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
+   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
+   * continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance's tables. &#42; The instance's new resource levels are readable via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Authorization requires `spanner.instances.update` permission on resource
+   * [name][google.spanner.admin.instance.v1.Instance.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Instance response = instanceAdminClient.updateInstanceAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Instance, UpdateInstanceMetadata> updateInstanceAsync(
+      UpdateInstanceRequest request) {
+    return updateInstanceOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance, and begins allocating or releasing resources as requested. The returned
+   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
+   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
+   * requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
+   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
+   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
+   * continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance's tables. &#42; The instance's new resource levels are readable via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Authorization requires `spanner.instances.update` permission on resource
+   * [name][google.spanner.admin.instance.v1.Instance.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Instance, UpdateInstanceMetadata> future =
+   *       instanceAdminClient.updateInstanceOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Instance response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationCallable() {
+    return stub.updateInstanceOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance, and begins allocating or releasing resources as requested. The returned
+   * [long-running operation][google.longrunning.Operation] can be used to track the progress of
+   * updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance's allocation has been
+   * requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
+   * restoring resources to their pre-request values. The operation is guaranteed to succeed at
+   * undoing all resource changes, after which point it terminates with a `CANCELLED` status. &#42;
+   * All other attempts to modify the instance are rejected. &#42; Reading the instance via the API
+   * continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance's tables. &#42; The instance's new resource levels are readable via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the
+   * instance modification. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Authorization requires `spanner.instances.update` permission on resource
+   * [name][google.spanner.admin.instance.v1.Instance.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.updateInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
+    return stub.updateInstanceCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Deletes an instance.
    *
@@ -1210,12 +1208,12 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   instanceAdminClient.deleteInstance(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the instance to be deleted. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`
@@ -1227,7 +1225,7 @@ public class InstanceAdminClient implements BackgroundResource {
     deleteInstance(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Deletes an instance.
    *
@@ -1242,12 +1240,12 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   instanceAdminClient.deleteInstance(name.toString());
+   *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   instanceAdminClient.deleteInstance(name);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param name Required. The name of the instance to be deleted. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`
@@ -1258,7 +1256,7 @@ public class InstanceAdminClient implements BackgroundResource {
     deleteInstance(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Deletes an instance.
    *
@@ -1273,15 +1271,15 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   DeleteInstanceRequest request = DeleteInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
+   *   DeleteInstanceRequest request =
+   *       DeleteInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .build();
    *   instanceAdminClient.deleteInstance(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1290,7 +1288,7 @@ public class InstanceAdminClient implements BackgroundResource {
     deleteInstanceCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Deletes an instance.
    *
@@ -1305,23 +1303,23 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   DeleteInstanceRequest request = DeleteInstanceRequest.newBuilder()
-   *     .setName(name.toString())
-   *     .build();
-   *   ApiFuture&lt;Void&gt; future = instanceAdminClient.deleteInstanceCallable().futureCall(request);
-   *   // Do something
+   *   DeleteInstanceRequest request =
+   *       DeleteInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .build();
+   *   ApiFuture<Empty> future = instanceAdminClient.deleteInstanceCallable().futureCall(request);
+   *   // Do something.
    *   future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable() {
     return stub.deleteInstanceCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Sets the access control policy on an instance resource. Replaces any existing policy.
    *
@@ -1330,13 +1328,13 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = instanceAdminClient.setIamPolicy(resource, policy);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
@@ -1354,7 +1352,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return setIamPolicy(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Sets the access control policy on an instance resource. Replaces any existing policy.
    *
@@ -1363,13 +1361,13 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String resource = ProjectName.of("[PROJECT]").toString();
    *   Policy policy = Policy.newBuilder().build();
-   *   Policy response = instanceAdminClient.setIamPolicy(resource.toString(), policy);
+   *   Policy response = instanceAdminClient.setIamPolicy(resource, policy);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
@@ -1384,7 +1382,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return setIamPolicy(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Sets the access control policy on an instance resource. Replaces any existing policy.
    *
@@ -1393,17 +1391,16 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Policy policy = Policy.newBuilder().build();
-   *   SetIamPolicyRequest request = SetIamPolicyRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .setPolicy(policy)
-   *     .build();
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
    *   Policy response = instanceAdminClient.setIamPolicy(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1412,7 +1409,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return setIamPolicyCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Sets the access control policy on an instance resource. Replaces any existing policy.
    *
@@ -1421,25 +1418,24 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Policy policy = Policy.newBuilder().build();
-   *   SetIamPolicyRequest request = SetIamPolicyRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .setPolicy(policy)
-   *     .build();
-   *   ApiFuture&lt;Policy&gt; future = instanceAdminClient.setIamPolicyCallable().futureCall(request);
-   *   // Do something
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = instanceAdminClient.setIamPolicyCallable().futureCall(request);
+   *   // Do something.
    *   Policy response = future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable() {
     return stub.setIamPolicyCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets the access control policy for an instance resource. Returns an empty policy if an instance
    * exists but does not have a policy set.
@@ -1449,12 +1445,12 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
    *   Policy response = instanceAdminClient.getIamPolicy(resource);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1468,7 +1464,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return getIamPolicy(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets the access control policy for an instance resource. Returns an empty policy if an instance
    * exists but does not have a policy set.
@@ -1478,12 +1474,12 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   Policy response = instanceAdminClient.getIamPolicy(resource.toString());
+   *   String resource = ProjectName.of("[PROJECT]").toString();
+   *   Policy response = instanceAdminClient.getIamPolicy(resource);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1494,7 +1490,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return getIamPolicy(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets the access control policy for an instance resource. Returns an empty policy if an instance
    * exists but does not have a policy set.
@@ -1504,15 +1500,16 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .build();
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
    *   Policy response = instanceAdminClient.getIamPolicy(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1521,7 +1518,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return getIamPolicyCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets the access control policy for an instance resource. Returns an empty policy if an instance
    * exists but does not have a policy set.
@@ -1531,23 +1528,24 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   GetIamPolicyRequest request = GetIamPolicyRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .build();
-   *   ApiFuture&lt;Policy&gt; future = instanceAdminClient.getIamPolicyCallable().futureCall(request);
-   *   // Do something
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = instanceAdminClient.getIamPolicyCallable().futureCall(request);
+   *   // Do something.
    *   Policy response = future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable() {
     return stub.getIamPolicyCallable();
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Returns permissions that the caller has on the specified instance resource.
    *
@@ -1557,13 +1555,14 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
-   *   TestIamPermissionsResponse response = instanceAdminClient.testIamPermissions(resource, permissions);
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       instanceAdminClient.testIamPermissions(resource, permissions);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1582,7 +1581,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return testIamPermissions(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Returns permissions that the caller has on the specified instance resource.
    *
@@ -1592,13 +1591,14 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
-   *   TestIamPermissionsResponse response = instanceAdminClient.testIamPermissions(resource.toString(), permissions);
+   *   String resource = ProjectName.of("[PROJECT]").toString();
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       instanceAdminClient.testIamPermissions(resource, permissions);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1617,7 +1617,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return testIamPermissions(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Returns permissions that the caller has on the specified instance resource.
    *
@@ -1627,17 +1627,16 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
-   *   TestIamPermissionsRequest request = TestIamPermissionsRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .addAllPermissions(permissions)
-   *     .build();
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
    *   TestIamPermissionsResponse response = instanceAdminClient.testIamPermissions(request);
    * }
-   * </code></pre>
+   * }</pre>
    *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1646,7 +1645,7 @@ public class InstanceAdminClient implements BackgroundResource {
     return testIamPermissionsCallable().call(request);
   }
 
-  // AUTO-GENERATED DOCUMENTATION AND METHOD
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Returns permissions that the caller has on the specified instance resource.
    *
@@ -1656,19 +1655,19 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Sample code:
    *
-   * <pre><code>
+   * <pre>{@code
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-   *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
-   *   List&lt;String&gt; permissions = new ArrayList&lt;&gt;();
-   *   TestIamPermissionsRequest request = TestIamPermissionsRequest.newBuilder()
-   *     .setResource(resource.toString())
-   *     .addAllPermissions(permissions)
-   *     .build();
-   *   ApiFuture&lt;TestIamPermissionsResponse&gt; future = instanceAdminClient.testIamPermissionsCallable().futureCall(request);
-   *   // Do something
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
+   *   ApiFuture<TestIamPermissionsResponse> future =
+   *       instanceAdminClient.testIamPermissionsCallable().futureCall(request);
+   *   // Do something.
    *   TestIamPermissionsResponse response = future.get();
    * }
-   * </code></pre>
+   * }</pre>
    */
   public final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {

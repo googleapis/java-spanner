@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -914,15 +913,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   }
 
   public int countRequestsOfType(final Class<? extends AbstractMessage> type) {
-    return Collections2.filter(
-            getRequests(),
-            new Predicate<AbstractMessage>() {
-              @Override
-              public boolean apply(AbstractMessage input) {
-                return input.getClass().equals(type);
-              }
-            })
-        .size();
+    return Collections2.filter(getRequests(), input -> input.getClass().equals(type)).size();
   }
 
   @Override
@@ -936,11 +927,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   }
 
   public void addFilterMatches(String filter, String... names) {
-    Set<String> matches = filterMatches.get(filter);
-    if (matches == null) {
-      matches = new HashSet<>();
-      filterMatches.put(filter, matches);
-    }
+    Set<String> matches = filterMatches.computeIfAbsent(filter, k -> new HashSet<>());
     matches.addAll(Arrays.asList(names));
   }
 

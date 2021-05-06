@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
@@ -50,6 +50,7 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class SpannerOptionsTest {
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
         Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
-        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+        Collections.singletonList(stubSettings.batchCreateSessionsSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
             stubSettings.createSessionSettings(),
@@ -276,7 +277,7 @@ public class SpannerOptionsTest {
             stubSettings.getDatabaseSettings(),
             stubSettings.getDatabaseDdlSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
         Arrays.asList(
             stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
@@ -375,7 +376,7 @@ public class SpannerOptionsTest {
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
         Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =
@@ -439,34 +440,31 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInvalidTransport() {
-    try {
-      SpannerOptions.newBuilder().setTransportOptions(Mockito.mock(TransportOptions.class));
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SpannerOptions.newBuilder()
+                    .setTransportOptions(Mockito.mock(TransportOptions.class)));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testInvalidSessionLabels() {
     Map<String, String> labels = new HashMap<>();
     labels.put("env", null);
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(labels);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(labels));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testNullSessionLabels() {
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(null);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(null));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
@@ -487,7 +485,7 @@ public class SpannerOptionsTest {
     assertThat(service3 == service1, is(false));
     assertThat(service1.isClosed()).isTrue();
     assertThat(service3.isClosed()).isFalse();
-    ;
+
     // Getting another service from the SpannerOptions should return the new cached instance.
     Spanner service4 = options.getService();
     assertThat(service3 == service4, is(true));
@@ -558,13 +556,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDefaultQueryOptions() {
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "");
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
@@ -579,13 +571,7 @@ public class SpannerOptionsTest {
         .isEqualTo(QueryOptions.getDefaultInstance());
 
     // Now simulate that the user has set an environment variable for the query optimizer version.
-    SpannerOptions.useEnvironment(
-        new SpannerOptions.SpannerEnvironment() {
-          @Override
-          public String getOptimizerVersion() {
-            return "2";
-          }
-        });
+    SpannerOptions.useEnvironment(() -> "2");
     // Create options with '1' as the default query optimizer version. This should be overridden by
     // the environment variable.
     options =
@@ -625,12 +611,8 @@ public class SpannerOptionsTest {
                 .build()
                 .getCompressorName())
         .isNull();
-    try {
-      SpannerOptions.newBuilder().setCompressorName("foo");
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      // ignore, this is the expected exception.
-    }
+    assertThrows(
+        IllegalArgumentException.class, () -> SpannerOptions.newBuilder().setCompressorName("foo"));
   }
 
   @Test

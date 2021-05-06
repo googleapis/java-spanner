@@ -47,6 +47,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
@@ -213,7 +214,7 @@ abstract class AbstractReadContext
     }
 
     @Override
-    public void onTransactionMetadata(Transaction transaction) {
+    public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {
       synchronized (lock) {
         if (!transaction.hasReadTimestamp()) {
           throw newSpannerException(
@@ -394,6 +395,9 @@ abstract class AbstractReadContext
   // much more frequently.
   private static final int MAX_BUFFERED_CHUNKS = 512;
 
+  protected static final String NO_TRANSACTION_RETURNED_MSG =
+      "The statement did not return a transaction even though one was requested";
+
   AbstractReadContext(Builder<?, ?> builder) {
     this.session = builder.session;
     this.rpc = builder.rpc;
@@ -554,7 +558,22 @@ abstract class AbstractReadContext
     return builder.build();
   }
 
-  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(Statement statement, QueryMode queryMode) {
+  RequestOptions buildRequestOptions(Options options) {
+    RequestOptions.Builder builder = RequestOptions.newBuilder();
+    if (options.hasPriority()) {
+      builder.setPriority(options.priority());
+    }
+    if (options.hasTag()) {
+      builder.setRequestTag(options.tag());
+    }
+    if (getTransactionTag() != null) {
+      builder.setTransactionTag(getTransactionTag());
+    }
+    return builder.build();
+  }
+
+  ExecuteSqlRequest.Builder getExecuteSqlRequestBuilder(
+      Statement statement, QueryMode queryMode, Options options, boolean withTransactionSelector) {
     ExecuteSqlRequest.Builder builder =
         ExecuteSqlRequest.newBuilder()
             .setSql(statement.getSql())
@@ -568,16 +587,20 @@ abstract class AbstractReadContext
         builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
       }
     }
-    TransactionSelector selector = getTransactionSelector();
-    if (selector != null) {
-      builder.setTransaction(selector);
+    if (withTransactionSelector) {
+      TransactionSelector selector = getTransactionSelector();
+      if (selector != null) {
+        builder.setTransaction(selector);
+      }
     }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
+    builder.setRequestOptions(buildRequestOptions(options));
     return builder;
   }
 
-  ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(Iterable<Statement> statements) {
+  ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(
+      Iterable<Statement> statements, Options options) {
     ExecuteBatchDmlRequest.Builder builder =
         ExecuteBatchDmlRequest.newBuilder().setSession(session.getName());
     int idx = 0;
@@ -603,34 +626,43 @@ abstract class AbstractReadContext
       builder.setTransaction(selector);
     }
     builder.setSeqno(getSeqNo());
+    builder.setRequestOptions(buildRequestOptions(options));
     return builder;
   }
 
   ResultSet executeQueryInternalWithOptions(
       final Statement statement,
       final com.google.spanner.v1.ExecuteSqlRequest.QueryMode queryMode,
-      Options options,
+      final Options options,
       final ByteString partitionToken) {
     beforeReadOrQuery();
     final int prefetchChunks =
         options.hasPrefetchChunks() ? options.prefetchChunks() : defaultPrefetchChunks;
+    final ExecuteSqlRequest.Builder request =
+        getExecuteSqlRequestBuilder(
+            statement, queryMode, options, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
         new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
-            final ExecuteSqlRequest.Builder request =
-                getExecuteSqlRequestBuilder(statement, queryMode);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }
+            TransactionSelector selector = null;
             if (resumeToken != null) {
               request.setResumeToken(resumeToken);
+              selector = getTransactionSelector();
+            } else if (!request.hasTransaction()) {
+              selector = getTransactionSelector();
+            }
+            if (selector != null) {
+              request.setTransaction(selector);
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call, request.hasTransaction() && request.getTransaction().hasBegin());
+            stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
         };
@@ -681,15 +713,26 @@ abstract class AbstractReadContext
   @Nullable
   abstract TransactionSelector getTransactionSelector();
 
+  /**
+   * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
+   * {@link AbstractReadContext} does not have a transaction tag.
+   */
+  @Nullable
+  String getTransactionTag() {
+    return null;
+  }
+
   /** This method is called when a statement returned a new transaction as part of its results. */
   @Override
-  public void onTransactionMetadata(Transaction transaction) {}
+  public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {}
 
   @Override
-  public void onError(SpannerException e, boolean withBeginTransaction) {}
+  public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    return e;
+  }
 
   @Override
-  public void onDone() {}
+  public void onDone(boolean withBeginTransaction) {}
 
   private ResultSet readInternal(
       String table,
@@ -707,7 +750,7 @@ abstract class AbstractReadContext
       @Nullable String index,
       KeySet keys,
       Iterable<String> columns,
-      Options readOptions,
+      final Options readOptions,
       ByteString partitionToken) {
     beforeReadOrQuery();
     final ReadRequest.Builder builder =
@@ -733,13 +776,17 @@ abstract class AbstractReadContext
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
+            TransactionSelector selector = null;
             if (resumeToken != null) {
               builder.setResumeToken(resumeToken);
+              selector = getTransactionSelector();
+            } else if (!builder.hasTransaction()) {
+              selector = getTransactionSelector();
             }
-            TransactionSelector selector = getTransactionSelector();
             if (selector != null) {
               builder.setTransaction(selector);
             }
+            builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
                 rpc.read(builder.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
@@ -747,8 +794,7 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    GrpcResultSet resultSet = new GrpcResultSet(stream, this);
-    return resultSet;
+    return new GrpcResultSet(stream, this);
   }
 
   private Struct consumeSingleRow(ResultSet resultSet) {

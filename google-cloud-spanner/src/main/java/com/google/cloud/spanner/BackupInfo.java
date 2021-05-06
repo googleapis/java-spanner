@@ -18,6 +18,9 @@ package com.google.cloud.spanner;
 
 import com.google.api.client.util.Preconditions;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
+import com.google.spanner.admin.database.v1.Database;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -28,7 +31,28 @@ public class BackupInfo {
 
     abstract Builder setSize(long size);
 
+    /**
+     * Returned when retrieving a backup.
+     *
+     * <p>The encryption information for the backup. If the encryption key protecting this resource
+     * is customer managed, then kms_key_version will be filled.
+     */
+    abstract Builder setEncryptionInfo(EncryptionInfo encryptionInfo);
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Backup proto);
+
+    /**
+     * Optional for creating a new backup.
+     *
+     * <p>The encryption configuration to be used for the backup. The possible configurations are
+     * {@link com.google.cloud.spanner.encryption.CustomerManagedEncryption}, {@link
+     * com.google.cloud.spanner.encryption.GoogleDefaultEncryption} and {@link
+     * com.google.cloud.spanner.encryption.UseDatabaseEncryption}.
+     *
+     * <p>If no encryption config is given the backup will be created with the same encryption as
+     * set by the database ({@link com.google.cloud.spanner.encryption.UseDatabaseEncryption}).
+     */
+    public abstract Builder setEncryptionConfig(BackupEncryptionConfig encryptionConfig);
 
     /**
      * Required for creating a new backup.
@@ -39,6 +63,17 @@ public class BackupInfo {
      * free the resources used by the backup.
      */
     public abstract Builder setExpireTime(Timestamp expireTime);
+
+    /**
+     * Optional for creating a new backup.
+     *
+     * <p>Specifies the timestamp to have an externally consistent copy of the database. If no
+     * version time is specified, it will be automatically set to the backup create time.
+     *
+     * <p>The version time can be as far in the past as specified by the database earliest version
+     * time (see {@link Database#getEarliestVersionTime()}).
+     */
+    public abstract Builder setVersionTime(Timestamp versionTime);
 
     /**
      * Required for creating a new backup.
@@ -55,8 +90,11 @@ public class BackupInfo {
     protected final BackupId id;
     private State state = State.UNSPECIFIED;
     private Timestamp expireTime;
+    private Timestamp versionTime;
     private DatabaseId database;
     private long size;
+    private BackupEncryptionConfig encryptionConfig;
+    private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
 
     BuilderImpl(BackupId id) {
@@ -67,8 +105,11 @@ public class BackupInfo {
       this.id = other.id;
       this.state = other.state;
       this.expireTime = other.expireTime;
+      this.versionTime = other.versionTime;
       this.database = other.database;
       this.size = other.size;
+      this.encryptionConfig = other.encryptionConfig;
+      this.encryptionInfo = other.encryptionInfo;
       this.proto = other.proto;
     }
 
@@ -85,6 +126,12 @@ public class BackupInfo {
     }
 
     @Override
+    public Builder setVersionTime(Timestamp versionTime) {
+      this.versionTime = versionTime;
+      return this;
+    }
+
+    @Override
     public Builder setDatabase(DatabaseId database) {
       Preconditions.checkArgument(
           database.getInstanceId().equals(id.getInstanceId()),
@@ -94,8 +141,20 @@ public class BackupInfo {
     }
 
     @Override
+    public Builder setEncryptionConfig(BackupEncryptionConfig encryptionConfig) {
+      this.encryptionConfig = encryptionConfig;
+      return this;
+    }
+
+    @Override
     Builder setSize(long size) {
       this.size = size;
+      return this;
+    }
+
+    @Override
+    Builder setEncryptionInfo(EncryptionInfo encryptionInfo) {
+      this.encryptionInfo = encryptionInfo;
       return this;
     }
 
@@ -119,15 +178,21 @@ public class BackupInfo {
   private final BackupId id;
   private final State state;
   private final Timestamp expireTime;
+  private final Timestamp versionTime;
   private final DatabaseId database;
   private final long size;
+  private final BackupEncryptionConfig encryptionConfig;
+  private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
 
   BackupInfo(BuilderImpl builder) {
     this.id = builder.id;
     this.state = builder.state;
     this.size = builder.size;
+    this.encryptionConfig = builder.encryptionConfig;
+    this.encryptionInfo = builder.encryptionInfo;
     this.expireTime = builder.expireTime;
+    this.versionTime = builder.versionTime;
     this.database = builder.database;
     this.proto = builder.proto;
   }
@@ -152,9 +217,30 @@ public class BackupInfo {
     return size;
   }
 
+  /**
+   * Returns the {@link BackupEncryptionConfig} to encrypt the backup during its creation. Returns
+   * <code>null</code> if no customer-managed encryption key should be used.
+   */
+  public BackupEncryptionConfig getEncryptionConfig() {
+    return encryptionConfig;
+  }
+
+  /**
+   * Returns the {@link EncryptionInfo} of the backup if the backup is encrypted, or <code>null
+   * </code> if this backup is not encrypted.
+   */
+  public EncryptionInfo getEncryptionInfo() {
+    return encryptionInfo;
+  }
+
   /** Returns the expire time of the backup. */
   public Timestamp getExpireTime() {
     return expireTime;
+  }
+
+  /** Returns the version time of the backup. */
+  public Timestamp getVersionTime() {
+    return versionTime;
   }
 
   /** Returns the id of the database that was used to create the backup. */
@@ -179,18 +265,30 @@ public class BackupInfo {
     return id.equals(that.id)
         && state == that.state
         && size == that.size
+        && Objects.equals(encryptionConfig, that.encryptionConfig)
+        && Objects.equals(encryptionInfo, that.encryptionInfo)
         && Objects.equals(expireTime, that.expireTime)
+        && Objects.equals(versionTime, that.versionTime)
         && Objects.equals(database, that.database);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, state, size, expireTime, database);
+    return Objects.hash(
+        id, state, size, encryptionConfig, encryptionInfo, expireTime, versionTime, database);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Backup[%s, %s, %d, %s, %s]", id.getName(), state, size, expireTime, database);
+        "Backup[%s, %s, %d, %s, %s, %s, %s, %s]",
+        id.getName(),
+        state,
+        size,
+        encryptionConfig,
+        encryptionInfo,
+        expireTime,
+        versionTime,
+        database);
   }
 }

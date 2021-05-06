@@ -21,15 +21,11 @@ import java.io.IOException;
 /** Interface for TestEnvConfig. */
 public interface TestEnvConfig {
   /** Returns the options to use to create the Cloud Spanner client for integration tests. */
-  public SpannerOptions spannerOptions();
+  SpannerOptions spannerOptions();
 
-  /**
-   * Custom setup.
-   *
-   * @throws IOException
-   */
-  public void setUp() throws IOException;
+  /** Custom setup. */
+  void setUp() throws IOException;
 
   /** Custom tear down. */
-  public void tearDown();
+  void tearDown();
 }

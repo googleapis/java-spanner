@@ -126,7 +126,7 @@ public class ITDatabaseAdminTest {
     dbAdminClient.dropDatabase(instanceId, dbId);
     dbs.clear();
     try {
-      db = dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
+      dbAdminClient.getDatabase(testHelper.getInstanceId().getInstance(), dbId);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
@@ -149,7 +149,15 @@ public class ITDatabaseAdminTest {
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), "myop");
     op1.get();
     op2.get();
-    assertThat(op1.getMetadata().get()).isEqualTo(op2.getMetadata().get());
+
+    // Remove the progress list from the metadata before comparing, as there could be small
+    // differences between the two in the reported progress depending on exactly when each
+    // operation was fetched from the backend.
+    UpdateDatabaseDdlMetadata metadata1 =
+        op1.getMetadata().get().toBuilder().clearProgress().build();
+    UpdateDatabaseDdlMetadata metadata2 =
+        op2.getMetadata().get().toBuilder().clearProgress().build();
+    assertThat(metadata1).isEqualTo(metadata2);
   }
 
   @Test
@@ -191,7 +199,7 @@ public class ITDatabaseAdminTest {
 
     String instanceId = testHelper.getInstanceId().getInstance();
     for (String dbId : dbIds) {
-      dbs.add(dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.<String>of()).get());
+      dbs.add(dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of()).get());
     }
     Page<Database> page = dbAdminClient.listDatabases(instanceId, Options.pageSize(1));
     List<String> dbIdsGot = new ArrayList<>();
@@ -299,7 +307,7 @@ public class ITDatabaseAdminTest {
             client.createDatabase(
                 testHelper.getInstanceId().getInstance(),
                 initialDatabaseId,
-                Collections.<String>emptyList());
+                Collections.emptyList());
         databases.add(op.get());
         // Keep track of the original create time of this database, as we will drop this database
         // later and create another one with the exact same name. That means that the ListOperations
@@ -398,7 +406,7 @@ public class ITDatabaseAdminTest {
             client.createDatabase(
                 testHelper.getInstanceId().getInstance(),
                 initialDatabaseId,
-                Collections.<String>emptyList());
+                Collections.emptyList());
         // Check that the second database was created and has a greater creation time than the
         // first.
         Timestamp secondCreationTime = op.get().getCreateTime();

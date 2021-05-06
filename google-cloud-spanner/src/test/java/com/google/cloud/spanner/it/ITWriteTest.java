@@ -17,7 +17,9 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -25,6 +27,7 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -32,6 +35,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -43,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +134,7 @@ public class ITWriteTest {
   private String lastKey;
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Collections.singletonList(m));
   }
 
   private Mutation.WriteBuilder baseInsert() {
@@ -145,7 +150,7 @@ public class ITWriteTest {
   @Test
   public void writeAtLeastOnce() {
     client.writeAtLeastOnce(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("T")
                 .set("K")
                 .to(lastKey = uniqueString())
@@ -158,9 +163,47 @@ public class ITWriteTest {
   }
 
   @Test
+  public void testWriteReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
+  }
+
+  @Test
+  public void testWriteAtLeastOnceReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeAtLeastOnceWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
+  }
+
+  @Test
   public void writeAlreadyExists() {
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T")
                 .set("K")
                 .to(lastKey = "key1")
@@ -173,7 +216,7 @@ public class ITWriteTest {
 
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertBuilder("T")
                   .set("K")
                   .to(lastKey)
@@ -193,7 +236,7 @@ public class ITWriteTest {
   @Test
   public void emptyWrite() {
     try {
-      client.write(Arrays.<Mutation>asList());
+      client.write(Collections.emptyList());
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -528,7 +571,7 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayEmpty() {
-    write(baseInsert().set("StringArrayValue").toStringArray(Arrays.<String>asList()).build());
+    write(baseInsert().set("StringArrayValue").toStringArray(Collections.emptyList()).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly();
@@ -552,7 +595,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArrayEmpty() {
-    write(baseInsert().set("BytesArrayValue").toBytesArray(Arrays.<ByteArray>asList()).build());
+    write(baseInsert().set("BytesArrayValue").toBytesArray(Collections.emptyList()).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytesList(0)).containsExactly();
@@ -577,10 +620,7 @@ public class ITWriteTest {
   @Test
   public void writeTimestampArrayEmpty() {
     write(
-        baseInsert()
-            .set("TimestampArrayValue")
-            .toTimestampArray(Arrays.<Timestamp>asList())
-            .build());
+        baseInsert().set("TimestampArrayValue").toTimestampArray(Collections.emptyList()).build());
     Struct row = readLastRow("TimestampArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestampList(0)).containsExactly();
@@ -609,7 +649,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayEmpty() {
-    write(baseInsert().set("DateArrayValue").toDateArray(Arrays.<Date>asList()).build());
+    write(baseInsert().set("DateArrayValue").toDateArray(Collections.emptyList()).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -636,11 +676,7 @@ public class ITWriteTest {
   @Test
   public void writeNumericArrayEmpty() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
-    write(
-        baseInsert()
-            .set("NumericArrayValue")
-            .toNumericArray(ImmutableList.<BigDecimal>of())
-            .build());
+    write(baseInsert().set("NumericArrayValue").toNumericArray(ImmutableList.of()).build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0)).containsExactly();
@@ -722,11 +758,8 @@ public class ITWriteTest {
     context.cancel(new RuntimeException("Cancelled by test"));
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {
@@ -744,11 +777,8 @@ public class ITWriteTest {
         Context.current().withDeadlineAfter(10, TimeUnit.NANOSECONDS, executor);
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {

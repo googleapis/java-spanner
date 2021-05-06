@@ -161,7 +161,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * The name of the backup being created.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The name.
    */
@@ -184,7 +184,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * The name of the backup being created.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for name.
    */
@@ -210,7 +210,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * The name of the database the backup is created from.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The database.
    */
@@ -233,7 +233,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * The name of the database the backup is created from.
    * </pre>
    *
-   * <code>string database = 2;</code>
+   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for database.
    */
@@ -316,7 +316,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -341,7 +342,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -366,7 +368,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * other methods to check whether the cancellation succeeded or whether the
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
-   * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * an [Operation.error][google.longrunning.Operation.error] value with a
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -777,7 +780,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the backup being created.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The name.
      */
@@ -799,7 +802,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the backup being created.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for name.
      */
@@ -821,7 +824,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the backup being created.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -842,7 +845,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the backup being created.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -859,7 +862,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the backup being created.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.
@@ -883,7 +886,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the database the backup is created from.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The database.
      */
@@ -905,7 +908,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the database the backup is created from.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for database.
      */
@@ -927,7 +930,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the database the backup is created from.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The database to set.
      * @return This builder for chaining.
@@ -948,7 +951,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the database the backup is created from.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -965,7 +968,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * The name of the database the backup is created from.
      * </pre>
      *
-     * <code>string database = 2;</code>
+     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for database to set.
      * @return This builder for chaining.
@@ -1195,7 +1198,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1219,7 +1223,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1249,7 +1254,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1281,7 +1287,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1310,7 +1317,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1344,7 +1352,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1374,7 +1383,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1398,7 +1408,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1426,7 +1437,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * other methods to check whether the cancellation succeeded or whether the
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
-     * an [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * an [Operation.error][google.longrunning.Operation.error] value with a
+     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
