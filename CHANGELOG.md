@@ -1,5 +1,12 @@
 # Changelog
 
+### [3.3.3](https://www.github.com/googleapis/java-spanner/compare/v3.3.2...v3.3.3) (2021-05-07)
+
+
+### Bug Fixes
+
+* allows setting custom user agent in any case ([#1129](https://www.github.com/googleapis/java-spanner/issues/1129)) ([9ddb266](https://www.github.com/googleapis/java-spanner/commit/9ddb266e0dc99e1c8faeed36d69a08bee6aa7c82))
+
 ### [3.3.2](https://www.github.com/googleapis/java-spanner/compare/v3.3.1...v3.3.2) (2021-01-18)
 
 
