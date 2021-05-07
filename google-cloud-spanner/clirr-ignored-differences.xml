@@ -605,4 +605,32 @@
     <className>com/google/cloud/spanner/StructReader</className>
     <method>com.google.cloud.spanner.Value getValue(java.lang.String)</method>
   </difference>
+
+  <!-- Adds DATABASE statements support -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void alterDatabase(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void createDatabase(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void dropDatabase(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.Iterable listDatabases()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void useDatabase(java.lang.String)</method>
+  </difference>
 </differences>
