@@ -610,6 +610,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutation);
+      return ApiFutures.immediateFuture(null);
+    }
+
+    @Override
     public void buffer(Iterable<Mutation> mutations) {
       synchronized (lock) {
         checkNotNull(this.mutations, "Context is closed");
@@ -617,6 +626,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           this.mutations.add(checkNotNull(mutation));
         }
       }
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutations);
+      return ApiFutures.immediateFuture(null);
     }
 
     @Override
