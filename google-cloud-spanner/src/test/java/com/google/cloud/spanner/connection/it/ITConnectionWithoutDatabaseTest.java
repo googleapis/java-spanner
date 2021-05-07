@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -56,9 +57,13 @@ public class ITConnectionWithoutDatabaseTest extends ITAbstractSpannerTest {
 
       // Create a database and alter the options of it.
       connection.execute(Statement.of(String.format("CREATE DATABASE `%s`", databaseId)));
-      connection.execute(
-          Statement.of(
-              String.format("ALTER DATABASE `%s` SET OPTIONS (optimizer_version=1)", databaseId)));
+      // The emulator does not support ALTER DATABASE.
+      if (!isUsingEmulator()) {
+        connection.execute(
+            Statement.of(
+                String.format(
+                    "ALTER DATABASE `%s` SET OPTIONS (optimizer_version=1)", databaseId)));
+      }
 
       // Instruct the connection to use the newly created database.
       connection.execute(Statement.of(String.format("USE DATABASE `%s`", databaseId)));
@@ -68,14 +73,17 @@ public class ITConnectionWithoutDatabaseTest extends ITAbstractSpannerTest {
         assertEquals(1L, resultSet.getLong(0));
         assertFalse(resultSet.next());
       }
-      // The options that we set above should also be visible now that we are using this database.
-      try (ResultSet resultSet =
-          connection.executeQuery(
-              Statement.of("SELECT * FROM INFORMATION_SCHEMA.DATABASE_OPTIONS"))) {
-        assertTrue(resultSet.next());
-        assertEquals("optimizer_version", resultSet.getString("OPTION_NAME"));
-        assertEquals("1", resultSet.getString("OPTION_VALUE"));
-        assertFalse(resultSet.next());
+
+      if (!isUsingEmulator()) {
+        // The options that we set above should also be visible now that we are using this database.
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.of("SELECT * FROM INFORMATION_SCHEMA.DATABASE_OPTIONS"))) {
+          assertTrue(resultSet.next());
+          assertEquals("optimizer_version", resultSet.getString("OPTION_NAME"));
+          assertEquals("1", resultSet.getString("OPTION_VALUE"));
+          assertFalse(resultSet.next());
+        }
       }
 
       // The database should show up in the list of all databases.
