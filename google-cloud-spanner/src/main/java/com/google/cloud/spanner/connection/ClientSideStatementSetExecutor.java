@@ -50,7 +50,8 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
       this.allowedValuesPattern =
           Pattern.compile(
               String.format(
-                  "(?is)\\A\\s*set\\s+%s\\s*%s\\s*%s\\s*\\z",
+                  "(?is)\\A\\s*%s\\s+%s\\s*%s\\s*%s\\s*\\z",
+                  statement.getSetStatement().getStatementKeyword(),
                   statement.getSetStatement().getPropertyName(),
                   statement.getSetStatement().getSeparator(),
                   statement.getSetStatement().getAllowedValues()));

@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -595,6 +596,72 @@ public class StatementParserTest {
         }
       }
     }
+  }
+
+  @Test
+  public void testTrimAndUnquoteIdentifier() {
+    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("test"));
+    assertEquals("my-database", StatementParser.trimAndUnquoteIdentifier("my-database"));
+    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("  test  "));
+    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("\n\t test\n\t "));
+    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("`test`"));
+    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("```test```"));
+    assertEquals("test test", StatementParser.trimAndUnquoteIdentifier("```test test```"));
+    assertEquals("test ` ", StatementParser.trimAndUnquoteIdentifier("```test ` ```"));
+    assertEquals("test test", StatementParser.trimAndUnquoteIdentifier("`test test`"));
+    assertEquals(
+        "my-database",
+        StatementParser.trimAndUnquoteIdentifier(
+            " /* comment that should be removed */ my-database"));
+    assertEquals(
+        "my-database",
+        StatementParser.trimAndUnquoteIdentifier(
+            " -- comment that should be removed \nmy-database"));
+    assertEquals(
+        "my-database",
+        StatementParser.trimAndUnquoteIdentifier(
+            " # comment that should be removed \nmy-database"));
+  }
+
+  @Test
+  public void testParseIdentifier() {
+    assertEquals("test", StatementParser.parseIdentifier("test"));
+    assertEquals("my-database", StatementParser.parseIdentifier("my-database"));
+    assertEquals("test", StatementParser.parseIdentifier("  test  "));
+    assertEquals("test", StatementParser.parseIdentifier("\n\t test\n\t "));
+    assertEquals("test", StatementParser.parseIdentifier("`test`"));
+    assertEquals("test", StatementParser.parseIdentifier("```test```"));
+    assertEquals("test test", StatementParser.parseIdentifier("```test test```"));
+    assertEquals("test ` ", StatementParser.parseIdentifier("```test ` ```"));
+    assertEquals("test test", StatementParser.parseIdentifier("`test test`"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" /* comment that should be removed */ my-database"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" -- comment that should be removed \nmy-database"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" # comment that should be removed \nmy-database"));
+
+    assertEquals("test", StatementParser.parseIdentifier("test test"));
+    assertEquals("my-database", StatementParser.parseIdentifier("my-database test"));
+    assertEquals("test", StatementParser.parseIdentifier("  test  test"));
+    assertEquals("test", StatementParser.parseIdentifier("\n\t test\n\t test"));
+    assertEquals("test", StatementParser.parseIdentifier("`test`test"));
+    assertEquals("test", StatementParser.parseIdentifier("```test```test"));
+    assertEquals("test test", StatementParser.parseIdentifier("```test test```test"));
+    assertEquals("test ` ", StatementParser.parseIdentifier("```test ` ```test"));
+    assertEquals("test test", StatementParser.parseIdentifier("`test test`test"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" /* comment that should be removed */ my-database test"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" -- comment that should be removed \nmy-database test"));
+    assertEquals(
+        "my-database",
+        StatementParser.parseIdentifier(" # comment that should be removed \nmy-database test"));
   }
 
   private Set<ClientSideStatementImpl> getAllStatements() throws CompileException {

@@ -36,6 +36,8 @@ class ClientSideStatementImpl implements ClientSideStatement {
    * ClientSideSetStatementImpl} that defines how the value is set.
    */
   static class ClientSideSetStatementImpl {
+    /** The keyword for this statement, e.g. SET. */
+    private String statementKeyword = "SET";
     /** The property name that is to be set, e.g. AUTOCOMMIT. */
     private String propertyName;
     /** The separator between the property and the value (i.e. '=' or '\s+'). */
@@ -44,6 +46,10 @@ class ClientSideStatementImpl implements ClientSideStatement {
     private String allowedValues;
     /** The class name of the {@link ClientSideStatementValueConverter} to use. */
     private String converterName;
+
+    String getStatementKeyword() {
+      return statementKeyword;
+    }
 
     String getPropertyName() {
       return propertyName;

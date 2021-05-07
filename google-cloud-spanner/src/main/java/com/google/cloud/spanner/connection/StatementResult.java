@@ -74,7 +74,12 @@ public interface StatementResult {
     START_BATCH_DDL,
     START_BATCH_DML,
     RUN_BATCH,
-    ABORT_BATCH
+    ABORT_BATCH,
+    SHOW_DATABASES,
+    USE_DATABASE,
+    CREATE_DATABASE,
+    ALTER_DATABASE,
+    DROP_DATABASE
   }
 
   /**

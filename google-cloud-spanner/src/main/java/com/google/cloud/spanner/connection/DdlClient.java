@@ -17,9 +17,12 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Collections;
 import java.util.List;
@@ -31,12 +34,12 @@ import java.util.List;
 class DdlClient {
   private final DatabaseAdminClient dbAdminClient;
   private final String instanceId;
-  private final String databaseName;
+  private String databaseId;
 
   static class Builder {
     private DatabaseAdminClient dbAdminClient;
     private String instanceId;
-    private String databaseName;
+    private String databaseId;
 
     private Builder() {}
 
@@ -53,18 +56,14 @@ class DdlClient {
       return this;
     }
 
-    Builder setDatabaseName(String name) {
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(name), "Empty database name is not allowed");
-      this.databaseName = name;
+    Builder setDatabaseId(String databaseId) {
+      this.databaseId = databaseId;
       return this;
     }
 
     DdlClient build() {
       Preconditions.checkState(dbAdminClient != null, "No DatabaseAdminClient specified");
       Preconditions.checkState(!Strings.isNullOrEmpty(instanceId), "No InstanceId specified");
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(databaseName), "No database name specified");
       return new DdlClient(this);
     }
   }
@@ -76,7 +75,25 @@ class DdlClient {
   private DdlClient(Builder builder) {
     this.dbAdminClient = builder.dbAdminClient;
     this.instanceId = builder.instanceId;
-    this.databaseName = builder.databaseName;
+    this.databaseId = builder.databaseId;
+  }
+
+  void setDefaultDatabaseId(String databaseId) {
+    this.databaseId = databaseId;
+  }
+
+  /**
+   * Gets the metadata of the given database on the instance that the DdlClient is connected to.
+   *
+   * @throws DatabaseNotFoundException if the database could not be found
+   */
+  Database getDatabase(String databaseId) {
+    return dbAdminClient.getDatabase(instanceId, databaseId);
+  }
+
+  /** Gets the list of databases on the instance that the DdlClient is connected to. */
+  Iterable<Database> listDatabases() {
+    return dbAdminClient.listDatabases(instanceId).iterateAll();
   }
 
   /** Execute a single DDL statement. */
@@ -86,6 +103,25 @@ class DdlClient {
 
   /** Execute a list of DDL statements as one operation. */
   OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(List<String> statements) {
-    return dbAdminClient.updateDatabaseDdl(instanceId, databaseName, statements, null);
+    ConnectionPreconditions.checkState(
+        databaseId != null, "This connection is not connected to a database.");
+    return dbAdminClient.updateDatabaseDdl(instanceId, databaseId, statements, null);
+  }
+
+  /** Execute a list of DDL statements as one operation on a specific database. */
+  OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(
+      String databaseId, List<String> statements) {
+    return dbAdminClient.updateDatabaseDdl(instanceId, databaseId, statements, null);
+  }
+
+  /** Creates a new database. */
+  OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String databaseId, List<String> additionalStatements) {
+    return dbAdminClient.createDatabase(instanceId, databaseId, additionalStatements);
+  }
+
+  /** Drops an existing database. */
+  void dropDatabase(String databaseId) {
+    dbAdminClient.dropDatabase(instanceId, databaseId);
   }
 }

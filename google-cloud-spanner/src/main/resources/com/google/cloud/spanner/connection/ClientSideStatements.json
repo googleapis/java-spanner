@@ -294,6 +294,74 @@
 	    "allowedValues": "(TRUE|FALSE)",
 	    "converterName": "ClientSideStatementValueConverters$BooleanConverter"
 	  }
+	},
+	{
+	  "name": "SHOW VARIABLE DATABASES",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+databases\\s*\\z",
+	  "method": "statementShowDatabases",
+	  "exampleStatements": ["show variable databases"]
+	},
+	{
+	  "name": "USE DATABASE <database_id>",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*use\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+	  "method": "statementUseDatabase",
+	  "exampleStatements": ["use database test-db", "use database `some database`"],
+	  "setStatement": {
+	    "statementKeyword": "USE",
+	    "propertyName": "DATABASE",
+	    "separator": "\\s+",
+	    "allowedValues": "(.*)",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "CREATE DATABASE <database_id>",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*create\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+	  "method": "statementCreateDatabase",
+	  "exampleStatements": ["create database test-db", "create database `some database`"],
+	  "setStatement": {
+	    "statementKeyword": "CREATE",
+	    "propertyName": "DATABASE",
+	    "separator": "\\s+",
+	    "allowedValues": "(.+)",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "ALTER DATABASE <database_id>",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*alter\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+	  "method": "statementAlterDatabase",
+	  "exampleStatements": ["alter database test-db SET OPTIONS ( optimizer_version = 1 )", "alter database `some database` SET OPTIONS ( optimizer_version = 1 )"],
+	  "setStatement": {
+	    "statementKeyword": "ALTER",
+	    "propertyName": "DATABASE",
+	    "separator": "\\s+",
+	    "allowedValues": "(.+)",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "DROP DATABASE <database_id>",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*drop\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+	  "method": "statementDropDatabase",
+	  "exampleStatements": ["drop database test-db", "drop database `some database`"],
+	  "setStatement": {
+	    "statementKeyword": "DROP",
+	    "propertyName": "DATABASE",
+	    "separator": "\\s+",
+	    "allowedValues": "(.*)",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
 	}
 	]
 }

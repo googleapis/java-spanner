@@ -228,9 +228,21 @@ public abstract class AbstractMockServerTest {
     return connection;
   }
 
+  ITConnection createConnectionWithoutDb() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder().setUri(getBaseUrlWithoutDb()).build();
+    return createITConnection(options);
+  }
+
   protected String getBaseUrl() {
     return String.format(
         "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?usePlainText=true;autocommit=false;retryAbortsInternally=true",
+        server.getPort());
+  }
+
+  protected String getBaseUrlWithoutDb() {
+    return String.format(
+        "cloudspanner://localhost:%d/projects/proj/instances/inst?usePlainText=true;autocommit=false;retryAbortsInternally=true",
         server.getPort());
   }
 
