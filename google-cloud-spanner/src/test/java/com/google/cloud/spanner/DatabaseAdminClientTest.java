@@ -83,8 +83,8 @@ public class DatabaseAdminClientTest {
   private static Server server;
   private static InetSocketAddress address;
 
-  private Spanner spanner;
-  private DatabaseAdminClient client;
+  private static Spanner spanner;
+  private static DatabaseAdminClient client;
   private OperationFuture<Database, CreateDatabaseMetadata> createDatabaseOperation;
   private OperationFuture<Backup, CreateBackupMetadata> createBackupOperation;
   private OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabaseOperation;
@@ -101,18 +101,6 @@ public class DatabaseAdminClientTest {
             .addService(mockDatabaseAdmin)
             .build()
             .start();
-  }
-
-  @AfterClass
-  public static void stopServer() throws Exception {
-    server.shutdown();
-    server.awaitTermination();
-  }
-
-  @Before
-  public void setUp() {
-    mockDatabaseAdmin.reset();
-    mockOperations.reset();
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     RetrySettings longRunningInitialRetrySettings =
         RetrySettings.newBuilder()
@@ -202,6 +190,19 @@ public class DatabaseAdminClientTest {
             .build()
             .getService();
     client = spanner.getDatabaseAdminClient();
+  }
+
+  @AfterClass
+  public static void stopServer() throws Exception {
+    spanner.close();
+    server.shutdown();
+    server.awaitTermination();
+  }
+
+  @Before
+  public void setUp() {
+    mockDatabaseAdmin.reset();
+    mockOperations.reset();
     createTestDatabase();
     createTestBackup();
     restoreTestBackup();
@@ -212,7 +213,6 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.reset();
     mockDatabaseAdmin.removeAllExecutionTimes();
     mockOperations.reset();
-    spanner.close();
   }
 
   @Test

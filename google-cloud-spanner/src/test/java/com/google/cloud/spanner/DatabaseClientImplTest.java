@@ -958,6 +958,7 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void transactionManagerExecuteQueryAsync() throws Exception {
     DatabaseClient client =
@@ -991,7 +992,6 @@ public class DatabaseClientImplTest {
           txManager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
           transaction = txManager.resetForRetry();
         }
       }
@@ -1519,11 +1519,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       DatabaseClient client =
@@ -1557,11 +1553,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       DatabaseClient client =
@@ -1597,11 +1589,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       BatchClient client =

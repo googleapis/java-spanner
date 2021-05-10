@@ -113,10 +113,10 @@ public abstract class AbstractMockServerTest {
   private static Server server;
   private static InetSocketAddress address;
 
-  private boolean futureParentHandlers;
-  private boolean exceptionRunnableParentHandlers;
-  private boolean nettyServerParentHandlers;
-  private boolean clientStreamParentHandlers;
+  private static boolean futureParentHandlers;
+  private static boolean exceptionRunnableParentHandlers;
+  private static boolean nettyServerParentHandlers;
+  private static boolean clientStreamParentHandlers;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -152,18 +152,6 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
-  }
-
-  @AfterClass
-  public static void stopServer() {
-    server.shutdown();
-  }
-
-  @Before
-  public void setupResults() {
-    mockSpanner.reset();
-    mockDatabaseAdmin.reset();
-    mockInstanceAdmin.reset();
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =
@@ -181,8 +169,8 @@ public abstract class AbstractMockServerTest {
     Logger.getLogger("io.grpc.internal.AbstractClientStream").setUseParentHandlers(false);
   }
 
-  @After
-  public void closeSpannerPool() {
+  @AfterClass
+  public static void stopServer() {
     try {
       SpannerPool.INSTANCE.checkAndCloseSpanners(
           CheckAndCloseSpannersMode.ERROR,
@@ -196,6 +184,34 @@ public abstract class AbstractMockServerTest {
       Logger.getLogger("io.grpc.internal.AbstractClientStream")
           .setUseParentHandlers(clientStreamParentHandlers);
     }
+    server.shutdown();
+  }
+
+  @Before
+  public void setupResults() {
+    mockSpanner.clearRequests();
+    mockDatabaseAdmin.getRequests().clear();
+    mockInstanceAdmin.getRequests().clear();
+  }
+
+  @After
+  public void closeSpannerPool() {
+    //    Stopwatch watch = Stopwatch.createStarted();
+    //    try {
+    //      SpannerPool.INSTANCE.checkAndCloseSpanners(
+    //          CheckAndCloseSpannersMode.ERROR,
+    //          new ForceCloseSpannerFunction(100L, TimeUnit.MILLISECONDS));
+    //    } finally {
+    //
+    // Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
+    //      Logger.getLogger(LogExceptionRunnable.class.getName())
+    //          .setUseParentHandlers(exceptionRunnableParentHandlers);
+    //      Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
+    //          .setUseParentHandlers(nettyServerParentHandlers);
+    //      Logger.getLogger("io.grpc.internal.AbstractClientStream")
+    //          .setUseParentHandlers(clientStreamParentHandlers);
+    //      System.out.printf("Elapsed: %d ms\n", watch.elapsed(TimeUnit.MILLISECONDS));
+    //    }
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {
