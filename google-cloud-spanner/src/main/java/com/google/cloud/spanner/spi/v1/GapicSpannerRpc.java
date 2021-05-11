@@ -273,6 +273,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final ScheduledExecutorService spannerWatchdog;
 
   private final boolean throttleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
@@ -300,6 +301,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       ADMINISTRATIVE_REQUESTS_RATE_LIMITERS.putIfAbsent(
           projectNameStr, RateLimiter.create(ADMINISTRATIVE_REQUESTS_RATE_LIMIT));
     }
+    this.retryAdministrativeRequestsSettings = options.getRetryAdministrativeRequestsSettings();
 
     // create a metadataProvider which combines both internal headers and
     // per-method-call extra headers for channelProvider to inject the headers
@@ -593,11 +595,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
-  private static <T> T runWithRetryOnAdministrativeRequestsExceeded(Callable<T> callable) {
+  private <T> T runWithRetryOnAdministrativeRequestsExceeded(Callable<T> callable) {
     try {
       return RetryHelper.runWithRetries(
           callable,
-          ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS,
+          retryAdministrativeRequestsSettings,
           new AdminRequestsLimitExceededRetryAlgorithm<>(),
           NanoClock.getDefaultClock());
     } catch (RetryHelperException e) {

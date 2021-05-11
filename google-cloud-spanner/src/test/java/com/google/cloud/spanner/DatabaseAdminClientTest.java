@@ -38,18 +38,22 @@ import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.rpc.ErrorInfo;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -181,6 +185,11 @@ public class DatabaseAdminClientTest {
                     .setRetryDelayMultiplier(1.3)
                     .setRpcTimeoutMultiplier(1.3)
                     .build()));
+    builder.setRetryAdministrativeRequestsSettings(
+        SpannerOptions.Builder.DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS
+            .toBuilder()
+            .setInitialRetryDelay(Duration.ofNanos(1L))
+            .build());
     spanner =
         builder
             .setHost("http://localhost:" + server.getPort())
@@ -904,5 +913,26 @@ public class DatabaseAdminClientTest {
     Database retrieved = client.getDatabase(INSTANCE_ID, databaseId);
     assertThat(retrieved.getCreateTime()).isEqualTo(database.getCreateTime());
     assertThat(mockDatabaseAdmin.countRequestsOfType(RestoreDatabaseRequest.class)).isAtLeast(3);
+  }
+
+  @Test
+  public void testRetryOperationOnAdminMethodQuotaPerMinutePerProjectExceeded() {
+    ErrorInfo info =
+        ErrorInfo.newBuilder()
+            .putMetadata("quota_limit", "AdminMethodQuotaPerMinutePerProject")
+            .build();
+    Metadata.Key<ErrorInfo> key =
+        Metadata.Key.of(
+            info.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(info));
+    Metadata trailers = new Metadata();
+    trailers.put(key, info);
+    mockDatabaseAdmin.addException(
+        Status.RESOURCE_EXHAUSTED.withDescription("foo").asRuntimeException(trailers));
+    mockDatabaseAdmin.clearRequests();
+
+    Database database = client.getDatabase(INSTANCE_ID, DB_ID);
+    assertEquals(DB_ID, database.getId().getDatabase());
+    assertEquals(2, mockDatabaseAdmin.countRequestsOfType(GetDatabaseRequest.class));
   }
 }
