@@ -54,11 +54,14 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +77,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
    * because it was invalidated by a later transaction in the same session.
    */
   private static final String TRANSACTION_CANCELLED_MESSAGE = "invalidated by a later transaction";
+
+  private static final String TRANSACTION_ALREADY_COMMITTED_MESSAGE =
+      "Transaction has already committed";
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
@@ -146,8 +152,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    @GuardedBy("lock")
-    private volatile boolean committing;
+    private final AtomicBoolean committing = new AtomicBoolean();
 
     @GuardedBy("lock")
     private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
@@ -155,8 +160,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-    @GuardedBy("lock")
-    private List<Mutation> mutations = new ArrayList<>();
+    private final Queue<Mutation> mutations = new ConcurrentLinkedQueue<>();
 
     @GuardedBy("lock")
     private boolean aborted;
@@ -280,6 +284,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      if (committing.getAndSet(true)) {
+        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+      }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder =
@@ -303,13 +310,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } else {
           finishOps = finishedAsyncOperations;
         }
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
+      }
+      if (!mutations.isEmpty()) {
+        List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+        Mutation.toProto(mutations, mutationsProto);
+        builder.addAllMutations(mutationsProto);
       }
       finishOps.addListener(
           new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
@@ -603,10 +608,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Mutation mutation) {
-      synchronized (lock) {
-        checkNotNull(mutations, "Context is closed");
-        mutations.add(checkNotNull(mutation));
+      if (committing.get()) {
+        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
       }
+      mutations.add(checkNotNull(mutation));
     }
 
     @Override
@@ -620,11 +625,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Iterable<Mutation> mutations) {
-      synchronized (lock) {
-        checkNotNull(this.mutations, "Context is closed");
-        for (Mutation mutation : mutations) {
-          this.mutations.add(checkNotNull(mutation));
-        }
+      if (committing.get()) {
+        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+      }
+      for (Mutation mutation : mutations) {
+        this.mutations.add(checkNotNull(mutation));
       }
     }
 

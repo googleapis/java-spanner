@@ -204,7 +204,8 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               transactionContextFuture
                   .then(
                       (transactionContext, ignored) ->
-                          transactionContext.bufferAsync(Mutation.delete("FOO", Key.of("foo"))),
+                          transactionContext.bufferAsync(
+                              Collections.singleton(Mutation.delete("FOO", Key.of("foo")))),
                       executor)
                   .commitAsync();
           assertNotNull(commitTimestamp.get());
