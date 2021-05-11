@@ -17,7 +17,7 @@ Install [Maven](http://maven.apache.org/).
 
 Build your project from the root directory (`java-spanner`):
 
-    mvn clean package -DskipTests -DskipUTs -Penable-samples
+    mvn clean package -DskipTests -Penable-samples
 
 Every subsequent command here should be run from a subdirectory (`cd samples/snippets`).
 
