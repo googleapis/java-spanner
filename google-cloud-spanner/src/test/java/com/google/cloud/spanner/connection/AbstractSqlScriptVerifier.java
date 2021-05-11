@@ -282,8 +282,10 @@ public abstract class AbstractSqlScriptVerifier {
     for (String statement : statements) {
       String sql = statement.trim();
       if (sql.equalsIgnoreCase("NEW_CONNECTION")) {
-        batches.add(currentBatch);
-        currentBatch.clear();
+        if (!currentBatch.isEmpty()) {
+          batches.add(currentBatch);
+        }
+        currentBatch = new ArrayList<>();
       } else {
         currentBatch.add(sql);
       }
