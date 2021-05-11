@@ -104,6 +104,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
   private final boolean autoThrottleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
@@ -554,6 +555,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
@@ -606,6 +608,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setRetryDelayMultiplier(2.0)
+            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxAttempts(10)
+            .build();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
@@ -632,6 +641,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private RetrySettings retryAdministrativeRequestsSettings =
+        DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -680,6 +691,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
@@ -893,6 +905,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the retry settings for retrying administrative requests when the quote of administrative
+     * requests per minute has been exceeded.
+     */
+    Builder setRetryAdministrativeRequestsSettings(
+        RetrySettings retryAdministrativeRequestsSettings) {
+      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      return this;
+    }
+
+    /**
      * Instructs the client library to track the first request of each read/write transaction. This
      * statement will include a BeginTransaction option and will return a transaction id as part of
      * its result. All other statements in the same transaction must wait for this first statement
@@ -1090,6 +1112,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public RetrySettings getRetryAdministrativeRequestsSettings() {
+    return retryAdministrativeRequestsSettings;
   }
 
   public boolean isTrackTransactionStarter() {
