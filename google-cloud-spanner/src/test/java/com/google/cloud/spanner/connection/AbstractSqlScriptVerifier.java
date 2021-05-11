@@ -288,6 +288,9 @@ public abstract class AbstractSqlScriptVerifier {
         currentBatch.add(sql);
       }
     }
+    if (!currentBatch.isEmpty()) {
+      batches.add(currentBatch);
+    }
     return batches;
   }
 
