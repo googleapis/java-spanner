@@ -138,6 +138,14 @@ public class TransactionContextImplTest {
     }
   }
 
+  @Test
+  public void testCannotCommitTwice() {
+    try (TransactionContextImpl context = createContext()) {
+      context.commit();
+      assertThrows(IllegalStateException.class, () -> context.commit());
+    }
+  }
+
   @Test(expected = AbortedException.class)
   public void batchDmlAborted() {
     batchDml(Code.ABORTED_VALUE);
