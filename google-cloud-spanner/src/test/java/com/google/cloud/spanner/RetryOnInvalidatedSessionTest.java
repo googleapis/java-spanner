@@ -895,8 +895,7 @@ public class RetryOnInvalidatedSessionTest {
           assertThrowsSessionNotFoundIfShouldFail(() -> context.executeUpdate(UPDATE_STATEMENT));
           manager.commit();
           // The actual number of attempts depends on when the transaction manager will actually get
-          // a
-          // valid session, as we invalidate the entire session pool.
+          // a valid session, as we invalidate the entire session pool.
           assertThat(attempt).isAtLeast(3);
           break;
         } catch (AbortedException e) {

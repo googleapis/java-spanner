@@ -212,9 +212,12 @@ public abstract class AbstractSqlScriptVerifier {
    *     semicolon (;)
    * @param resourceClass The class that should be used to locate the resource specified by the file
    *     name
+   * @param allowParallel indicates whether the batches in the given script may be executed in
+   *     parallel
    */
-  public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
-    verifyStatementsInFile(null, filename, resourceClass);
+  public void verifyStatementsInFile(String filename, Class<?> resourceClass, boolean allowParallel)
+      throws Exception {
+    verifyStatementsInFile(null, filename, resourceClass, allowParallel);
   }
 
   /**
@@ -228,15 +231,20 @@ public abstract class AbstractSqlScriptVerifier {
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
    * @param resourceClass The class that defines the package where to find the input file
+   * @param allowParallel indicates whether the batches in the given script may be executed in
+   *     parallel
    */
   public void verifyStatementsInFile(
-      GenericConnection providedConnection, String filename, Class<?> resourceClass)
+      GenericConnection providedConnection,
+      String filename,
+      Class<?> resourceClass,
+      boolean allowParallel)
       throws Exception {
     List<String> statements = readStatementsFromFile(filename, resourceClass);
     List<List<String>> batches = toBatches(statements);
 
     Stream<List<String>> stream;
-    if (logStatements) {
+    if (!allowParallel || logStatements) {
       stream = batches.stream();
     } else {
       stream = batches.parallelStream();

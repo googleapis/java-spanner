@@ -454,8 +454,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
         // while polling long-running operations for their progress and can also cause these errors.
         // The default behavior is not to retry these errors, and this option should normally only
-        // be
-        // enabled for (integration) testing.
+        // be enabled for (integration) testing.
         if (options.isAutoThrottleAdministrativeRequests()) {
           GrpcStubCallableFactory factory =
               new GrpcDatabaseAdminCallableFactory() {
@@ -465,8 +464,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     UnaryCallSettings<RequestT, ResponseT> callSettings,
                     ClientContext clientContext) {
                   // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations
-                  // from
-                  // failing with an Administrative requests limit exceeded error.
+                  // from failing with an Administrative requests limit exceeded error.
                   if (grpcCallSettings
                       .getMethodDescriptor()
                       .getFullMethodName()
@@ -492,8 +490,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         }
 
         // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
-        // is
-        // actually running.
+        // is actually running.
         checkEmulatorConnection(options, channelProvider, credentialsProvider);
       } catch (Exception e) {
         throw newSpannerException(e);

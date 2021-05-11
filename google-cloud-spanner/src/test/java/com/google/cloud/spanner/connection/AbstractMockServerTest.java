@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -192,26 +191,6 @@ public abstract class AbstractMockServerTest {
     mockSpanner.clearRequests();
     mockDatabaseAdmin.getRequests().clear();
     mockInstanceAdmin.getRequests().clear();
-  }
-
-  @After
-  public void closeSpannerPool() {
-    //    Stopwatch watch = Stopwatch.createStarted();
-    //    try {
-    //      SpannerPool.INSTANCE.checkAndCloseSpanners(
-    //          CheckAndCloseSpannersMode.ERROR,
-    //          new ForceCloseSpannerFunction(100L, TimeUnit.MILLISECONDS));
-    //    } finally {
-    //
-    // Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
-    //      Logger.getLogger(LogExceptionRunnable.class.getName())
-    //          .setUseParentHandlers(exceptionRunnableParentHandlers);
-    //      Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
-    //          .setUseParentHandlers(nettyServerParentHandlers);
-    //      Logger.getLogger("io.grpc.internal.AbstractClientStream")
-    //          .setUseParentHandlers(clientStreamParentHandlers);
-    //      System.out.printf("Elapsed: %d ms\n", watch.elapsed(TimeUnit.MILLISECONDS));
-    //    }
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {

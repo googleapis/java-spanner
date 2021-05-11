@@ -196,9 +196,11 @@ public class GapicSpannerRpcTest {
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    spanner.close();
-    server.shutdown();
-    server.awaitTermination();
+    if (spanner != null) {
+      spanner.close();
+      server.shutdown();
+      server.awaitTermination();
+    }
   }
 
   @After
