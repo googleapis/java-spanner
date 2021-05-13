@@ -1,5 +1,12 @@
 # Changelog
 
+### [3.3.3-sp.1](https://www.github.com/googleapis/java-spanner/compare/3.3.3...v3.3.3-sp.1) (2021-05-13)
+
+
+### Features
+
+* configure initial sp version ([#1156](https://www.github.com/googleapis/java-spanner/issues/1156)) ([46800a3](https://www.github.com/googleapis/java-spanner/commit/46800a3d6084abcd5f927873df0baa4b77771e45))
+
 ### [3.3.3](https://www.github.com/googleapis/java-spanner/compare/v3.3.2...v3.3.3) (2021-05-07)
 
 
