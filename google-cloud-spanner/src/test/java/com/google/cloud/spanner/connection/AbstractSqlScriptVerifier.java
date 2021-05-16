@@ -226,6 +226,27 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
+   * <p>The {@link com.google.cloud.spanner.jdbc.Connection}s that the statements are executed on
+   * must be created by a {@link GenericConnectionProvider}
+   *
+   * @param filename The file name containing the statements. Statements must be separated by a
+   *     semicolon (;)
+   * @param resourceClass The class that should be used to locate the resource specified by the file
+   *     name
+   * @deprecated use {@link AbstractSqlScriptVerifier#verifyStatementsInFile(String, Class,
+   *     boolean)} instead. This method does not allow parallel batch execution.
+   */
+  @Deprecated
+  public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
+    this.verifyStatementsInFile(filename, resourceClass, false);
+  }
+
+  /**
+   * Reads sql statements from the specified file name and executes and verifies these. Statements
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
+   * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
+   * the statement throws an exception, which will fail the test case.
+   *
    * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
    *     statements against
    * @param filename The file name containing the statements. Statements must be separated by a
