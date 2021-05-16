@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.3](https://www.github.com/googleapis/java-spanner/compare/v6.4.2...v6.4.3) (2021-05-16)
+
+
+### Bug Fixes
+
+* re-adds test utility method for connection ([#1178](https://www.github.com/googleapis/java-spanner/issues/1178)) ([0e0dcb7](https://www.github.com/googleapis/java-spanner/commit/0e0dcb7cdc412e54c26d5e8f0176ac1917fa4c59))
+
 ### [6.4.2](https://www.github.com/googleapis/java-spanner/compare/v6.4.1...v6.4.2) (2021-05-14)
 
 
