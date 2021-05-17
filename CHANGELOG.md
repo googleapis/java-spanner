@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.4](https://www.github.com/googleapis/java-spanner/compare/v6.4.3...v6.4.4) (2021-05-17)
+
+
+### Bug Fixes
+
+* re-adds test verifyStatementsInFile ([#1181](https://www.github.com/googleapis/java-spanner/issues/1181)) ([7a715b4](https://www.github.com/googleapis/java-spanner/commit/7a715b429ba2a9561d24ba66404142bdc9de5a4f))
+
 ### [6.4.3](https://www.github.com/googleapis/java-spanner/compare/v6.4.2...v6.4.3) (2021-05-16)
 
 
