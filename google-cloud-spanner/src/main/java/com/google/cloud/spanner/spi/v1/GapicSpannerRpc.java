@@ -273,6 +273,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final ScheduledExecutorService spannerWatchdog;
 
   private final boolean throttleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
@@ -282,6 +283,10 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   public GapicSpannerRpc(final SpannerOptions options) {
+    this(options, true);
+  }
+
+  GapicSpannerRpc(final SpannerOptions options, boolean initializeStubs) {
     this.projectId = options.getProjectId();
     String projectNameStr = PROJECT_NAME_TEMPLATE.instantiate("project", this.projectId);
     try {
@@ -296,6 +301,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       ADMINISTRATIVE_REQUESTS_RATE_LIMITERS.putIfAbsent(
           projectNameStr, RateLimiter.create(ADMINISTRATIVE_REQUESTS_RATE_LIMIT));
     }
+    this.retryAdministrativeRequestsSettings = options.getRetryAdministrativeRequestsSettings();
 
     // create a metadataProvider which combines both internal headers and
     // per-method-call extra headers for channelProvider to inject the headers
@@ -322,173 +328,184 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
 
-    // Create a managed executor provider.
-    this.executorProvider =
-        new ManagedInstantiatingExecutorProvider(
-            new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Cloud-Spanner-TransportChannel-%d")
-                .build());
-    // First check if SpannerOptions provides a TransportChannelProvider. Create one
-    // with information gathered from SpannerOptions if none is provided
-    InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
-        InstantiatingGrpcChannelProvider.newBuilder()
-            .setChannelConfigurator(options.getChannelConfigurator())
-            .setEndpoint(options.getEndpoint())
-            .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
-            .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
-            .setPoolSize(options.getNumChannels())
-
-            // Before updating this method to setExecutor, please verify with a code owner on
-            // the lowest version of gax-grpc that needs to be supported. Currently v1.47.17,
-            // which doesn't support the setExecutor variant.
-            .setExecutorProvider(executorProvider)
-
-            // Set a keepalive time of 120 seconds to help long running
-            // commit GRPC calls succeed
-            .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
-
-            // Then check if SpannerOptions provides an InterceptorProvider. Create a default
-            // SpannerInterceptorProvider if none is provided
-            .setInterceptorProvider(
-                SpannerInterceptorProvider.create(
-                        MoreObjects.firstNonNull(
-                            options.getInterceptorProvider(),
-                            SpannerInterceptorProvider.createDefault()))
-                    .withEncoding(compressorName))
-            .setHeaderProvider(headerProviderWithUserAgent)
-            // Attempts direct access to spanner service over gRPC to improve throughput,
-            // whether the attempt is allowed is totally controlled by service owner.
-            .setAttemptDirectPath(true);
-
-    TransportChannelProvider channelProvider =
-        MoreObjects.firstNonNull(
-            options.getChannelProvider(), defaultChannelProviderBuilder.build());
-
-    CredentialsProvider credentialsProvider =
-        GrpcTransportOptions.setUpCredentialsProvider(options);
-
-    spannerWatchdog =
-        Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Cloud-Spanner-WatchdogProvider-%d")
-                .build());
-    WatchdogProvider watchdogProvider =
-        InstantiatingWatchdogProvider.create()
-            .withExecutor(spannerWatchdog)
-            .withCheckInterval(checkInterval)
-            .withClock(NanoClock.getDefaultClock());
-
-    try {
-      this.spannerStub =
-          GrpcSpannerStub.create(
-              options
-                  .getSpannerStubSettings()
-                  .toBuilder()
-                  .setTransportChannelProvider(channelProvider)
-                  .setCredentialsProvider(credentialsProvider)
-                  .setStreamWatchdogProvider(watchdogProvider)
+    if (initializeStubs) {
+      // Create a managed executor provider.
+      this.executorProvider =
+          new ManagedInstantiatingExecutorProvider(
+              new ThreadFactoryBuilder()
+                  .setDaemon(true)
+                  .setNameFormat("Cloud-Spanner-TransportChannel-%d")
                   .build());
-      partitionedDmlRetrySettings =
-          options
-              .getSpannerStubSettings()
-              .executeSqlSettings()
-              .getRetrySettings()
-              .toBuilder()
-              .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
-              .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
-              .setTotalTimeout(options.getPartitionedDmlTimeout())
-              .setRpcTimeoutMultiplier(1.0)
-              .build();
-      SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
-      pdmlSettings
-          .setTransportChannelProvider(channelProvider)
-          .setCredentialsProvider(credentialsProvider)
-          .setStreamWatchdogProvider(watchdogProvider)
-          .executeSqlSettings()
-          .setRetrySettings(partitionedDmlRetrySettings);
-      pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
-      // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
-      // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
-      // also change the StreamWatchdogCheckInterval.
-      if (options
-              .getPartitionedDmlTimeout()
-              .dividedBy(10L)
-              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
-          < 0) {
-        pdmlSettings.setStreamWatchdogCheckInterval(
-            options.getPartitionedDmlTimeout().dividedBy(10));
-        pdmlSettings.setStreamWatchdogProvider(
-            pdmlSettings
-                .getStreamWatchdogProvider()
-                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
-      }
-      this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
+      // First check if SpannerOptions provides a TransportChannelProvider. Create one
+      // with information gathered from SpannerOptions if none is provided
+      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
+          InstantiatingGrpcChannelProvider.newBuilder()
+              .setChannelConfigurator(options.getChannelConfigurator())
+              .setEndpoint(options.getEndpoint())
+              .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+              .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
+              .setPoolSize(options.getNumChannels())
 
-      this.instanceAdminStub =
-          GrpcInstanceAdminStub.create(
-              options
-                  .getInstanceAdminStubSettings()
-                  .toBuilder()
-                  .setTransportChannelProvider(channelProvider)
-                  .setCredentialsProvider(credentialsProvider)
-                  .setStreamWatchdogProvider(watchdogProvider)
+              // Before updating this method to setExecutor, please verify with a code owner on
+              // the lowest version of gax-grpc that needs to be supported. Currently v1.47.17,
+              // which doesn't support the setExecutor variant.
+              .setExecutorProvider(executorProvider)
+
+              // Set a keepalive time of 120 seconds to help long running
+              // commit GRPC calls succeed
+              .setKeepAliveTime(Duration.ofSeconds(GRPC_KEEPALIVE_SECONDS))
+
+              // Then check if SpannerOptions provides an InterceptorProvider. Create a default
+              // SpannerInterceptorProvider if none is provided
+              .setInterceptorProvider(
+                  SpannerInterceptorProvider.create(
+                          MoreObjects.firstNonNull(
+                              options.getInterceptorProvider(),
+                              SpannerInterceptorProvider.createDefault()))
+                      .withEncoding(compressorName))
+              .setHeaderProvider(headerProviderWithUserAgent)
+              // Attempts direct access to spanner service over gRPC to improve throughput,
+              // whether the attempt is allowed is totally controlled by service owner.
+              .setAttemptDirectPath(true);
+
+      TransportChannelProvider channelProvider =
+          MoreObjects.firstNonNull(
+              options.getChannelProvider(), defaultChannelProviderBuilder.build());
+
+      CredentialsProvider credentialsProvider =
+          GrpcTransportOptions.setUpCredentialsProvider(options);
+
+      spannerWatchdog =
+          Executors.newSingleThreadScheduledExecutor(
+              new ThreadFactoryBuilder()
+                  .setDaemon(true)
+                  .setNameFormat("Cloud-Spanner-WatchdogProvider-%d")
                   .build());
+      WatchdogProvider watchdogProvider =
+          InstantiatingWatchdogProvider.create()
+              .withExecutor(spannerWatchdog)
+              .withCheckInterval(checkInterval)
+              .withClock(NanoClock.getDefaultClock());
 
-      this.databaseAdminStubSettings =
-          options
-              .getDatabaseAdminStubSettings()
-              .toBuilder()
-              .setTransportChannelProvider(channelProvider)
-              .setCredentialsProvider(credentialsProvider)
-              .setStreamWatchdogProvider(watchdogProvider)
-              .build();
+      try {
+        this.spannerStub =
+            GrpcSpannerStub.create(
+                options
+                    .getSpannerStubSettings()
+                    .toBuilder()
+                    .setTransportChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
+                    .setStreamWatchdogProvider(watchdogProvider)
+                    .build());
+        partitionedDmlRetrySettings =
+            options
+                .getSpannerStubSettings()
+                .executeSqlSettings()
+                .getRetrySettings()
+                .toBuilder()
+                .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
+                .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
+                .setTotalTimeout(options.getPartitionedDmlTimeout())
+                .setRpcTimeoutMultiplier(1.0)
+                .build();
+        SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
+        pdmlSettings
+            .setTransportChannelProvider(channelProvider)
+            .setCredentialsProvider(credentialsProvider)
+            .setStreamWatchdogProvider(watchdogProvider)
+            .executeSqlSettings()
+            .setRetrySettings(partitionedDmlRetrySettings);
+        pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
+        // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
+        // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
+        // also change the StreamWatchdogCheckInterval.
+        if (options
+                .getPartitionedDmlTimeout()
+                .dividedBy(10L)
+                .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+            < 0) {
+          pdmlSettings.setStreamWatchdogCheckInterval(
+              options.getPartitionedDmlTimeout().dividedBy(10));
+          pdmlSettings.setStreamWatchdogProvider(
+              pdmlSettings
+                  .getStreamWatchdogProvider()
+                  .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+        }
+        this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
 
-      // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
-      // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
-      // while polling long-running operations for their progress and can also cause these errors.
-      // The default behavior is not to retry these errors, and this option should normally only be
-      // enabled for (integration) testing.
-      if (options.isAutoThrottleAdministrativeRequests()) {
-        GrpcStubCallableFactory factory =
-            new GrpcDatabaseAdminCallableFactory() {
-              @Override
-              public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
-                  GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
-                  UnaryCallSettings<RequestT, ResponseT> callSettings,
-                  ClientContext clientContext) {
-                // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations from
-                // failing with an Administrative requests limit exceeded error.
-                if (grpcCallSettings
-                    .getMethodDescriptor()
-                    .getFullMethodName()
-                    .equals("google.longrunning.Operations/GetOperation")) {
-                  Set<StatusCode.Code> codes =
-                      ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
-                              callSettings.getRetryableCodes().size() + 1)
-                          .addAll(callSettings.getRetryableCodes())
-                          .add(StatusCode.Code.RESOURCE_EXHAUSTED)
-                          .build();
-                  callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+        this.instanceAdminStub =
+            GrpcInstanceAdminStub.create(
+                options
+                    .getInstanceAdminStubSettings()
+                    .toBuilder()
+                    .setTransportChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
+                    .setStreamWatchdogProvider(watchdogProvider)
+                    .build());
+
+        this.databaseAdminStubSettings =
+            options
+                .getDatabaseAdminStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .setStreamWatchdogProvider(watchdogProvider)
+                .build();
+
+        // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
+        // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
+        // while polling long-running operations for their progress and can also cause these errors.
+        // The default behavior is not to retry these errors, and this option should normally only
+        // be enabled for (integration) testing.
+        if (options.isAutoThrottleAdministrativeRequests()) {
+          GrpcStubCallableFactory factory =
+              new GrpcDatabaseAdminCallableFactory() {
+                @Override
+                public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
+                    GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
+                    UnaryCallSettings<RequestT, ResponseT> callSettings,
+                    ClientContext clientContext) {
+                  // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations
+                  // from failing with an Administrative requests limit exceeded error.
+                  if (grpcCallSettings
+                      .getMethodDescriptor()
+                      .getFullMethodName()
+                      .equals("google.longrunning.Operations/GetOperation")) {
+                    Set<StatusCode.Code> codes =
+                        ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
+                                callSettings.getRetryableCodes().size() + 1)
+                            .addAll(callSettings.getRetryableCodes())
+                            .add(StatusCode.Code.RESOURCE_EXHAUSTED)
+                            .build();
+                    callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+                  }
+                  return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
                 }
-                return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
-              }
-            };
-        this.databaseAdminStub =
-            new GrpcDatabaseAdminStubWithCustomCallableFactory(
-                databaseAdminStubSettings,
-                ClientContext.create(databaseAdminStubSettings),
-                factory);
-      } else {
-        this.databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
-      }
+              };
+          this.databaseAdminStub =
+              new GrpcDatabaseAdminStubWithCustomCallableFactory(
+                  databaseAdminStubSettings,
+                  ClientContext.create(databaseAdminStubSettings),
+                  factory);
+        } else {
+          this.databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
+        }
 
-      // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator is
-      // actually running.
-      checkEmulatorConnection(options, channelProvider, credentialsProvider);
-    } catch (Exception e) {
-      throw newSpannerException(e);
+        // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
+        // is actually running.
+        checkEmulatorConnection(options, channelProvider, credentialsProvider);
+      } catch (Exception e) {
+        throw newSpannerException(e);
+      }
+    } else {
+      this.databaseAdminStub = null;
+      this.instanceAdminStub = null;
+      this.spannerStub = null;
+      this.partitionedDmlStub = null;
+      this.databaseAdminStubSettings = null;
+      this.spannerWatchdog = null;
+      this.partitionedDmlRetrySettings = null;
+      this.executorProvider = null;
     }
   }
 
@@ -578,11 +595,11 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
-  private static <T> T runWithRetryOnAdministrativeRequestsExceeded(Callable<T> callable) {
+  private <T> T runWithRetryOnAdministrativeRequestsExceeded(Callable<T> callable) {
     try {
       return RetryHelper.runWithRetries(
           callable,
-          ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS,
+          retryAdministrativeRequestsSettings,
           new AdminRequestsLimitExceededRetryAlgorithm<>(),
           NanoClock.getDefaultClock());
     } catch (RetryHelperException e) {
@@ -1630,22 +1647,24 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public void shutdown() {
     this.rpcIsClosed = true;
-    this.spannerStub.close();
-    this.partitionedDmlStub.close();
-    this.instanceAdminStub.close();
-    this.databaseAdminStub.close();
-    this.spannerWatchdog.shutdown();
-    this.executorProvider.shutdown();
+    if (this.spannerStub != null) {
+      this.spannerStub.close();
+      this.partitionedDmlStub.close();
+      this.instanceAdminStub.close();
+      this.databaseAdminStub.close();
+      this.spannerWatchdog.shutdown();
+      this.executorProvider.shutdown();
 
-    try {
-      this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
-      this.partitionedDmlStub.awaitTermination(10L, TimeUnit.SECONDS);
-      this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
-      this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
-      this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
-      this.executorProvider.awaitTermination();
-    } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.propagateInterrupt(e);
+      try {
+        this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
+        this.partitionedDmlStub.awaitTermination(10L, TimeUnit.SECONDS);
+        this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+        this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
+        this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
+        this.executorProvider.awaitTermination();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
     }
   }
 
