@@ -252,6 +252,27 @@ public abstract class AbstractSqlScriptVerifier {
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
    * @param resourceClass The class that defines the package where to find the input file
+   * @deprecated use {@link AbstractSqlScriptVerifier#verifyStatementsInFile(GenericConnection,
+   *     String, Class)})} instead. This method does not allow parallel batch execution.
+   */
+  @Deprecated
+  public void verifyStatementsInFile(
+      GenericConnection providedConnection, String filename, Class<?> resourceClass)
+      throws Exception {
+    this.verifyStatementsInFile(providedConnection, filename, resourceClass, false);
+  }
+
+  /**
+   * Reads sql statements from the specified file name and executes and verifies these. Statements
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
+   * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
+   * the statement throws an exception, which will fail the test case.
+   *
+   * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
+   *     statements against
+   * @param filename The file name containing the statements. Statements must be separated by a
+   *     semicolon (;)
+   * @param resourceClass The class that defines the package where to find the input file
    * @param allowParallel indicates whether the batches in the given script may be executed in
    *     parallel
    */
