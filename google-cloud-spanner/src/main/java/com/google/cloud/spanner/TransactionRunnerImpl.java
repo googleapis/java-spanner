@@ -61,7 +61,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -152,7 +151,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    private final AtomicBoolean committing = new AtomicBoolean();
+    private final Object committingLock = new Object();
+
+    @GuardedBy("committingLock")
+    private volatile boolean committing;
 
     @GuardedBy("lock")
     private volatile SettableApiFuture<Void> finishedAsyncOperations = SettableApiFuture.create();
@@ -284,8 +286,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
-      if (committing.getAndSet(true)) {
-        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+      List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        committing = true;
+        if (!mutations.isEmpty()) {
+          Mutation.toProto(mutations, mutationsProto);
+        }
       }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
@@ -311,11 +320,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           finishOps = finishedAsyncOperations;
         }
       }
-      if (!mutations.isEmpty()) {
-        List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-        Mutation.toProto(mutations, mutationsProto);
-        builder.addAllMutations(mutationsProto);
-      }
+      builder.addAllMutations(mutationsProto);
       finishOps.addListener(
           new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
@@ -608,10 +613,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Mutation mutation) {
-      if (committing.get()) {
-        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        mutations.add(checkNotNull(mutation));
       }
-      mutations.add(checkNotNull(mutation));
     }
 
     @Override
@@ -625,11 +632,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Iterable<Mutation> mutations) {
-      if (committing.get()) {
-        throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
-      }
-      for (Mutation mutation : mutations) {
-        this.mutations.add(checkNotNull(mutation));
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        for (Mutation mutation : mutations) {
+          this.mutations.add(checkNotNull(mutation));
+        }
       }
     }
 
