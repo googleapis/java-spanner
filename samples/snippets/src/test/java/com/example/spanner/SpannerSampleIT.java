@@ -53,6 +53,12 @@ public class SpannerSampleIT {
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");
   private static final String baseDbId = System.getProperty("spanner.sample.database");
+  private static final String keyLocation =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.location"));
+  private static final String keyRing =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
+  private static final String keyName =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
   private static final String databaseId = formatForTest(baseDbId);
   private static final String encryptedDatabaseId = formatForTest(baseDbId);
   private static final String encryptedBackupId = formatForTest(baseDbId);
@@ -82,13 +88,8 @@ public class SpannerSampleIT {
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases(instanceId, baseDbId);
-
-    String keyLocation = Preconditions
-        .checkNotNull(System.getProperty("spanner.test.key.location"));
-    String keyRing = Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
-    String keyName = Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
-    key = "projects/" + options.getProjectId() + "/locations/" + keyLocation + "/keyRings/" + keyRing
-        + "/cryptoKeys/" + keyName;
+    key = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
+        options.getProjectId(), keyLocation, keyRing, keyName);
   }
   
   static void deleteStaleTestDatabases(String instanceId, String baseDbId) {
@@ -419,7 +420,8 @@ public class SpannerSampleIT {
             instanceId, encryptedDatabaseId, encryptedBackupId, key),
         new ShouldRetryBackupOperation());
     assertThat(out).containsMatch(String.format(
-        "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes was created at (.*) using encryption key %s",
+        "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+        + "was created at (.*) using encryption key %s",
         projectId, instanceId, encryptedBackupId, key));
 
     out = SampleRunner.runSampleWithRetry(
