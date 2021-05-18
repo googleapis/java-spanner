@@ -43,7 +43,7 @@ public class DdlClientTest {
   private DdlClient createSubject(DatabaseAdminClient client) {
     return DdlClient.newBuilder()
         .setInstanceId(instanceId)
-        .setDatabaseName(databaseId)
+        .setDatabaseId(databaseId)
         .setDatabaseAdminClient(client)
         .build();
   }

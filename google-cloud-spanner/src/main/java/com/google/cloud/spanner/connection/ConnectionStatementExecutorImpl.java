@@ -17,8 +17,11 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ABORT_BATCH;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ALTER_DATABASE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.BEGIN;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.CREATE_DATABASE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.DROP_DATABASE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ROLLBACK;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
@@ -34,6 +37,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATABASES;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
@@ -43,11 +47,13 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DDL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.START_BATCH_DML;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.USE_DATABASE;
 import static com.google.cloud.spanner.connection.StatementResultImpl.noResult;
 import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.Struct;
@@ -56,6 +62,7 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.protobuf.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -288,5 +295,58 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementAbortBatch() {
     getConnection().abortBatch();
     return noResult(ABORT_BATCH);
+  }
+
+  @Override
+  public StatementResult statementShowDatabases() {
+    Iterable<Database> databases = getConnection().listDatabases();
+    ResultSet resultSet =
+        ResultSets.forRows(
+            Type.struct(
+                StructField.of("NAME", Type.string()),
+                StructField.of("CREATE_TIME", Type.timestamp()),
+                StructField.of("VERSION_RETENTION_PERIOD", Type.string()),
+                StructField.of("EARLIEST_VERSION_TIME", Type.timestamp()),
+                StructField.of("STATE", Type.string())),
+            Iterables.transform(
+                databases,
+                database ->
+                    Struct.newBuilder()
+                        .set("NAME")
+                        .to(database.getId().getDatabase())
+                        .set("CREATE_TIME")
+                        .to(database.getCreateTime())
+                        .set("VERSION_RETENTION_PERIOD")
+                        .to(database.getVersionRetentionPeriod())
+                        .set("EARLIEST_VERSION_TIME")
+                        .to(database.getEarliestVersionTime())
+                        .set("STATE")
+                        .to(database.getState().toString())
+                        .build()));
+    return StatementResultImpl.of(resultSet, SHOW_DATABASES);
+  }
+
+  @Override
+  public StatementResult statementUseDatabase(String database) {
+    getConnection().useDatabase(database);
+    return noResult(USE_DATABASE);
+  }
+
+  @Override
+  public StatementResult statementCreateDatabase(String database) {
+    getConnection().createDatabase(database);
+    return noResult(CREATE_DATABASE);
+  }
+
+  @Override
+  public StatementResult statementAlterDatabase(String database) {
+    getConnection().alterDatabase(database);
+    return noResult(ALTER_DATABASE);
+  }
+
+  @Override
+  public StatementResult statementDropDatabase(String database) {
+    getConnection().dropDatabase(database);
+    return noResult(DROP_DATABASE);
   }
 }

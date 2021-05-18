@@ -201,6 +201,27 @@ public abstract class ITAbstractSpannerTest {
   }
 
   /**
+   * Returns a connection URL that is extracted from the current test environment in the form
+   * cloudspanner:[//host]/projects/PROJECT_ID/instances/INSTANCE_ID
+   */
+  public static StringBuilder extractConnectionUrlWithoutDatabase() {
+    SpannerOptions options = getTestEnv().getTestHelper().getOptions();
+    StringBuilder url = new StringBuilder("cloudspanner:");
+    if (options.getHost() != null) {
+      url.append(options.getHost().substring(options.getHost().indexOf(':') + 1));
+    }
+    url.append(
+        String.format(
+            "/projects/%s/instances/%s",
+            getTestEnv().getTestHelper().getInstanceId().getProject(),
+            getTestEnv().getTestHelper().getInstanceId().getInstance()));
+    if (options.getCredentials() == NoCredentials.getInstance()) {
+      url.append(";usePlainText=true");
+    }
+    return url;
+  }
+
+  /**
    * Returns a connection URL that is extracted from the given {@link SpannerOptions} and database
    * in the form
    * cloudspanner:[//host]/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID
@@ -225,6 +246,18 @@ public abstract class ITAbstractSpannerTest {
   @AfterClass
   public static void teardown() {
     ConnectionOptions.closeSpanner();
+  }
+
+  /** Creates a new connection to the test instance without connecting to a specific database. */
+  public ITConnection createConnectionWithoutDb() {
+    StringBuilder url = extractConnectionUrlWithoutDatabase();
+    appendConnectionUri(url);
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder().setUri(url.toString());
+    if (hasValidKeyFile()) {
+      builder.setCredentialsUrl(getKeyFile());
+    }
+    ConnectionOptions options = builder.build();
+    return createITConnection(options);
   }
 
   /**

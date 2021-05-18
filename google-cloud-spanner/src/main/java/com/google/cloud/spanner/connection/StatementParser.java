@@ -337,6 +337,66 @@ public class StatementParser {
   }
 
   /**
+   * Removes any (optional) quotes (`) or triple-quotes (```) around the given identifier.
+   *
+   * @param identifier the identifier to remove the quotes from
+   * @return an unquoted identifier that can be used in administrative methods
+   */
+  @InternalApi
+  public static String trimAndUnquoteIdentifier(String identifier) {
+    Preconditions.checkNotNull(identifier);
+    String trimmedIdentifier = removeCommentsAndTrim(identifier);
+    if (trimmedIdentifier.startsWith("```")
+        && trimmedIdentifier.length() >= 6
+        && trimmedIdentifier.endsWith("```")) {
+      return trimmedIdentifier.substring(3, trimmedIdentifier.length() - 3);
+    }
+    if (trimmedIdentifier.startsWith("`")
+        && trimmedIdentifier.length() >= 2
+        && trimmedIdentifier.endsWith("`")) {
+      return trimmedIdentifier.substring(1, trimmedIdentifier.length() - 1);
+    }
+    return trimmedIdentifier;
+  }
+
+  /**
+   * Parses the first token in the given expression as an identifier. The expression may contain
+   * additional tokens after the identifier. The returned identifier is stripped for any quotes or
+   * triple-quotes. The method returns the entire expression if the first token could not be parsed
+   * as an identifier, for example if the expression contains an unclosed literal.
+   */
+  public static String parseIdentifier(String expression) {
+    Preconditions.checkNotNull(expression);
+    String sql = removeCommentsAndTrim(expression);
+    boolean tripleQuote = sql.startsWith("```") && sql.length() >= 6;
+    boolean singleQuote = !tripleQuote && sql.startsWith("`") && sql.length() >= 2;
+    if (tripleQuote) {
+      // Find the second triple-quote and return everything in between.
+      int index = sql.indexOf("```", 3);
+      if (index > -1) {
+        return sql.substring(3, index);
+      }
+    }
+    if (!singleQuote) {
+      // Find the first whitespace character and return everything before it.
+      for (int index = 1; index < sql.length(); index++) {
+        if (Character.isWhitespace(sql.charAt(index))) {
+          return sql.substring(0, index);
+        }
+      }
+      return sql;
+    }
+    // Single-quoted identifiers are the 'hardest' as we need to take escaping into account.
+    for (int index = 1; index < sql.length(); index++) {
+      if (sql.charAt(index) == '`' && sql.charAt(index - 1) != '\\') {
+        return sql.substring(1, index);
+      }
+    }
+
+    return expression;
+  }
+
+  /**
    * Removes comments from and trims the given sql statement. Spanner supports three types of
    * comments:
    *

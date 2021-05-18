@@ -18,12 +18,15 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
+import com.google.api.client.util.Strings;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -59,6 +62,8 @@ import org.threeten.bp.Instant;
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
   private static final String CLOSED_ERROR_MSG = "This connection is closed";
+  private static final String NOT_CONNECTED_TO_DB =
+      "This connection is not connected to a database.";
   private static final String ONLY_ALLOWED_IN_AUTOCOMMIT =
       "This method may only be called while in autocommit mode";
   private static final String NOT_ALLOWED_IN_AUTOCOMMIT =
@@ -213,10 +218,12 @@ class ConnectionImpl implements Connection {
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
-    if (options.isAutoConfigEmulator()) {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+    if (!Strings.isNullOrEmpty(options.getDatabaseName())) {
+      if (options.isAutoConfigEmulator()) {
+        EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+      }
+      this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     }
-    this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
@@ -253,7 +260,7 @@ class ConnectionImpl implements Connection {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
         .setInstanceId(options.getInstanceId())
-        .setDatabaseName(options.getDatabaseName())
+        .setDatabaseId(options.getDatabaseName())
         .build();
   }
 
@@ -313,6 +320,10 @@ class ConnectionImpl implements Connection {
   @Override
   public boolean isClosed() {
     return closed;
+  }
+
+  boolean isConnectedToDatabase() {
+    return dbClient != null;
   }
 
   @Override
@@ -642,6 +653,7 @@ class ConnectionImpl implements Connection {
   @Override
   public ApiFuture<Void> beginTransactionAsync() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(isConnectedToDatabase(), NOT_CONNECTED_TO_DB);
     ConnectionPreconditions.checkState(
         !isBatchActive(), "This connection has an active batch and cannot begin a transaction");
     ConnectionPreconditions.checkState(
@@ -678,6 +690,7 @@ class ConnectionImpl implements Connection {
 
   public ApiFuture<Void> commitAsync() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(isConnectedToDatabase(), NOT_CONNECTED_TO_DB);
     return endCurrentTransactionAsync(commit);
   }
 
@@ -697,6 +710,7 @@ class ConnectionImpl implements Connection {
 
   public ApiFuture<Void> rollbackAsync() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(isConnectedToDatabase(), NOT_CONNECTED_TO_DB);
     return endCurrentTransactionAsync(rollback);
   }
 
@@ -981,6 +995,7 @@ class ConnectionImpl implements Connection {
    */
   @VisibleForTesting
   UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+    ConnectionPreconditions.checkState(isConnectedToDatabase(), NOT_CONNECTED_TO_DB);
     if (this.currentUnitOfWork == null || !this.currentUnitOfWork.isActive()) {
       this.currentUnitOfWork = createNewUnitOfWork();
     }
@@ -1096,18 +1111,8 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void startBatchDdl() {
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(
-        !isBatchActive(), "Cannot start a DDL batch when a batch is already active");
-    ConnectionPreconditions.checkState(
-        !isReadOnly(), "Cannot start a DDL batch when the connection is in read-only mode");
-    ConnectionPreconditions.checkState(
-        !isTransactionStarted(), "Cannot start a DDL batch while a transaction is active");
-    ConnectionPreconditions.checkState(
-        !(isAutocommit() && isInTransaction()),
-        "Cannot start a DDL batch while in a temporary transaction");
-    ConnectionPreconditions.checkState(
-        !transactionBeginMarked, "Cannot start a DDL batch when a transaction has begun");
+    ConnectionPreconditions.checkState(isConnectedToDatabase(), NOT_CONNECTED_TO_DB);
+    checkDdlBatchOrDatabaseStatementAllowed("Cannot start a DDL batch");
     this.batchMode = BatchMode.DDL;
     this.unitOfWorkType = UnitOfWorkType.DDL_BATCH;
     this.currentUnitOfWork = createNewUnitOfWork();
@@ -1179,5 +1184,63 @@ class ConnectionImpl implements Connection {
   public boolean isDmlBatchActive() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.batchMode == BatchMode.DML;
+  }
+
+  @Override
+  public Iterable<Database> listDatabases() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return ddlClient.listDatabases();
+  }
+
+  @Override
+  public void useDatabase(String database) {
+    checkDdlBatchOrDatabaseStatementAllowed("Cannot change database");
+    String databaseId = StatementParser.trimAndUnquoteIdentifier(database);
+    // Check that the database actually exists before we try to change.
+    ddlClient.getDatabase(databaseId);
+    // Get a new database client.
+    this.dbClient =
+        spanner.getDatabaseClient(
+            DatabaseId.of(options.getProjectId(), options.getInstanceId(), databaseId));
+    this.ddlClient.setDefaultDatabaseId(databaseId);
+  }
+
+  @Override
+  public void createDatabase(String database) {
+    checkDdlBatchOrDatabaseStatementAllowed("Cannot create a database");
+    String databaseId = StatementParser.trimAndUnquoteIdentifier(database);
+    get(ddlClient.createDatabase(databaseId, Collections.emptyList()));
+  }
+
+  @Override
+  public void alterDatabase(String databaseStatement) {
+    checkDdlBatchOrDatabaseStatementAllowed("Cannot alter a database");
+    String databaseId = StatementParser.parseIdentifier(databaseStatement);
+    get(
+        ddlClient.executeDdl(
+            databaseId,
+            Collections.singletonList(String.format("ALTER DATABASE %s", databaseStatement))));
+  }
+
+  @Override
+  public void dropDatabase(String database) {
+    checkDdlBatchOrDatabaseStatementAllowed("Cannot drop a database");
+    String databaseId = StatementParser.trimAndUnquoteIdentifier(database);
+    ddlClient.dropDatabase(databaseId);
+  }
+
+  private void checkDdlBatchOrDatabaseStatementAllowed(String prefix) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), String.format("%s when a batch is active", prefix));
+    ConnectionPreconditions.checkState(
+        !isReadOnly(), String.format("%s when the connection is in read-only mode", prefix));
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), String.format("%s while a transaction is active", prefix));
+    ConnectionPreconditions.checkState(
+        !(isAutocommit() && isInTransaction()),
+        String.format("%s while in a temporary transaction", prefix));
+    ConnectionPreconditions.checkState(
+        !transactionBeginMarked, String.format("%s when a transaction has begun", prefix));
   }
 }

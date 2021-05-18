@@ -23,6 +23,8 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -30,6 +32,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
@@ -1008,5 +1011,60 @@ public interface Connection extends AutoCloseable {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}
+  }
+
+  // DATABASE statements.
+
+  /**
+   * Lists the databases on the instance that the connection is connected to.
+   *
+   * @return the databases on the instance that the connection is connected to
+   */
+  default Iterable<Database> listDatabases() {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "SHOW VARIABLE DATABASES is not implemented");
+  }
+
+  /**
+   * Changes the database that this connection is connected to.
+   *
+   * @param database The name of the database to connect to
+   * @throws DatabaseNotFoundException if the specified database does not exists on the instance
+   *     that the connection is connected to
+   */
+  default void useDatabase(String database) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "USE DATABASE is not implemented");
+  }
+
+  /**
+   * Creates a new database on the instance that this connection is connected to.
+   *
+   * @param database the name of the database that is to be created
+   */
+  default void createDatabase(String database) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "CREATE DATABASE is not implemented");
+  }
+
+  /**
+   * Alters an existing database on the instance that this connection is connected to.
+   *
+   * @param databaseStatement the name of the database that is to be altered, followed by the
+   *     altered options
+   */
+  default void alterDatabase(String databaseStatement) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "ALTER DATABASE is not implemented");
+  }
+
+  /**
+   * Drops an existing database on the instance that this connection is connected to.
+   *
+   * @param database the name of the database that is to be dropped
+   */
+  default void dropDatabase(String database) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.UNIMPLEMENTED, "DROP DATABASE is not implemented");
   }
 }

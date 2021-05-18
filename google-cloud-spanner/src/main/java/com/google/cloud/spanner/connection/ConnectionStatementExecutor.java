@@ -85,4 +85,14 @@ interface ConnectionStatementExecutor {
   StatementResult statementRunBatch();
 
   StatementResult statementAbortBatch();
+
+  StatementResult statementShowDatabases();
+
+  StatementResult statementUseDatabase(String database);
+
+  StatementResult statementCreateDatabase(String database);
+
+  StatementResult statementAlterDatabase(String database);
+
+  StatementResult statementDropDatabase(String database);
 }
