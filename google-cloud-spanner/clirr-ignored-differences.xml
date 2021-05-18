@@ -605,4 +605,17 @@
     <className>com/google/cloud/spanner/StructReader</className>
     <method>com.google.cloud.spanner.Value getValue(java.lang.String)</method>
   </difference>
+
+  <!-- Adds bufferAsync to DatabaseClient -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture bufferAsync(com.google.cloud.spanner.Mutation)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture bufferAsync(java.lang.Iterable)</method>
+  </difference>
 </differences>
