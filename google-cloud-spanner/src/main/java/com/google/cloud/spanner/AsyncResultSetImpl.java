@@ -252,6 +252,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
             if (cursorReturnedDoneOrException) {
               break;
             }
+            if (state == State.CANCELLED) {
+              // The callback should always get at least one chance to catch the CANCELLED
+              // exception. It is however possible that the callback does not call tryNext(), and
+              // instead directly returns PAUSE or DONE. In those cases, the callback runner should
+              // also stop, even though the callback has not seen the CANCELLED state.
+              cursorReturnedDoneOrException = true;
+            }
           }
           CallbackResponse response;
           try {

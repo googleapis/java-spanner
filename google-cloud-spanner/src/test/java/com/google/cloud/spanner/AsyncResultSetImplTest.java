@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -368,6 +370,33 @@ public class AsyncResultSetImplTest {
       assertNull(callbackResult.get());
       assertThat(callbackCounter.get()).isEqualTo(simulatedRows + 1);
       assertThat(rowCounter).isEqualTo(simulatedRows);
+    }
+  }
+
+  @Test
+  public void testCallbackIsNotCalledWhilePausedAndCanceled()
+      throws InterruptedException, ExecutionException {
+    Executor executor = Executors.newSingleThreadExecutor();
+    ResultSet delegate = mock(ResultSet.class);
+
+    final AtomicInteger callbackCounter = new AtomicInteger();
+    ApiFuture<Void> callbackResult;
+
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      callbackResult =
+          rs.setCallback(
+              executor,
+              resultSet -> {
+                callbackCounter.getAndIncrement();
+                return CallbackResponse.PAUSE;
+              });
+
+      rs.cancel();
+
+      SpannerException exception = assertThrows(SpannerException.class, () -> get(callbackResult));
+      assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
+      assertEquals(1, callbackCounter.get());
     }
   }
 
