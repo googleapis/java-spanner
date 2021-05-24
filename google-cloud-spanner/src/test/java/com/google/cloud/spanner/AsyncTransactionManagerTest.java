@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -286,6 +287,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerCommitAborted() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
+    CountDownLatch abortedLatch = new CountDownLatch(1);
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
@@ -299,10 +301,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               (transaction, ignored) -> {
                 if (attempt.get() == 1) {
                   mockSpanner.abortTransaction(transaction);
+                  abortedLatch.countDown();
                 }
                 return ApiFutures.immediateFuture(null);
               },
               executor);
+          abortedLatch.await(10L, TimeUnit.SECONDS);
           CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get()).isNotNull();
