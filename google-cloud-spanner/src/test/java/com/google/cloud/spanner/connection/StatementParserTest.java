@@ -245,6 +245,55 @@ public class StatementParserTest {
                 Statement.of(
                     "/** SELECT in a java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
             .isDdl());
+
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "CREATE VIEW SingerNames\n"
+                        + "SQL SECURITY INVOKER\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("create view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/* this is a comment */ create view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "create /* this is a comment */ view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "create \n -- This is a comment \n view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    " \t \n create   \n \t  view \n  \t SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(parser.parse(Statement.of("DROP VIEW SingerNames")).isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "ALTER VIEW SingerNames\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
+            .isDdl());
   }
 
   @Test
