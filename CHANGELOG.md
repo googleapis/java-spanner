@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.5.0](https://www.github.com/googleapis/java-spanner/compare/v6.4.4...v6.5.0) (2021-05-25)
+
+
+### Features
+
+* add `gcf-owl-bot[bot]` to `ignoreAuthors` ([#1196](https://www.github.com/googleapis/java-spanner/issues/1196)) ([4f6e18d](https://www.github.com/googleapis/java-spanner/commit/4f6e18d9c8afab0acf1b66e2b32a0907008d4ff5))
+* add bufferAsync methods ([#1145](https://www.github.com/googleapis/java-spanner/issues/1145)) ([7d6816f](https://www.github.com/googleapis/java-spanner/commit/7d6816f1fd14bcd2c7f91d814855b5d921ba970d))
+
+
+### Bug Fixes
+
+* stop invoking callback after pausing and cancelling result set ([#1192](https://www.github.com/googleapis/java-spanner/issues/1192)) ([78e6784](https://www.github.com/googleapis/java-spanner/commit/78e678448782d5d16ba43ec7c10ab85b89059d88)), closes [#1191](https://www.github.com/googleapis/java-spanner/issues/1191)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v1.2.0 ([#1194](https://www.github.com/googleapis/java-spanner/issues/1194)) ([9935066](https://www.github.com/googleapis/java-spanner/commit/99350663fb638d913e803b139d89be597be9ce1d))
+
 ### [6.4.4](https://www.github.com/googleapis/java-spanner/compare/v6.4.3...v6.4.4) (2021-05-17)
 
 
