@@ -297,16 +297,16 @@ public class GapicSpannerRpcTest {
                   < options.getNumChannels() * NUM_THREADS_PER_CHANNEL * openSpanners
                       + initialNumberOfThreads;
           sessionCount++) {
-        ResultSet rs = client.singleUse().executeQuery(SELECT1AND2);
+        ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2);
         // Execute ResultSet#next() to send the query to Spanner.
-        rs.next();
+        resultSet.next();
         // Delay closing the result set in order to force the use of multiple sessions.
         // As each session is linked to one transport channel, using multiple different
         // sessions should initialize multiple transport channels.
-        resultSets.add(rs);
+        resultSets.add(resultSet);
       }
-      for (ResultSet rs : resultSets) {
-        rs.close();
+      for (ResultSet resultSet : resultSets) {
+        resultSet.close();
       }
     }
     for (Spanner spanner : spanners) {
@@ -316,12 +316,12 @@ public class GapicSpannerRpcTest {
     Stopwatch watch = Stopwatch.createStarted();
     while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
             > initialNumberOfThreads
-        && watch.elapsed(TimeUnit.SECONDS) < 2) {
+        && watch.elapsed(TimeUnit.SECONDS) < 5) {
       Thread.sleep(10L);
     }
-    assertThat(
-        getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads),
-        is(equalTo(initialNumberOfThreads)));
+    assertEquals(
+        initialNumberOfThreads,
+        getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads));
   }
 
   @Test
