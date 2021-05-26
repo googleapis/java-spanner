@@ -314,7 +314,7 @@ public class SpannerSampleIT {
 
     out = runSample("cancelcreatebackup");
     assertThat(out).contains(
-        "Backup operation for [" + backupId + "_cancel] successfully cancelled");
+        "Backup operation for [" + backupId + "_cancel] successfully");
 
     // TODO: remove try-catch when filtering on metadata fields works.
     try {
