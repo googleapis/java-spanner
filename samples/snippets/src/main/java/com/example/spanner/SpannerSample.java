@@ -1620,6 +1620,8 @@ public class SpannerSample {
       if (pollingFuture.get().getErrorCode() == null) {
         // Backup was created before it could be cancelled. Delete the backup.
         backup.delete();
+        System.out.println("Backup operation for [" + backup.getId()
+            + "] successfully finished before it could be cancelled");
       } else if (pollingFuture.get().getErrorCode().getCode() == StatusCode.Code.CANCELLED) {
         System.out.println("Backup operation for [" + backup.getId() + "] successfully cancelled");
       }
