@@ -365,6 +365,10 @@ public class AsyncResultSetImplTest {
         paused.set(false);
         rs.resume();
       }
+      // Empty the queue to ensure we count all elements.
+      while (queue.poll() != null) {
+        rowCounter++;
+      }
       // Assert that we can get the result from the callback future without any exceptions. That
       // indicates that the callback function never failed with an unexpected exception.
       assertNull(callbackResult.get());
