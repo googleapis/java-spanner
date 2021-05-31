@@ -16,8 +16,33 @@
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <skipUTs>false</skipUTs>
+    <!-- finalized versions -->
+    <!-- JRE for Java 8. Beam's dependency (gcsio) uses JRE flavor -->
+    <guava.version>30.1.1-jre</guava.version>
+    <google.autovalue.version>1.8.1</google.autovalue.version>
+    <protobuf.version>3.16.0</protobuf.version>
+    <http.version>1.39.2-sp.1</http.version>
+    <io.grpc.version>1.36.2</io.grpc.version>
+    <!-- We don't use gax-bom because it includes the artifacts with 'testlib' classifier.
+        When updating gax.version, update gax.httpjson.version too. -->
+    <gax.version>1.64.0-sp.1</gax.version>
+    <gax.httpjson.version>0.81.0-sp.1</gax.httpjson.version>
+    <google.api.client.version>1.31.3-sp.1</google.api.client.version>
+    <api.common.version>1.10.1-sp.1</api.common.version>
+    <google.auth.library.version>0.25.2-sp.1</google.auth.library.version>
+    <google.oauth.client.version>1.31.4-sp.1</google.oauth.client.version>
+    <google.cloud.spanner.version>3.3.3-sp.1</google.cloud.spanner.version>
+    <google.cloud.monitoring.version>2.1.0-sp.1</google.cloud.monitoring.version>
+    <google.cloud.trace.version>1.3.0-sp.1</google.cloud.trace.version>
+    <google.cloud.pubsub.version>1.111.0-sp.1</google.cloud.pubsub.version>
+    <google.cloud.bigquery.version>1.127.12-sp.1</google.cloud.bigquery.version>
+    <google.cloud.bigtable.version>1.22.0-sp.1</google.cloud.bigtable.version>
+    <bigtable-hbase-beam.version>1.20.0-sp.1</bigtable-hbase-beam.version>
+    <google.cloud.storage.version>1.113.14-sp.1</google.cloud.storage.version>
+    <datastore.v1.proto.client.version>1.6.4-sp.1</datastore.v1.proto.client.version>
+    <appengine.api.1.0.sdk.version>1.9.86</appengine.api.1.0.sdk.version>
+    <androidpublisher.version>v3-rev20210429-1.31.0</androidpublisher.version>
   </properties>
-
 
   <build>
     <plugins>
@@ -121,78 +146,97 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-api</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-auth</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-context</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-core</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty-shaded</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>api-common</artifactId>
+      <version>${api.common.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
+      <version>${protobuf.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-common-protos</artifactId>
+      <version>${google.common-protos.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-common-protos</artifactId>
+      <version>${google.common-protos.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-iam-v1</artifactId>
+      <version>${iam.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-core</artifactId>
+      <version>${google.cloud.core.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-core-grpc</artifactId>
+      <version>${google.cloud.core.version}</version>
     </dependency>
     <dependency>
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-api</artifactId>
+      <version>${opencensus.version}</version>
     </dependency>
     <dependency>
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-contrib-grpc-util</artifactId>
+      <version>${opencensus.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
       <artifactId>google-auth-library-oauth2-http</artifactId>
+      <version>${google.auth.library.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.http-client</groupId>
       <artifactId>google-http-client</artifactId>
+      <version>${http.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
@@ -221,35 +265,43 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>gax</artifactId>
+      <version>${gax.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>gax-grpc</artifactId>
+      <version>${gax.version}</version>
     </dependency>
     <dependency>
       <groupId>org.threeten</groupId>
       <artifactId>threetenbp</artifactId>
+      <version>${threeten.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
+      <version>${findbugs.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+      <version>${gson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
       <artifactId>google-auth-library-credentials</artifactId>
+      <version>${google.auth.library.version}</version>
     </dependency>
     <!-- Dependency for DirectPath -->
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-alts</artifactId>
+      <version>${io.grpc.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
@@ -265,6 +317,7 @@
       <artifactId>gax-grpc</artifactId>
       <classifier>testlib</classifier>
       <scope>test</scope>
+      <version>${gax.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.truth</groupId>
@@ -292,6 +345,7 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
       <scope>test</scope>
+      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -325,6 +379,7 @@
         <dependency>
           <groupId>javax.annotation</groupId>
           <artifactId>javax.annotation-api</artifactId>
+          <version>${javax.annotations.version}</version>
         </dependency>
       </dependencies>
     </profile>
