@@ -48,6 +48,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.grpc.gcp.GcpManagedChannelOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -104,6 +105,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
   private final boolean useGrpcGcpExtension;
+  private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
   private final boolean trackTransactionStarter;
   /**
@@ -559,6 +561,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     useGrpcGcpExtension = builder.useGrpcGcpExtension;
+    grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
@@ -638,7 +641,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
-    private boolean useGrpcGcpExtension = true;
+    private boolean useGrpcGcpExtension = false;
+    private GcpManagedChannelOptions grpcGcpOptions;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -686,7 +690,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
-      this.useGrpcGcpExtension = useGrpcGcpExtension;
+      this.useGrpcGcpExtension = options.useGrpcGcpExtension;
+      this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
@@ -1003,8 +1008,23 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets the preference for gRPC-GCP extension (default: false). When enabled the gRPC-GCP
+     * channel pool will be used.
+     */
     public Builder setUseGrpcGcpExtension(boolean useGrpcGcpExtension) {
       this.useGrpcGcpExtension = useGrpcGcpExtension;
+      return this;
+    }
+
+    /**
+     * Sets the options for gRPC-GCP extension. The metric registry and default Spanner metric
+     * labels will be added automatically.
+     *
+     * <p>Note that gRPC-GCP extension must be enabled first with {@code setUseGrpcGcpExtension}.
+     */
+    public Builder setGrpcGcpOptions(GcpManagedChannelOptions options) {
+      this.grpcGcpOptions = options;
       return this;
     }
 
@@ -1110,6 +1130,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isUseGrpcGcpExtension() {
     return useGrpcGcpExtension;
+  }
+
+  public GcpManagedChannelOptions getGrpcGcpOptions() {
+    return grpcGcpOptions;
   }
 
   public boolean isAutoThrottleAdministrativeRequests() {
