@@ -84,6 +84,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.grpc.gcp.GcpManagedChannelBuilder;
+import com.google.grpc.gcp.GcpManagedChannelOptions;
+import com.google.grpc.gcp.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -160,6 +162,9 @@ import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opencensus.metrics.LabelKey;
+import io.opencensus.metrics.LabelValue;
+import io.opencensus.metrics.Metrics;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -364,31 +369,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             // Attempts direct access to spanner service over gRPC to improve throughput,
             // whether the attempt is allowed is totally controlled by service owner.
             .setAttemptDirectPath(true);
-    if (options.isUseGrpcGcpExtension() && options.getChannelConfigurator() == null) {
-      // Disables the gax channel pool and uses the channel pool provided by the gRPC-GCP extension
-      // instead.
-      InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
-      StringBuilder sb = new StringBuilder();
-      try {
-        for (int ch; (ch = inputStream.read()) != -1; ) {
-          sb.append((char) ch);
-        }
-      } catch (IOException e) {
-        throw newSpannerException(e);
-      }
-      final String jsonApiConfig = sb.toString();
-      ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
-          new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-            @Override
-            public ManagedChannelBuilder apply(ManagedChannelBuilder channelBuilder) {
-              return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
-                  .withApiConfigJsonString(jsonApiConfig)
-                  .setPoolSize(options.getNumChannels());
-            }
-          };
-      defaultChannelProviderBuilder =
-          defaultChannelProviderBuilder.setPoolSize(1).setChannelConfigurator(apiFunction);
-    }
+
+    // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
+    maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
     TransportChannelProvider channelProvider =
         MoreObjects.firstNonNull(
@@ -519,6 +502,73 @@ public class GapicSpannerRpc implements SpannerRpc {
     } catch (Exception e) {
       throw newSpannerException(e);
     }
+  }
+
+  private static String parseGrpcGcpApiConfig() {
+    InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
+    StringBuilder sb = new StringBuilder();
+    try {
+      for (int ch; (ch = inputStream.read()) != -1; ) {
+        sb.append((char) ch);
+      }
+    } catch (IOException e) {
+      throw newSpannerException(e);
+    }
+    return sb.toString();
+  }
+
+  // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified. Adds
+  // more labels on top of provided.
+  private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
+    GcpManagedChannelOptions grpcGcpOptions =
+        MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
+    GcpMetricsOptions metricsOptions = MoreObjects.firstNonNull(
+        grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
+    GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
+    if (metricsOptions.getMetricRegistry() == null) {
+      metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
+    }
+    List<LabelKey> labelKeys = metricsOptions.getLabelKeys();
+    List<LabelValue> labelValues = metricsOptions.getLabelValues();
+    // TODO: Add default labels with values: client_id, database, instance_id.
+    labelKeys.add(LabelKey.create("grpc_gcp_version", "gRPC-GCP library version"));
+    String gRpcGcpVersion = GcpManagedChannelBuilder.class.getPackage().getImplementationVersion();
+    if (gRpcGcpVersion == null) {
+      gRpcGcpVersion = "";
+    }
+    labelValues.add(LabelValue.create(gRpcGcpVersion));
+    metricsOptionsBuilder.withLabels(labelKeys, labelValues);
+    if (metricsOptions.getNamePrefix().equals("")) {
+      metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
+    }
+    return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
+        .withMetricsOptions(metricsOptionsBuilder.build())
+        .build();
+  }
+
+  @SuppressWarnings("rawtypes")
+  private static void maybeEnableGrpcGcpExtension(InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder, final SpannerOptions options) {
+    if (!options.isUseGrpcGcpExtension()) {
+      return;
+    }
+
+    final String jsonApiConfig = parseGrpcGcpApiConfig();
+    final GcpManagedChannelOptions grpcGcpOptions = grpcGcpOptionsWithMetrics(options);
+
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
+        channelBuilder -> {
+          if (options.getChannelConfigurator() != null) {
+            channelBuilder = options.getChannelConfigurator().apply(channelBuilder);
+          }
+          return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
+              .withApiConfigJsonString(jsonApiConfig)
+              .withOptions(grpcGcpOptions)
+              .setPoolSize(options.getNumChannels());
+        };
+
+    // Disable the GAX channel pooling functionality by setting the GAX channel pool size to 1.
+    // Enable gRPC-GCP channel pool via the channel configurator.
+    defaultChannelProviderBuilder.setPoolSize(1).setChannelConfigurator(apiFunction);
   }
 
   private static HeaderProvider headerProviderWithUserAgentFrom(HeaderProvider headerProvider) {
