@@ -121,14 +121,6 @@
         <artifactId>google-cloud-spanner</artifactId>
         <version>3.3.3-sp.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
-
-<!--      <dependency>-->
-<!--        <groupId>com.google.cloud</groupId>-->
-<!--        <artifactId>google-cloud-shared-dependencies</artifactId>-->
-<!--        <version>${google.cloud.shared-dependencies.version}</version>-->
-<!--        <type>pom</type>-->
-<!--        <scope>import</scope>-->
-<!--      </dependency>-->
       <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_annotations</artifactId>
@@ -139,13 +131,13 @@
         <artifactId>grpc-netty-shaded</artifactId>
         <version>${io.grpc.version}</version>
       </dependency>
+
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.13.2</version>
         <scope>test</scope>
       </dependency>
-
       <dependency>
         <groupId>com.google.truth</groupId>
         <artifactId>truth</artifactId>
