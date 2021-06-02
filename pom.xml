@@ -185,6 +185,25 @@
     <module>google-cloud-spanner-bom</module>
   </modules>
 
+  <build>
+    <plugins>
+      <!-- TODO: Remove this once the shared configuration updates to use Java 8 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <encoding>UTF-8</encoding>
+          <compilerArgument>-Xlint:unchecked</compilerArgument>
+          <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <reporting>
     <plugins>
       <plugin>
