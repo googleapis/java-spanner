@@ -157,6 +157,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
 
@@ -190,6 +191,9 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Query optimizer statistics package to use for a connection. */
+  private static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME =
+      "optimizerStatisticsPackage";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
 
@@ -238,6 +242,8 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_VERSION_PROPERTY_NAME,
                       "Sets the default query optimizer version to use for this connection."),
+                  ConnectionProperty.createStringProperty(
+                      OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
@@ -521,6 +527,7 @@ public class ConnectionOptions {
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
+    queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
@@ -693,6 +700,12 @@ public class ConnectionOptions {
   static String parseOptimizerVersion(String uri) {
     String value = parseUriProperty(uri, OPTIMIZER_VERSION_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OPTIMIZER_VERSION;
+  }
+
+  @VisibleForTesting
+  static String parseOptimizerStatisticsPackage(String uri) {
+    String value = parseUriProperty(uri, OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_OPTIMIZER_STATISTICS_PACKAGE;
   }
 
   @VisibleForTesting

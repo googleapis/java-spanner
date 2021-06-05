@@ -585,6 +585,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     @Nonnull
     String getOptimizerVersion();
+
+    /**
+     * The optimizer statistics package to use. Must return an empty string to indicate that no
+     * value has been set.
+     */
+    @Nonnull
+    default String getOptimizerStatisticsPackage() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   /**
@@ -594,12 +603,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static class SpannerEnvironmentImpl implements SpannerEnvironment {
     private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
     private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
+    private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
+        "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
 
     private SpannerEnvironmentImpl() {}
 
     @Override
     public String getOptimizerVersion() {
       return MoreObjects.firstNonNull(System.getenv(SPANNER_OPTIMIZER_VERSION_ENV_VAR), "");
+    }
+
+    @Override
+    public String getOptimizerStatisticsPackage() {
+      return MoreObjects.firstNonNull(
+          System.getenv(SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR), "");
     }
   }
 
@@ -957,6 +974,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     QueryOptions getEnvironmentQueryOptions() {
       return QueryOptions.newBuilder()
           .setOptimizerVersion(environment.getOptimizerVersion())
+          .setOptimizerStatisticsPackage(environment.getOptimizerStatisticsPackage())
           .build();
     }
 

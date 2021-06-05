@@ -434,6 +434,20 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    Preconditions.checkNotNull(optimizerStatisticsPackage);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.queryOptions =
+        queryOptions.toBuilder().setOptimizerStatisticsPackage(optimizerStatisticsPackage).build();
+  }
+
+  @Override
+  public String getOptimizerStatisticsPackage() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.queryOptions.getOptimizerStatisticsPackage();
+  }
+
+  @Override
   public void setStatementTimeout(long timeout, TimeUnit unit) {
     Preconditions.checkArgument(timeout > 0L, "Zero or negative timeout values are not allowed");
     Preconditions.checkArgument(

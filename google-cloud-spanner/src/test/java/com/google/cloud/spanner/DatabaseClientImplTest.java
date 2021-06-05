@@ -1529,18 +1529,25 @@ public class DatabaseClientImplTest {
               .singleUse()
               .executeQuery(
                   Statement.newBuilder(SELECT1.getSql())
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("1")
+                              .setOptimizerStatisticsPackage("custom-package")
+                              .build())
                       .build())) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
     }
   }
 
@@ -1562,20 +1569,27 @@ public class DatabaseClientImplTest {
         try (ResultSet rs =
             tx.analyzeQuery(
                 Statement.newBuilder(SELECT1.getSql())
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build(),
                 QueryAnalyzeMode.PROFILE)) {
           // Just iterate over the results to execute the query.
           while (rs.next()) {}
         }
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
       assertThat(request.getQueryMode()).isEqualTo(QueryMode.PROFILE);
     }
   }
@@ -1600,19 +1614,26 @@ public class DatabaseClientImplTest {
           transaction.partitionQuery(
               PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
               Statement.newBuilder(SELECT1.getSql())
-                  .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                  .withQueryOptions(
+                      QueryOptions.newBuilder()
+                          .setOptimizerVersion("1")
+                          .setOptimizerStatisticsPackage("custom-package")
+                          .build())
                   .build());
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
     }
   }
 

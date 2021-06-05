@@ -161,6 +161,22 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
+  public void testExecuteSetOptimizerStatisticsPackage() {
+    ParsedStatement subject = parser.parse(Statement.of("set optimizer_statistics_package='foo'"));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementSetOptimizerStatisticsPackage(any(String.class))).thenCallRealMethod();
+    for (String statisticsPackage : new String[] {"custom-package", ""}) {
+      subject
+          .getClientSideStatement()
+          .execute(
+              executor, String.format("set optimizer_statistics_package='%s'", statisticsPackage));
+      verify(connection, times(1)).setOptimizerStatisticsPackage(statisticsPackage);
+    }
+  }
+
+  @Test
   public void testExecuteSetTransaction() {
     ParsedStatement subject = parser.parse(Statement.of("set transaction read_only"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
