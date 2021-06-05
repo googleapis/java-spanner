@@ -463,14 +463,18 @@ public interface Connection extends AutoCloseable {
    *     specified in the environment variable, the client level query optimizer is used. If none is
    *     set, the default query optimizer of Cloud Spanner is used.
    */
-  void setOptimizerStatisticsPackage(String optimizerStatisticsPackage);
+  default void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Gets the current query optimizer statistics package of this connection.
    *
    * @return The query optimizer statistics package that is currently used by this connection.
    */
-  String getOptimizerStatisticsPackage();
+  default String getOptimizerStatisticsPackage() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Sets whether this connection should request commit statistics from Cloud Spanner for read/write

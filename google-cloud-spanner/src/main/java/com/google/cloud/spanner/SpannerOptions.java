@@ -591,7 +591,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * value has been set.
      */
     @Nonnull
-    String getOptimizerStatisticsPackage();
+    default String getOptimizerStatisticsPackage() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   /**
