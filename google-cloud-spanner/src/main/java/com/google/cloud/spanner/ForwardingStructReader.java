@@ -333,4 +333,16 @@ public class ForwardingStructReader implements StructReader {
     checkValidState();
     return delegate.get().getStructList(columnName);
   }
+
+  @Override
+  public Value getValue(int columnIndex) {
+    checkValidState();
+    return delegate.get().getValue(columnIndex);
+  }
+
+  @Override
+  public Value getValue(String columnName) {
+    checkValidState();
+    return delegate.get().getValue(columnName);
+  }
 }

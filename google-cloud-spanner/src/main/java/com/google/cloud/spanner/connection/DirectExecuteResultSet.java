@@ -23,6 +23,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
@@ -229,6 +230,18 @@ class DirectExecuteResultSet implements ResultSet {
   public Date getDate(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDate(columnName);
+  }
+
+  @Override
+  public Value getValue(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getValue(columnIndex);
+  }
+
+  @Override
+  public Value getValue(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getValue(columnName);
   }
 
   @Override

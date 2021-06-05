@@ -17,13 +17,17 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -31,14 +35,19 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
+import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +69,47 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITWriteTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  // TODO: Remove when the emulator supports NUMERIC
+  private static final String SCHEMA_WITH_NUMERIC =
+      "CREATE TABLE T ("
+          + "  K                   STRING(MAX) NOT NULL,"
+          + "  BoolValue           BOOL,"
+          + "  Int64Value          INT64,"
+          + "  Float64Value        FLOAT64,"
+          + "  StringValue         STRING(MAX),"
+          + "  BytesValue          BYTES(MAX),"
+          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+          + "  DateValue           DATE,"
+          + "  NumericValue        NUMERIC,"
+          + "  BoolArrayValue      ARRAY<BOOL>,"
+          + "  Int64ArrayValue     ARRAY<INT64>,"
+          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+          + "  DateArrayValue      ARRAY<DATE>,"
+          + "  NumericArrayValue   ARRAY<NUMERIC>,"
+          + ") PRIMARY KEY (K)";
+  private static final String SCHEMA_WITHOUT_NUMERIC =
+      "CREATE TABLE T ("
+          + "  K                   STRING(MAX) NOT NULL,"
+          + "  BoolValue           BOOL,"
+          + "  Int64Value          INT64,"
+          + "  Float64Value        FLOAT64,"
+          + "  StringValue         STRING(MAX),"
+          + "  BytesValue          BYTES(MAX),"
+          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+          + "  DateValue           DATE,"
+          + "  BoolArrayValue      ARRAY<BOOL>,"
+          + "  Int64ArrayValue     ARRAY<INT64>,"
+          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+          + "  DateArrayValue      ARRAY<DATE>,"
+          + ") PRIMARY KEY (K)";
+
   private static Database db;
   /** Sequence used to generate unique keys. */
   private static int seq;
@@ -68,26 +118,12 @@ public class ITWriteTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    db =
-        env.getTestHelper()
-            .createTestDatabase(
-                "CREATE TABLE T ("
-                    + "  K                   STRING(MAX) NOT NULL,"
-                    + "  BoolValue           BOOL,"
-                    + "  Int64Value          INT64,"
-                    + "  Float64Value        FLOAT64,"
-                    + "  StringValue         STRING(MAX),"
-                    + "  BytesValue          BYTES(MAX),"
-                    + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
-                    + "  DateValue           DATE,"
-                    + "  BoolArrayValue      ARRAY<BOOL>,"
-                    + "  Int64ArrayValue     ARRAY<INT64>,"
-                    + "  Float64ArrayValue   ARRAY<FLOAT64>,"
-                    + "  StringArrayValue    ARRAY<STRING(MAX)>,"
-                    + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
-                    + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
-                    + "  DateArrayValue      ARRAY<DATE>,"
-                    + ") PRIMARY KEY (K)");
+    if (EmulatorSpannerHelper.isUsingEmulator()) {
+      // The emulator does not yet support NUMERIC.
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITHOUT_NUMERIC);
+    } else {
+      db = env.getTestHelper().createTestDatabase(SCHEMA_WITH_NUMERIC);
+    }
     client = env.getTestHelper().getDatabaseClient(db);
   }
 
@@ -98,7 +134,7 @@ public class ITWriteTest {
   private String lastKey;
 
   private Timestamp write(Mutation m) {
-    return client.write(Arrays.asList(m));
+    return client.write(Collections.singletonList(m));
   }
 
   private Mutation.WriteBuilder baseInsert() {
@@ -114,7 +150,7 @@ public class ITWriteTest {
   @Test
   public void writeAtLeastOnce() {
     client.writeAtLeastOnce(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("T")
                 .set("K")
                 .to(lastKey = uniqueString())
@@ -127,9 +163,47 @@ public class ITWriteTest {
   }
 
   @Test
+  public void testWriteReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
+  }
+
+  @Test
+  public void testWriteAtLeastOnceReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    CommitResponse response =
+        client.writeAtLeastOnceWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.commitStats());
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+    assertNotNull(response.getCommitStats());
+    assertEquals(2L, response.getCommitStats().getMutationCount());
+  }
+
+  @Test
   public void writeAlreadyExists() {
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T")
                 .set("K")
                 .to(lastKey = "key1")
@@ -142,7 +216,7 @@ public class ITWriteTest {
 
     try {
       client.write(
-          Arrays.asList(
+          Collections.singletonList(
               Mutation.newInsertBuilder("T")
                   .set("K")
                   .to(lastKey)
@@ -162,7 +236,7 @@ public class ITWriteTest {
   @Test
   public void emptyWrite() {
     try {
-      client.write(Arrays.<Mutation>asList());
+      client.write(Collections.emptyList());
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -355,6 +429,23 @@ public class ITWriteTest {
   }
 
   @Test
+  public void writeNumeric() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("NumericValue").to(new BigDecimal("3.141592")).build());
+    Struct row = readLastRow("NumericValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimal(0)).isEqualTo(BigDecimal.valueOf(3141592, 6));
+  }
+
+  @Test
+  public void writeNumericNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("NumericValue").to((Long) null).build());
+    Struct row = readLastRow("NumericValue");
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void writeBoolArrayNull() {
     write(baseInsert().set("BoolArrayValue").toBoolArray((boolean[]) null).build());
     Struct row = readLastRow("BoolArrayValue");
@@ -480,7 +571,7 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayEmpty() {
-    write(baseInsert().set("StringArrayValue").toStringArray(Arrays.<String>asList()).build());
+    write(baseInsert().set("StringArrayValue").toStringArray(Collections.emptyList()).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly();
@@ -504,7 +595,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArrayEmpty() {
-    write(baseInsert().set("BytesArrayValue").toBytesArray(Arrays.<ByteArray>asList()).build());
+    write(baseInsert().set("BytesArrayValue").toBytesArray(Collections.emptyList()).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytesList(0)).containsExactly();
@@ -529,10 +620,7 @@ public class ITWriteTest {
   @Test
   public void writeTimestampArrayEmpty() {
     write(
-        baseInsert()
-            .set("TimestampArrayValue")
-            .toTimestampArray(Arrays.<Timestamp>asList())
-            .build());
+        baseInsert().set("TimestampArrayValue").toTimestampArray(Collections.emptyList()).build());
     Struct row = readLastRow("TimestampArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestampList(0)).containsExactly();
@@ -561,7 +649,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayEmpty() {
-    write(baseInsert().set("DateArrayValue").toDateArray(Arrays.<Date>asList()).build());
+    write(baseInsert().set("DateArrayValue").toDateArray(Collections.emptyList()).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -575,6 +663,54 @@ public class ITWriteTest {
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly(d1, null, d2).inOrder();
+  }
+
+  @Test
+  public void writeNumericArrayNull() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("NumericArrayValue").toNumericArray(null).build());
+    Struct row = readLastRow("NumericArrayValue");
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void writeNumericArrayEmpty() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("NumericArrayValue").toNumericArray(ImmutableList.of()).build());
+    Struct row = readLastRow("NumericArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0)).containsExactly();
+  }
+
+  @Test
+  public void writeNumericArray() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(
+        baseInsert()
+            .set("NumericArrayValue")
+            .toNumericArray(
+                Arrays.asList(new BigDecimal("3.141592"), new BigDecimal("6.626"), null))
+            .build());
+    Struct row = readLastRow("NumericArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0))
+        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3), null)
+        .inOrder();
+  }
+
+  @Test
+  public void writeNumericArrayNoNulls() {
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    write(
+        baseInsert()
+            .set("NumericArrayValue")
+            .toNumericArray(Arrays.asList(new BigDecimal("3.141592"), new BigDecimal("6.626")))
+            .build());
+    Struct row = readLastRow("NumericArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getBigDecimalList(0))
+        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3))
+        .inOrder();
   }
 
   @Test
@@ -622,11 +758,8 @@ public class ITWriteTest {
     context.cancel(new RuntimeException("Cancelled by test"));
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {
@@ -644,11 +777,8 @@ public class ITWriteTest {
         Context.current().withDeadlineAfter(10, TimeUnit.NANOSECONDS, executor);
     Runnable work =
         context.wrap(
-            new Runnable() {
-              @Override
-              public void run() {
-                write(baseInsert().set("BoolValue").to(true).build());
-              }
+            () -> {
+              write(baseInsert().set("BoolValue").to(true).build());
             });
 
     try {

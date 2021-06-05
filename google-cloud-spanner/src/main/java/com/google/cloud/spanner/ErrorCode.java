@@ -89,7 +89,7 @@ public enum ErrorCode {
   /**
    * Returns the error code corresponding to a gRPC status, or {@code UNKNOWN} if not recognized.
    */
-  static ErrorCode fromGrpcStatus(Status status) {
+  public static ErrorCode fromGrpcStatus(Status status) {
     ErrorCode code = errorByRpcCode.get(status.getCode().value());
     return code == null ? UNKNOWN : code;
   }

@@ -54,7 +54,7 @@ import org.junit.runners.JUnit4;
 
 /**
  * Integration test reading large amounts of data using the Batch APIs. The size of data ensures
- * that multiple paritions are returned by the server.
+ * that multiple partitions are returned by the server.
  */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -158,7 +158,11 @@ public class ITBatchReadTest {
     batchTxn = client.batchReadOnlyTransaction(bound);
     List<Partition> partitions =
         batchTxn.partitionReadUsingIndex(
-            partitionParams, TABLE_NAME, INDEX_NAME, KeySet.all(), Arrays.asList("Fingerprint"));
+            partitionParams,
+            TABLE_NAME,
+            INDEX_NAME,
+            KeySet.all(),
+            Collections.singletonList("Fingerprint"));
     BatchTransactionId txnID = batchTxn.getBatchTransactionId();
     int numRowsRead = 0;
     for (Partition p : partitions) {

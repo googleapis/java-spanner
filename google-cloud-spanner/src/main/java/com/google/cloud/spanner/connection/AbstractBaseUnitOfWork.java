@@ -16,12 +16,26 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.Context;
+import io.grpc.MethodDescriptor;
+import io.grpc.Status;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -30,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Base for all {@link Connection}-based transactions and batches. */
@@ -37,16 +52,31 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
 
+  /** Class for keeping track of the stacktrace of the caller of an async statement. */
+  static final class SpannerAsyncExecutionException extends RuntimeException {
+    final Statement statement;
+
+    SpannerAsyncExecutionException(Statement statement) {
+      this.statement = statement;
+    }
+
+    public String getMessage() {
+      // We only include the SQL of the statement and not the parameter values to prevent
+      // potentially sensitive data to escape into an error message.
+      return String.format("Execution failed for statement: %s", statement.getSql());
+    }
+  }
+
   /**
    * The {@link Future} that monitors the result of the statement currently being executed for this
    * unit of work.
    */
   @GuardedBy("this")
-  private Future<?> currentlyRunningStatementFuture = null;
+  private volatile Future<?> currentlyRunningStatementFuture = null;
 
   enum InterceptorsUsage {
     INVOKE_INTERCEPTORS,
-    IGNORE_INTERCEPTORS;
+    IGNORE_INTERCEPTORS
   }
 
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractBaseUnitOfWork> {
@@ -100,34 +130,38 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     }
   }
 
-  <T> T asyncExecuteStatement(ParsedStatement statement, Callable<T> callable) {
-    return asyncExecuteStatement(statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS);
+  <T> ApiFuture<T> executeStatementAsync(
+      ParsedStatement statement,
+      Callable<T> callable,
+      @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
+    return executeStatementAsync(
+        statement,
+        callable,
+        InterceptorsUsage.INVOKE_INTERCEPTORS,
+        applyStatementTimeoutToMethod == null
+            ? Collections.emptySet()
+            : ImmutableList.of(applyStatementTimeoutToMethod));
   }
 
-  <T> T asyncExecuteStatement(
-      ParsedStatement statement, Callable<T> callable, InterceptorsUsage interceptorUsage) {
-    Preconditions.checkNotNull(statement);
-    Preconditions.checkNotNull(callable);
+  <T> ApiFuture<T> executeStatementAsync(
+      ParsedStatement statement,
+      Callable<T> callable,
+      Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
+    return executeStatementAsync(
+        statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethods);
+  }
 
-    if (interceptorUsage == InterceptorsUsage.INVOKE_INTERCEPTORS) {
-      statementExecutor.invokeInterceptors(
-          statement, StatementExecutionStep.EXECUTE_STATEMENT, this);
-    }
-    Future<T> future = statementExecutor.submit(callable);
-    synchronized (this) {
-      this.currentlyRunningStatementFuture = future;
-    }
-    T res;
+  <ResponseT, MetadataT> ResponseT getWithStatementTimeout(
+      OperationFuture<ResponseT, MetadataT> operation, ParsedStatement statement) {
+    ResponseT res;
     try {
       if (statementTimeout.hasTimeout()) {
         TimeUnit unit = statementTimeout.getAppropriateTimeUnit();
-        res = future.get(statementTimeout.getTimeoutValue(unit), unit);
+        res = operation.get(statementTimeout.getTimeoutValue(unit), unit);
       } else {
-        res = future.get();
+        res = operation.get();
       }
     } catch (TimeoutException e) {
-      // statement timed out, cancel the execution
-      future.cancel(true);
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.DEADLINE_EXCEEDED,
           "Statement execution timeout occurred for " + statement.getSqlWithoutComments(),
@@ -143,7 +177,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         cause = cause.getCause();
       }
       throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNKNOWN,
+          ErrorCode.fromGrpcStatus(Status.fromThrowable(e)),
           "Statement execution failed for " + statement.getSqlWithoutComments(),
           e);
     } catch (InterruptedException e) {
@@ -152,11 +186,67 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     } catch (CancellationException e) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.CANCELLED, "Statement execution was cancelled", e);
-    } finally {
-      synchronized (this) {
-        this.currentlyRunningStatementFuture = null;
-      }
     }
     return res;
+  }
+
+  <T> ApiFuture<T> executeStatementAsync(
+      ParsedStatement statement,
+      Callable<T> callable,
+      InterceptorsUsage interceptorUsage,
+      final Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
+    Preconditions.checkNotNull(statement);
+    Preconditions.checkNotNull(callable);
+
+    if (interceptorUsage == InterceptorsUsage.INVOKE_INTERCEPTORS) {
+      statementExecutor.invokeInterceptors(
+          statement, StatementExecutionStep.EXECUTE_STATEMENT, this);
+    }
+    Context context = Context.current();
+    if (statementTimeout.hasTimeout() && !applyStatementTimeoutToMethods.isEmpty()) {
+      context =
+          context.withValue(
+              SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
+              new SpannerOptions.CallContextConfigurator() {
+                @Override
+                public <ReqT, RespT> ApiCallContext configure(
+                    ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+                  if (statementTimeout.hasTimeout()
+                      && applyStatementTimeoutToMethods.contains(method)) {
+                    return GrpcCallContext.createDefault()
+                        .withTimeout(statementTimeout.asDuration());
+                  }
+                  return null;
+                }
+              });
+    }
+    ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
+    final SpannerAsyncExecutionException caller =
+        new SpannerAsyncExecutionException(statement.getStatement());
+    final ApiFuture<T> future =
+        ApiFutures.catching(
+            f,
+            Throwable.class,
+            input -> {
+              input.addSuppressed(caller);
+              throw SpannerExceptionFactory.asSpannerException(input);
+            },
+            MoreExecutors.directExecutor());
+    synchronized (this) {
+      this.currentlyRunningStatementFuture = future;
+    }
+    future.addListener(
+        new Runnable() {
+          @Override
+          public void run() {
+            synchronized (this) {
+              if (currentlyRunningStatementFuture == future) {
+                currentlyRunningStatementFuture = null;
+              }
+            }
+          }
+        },
+        MoreExecutors.directExecutor());
+    return future;
   }
 }

@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.util.Objects;
 import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
@@ -30,8 +31,18 @@ public class SessionPoolOptions {
   private final int minSessions;
   private final int maxSessions;
   private final int incStep;
-  private final int maxIdleSessions;
-  private final float writeSessionsFraction;
+  /**
+   * Use {@link #minSessions} instead to set the minimum number of sessions in the pool to maintain.
+   * Creating a larger number of sessions during startup is relatively cheap as it is executed with
+   * the BatchCreateSessions RPC.
+   */
+  @Deprecated private final int maxIdleSessions;
+  /**
+   * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+   * This setting therefore does not have any meaning anymore, and may be removed in the future.
+   */
+  @Deprecated private final float writeSessionsFraction;
+
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
   private final int keepAliveIntervalMinutes;
@@ -58,6 +69,48 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof SessionPoolOptions)) {
+      return false;
+    }
+    SessionPoolOptions other = (SessionPoolOptions) o;
+    return Objects.equals(this.minSessions, other.minSessions)
+        && Objects.equals(this.maxSessions, other.maxSessions)
+        && Objects.equals(this.incStep, other.incStep)
+        && Objects.equals(this.maxIdleSessions, other.maxIdleSessions)
+        && Objects.equals(this.writeSessionsFraction, other.writeSessionsFraction)
+        && Objects.equals(this.actionOnExhaustion, other.actionOnExhaustion)
+        && Objects.equals(this.actionOnSessionNotFound, other.actionOnSessionNotFound)
+        && Objects.equals(this.actionOnSessionLeak, other.actionOnSessionLeak)
+        && Objects.equals(
+            this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
+        && Objects.equals(this.loopFrequency, other.loopFrequency)
+        && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
+        && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        this.minSessions,
+        this.maxSessions,
+        this.incStep,
+        this.maxIdleSessions,
+        this.writeSessionsFraction,
+        this.actionOnExhaustion,
+        this.actionOnSessionNotFound,
+        this.actionOnSessionLeak,
+        this.initialWaitForSessionTimeoutMillis,
+        this.loopFrequency,
+        this.keepAliveIntervalMinutes,
+        this.removeInactiveSessionAfter);
+  }
+
+  public Builder toBuilder() {
+    return new Builder(this);
+  }
+
   public int getMinSessions() {
     return minSessions;
   }
@@ -70,10 +123,22 @@ public class SessionPoolOptions {
     return incStep;
   }
 
+  /**
+   * @deprecated Use a higher value for {@link SessionPoolOptions.Builder#setMinSessions(int)}
+   *     instead of setting this option.
+   */
+  @Deprecated
   public int getMaxIdleSessions() {
     return maxIdleSessions;
   }
 
+  /**
+   * @deprecated This value is no longer used. The session pool does not prepare any sessions for
+   *     read/write transactions. Instead, a transaction will be started by including a
+   *     BeginTransaction option with the first statement of a transaction. This method may be
+   *     removed in a future release.
+   */
+  @Deprecated
   public float getWriteSessionsFraction() {
     return writeSessionsFraction;
   }
@@ -117,19 +182,19 @@ public class SessionPoolOptions {
     return new Builder();
   }
 
-  private static enum ActionOnExhaustion {
+  private enum ActionOnExhaustion {
     BLOCK,
     FAIL,
   }
 
-  private static enum ActionOnSessionNotFound {
+  private enum ActionOnSessionNotFound {
     RETRY,
-    FAIL;
+    FAIL
   }
 
-  private static enum ActionOnSessionLeak {
+  private enum ActionOnSessionLeak {
     WARN,
-    FAIL;
+    FAIL
   }
 
   /** Builder for creating SessionPoolOptions. */
@@ -138,8 +203,16 @@ public class SessionPoolOptions {
     private int minSessions = DEFAULT_MIN_SESSIONS;
     private int maxSessions = DEFAULT_MAX_SESSIONS;
     private int incStep = DEFAULT_INC_STEP;
-    private int maxIdleSessions;
-    private float writeSessionsFraction = 0.2f;
+
+    /** Set a higher value for {@link #minSessions} instead of using this field. */
+    @Deprecated private int maxIdleSessions;
+
+    /**
+     * The session pool no longer prepares a fraction of the sessions with a read/write transaction.
+     * This setting therefore does not have any meaning anymore, and may be removed in the future.
+     */
+    @Deprecated private float writeSessionsFraction = 0.2f;
+
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
@@ -147,6 +220,24 @@ public class SessionPoolOptions {
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
+
+    public Builder() {}
+
+    private Builder(SessionPoolOptions options) {
+      this.minSessionsSet = true;
+      this.minSessions = options.minSessions;
+      this.maxSessions = options.maxSessions;
+      this.incStep = options.incStep;
+      this.maxIdleSessions = options.maxIdleSessions;
+      this.writeSessionsFraction = options.writeSessionsFraction;
+      this.actionOnExhaustion = options.actionOnExhaustion;
+      this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
+      this.actionOnSessionNotFound = options.actionOnSessionNotFound;
+      this.actionOnSessionLeak = options.actionOnSessionLeak;
+      this.loopFrequency = options.loopFrequency;
+      this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
+      this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
+    }
 
     /**
      * Minimum number of sessions that this pool will always maintain. These will be created eagerly
@@ -187,7 +278,11 @@ public class SessionPoolOptions {
      * #setMinSessions}. To determine how many sessions are idle we look at maximum number of
      * sessions used concurrently over a window of time. Any sessions beyond that are idle. Defaults
      * to 0.
+     *
+     * @deprecated set a higher value for {@link #setMinSessions(int)} instead of using this
+     *     configuration option. This option will be removed in a future release.
      */
+    @Deprecated
     public Builder setMaxIdleSessions(int maxIdleSessions) {
       this.maxIdleSessions = maxIdleSessions;
       return this;
@@ -260,12 +355,11 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Fraction of sessions to be kept prepared for write transactions. This is an optimisation to
-     * avoid the cost of sending a BeginTransaction() rpc. If all such sessions are in use and a
-     * write request comes, we will make the BeginTransaction() rpc inline. It must be between 0 and
-     * 1(inclusive).
-     *
-     * <p>Default value is 0.2.
+     * @deprecated This configuration value is no longer in use. The session pool does not prepare
+     *     any sessions for read/write transactions. Instead, a transaction will automatically be
+     *     started by the first statement that is executed by a transaction by including a
+     *     BeginTransaction option with that statement.
+     *     <p>This method may be removed in a future release.
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
@@ -288,9 +382,6 @@ public class SessionPoolOptions {
       }
       Preconditions.checkArgument(
           keepAliveIntervalMinutes < 60, "Keep alive interval should be less than" + "60 minutes");
-      Preconditions.checkArgument(
-          writeSessionsFraction >= 0 && writeSessionsFraction <= 1,
-          "Fraction of write sessions must be between 0 and 1 (inclusive)");
     }
   }
 }

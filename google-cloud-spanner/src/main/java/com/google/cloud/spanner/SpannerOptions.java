@@ -18,9 +18,11 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
@@ -29,6 +31,8 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
+import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -44,11 +48,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.SpannerGrpc;
 import io.grpc.CallCredentials;
 import io.grpc.CompressorRegistry;
+import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.MethodDescriptor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -72,6 +80,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
+  private static final String LIQUIBASE_API_CLIENT_LIB_TOKEN = "sp-liq";
+
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final ImmutableSet<String> SCOPES =
@@ -94,6 +104,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
   private final boolean autoThrottleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
+  private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
    */
@@ -116,9 +128,323 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
+  }
+
+  /** Context key for the {@link CallContextConfigurator} to use. */
+  public static final Context.Key<CallContextConfigurator> CALL_CONTEXT_CONFIGURATOR_KEY =
+      Context.key("call-context-configurator");
+
+  /**
+   * {@link CallContextConfigurator} can be used to modify the {@link ApiCallContext} for one or
+   * more specific RPCs. This can be used to set specific timeout value for RPCs or use specific
+   * {@link CallCredentials} for an RPC. The {@link CallContextConfigurator} must be set as a value
+   * on the {@link Context} using the {@link SpannerOptions#CALL_CONTEXT_CONFIGURATOR_KEY} key.
+   *
+   * <p>This API is meant for advanced users. Most users should instead use the {@link
+   * SpannerCallContextTimeoutConfigurator} for setting timeouts per RPC.
+   *
+   * <p>Example usage:
+   *
+   * <pre>{@code
+   * CallContextConfigurator configurator =
+   *     new CallContextConfigurator() {
+   *       public <ReqT, RespT> ApiCallContext configure(
+   *           ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+   *         if (method == SpannerGrpc.getExecuteBatchDmlMethod()) {
+   *           return GrpcCallContext.createDefault()
+   *               .withCallOptions(CallOptions.DEFAULT.withDeadlineAfter(60L, TimeUnit.SECONDS));
+   *         }
+   *         return null;
+   *       }
+   *     };
+   * Context context =
+   *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+   * context.run(
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
+   *         }
+   *       }
+   *     }
+   * }</pre>
+   */
+  public interface CallContextConfigurator {
+    /**
+     * Configure a {@link ApiCallContext} for a specific RPC call.
+     *
+     * @param context The default context. This can be used to inspect the current values.
+     * @param request The request that will be sent.
+     * @param method The method that is being called.
+     * @return An {@link ApiCallContext} that will be merged with the default {@link
+     *     ApiCallContext}. If <code>null</code> is returned, no changes to the default {@link
+     *     ApiCallContext} will be made.
+     */
+    @Nullable
+    <ReqT, RespT> ApiCallContext configure(
+        ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method);
+  }
+
+  private enum SpannerMethod {
+    COMMIT {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getCommitMethod();
+      }
+    },
+    ROLLBACK {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getRollbackMethod();
+      }
+    },
+
+    EXECUTE_QUERY {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        // This also matches with Partitioned DML calls, but that call will override any timeout
+        // settings anyway.
+        return method == SpannerGrpc.getExecuteStreamingSqlMethod();
+      }
+    },
+    READ {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getStreamingReadMethod();
+      }
+    },
+    EXECUTE_UPDATE {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        if (method == SpannerGrpc.getExecuteSqlMethod()) {
+          ExecuteSqlRequest sqlRequest = (ExecuteSqlRequest) request;
+          return sqlRequest.getSeqno() != 0L;
+        }
+        return false;
+      }
+    },
+    BATCH_UPDATE {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getExecuteBatchDmlMethod();
+      }
+    },
+
+    PARTITION_QUERY {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getPartitionQueryMethod();
+      }
+    },
+    PARTITION_READ {
+      @Override
+      <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+        return method == SpannerGrpc.getPartitionReadMethod();
+      }
+    };
+
+    abstract <ReqT, RespT> boolean isMethod(ReqT request, MethodDescriptor<ReqT, RespT> method);
+
+    static <ReqT, RespT> SpannerMethod valueOf(ReqT request, MethodDescriptor<ReqT, RespT> method) {
+      for (SpannerMethod m : SpannerMethod.values()) {
+        if (m.isMethod(request, method)) {
+          return m;
+        }
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Helper class to configure timeouts for specific Spanner RPCs. The {@link
+   * SpannerCallContextTimeoutConfigurator} must be set as a value on the {@link Context} using the
+   * {@link SpannerOptions#CALL_CONTEXT_CONFIGURATOR_KEY} key.
+   *
+   * <p>Example usage:
+   *
+   * <pre>{@code
+   * // Create a context with a ExecuteQuery timeout of 10 seconds.
+   * Context context =
+   *     Context.current()
+   *         .withValue(
+   *             SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY,
+   *             SpannerCallContextTimeoutConfigurator.create()
+   *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
+   * context.run(
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
+   *         }
+   *       }
+   *     }
+   * }</pre>
+   */
+  public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
+    private Duration commitTimeout;
+    private Duration rollbackTimeout;
+
+    private Duration executeQueryTimeout;
+    private Duration executeUpdateTimeout;
+    private Duration batchUpdateTimeout;
+    private Duration readTimeout;
+
+    private Duration partitionQueryTimeout;
+    private Duration partitionReadTimeout;
+
+    public static SpannerCallContextTimeoutConfigurator create() {
+      return new SpannerCallContextTimeoutConfigurator();
+    }
+
+    private SpannerCallContextTimeoutConfigurator() {}
+
+    @Override
+    public <ReqT, RespT> ApiCallContext configure(
+        ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+      SpannerMethod spannerMethod = SpannerMethod.valueOf(request, method);
+      if (spannerMethod == null) {
+        return null;
+      }
+      switch (SpannerMethod.valueOf(request, method)) {
+        case BATCH_UPDATE:
+          return batchUpdateTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(batchUpdateTimeout);
+        case COMMIT:
+          return commitTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(commitTimeout);
+        case EXECUTE_QUERY:
+          return executeQueryTimeout == null
+              ? null
+              : GrpcCallContext.createDefault()
+                  .withTimeout(executeQueryTimeout)
+                  .withStreamWaitTimeout(executeQueryTimeout);
+        case EXECUTE_UPDATE:
+          return executeUpdateTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(executeUpdateTimeout);
+        case PARTITION_QUERY:
+          return partitionQueryTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(partitionQueryTimeout);
+        case PARTITION_READ:
+          return partitionReadTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(partitionReadTimeout);
+        case READ:
+          return readTimeout == null
+              ? null
+              : GrpcCallContext.createDefault()
+                  .withTimeout(readTimeout)
+                  .withStreamWaitTimeout(readTimeout);
+        case ROLLBACK:
+          return rollbackTimeout == null
+              ? null
+              : GrpcCallContext.createDefault().withTimeout(rollbackTimeout);
+        default:
+      }
+      return null;
+    }
+
+    public Duration getCommitTimeout() {
+      return commitTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withCommitTimeout(Duration commitTimeout) {
+      this.commitTimeout = commitTimeout;
+      return this;
+    }
+
+    public Duration getRollbackTimeout() {
+      return rollbackTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withRollbackTimeout(Duration rollbackTimeout) {
+      this.rollbackTimeout = rollbackTimeout;
+      return this;
+    }
+
+    public Duration getExecuteQueryTimeout() {
+      return executeQueryTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteQueryTimeout(
+        Duration executeQueryTimeout) {
+      this.executeQueryTimeout = executeQueryTimeout;
+      return this;
+    }
+
+    public Duration getExecuteUpdateTimeout() {
+      return executeUpdateTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withExecuteUpdateTimeout(
+        Duration executeUpdateTimeout) {
+      this.executeUpdateTimeout = executeUpdateTimeout;
+      return this;
+    }
+
+    public Duration getBatchUpdateTimeout() {
+      return batchUpdateTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withBatchUpdateTimeout(
+        Duration batchUpdateTimeout) {
+      this.batchUpdateTimeout = batchUpdateTimeout;
+      return this;
+    }
+
+    public Duration getReadTimeout() {
+      return readTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withReadTimeout(Duration readTimeout) {
+      this.readTimeout = readTimeout;
+      return this;
+    }
+
+    public Duration getPartitionQueryTimeout() {
+      return partitionQueryTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionQueryTimeout(
+        Duration partitionQueryTimeout) {
+      this.partitionQueryTimeout = partitionQueryTimeout;
+      return this;
+    }
+
+    public Duration getPartitionReadTimeout() {
+      return partitionReadTimeout;
+    }
+
+    public SpannerCallContextTimeoutConfigurator withPartitionReadTimeout(
+        Duration partitionReadTimeout) {
+      this.partitionReadTimeout = partitionReadTimeout;
+      return this;
+    }
   }
 
   /** Default implementation of {@code SpannerFactory}. */
@@ -147,7 +473,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
   static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
@@ -229,6 +555,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
+    trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
     if (envQueryOptions.equals(QueryOptions.getDefaultInstance())) {
@@ -250,7 +578,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
@@ -295,11 +623,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setRetryDelayMultiplier(2.0)
+            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxAttempts(10)
+            .build();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
             JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN);
+            HIBERNATE_API_CLIENT_LIB_TOKEN,
+            LIQUIBASE_API_CLIENT_LIB_TOKEN);
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -320,7 +656,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private RetrySettings retryAdministrativeRequestsSettings =
+        DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
+    private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
     private CallCredentialsProvider callCredentialsProvider;
     private CloseableExecutorProvider asyncExecutorProvider;
@@ -367,6 +706,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
+      this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
       this.asyncExecutorProvider = options.asyncExecutorProvider;
@@ -579,6 +920,31 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the retry settings for retrying administrative requests when the quote of administrative
+     * requests per minute has been exceeded.
+     */
+    Builder setRetryAdministrativeRequestsSettings(
+        RetrySettings retryAdministrativeRequestsSettings) {
+      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      return this;
+    }
+
+    /**
+     * Instructs the client library to track the first request of each read/write transaction. This
+     * statement will include a BeginTransaction option and will return a transaction id as part of
+     * its result. All other statements in the same transaction must wait for this first statement
+     * to finish before they can proceed. By setting this option the client library will throw a
+     * {@link SpannerException} with {@link ErrorCode#DEADLINE_EXCEEDED} for any subsequent
+     * statement that has waited for at least 60 seconds for the first statement to return a
+     * transaction id, including the stacktrace of the initial statement that should have returned a
+     * transaction id.
+     */
+    public Builder setTrackTransactionStarter() {
+      this.trackTransactionStarter = true;
+      return this;
+    }
+
+    /**
      * Sets the default {@link QueryOptions} that will be used for all queries on the specified
      * database. Query options can also be specified on a per-query basis and as environment
      * variables. The precedence of these settings are:
@@ -651,7 +1017,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {
@@ -676,7 +1042,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -687,13 +1052,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setHost(emulatorHost);
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
-        this.setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder builder) {
-                return builder.usePlaintext();
-              }
-            });
+        this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
@@ -769,6 +1128,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public RetrySettings getRetryAdministrativeRequestsSettings() {
+    return retryAdministrativeRequestsSettings;
+  }
+
+  public boolean isTrackTransactionStarter() {
+    return trackTransactionStarter;
   }
 
   public CallCredentialsProvider getCallCredentialsProvider() {

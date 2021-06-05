@@ -22,6 +22,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.io.BaseEncoding;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,8 +57,39 @@ class CredentialsService {
         return getCredentialsFromUrl(credentialsUrl);
       }
     } catch (IOException e) {
+      String msg = "Invalid credentials path specified: ";
+      if (credentialsUrl == null) {
+        msg =
+            msg
+                + "There are no credentials set in the connection string, "
+                + "and the default application credentials are not set or are pointing to an invalid or non-existing file.\n"
+                + "Please check the GOOGLE_APPLICATION_CREDENTIALS environment variable and/or "
+                + "the credentials that have been set using the Google Cloud SDK gcloud auth application-default login command";
+      } else {
+        msg = msg + credentialsUrl;
+      }
+      throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, msg, e);
+    }
+  }
+
+  GoogleCredentials decodeCredentials(String encodedCredentials) {
+    byte[] decodedBytes;
+    try {
+      decodedBytes = BaseEncoding.base64Url().decode(encodedCredentials);
+    } catch (IllegalArgumentException e) {
       throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "Invalid credentials path specified", e);
+          ErrorCode.INVALID_ARGUMENT,
+          "The encoded credentials could not be decoded as a base64 string. "
+              + "Please ensure that the provided string is a valid base64 string.",
+          e);
+    }
+    try {
+      return GoogleCredentials.fromStream(new ByteArrayInputStream(decodedBytes));
+    } catch (IllegalArgumentException | IOException e) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "The encoded credentials do not contain a valid Google Cloud credentials JSON string.",
+          e);
     }
   }
 

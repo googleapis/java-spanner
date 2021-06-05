@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -23,6 +24,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -31,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -47,15 +51,17 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.ResultSetStats;
+import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class ReadWriteTransactionTest {
@@ -63,12 +69,12 @@ public class ReadWriteTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   private static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
     private CommitBehavior commitBehavior;
 
@@ -87,7 +93,7 @@ public class ReadWriteTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitTimestamp = Timestamp.now();
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -96,7 +102,8 @@ public class ReadWriteTransactionTest {
         case ABORT:
           state = TransactionState.COMMIT_FAILED;
           commitBehavior = CommitBehavior.SUCCEED;
-          throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "commit aborted");
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.ABORTED, "commit aborted", createAbortedExceptionWithMinimalRetry());
         default:
           throw new IllegalStateException();
       }
@@ -114,7 +121,11 @@ public class ReadWriteTransactionTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+    }
+
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -143,24 +154,20 @@ public class ReadWriteTransactionTest {
     DatabaseClient client = mock(DatabaseClient.class);
     when(client.transactionManager())
         .thenAnswer(
-            new Answer<TransactionManager>() {
-              @Override
-              public TransactionManager answer(InvocationOnMock invocation) {
-                TransactionContext txContext = mock(TransactionContext.class);
-                when(txContext.executeQuery(any(Statement.class)))
-                    .thenReturn(mock(ResultSet.class));
-                ResultSet rsWithStats = mock(ResultSet.class);
-                when(rsWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
-                when(txContext.analyzeQuery(any(Statement.class), any(QueryAnalyzeMode.class)))
-                    .thenReturn(rsWithStats);
-                when(txContext.executeUpdate(any(Statement.class))).thenReturn(1L);
-                return new SimpleTransactionManager(txContext, commitBehavior);
-              }
+            invocation -> {
+              TransactionContext txContext = mock(TransactionContext.class);
+              when(txContext.executeQuery(any(Statement.class))).thenReturn(mock(ResultSet.class));
+              ResultSet rsWithStats = mock(ResultSet.class);
+              when(rsWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
+              when(txContext.analyzeQuery(any(Statement.class), any(QueryAnalyzeMode.class)))
+                  .thenReturn(rsWithStats);
+              when(txContext.executeUpdate(any(Statement.class))).thenReturn(1L);
+              return new SimpleTransactionManager(txContext, commitBehavior);
             });
     return ReadWriteTransaction.newBuilder()
         .setDatabaseClient(client)
         .setRetryAbortsInternally(withRetry)
-        .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+        .setTransactionRetryListeners(Collections.emptyList())
         .withStatementExecutor(new StatementExecutor())
         .build();
   }
@@ -172,7 +179,7 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     try {
-      transaction.executeDdl(statement);
+      transaction.executeDdlAsync(statement);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -183,7 +190,7 @@ public class ReadWriteTransactionTest {
   public void testRunBatch() {
     ReadWriteTransaction subject = createSubject();
     try {
-      subject.runBatch();
+      subject.runBatchAsync();
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -210,7 +217,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.NONE);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE));
     assertThat(rs, is(notNullValue()));
     assertThat(rs.getStats(), is(nullValue()));
   }
@@ -224,7 +231,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.PLAN);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PLAN));
     assertThat(rs, is(notNullValue()));
     while (rs.next()) {
       // do nothing
@@ -241,7 +248,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    ResultSet rs = transaction.executeQuery(parsedStatement, AnalyzeMode.PROFILE);
+    ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PROFILE));
     assertThat(rs, is(notNullValue()));
     while (rs.next()) {
       // do nothing
@@ -258,7 +265,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
   }
 
   @Test
@@ -270,7 +277,7 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
     try {
       transaction.getCommitTimestamp();
       fail("Expected exception");
@@ -288,8 +295,8 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeUpdate(parsedStatement), is(1L));
-    transaction.commit();
+    assertThat(get(transaction.executeUpdateAsync(parsedStatement)), is(1L));
+    get(transaction.commitAsync());
 
     assertThat(transaction.getCommitTimestamp(), is(notNullValue()));
   }
@@ -303,7 +310,8 @@ public class ReadWriteTransactionTest {
     when(parsedStatement.getStatement()).thenReturn(statement);
 
     ReadWriteTransaction transaction = createSubject();
-    assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE), is(notNullValue()));
+    assertThat(
+        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
     try {
       transaction.getReadTimestamp();
       fail("Expected exception");
@@ -325,13 +333,14 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    assertThat(transaction.executeQuery(parsedStatement, AnalyzeMode.NONE), is(notNullValue()));
+    assertThat(
+        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
 
-    transaction.commit();
+    get(transaction.commitAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -343,7 +352,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    transaction.rollback();
+    get(transaction.rollbackAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.ROLLED_BACK)));
@@ -356,7 +365,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      transaction.commit();
+      get(transaction.commitAsync());
     } catch (SpannerException e) {
       // ignore
     }
@@ -372,7 +381,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      transaction.commit();
+      get(transaction.commitAsync());
     } catch (AbortedException e) {
       // ignore
     }
@@ -388,7 +397,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    transaction.commit();
+    get(transaction.commitAsync());
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -402,7 +411,7 @@ public class ReadWriteTransactionTest {
 
   private enum RetryResults {
     SAME,
-    DIFFERENT;
+    DIFFERENT
   }
 
   @Test
@@ -440,7 +449,9 @@ public class ReadWriteTransactionTest {
       }
 
       // first abort, then do nothing
-      doThrow(SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "commit aborted"))
+      doThrow(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED, "commit aborted", createAbortedExceptionWithMinimalRetry()))
           .doNothing()
           .when(txManager)
           .commit();
@@ -448,15 +459,15 @@ public class ReadWriteTransactionTest {
       ReadWriteTransaction subject =
           ReadWriteTransaction.newBuilder()
               .setRetryAbortsInternally(true)
-              .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+              .setTransactionRetryListeners(Collections.emptyList())
               .setDatabaseClient(client)
               .withStatementExecutor(new StatementExecutor())
               .build();
-      subject.executeUpdate(update1);
-      subject.executeUpdate(update2);
+      subject.executeUpdateAsync(update1);
+      subject.executeUpdateAsync(update2);
       boolean expectedException = false;
       try {
-        subject.commit();
+        get(subject.commitAsync());
       } catch (SpannerException e) {
         if (results == RetryResults.DIFFERENT && e.getErrorCode() == ErrorCode.ABORTED) {
           // expected
@@ -475,7 +486,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();
@@ -491,7 +502,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -499,7 +510,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -516,7 +527,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -524,7 +535,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -542,7 +553,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -550,7 +561,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -569,7 +580,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -577,7 +588,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -585,7 +596,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(3l)
+                    .to(3L)
                     .set("NAME")
                     .to("TEST 3")
                     .set("AMOUNT")
@@ -614,7 +625,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();
@@ -629,13 +640,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 4L})
                     .build()));
@@ -649,13 +660,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 5L})
                     .build()));
@@ -668,5 +679,51 @@ public class ReadWriteTransactionTest {
     rs1.next();
     rs2.next();
     assertThat(rs1.getChecksum(), is(not(equalTo(rs2.getChecksum()))));
+  }
+
+  @Test
+  public void testGetCommitResponseBeforeCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    try {
+      transaction.getCommitResponse();
+      fail("Expected exception");
+    } catch (SpannerException ex) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterCommit() {
+    ParsedStatement parsedStatement = mock(ParsedStatement.class);
+    when(parsedStatement.getType()).thenReturn(StatementType.UPDATE);
+    when(parsedStatement.isUpdate()).thenReturn(true);
+    Statement statement = Statement.of("UPDATE FOO SET BAR=1 WHERE ID=2");
+    when(parsedStatement.getStatement()).thenReturn(statement);
+
+    ReadWriteTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(parsedStatement));
+    get(transaction.commitAsync());
+
+    assertNotNull(transaction.getCommitResponse());
+    assertNotNull(transaction.getCommitResponseOrNull());
+  }
+
+  private static StatusRuntimeException createAbortedExceptionWithMinimalRetry() {
+    Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(com.google.protobuf.Duration.newBuilder().setNanos(1).setSeconds(0L))
+            .build();
+    trailers.put(key, retryInfo);
+    return io.grpc.Status.ABORTED.asRuntimeException(trailers);
   }
 }

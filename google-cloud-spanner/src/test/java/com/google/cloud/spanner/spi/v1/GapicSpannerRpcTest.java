@@ -20,48 +20,62 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
-import com.google.api.core.ApiFunction;
+import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
+import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
+import com.google.rpc.ErrorInfo;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.CallCredentials;
 import io.grpc.Context;
 import io.grpc.Contexts;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
+import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -71,15 +85,17 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 /** Tests that opening and closing multiple Spanner instances does not leak any threads. */
 @RunWith(JUnit4.class)
 public class GapicSpannerRpcTest {
+
   private static final Statement SELECT1AND2 =
       Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
   private static final ResultSetMetadata SELECT1AND2_METADATA =
@@ -108,6 +124,9 @@ public class GapicSpannerRpcTest {
                   .build())
           .setMetadata(SELECT1AND2_METADATA)
           .build();
+  private static final Statement UPDATE_FOO_STATEMENT =
+      Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
+
   private static final String STATIC_OAUTH_TOKEN = "STATIC_TEST_OAUTH_TOKEN";
   private static final String VARIABLE_OAUTH_TOKEN = "VARIABLE_TEST_OAUTH_TOKEN";
   private static final OAuth2Credentials STATIC_CREDENTIALS =
@@ -123,25 +142,27 @@ public class GapicSpannerRpcTest {
               new java.util.Date(
                   System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1L, TimeUnit.DAYS))));
 
-  private MockSpannerServiceImpl mockSpanner;
-  private MockInstanceAdminImpl mockInstanceAdmin;
-  private MockDatabaseAdminImpl mockDatabaseAdmin;
-  private Server server;
-  private InetSocketAddress address;
-  private final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+  private static MockSpannerServiceImpl mockSpanner;
+  private static MockInstanceAdminImpl mockInstanceAdmin;
+  private static MockDatabaseAdminImpl mockDatabaseAdmin;
+  private static Server server;
+  private static InetSocketAddress address;
+  private static final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
+  private static Metadata lastSeenHeaders;
+  private static String defaultUserAgent;
+  private static Spanner spanner;
 
   @BeforeClass
-  public static void checkNotEmulator() {
+  public static void startServer() throws IOException {
     assumeTrue(
         "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
-  }
 
-  @Before
-  public void startServer() throws IOException {
+    defaultUserAgent = "spanner-java/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.update(UPDATE_FOO_STATEMENT, 1L));
 
     mockInstanceAdmin = new MockInstanceAdminImpl();
     mockDatabaseAdmin = new MockDatabaseAdminImpl();
@@ -160,6 +181,7 @@ public class GapicSpannerRpcTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    lastSeenHeaders = headers;
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
@@ -168,13 +190,22 @@ public class GapicSpannerRpcTest {
                 })
             .build()
             .start();
-    optionsMap.put(Option.CHANNEL_HINT, Long.valueOf(1L));
+    optionsMap.put(Option.CHANNEL_HINT, 1L);
+    spanner = createSpannerOptions().getService();
+  }
+
+  @AfterClass
+  public static void stopServer() throws InterruptedException {
+    if (spanner != null) {
+      spanner.close();
+      server.shutdown();
+      server.awaitTermination();
+    }
   }
 
   @After
-  public void stopServer() throws InterruptedException {
-    server.shutdown();
-    server.awaitTermination();
+  public void reset() {
+    mockSpanner.reset();
   }
 
   private static final int NUMBER_OF_TEST_RUNS = 2;
@@ -184,8 +215,8 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testCloseAllThreadsWhenClosingSpanner() throws InterruptedException {
+    int initialNumberOfThreads = getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, 0);
     for (int i = 0; i < NUMBER_OF_TEST_RUNS; i++) {
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true), is(equalTo(0)));
       // Create Spanner instance.
       SpannerOptions options = createSpannerOptions();
       Spanner spanner = options.getService();
@@ -204,8 +235,8 @@ public class GapicSpannerRpcTest {
         // sessions should initialize multiple transport channels.
         resultSets.add(rs);
         // Check whether the number of expected threads has been reached.
-        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false)
-            == options.getNumChannels() * NUM_THREADS_PER_CHANNEL) {
+        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
+            == options.getNumChannels() * NUM_THREADS_PER_CHANNEL + initialNumberOfThreads) {
           break;
         }
       }
@@ -230,11 +261,14 @@ public class GapicSpannerRpcTest {
       spanner.close();
       // Wait for up to two seconds to allow the threads to actually shutdown.
       Stopwatch watch = Stopwatch.createStarted();
-      while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false) > 0
+      while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
+              > initialNumberOfThreads
           && watch.elapsed(TimeUnit.SECONDS) < 2) {
         Thread.sleep(10L);
       }
-      assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true), is(equalTo(0)));
+      assertThat(
+          getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads),
+          is(equalTo(initialNumberOfThreads)));
     }
   }
 
@@ -245,7 +279,7 @@ public class GapicSpannerRpcTest {
   @Test
   public void testMultipleOpenSpanners() throws InterruptedException {
     List<Spanner> spanners = new ArrayList<>();
-    assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true), is(equalTo(0)));
+    int initialNumberOfThreads = getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, 0);
     for (int openSpanners = 1; openSpanners <= 3; openSpanners++) {
       // Create Spanner instance.
       SpannerOptions options = createSpannerOptions();
@@ -259,19 +293,20 @@ public class GapicSpannerRpcTest {
       // to ensure we also hit multiple channels.
       for (int sessionCount = 0;
           sessionCount < options.getSessionPoolOptions().getMaxSessions()
-              && getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false)
-                  < options.getNumChannels() * NUM_THREADS_PER_CHANNEL * openSpanners;
+              && getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
+                  < options.getNumChannels() * NUM_THREADS_PER_CHANNEL * openSpanners
+                      + initialNumberOfThreads;
           sessionCount++) {
-        ResultSet rs = client.singleUse().executeQuery(SELECT1AND2);
+        ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2);
         // Execute ResultSet#next() to send the query to Spanner.
-        rs.next();
+        resultSet.next();
         // Delay closing the result set in order to force the use of multiple sessions.
         // As each session is linked to one transport channel, using multiple different
         // sessions should initialize multiple transport channels.
-        resultSets.add(rs);
+        resultSets.add(resultSet);
       }
-      for (ResultSet rs : resultSets) {
-        rs.close();
+      for (ResultSet resultSet : resultSets) {
+        resultSet.close();
       }
     }
     for (Spanner spanner : spanners) {
@@ -279,11 +314,14 @@ public class GapicSpannerRpcTest {
     }
     // Wait a little to allow the threads to actually shutdown.
     Stopwatch watch = Stopwatch.createStarted();
-    while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false) > 0
-        && watch.elapsed(TimeUnit.SECONDS) < 2) {
+    while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
+            > initialNumberOfThreads
+        && watch.elapsed(TimeUnit.SECONDS) < 5) {
       Thread.sleep(10L);
     }
-    assertThat(getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true), is(equalTo(0)));
+    assertEquals(
+        initialNumberOfThreads,
+        getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads));
   }
 
   @Test
@@ -292,18 +330,19 @@ public class GapicSpannerRpcTest {
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
-            .setCallCredentialsProvider(
-                new CallCredentialsProvider() {
-                  @Override
-                  public CallCredentials getCallCredentials() {
-                    return MoreCallCredentials.from(VARIABLE_CREDENTIALS);
-                  }
-                })
+            .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
             .build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
     // existence.
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNotNull();
     rpc.shutdown();
   }
@@ -314,16 +353,17 @@ public class GapicSpannerRpcTest {
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
-            .setCallCredentialsProvider(
-                new CallCredentialsProvider() {
-                  @Override
-                  public CallCredentials getCallCredentials() {
-                    return null;
-                  }
-                })
+            .setCallCredentialsProvider(() -> null)
             .build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNull();
     rpc.shutdown();
   }
@@ -335,42 +375,176 @@ public class GapicSpannerRpcTest {
             .setProjectId("some-project")
             .setCredentials(STATIC_CREDENTIALS)
             .build();
-    GapicSpannerRpc rpc = new GapicSpannerRpc(options);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource").getCallOptions().getCredentials())
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertThat(
+            rpc.newCallContext(
+                    optionsMap,
+                    "/some/resource",
+                    GetSessionRequest.getDefaultInstance(),
+                    SpannerGrpc.getGetSessionMethod())
+                .getCallOptions()
+                .getCredentials())
         .isNull();
     rpc.shutdown();
   }
 
-  @SuppressWarnings("rawtypes")
-  private SpannerOptions createSpannerOptions() {
+  private static final class TimeoutHolder {
+
+    private Duration timeout;
+  }
+
+  @Test
+  public void testCallContextTimeout() {
+    // Create a CallContextConfigurator that uses a variable timeout value.
+    final TimeoutHolder timeoutHolder = new TimeoutHolder();
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            // Only configure a timeout for the ExecuteSql method as this method is used for
+            // executing DML statements.
+            if (request instanceof ExecuteSqlRequest
+                && method.equals(SpannerGrpc.getExecuteSqlMethod())) {
+              ExecuteSqlRequest sqlRequest = (ExecuteSqlRequest) request;
+              // Sequence numbers are only assigned for DML statements, which means that
+              // this is an update statement.
+              if (sqlRequest.getSeqno() > 0L) {
+                return context.withTimeout(timeoutHolder.timeout);
+              }
+            }
+            return null;
+          }
+        };
+
+    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
+    final DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+    context.run(
+        () -> {
+          // First try with a 1ns timeout. This should always cause a DEADLINE_EXCEEDED
+          // exception.
+          timeoutHolder.timeout = Duration.ofNanos(1L);
+          SpannerException e =
+              assertThrows(
+                  SpannerException.class,
+                  () ->
+                      client
+                          .readWriteTransaction()
+                          .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT)));
+          assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+
+          // Then try with a longer timeout. This should now succeed.
+          timeoutHolder.timeout = Duration.ofMinutes(1L);
+          long updateCount =
+              client
+                  .readWriteTransaction()
+                  .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+          assertEquals(1L, updateCount);
+        });
+  }
+
+  @Test
+  public void testNewCallContextWithNullRequestAndNullMethod() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminRequestsLimitExceededRetryAlgorithm() {
+    AdminRequestsLimitExceededRetryAlgorithm<Long> alg =
+        new AdminRequestsLimitExceededRetryAlgorithm<>();
+
+    assertThat(alg.shouldRetry(null, 1L)).isFalse();
+
+    ErrorInfo info =
+        ErrorInfo.newBuilder()
+            .putMetadata("quota_limit", "AdminMethodQuotaPerMinutePerProject")
+            .build();
+    Metadata.Key<ErrorInfo> key =
+        Metadata.Key.of(
+            info.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(info));
+    Metadata trailers = new Metadata();
+    trailers.put(key, info);
+
+    SpannerException adminRateExceeded =
+        SpannerExceptionFactory.newSpannerException(
+            Status.RESOURCE_EXHAUSTED.withDescription("foo").asRuntimeException(trailers));
+    assertThat(alg.shouldRetry(adminRateExceeded, null)).isTrue();
+
+    SpannerException numDatabasesExceeded =
+        SpannerExceptionFactory.newSpannerException(
+            Status.RESOURCE_EXHAUSTED
+                .withDescription("Too many databases on instance")
+                .asRuntimeException());
+    assertThat(alg.shouldRetry(numDatabasesExceeded, null)).isFalse();
+
+    assertThat(alg.shouldRetry(new Exception("random exception"), null)).isFalse();
+  }
+
+  @Test
+  public void testDefaultUserAgent() {
+    final DatabaseClient databaseClient =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+    try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+      rs.next();
+    }
+
+    assertThat(lastSeenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+        .contains(defaultUserAgent);
+  }
+
+  @Test
+  public void testCustomUserAgent() {
+    for (String headerId : new String[] {"user-agent", "User-Agent", "USER-AGENT"}) {
+      final HeaderProvider userAgentHeaderProvider =
+          () -> {
+            final Map<String, String> headers = new HashMap<>();
+            headers.put(headerId, "test-agent");
+            return headers;
+          };
+      final SpannerOptions options =
+          createSpannerOptions().toBuilder().setHeaderProvider(userAgentHeaderProvider).build();
+      try (Spanner spanner = options.getService()) {
+        final DatabaseClient databaseClient =
+            spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+          rs.next();
+        }
+
+        assertThat(lastSeenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
+            .contains("test-agent " + defaultUserAgent);
+      }
+    }
+  }
+
+  private static SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                input.usePlaintext();
-                return input;
-              }
+            input -> {
+              input.usePlaintext();
+              return input;
             })
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)
         // Also set a CallCredentialsProvider. These credentials should take precedence above
         // the static credentials.
-        .setCallCredentialsProvider(
-            new CallCredentialsProvider() {
-              @Override
-              public CallCredentials getCallCredentials() {
-                return MoreCallCredentials.from(VARIABLE_CREDENTIALS);
-              }
-            })
+        .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
         .build();
   }
 
-  private int getNumberOfThreadsWithName(String serviceName, boolean dumpStack) {
+  private int getNumberOfThreadsWithName(String serviceName, boolean dumpStack, int expected) {
     Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
     ThreadGroup group = Thread.currentThread().getThreadGroup();
     while (group.getParent() != null) {
@@ -379,13 +553,17 @@ public class GapicSpannerRpcTest {
     Thread[] threads = new Thread[100 * NUMBER_OF_TEST_RUNS];
     int numberOfThreads = group.enumerate(threads);
     int res = 0;
+    List<Thread> found = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
       if (pattern.matcher(threads[i].getName()).matches()) {
         if (dumpStack) {
-          dumpThread(threads[i]);
+          found.add(threads[i]);
         }
         res++;
       }
+    }
+    if (dumpStack && res > expected) {
+      found.stream().forEach(t -> dumpThread(t));
     }
     return res;
   }

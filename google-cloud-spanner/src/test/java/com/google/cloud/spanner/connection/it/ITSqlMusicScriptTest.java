@@ -54,7 +54,7 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
   public void test01_RunScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier();
     try (GenericConnection connection = SpannerGenericConnection.of(createConnection())) {
-      verifier.verifyStatementsInFile(connection, SCRIPT_FILE, SqlScriptVerifier.class);
+      verifier.verifyStatementsInFile(connection, SCRIPT_FILE, SqlScriptVerifier.class, false);
     }
   }
 
@@ -186,6 +186,8 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
       // verify that the commit aborted, an internal retry was started and then aborted because of
       // the concurrent modification
       assertThat(expectedException, is(true));
+      // Rollback the transaction to start a new one.
+      connection.rollback();
       // verify that the prices were changed
       try (ResultSet rs =
           connection.executeQuery(

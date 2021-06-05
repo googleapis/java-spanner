@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * Defines the segments of data to be read in a batch read/query context. They can be serialized and
- * processed across several different machines or proccesses.
+ * processed across several different machines or processes.
  */
 public class Partition implements Serializable {
   private static final long serialVersionUID = 8067099123096783937L;

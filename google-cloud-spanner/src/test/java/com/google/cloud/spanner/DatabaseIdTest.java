@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,11 +42,8 @@ public class DatabaseIdTest {
 
   @Test
   public void badName() {
-    try {
-      DatabaseId.of("bad name");
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage()).contains("projects");
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> DatabaseId.of("bad name"));
+    assertThat(e.getMessage()).contains("projects");
   }
 }

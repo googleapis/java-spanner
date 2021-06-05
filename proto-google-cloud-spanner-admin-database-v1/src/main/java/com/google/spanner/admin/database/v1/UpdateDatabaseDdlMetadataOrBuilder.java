@@ -164,4 +164,106 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    * <code>repeated .google.protobuf.Timestamp commit_timestamps = 3;</code>
    */
   com.google.protobuf.TimestampOrBuilder getCommitTimestampsOrBuilder(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. When true, indicates that the operation is throttled e.g
+   * due to resource constraints. When resources become available the operation
+   * will resume and this field will be false again.
+   * </pre>
+   *
+   * <code>bool throttled = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The throttled.
+   */
+  boolean getThrottled();
+
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  java.util.List<com.google.spanner.admin.database.v1.OperationProgress> getProgressList();
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  com.google.spanner.admin.database.v1.OperationProgress getProgress(int index);
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  int getProgressCount();
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  java.util.List<? extends com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
+      getProgressOrBuilderList();
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder(int index);
 }

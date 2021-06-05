@@ -24,7 +24,6 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -136,7 +135,6 @@ public class BackendExhaustedTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(executor.getCorePoolSize())
                     .setMaxSessions(executor.getCorePoolSize() * 3)
-                    .setWriteSessionsFraction(0.0f)
                     .build())
             .build();
     executorFactory.release(executor);
@@ -159,7 +157,7 @@ public class BackendExhaustedTest {
     // This test case force-closes the Spanner instance as it would otherwise wait
     // forever on the BatchCreateSessions requests that are 'stuck'.
     try {
-      ((SpannerImpl) spanner).close(100L, TimeUnit.MILLISECONDS);
+      ((SpannerImpl) spanner).close(10L, TimeUnit.MILLISECONDS);
     } catch (SpannerException e) {
       // ignore any errors during close as they are expected.
     }
@@ -206,13 +204,7 @@ public class BackendExhaustedTest {
     @Override
     public void run() {
       TransactionRunner runner = client.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Long>() {
-            @Override
-            public Long run(TransactionContext transaction) {
-              return transaction.executeUpdate(UPDATE_STATEMENT);
-            }
-          });
+      runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     }
   }
 }

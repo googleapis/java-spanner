@@ -245,6 +245,55 @@ public class StatementParserTest {
                 Statement.of(
                     "/** SELECT in a java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
             .isDdl());
+
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "CREATE VIEW SingerNames\n"
+                        + "SQL SECURITY INVOKER\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("create view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "/* this is a comment */ create view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "create /* this is a comment */ view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "create \n -- This is a comment \n view SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    " \t \n create   \n \t  view \n  \t SingerNames as select FullName from Singers"))
+            .isDdl());
+    assertTrue(parser.parse(Statement.of("DROP VIEW SingerNames")).isDdl());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "ALTER VIEW SingerNames\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
+            .isDdl());
   }
 
   @Test
@@ -317,7 +366,7 @@ public class StatementParserTest {
   }
 
   @Test
-  public void testQueryHints() {
+  public void testIsQuery_QueryHints() {
     // Valid query hints.
     assertTrue(parser.isQuery("@{JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
     assertTrue(parser.isQuery("@ {JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
@@ -358,9 +407,51 @@ public class StatementParserTest {
     assertFalse(parser.isQuery("@{JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
+  }
+
+  @Test
+  public void testIsUpdate_QueryHints() {
+    // Valid query hints.
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@ {LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{ LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive } UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive}\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{\nLOCK_SCANNED_RANGES =  exclusive   \t}\n\t UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive}\n -- Single line comment\nUPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertTrue(
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive}\n /* Multi line comment\n with more comments\n */UPDATE FOO SET NAME='foo' WHERE ID=1"));
+
+    // Multiple query hints.
+    assertTrue(
+        StatementParser.INSTANCE.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive} @{USE_ADDITIONAL_PARALLELISM=TRUE} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+
+    // Invalid query hints.
     assertFalse(
-        StatementParser.INSTANCE.isQuery(
-            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} UPDATE tbl set FOO=1 WHERE ID=2"));
+        parser.isUpdateStatement(
+            "@{LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertFalse(
+        parser.isUpdateStatement(
+            "@LOCK_SCANNED_RANGES=exclusive} UPDATE FOO SET NAME='foo' WHERE ID=1"));
+    assertFalse(
+        parser.isUpdateStatement(
+            "@LOCK_SCANNED_RANGES=exclusive UPDATE FOO SET NAME='foo' WHERE ID=1"));
   }
 
   @Test

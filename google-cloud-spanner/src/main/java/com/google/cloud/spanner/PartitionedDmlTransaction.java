@@ -24,13 +24,16 @@ import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
@@ -66,7 +69,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
    * statement, and will retry the stream if an {@link UnavailableException} is thrown, using the
    * last seen resume token if the server returns any.
    */
-  long executeStreamingPartitionedUpdate(final Statement statement, final Duration timeout) {
+  long executeStreamingPartitionedUpdate(
+      final Statement statement, final Duration timeout, final UpdateOption... updateOptions) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     LOGGER.log(Level.FINER, "Starting PartitionedUpdate statement");
 
@@ -74,9 +78,10 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     boolean foundStats = false;
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
+    Options options = Options.fromUpdateOptions(updateOptions);
 
     try {
-      ExecuteSqlRequest request = newTransactionRequestFrom(statement);
+      ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);
 
       while (true) {
         final Duration remainingTimeout = tryUpdateTimeout(timeout, stopwatch);
@@ -98,7 +103,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
         } catch (UnavailableException e) {
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after UnavailableException", e);
-          request = resumeOrRestartRequest(resumeToken, statement, request);
+          request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (InternalException e) {
           if (!isRetryableInternalErrorPredicate.apply(e)) {
             throw e;
@@ -106,13 +111,13 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
           LOGGER.log(
               Level.FINER, "Retrying PartitionedDml transaction after InternalException - EOS", e);
-          request = resumeOrRestartRequest(resumeToken, statement, request);
+          request = resumeOrRestartRequest(resumeToken, statement, request, options);
         } catch (AbortedException e) {
           LOGGER.log(Level.FINER, "Retrying PartitionedDml transaction after AbortedException", e);
           resumeToken = ByteString.EMPTY;
           foundStats = false;
           updateCount = 0L;
-          request = newTransactionRequestFrom(statement);
+          request = newTransactionRequestFrom(statement, options);
         }
       }
       if (!foundStats) {
@@ -150,15 +155,17 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
   private ExecuteSqlRequest resumeOrRestartRequest(
       final ByteString resumeToken,
       final Statement statement,
-      final ExecuteSqlRequest originalRequest) {
+      final ExecuteSqlRequest originalRequest,
+      final Options options) {
     if (resumeToken.isEmpty()) {
-      return newTransactionRequestFrom(statement);
+      return newTransactionRequestFrom(statement, options);
     } else {
       return ExecuteSqlRequest.newBuilder(originalRequest).setResumeToken(resumeToken).build();
     }
   }
 
-  private ExecuteSqlRequest newTransactionRequestFrom(final Statement statement) {
+  @VisibleForTesting
+  ExecuteSqlRequest newTransactionRequestFrom(final Statement statement, final Options options) {
     ByteString transactionId = initTransaction();
 
     final TransactionSelector transactionSelector =
@@ -174,6 +181,16 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
     builder.setResumeToken(ByteString.EMPTY);
 
+    if (options.hasPriority() || options.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (options.hasPriority()) {
+        requestOptionsBuilder.setPriority(options.priority());
+      }
+      if (options.hasTag()) {
+        requestOptionsBuilder.setRequestTag(options.tag());
+      }
+      builder.setRequestOptions(requestOptionsBuilder.build());
+    }
     return builder.build();
   }
 

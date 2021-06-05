@@ -17,16 +17,14 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -96,22 +94,6 @@ public class SpanTest {
 
   private static final SimulatedExecutionTime ONE_SECOND =
       SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0);
-  private static final Statement SELECT1AND2 =
-      Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
-  private static final ResultSetMetadata SELECT1AND2_METADATA =
-      ResultSetMetadata.newBuilder()
-          .setRowType(
-              StructType.newBuilder()
-                  .addFields(
-                      Field.newBuilder()
-                          .setName("COL1")
-                          .setType(
-                              com.google.spanner.v1.Type.newBuilder()
-                                  .setCode(TypeCode.INT64)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
   private static final StatusRuntimeException FAILED_PRECONDITION =
       io.grpc.Status.FAILED_PRECONDITION
           .withDescription("Non-retryable test exception.")
@@ -162,11 +144,7 @@ public class SpanTest {
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build());
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
 
     spanner = builder.build().getService();
 
@@ -193,12 +171,9 @@ public class SpanTest {
     builder
         .getSpannerStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettings);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettings);
+              return null;
             });
     builder
         .getSpannerStubSettingsBuilder()
@@ -227,29 +202,19 @@ public class SpanTest {
 
   @Test
   public void singleUseNonRetryableErrorOnNext() {
-    try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
+    try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       mockSpanner.addException(FAILED_PRECONDITION);
-      while (rs.next()) {
-        // Just consume the result set.
-        fail("Expected exception");
-      }
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
   }
 
   @Test
   public void singleUseExecuteStreamingSqlTimeout() {
-    try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
+    try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1)) {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
-      while (rs.next()) {
-        // Just consume the result set.
-        fail("Expected exception");
-      }
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -289,46 +254,29 @@ public class SpanTest {
   @Test
   public void transactionRunner() {
     TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
-        });
+    runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
   }
 
   @Test
   public void transactionRunnerWithError() {
     TransactionRunner runner = client.readWriteTransaction();
-    try {
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-              return null;
-            }
-          });
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> runner.run(transaction -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT)));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans.size()).isEqualTo(5);
+    assertThat(spans.size()).isEqualTo(4);
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
-    assertThat(spans).containsEntry("CloudSpannerOperation.BeginTransaction", true);
   }
 }

@@ -131,4 +131,58 @@ public interface CreateBackupRequestOrBuilder
    * </code>
    */
   com.google.spanner.admin.database.v1.BackupOrBuilder getBackupOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration used to encrypt the backup. If this field is
+   * not specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * `USE_DATABASE_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration used to encrypt the backup. If this field is
+   * not specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * `USE_DATABASE_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration used to encrypt the backup. If this field is
+   * not specified, the backup will use the same
+   * encryption configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
+   * `USE_DATABASE_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder();
 }

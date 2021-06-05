@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
 import io.opencensus.common.Scope;
@@ -30,13 +31,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   private final SessionImpl session;
   private Span span;
+  private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span) {
+  TransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.options = Options.fromTransactionOptions(options);
   }
 
   Span getSpan() {
@@ -52,9 +55,8 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
     try (Scope s = tracer.withSpan(span)) {
-      txn = session.newTransaction();
+      txn = session.newTransaction(options);
       session.setActive(this);
-      txn.ensureTxn();
       txnState = TransactionState.STARTED;
       return txn;
     }
@@ -101,8 +103,11 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
     try (Scope s = tracer.withSpan(span)) {
-      txn = session.newTransaction();
-      txn.ensureTxn();
+      boolean useInlinedBegin = txn.transactionId != null;
+      txn = session.newTransaction(options);
+      if (!useInlinedBegin) {
+        txn.ensureTxn();
+      }
       txnState = TransactionState.STARTED;
       return txn;
     }
@@ -113,7 +118,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     Preconditions.checkState(
         txnState == TransactionState.COMMITTED,
         "getCommitTimestamp can only be invoked if the transaction committed successfully");
-    return txn.commitTimestamp();
+    return txn.getCommitResponse().getCommitTimestamp();
+  }
+
+  @Override
+  public CommitResponse getCommitResponse() {
+    Preconditions.checkState(
+        txnState == TransactionState.COMMITTED,
+        "getCommitResponse can only be invoked if the transaction committed successfully");
+    return txn.getCommitResponse();
   }
 
   @Override

@@ -79,12 +79,12 @@ public class InstanceAdminClientImplTest {
     String nextToken = "token";
     when(rpc.listInstanceConfigs(1, null))
         .thenReturn(
-            new Paginated<InstanceConfig>(
+            new Paginated<>(
                 ImmutableList.of(InstanceConfig.newBuilder().setName(CONFIG_NAME).build()),
                 nextToken));
     when(rpc.listInstanceConfigs(1, nextToken))
         .thenReturn(
-            new Paginated<InstanceConfig>(
+            new Paginated<>(
                 ImmutableList.of(InstanceConfig.newBuilder().setName(CONFIG_NAME2).build()), ""));
     List<com.google.cloud.spanner.InstanceConfig> configs =
         Lists.newArrayList(client.listInstanceConfigs(Options.pageSize(1)).iterateAll());
@@ -169,13 +169,9 @@ public class InstanceAdminClientImplTest {
     String nextToken = "token";
     String filter = "env:dev";
     when(rpc.listInstances(1, null, filter))
-        .thenReturn(
-            new Paginated<com.google.spanner.admin.instance.v1.Instance>(
-                ImmutableList.of(getInstanceProto()), nextToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getInstanceProto()), nextToken));
     when(rpc.listInstances(1, nextToken, filter))
-        .thenReturn(
-            new Paginated<com.google.spanner.admin.instance.v1.Instance>(
-                ImmutableList.of(getAnotherInstanceProto()), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherInstanceProto()), ""));
     List<Instance> instances =
         Lists.newArrayList(
             client.listInstances(Options.pageSize(1), Options.filter(filter)).iterateAll());

@@ -66,7 +66,7 @@ import java.util.concurrent.Callable;
 @VisibleForTesting
 class ChecksumResultSet extends ReplaceableForwardingResultSet implements RetriableStatement {
   private final ReadWriteTransaction transaction;
-  private long numberOfNextCalls;
+  private volatile long numberOfNextCalls;
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
@@ -93,12 +93,18 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   /** Simple {@link Callable} for calling {@link ResultSet#next()} */
   private final class NextCallable implements Callable<Boolean> {
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
       transaction
           .getStatementExecutor()
           .invokeInterceptors(
               statement, StatementExecutionStep.CALL_NEXT_ON_RESULT_SET, transaction);
-      return ChecksumResultSet.super.next();
+      boolean res = ChecksumResultSet.super.next();
+      // Only update the checksum if there was another row to be consumed.
+      if (res) {
+        checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
+      }
+      numberOfNextCalls++;
+      return res;
     }
   }
 
@@ -107,13 +113,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   @Override
   public boolean next() {
     // Call next() with retry.
-    boolean res = transaction.runWithRetry(nextCallable);
-    // Only update the checksum if there was another row to be consumed.
-    if (res) {
-      checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
-    }
-    numberOfNextCalls++;
-    return res;
+    return transaction.runWithRetry(nextCallable);
   }
 
   @VisibleForTesting
@@ -342,7 +342,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putDouble((Double) value);
             break;
           case NUMERIC:
-            String stringRepresentation = ((BigDecimal) value).toString();
+            String stringRepresentation = value.toString();
             into.putInt(stringRepresentation.length());
             into.putUnencodedChars(stringRepresentation);
             break;

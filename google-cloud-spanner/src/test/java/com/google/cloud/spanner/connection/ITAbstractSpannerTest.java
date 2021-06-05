@@ -32,14 +32,19 @@ import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConn
 import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.rpc.RetryInfo;
+import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,7 +75,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   public static class AbortInterceptor implements StatementExecutionInterceptor {
-    /** We need to replicate the enum here as it is not visibible outside the connection package */
+    /** We need to replicate the enum here as it is not visible outside the connection package */
     public enum ExecutionStep {
       /** The initial execution of a statement (DML/Query) */
       EXECUTE_STATEMENT,
@@ -119,13 +124,27 @@ public abstract class ITAbstractSpannerTest {
           try {
             Field field = ReadWriteTransaction.class.getDeclaredField("txManager");
             field.setAccessible(true);
+            Stopwatch watch = Stopwatch.createStarted();
+            while (field.get(transaction) == null && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+              Thread.sleep(1L);
+            }
             TransactionManager tx = (TransactionManager) field.get(transaction);
+            if (tx == null) {
+              return;
+            }
             Class<?> cls = Class.forName("com.google.cloud.spanner.TransactionManagerImpl");
             Class<?> cls2 =
                 Class.forName("com.google.cloud.spanner.SessionPool$AutoClosingTransactionManager");
             Field delegateField = cls2.getDeclaredField("delegate");
             delegateField.setAccessible(true);
+            watch = watch.reset().start();
+            while (delegateField.get(tx) == null && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+              Thread.sleep(1L);
+            }
             TransactionManager delegate = (TransactionManager) delegateField.get(tx);
+            if (delegate == null) {
+              return;
+            }
             Field stateField = cls.getDeclaredField("txnState");
             stateField.setAccessible(true);
 
@@ -142,9 +161,22 @@ public abstract class ITAbstractSpannerTest {
             probability = 0;
           }
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.ABORTED, "Transaction was aborted by interceptor");
+              ErrorCode.ABORTED,
+              "Transaction was aborted by interceptor",
+              createAbortedExceptionWithMinimalRetry());
         }
       }
+    }
+
+    private static StatusRuntimeException createAbortedExceptionWithMinimalRetry() {
+      Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+      Metadata trailers = new Metadata();
+      RetryInfo retryInfo =
+          RetryInfo.newBuilder()
+              .setRetryDelay(com.google.protobuf.Duration.newBuilder().setNanos(1).setSeconds(0L))
+              .build();
+      trailers.put(key, retryInfo);
+      return io.grpc.Status.ABORTED.asRuntimeException(trailers);
     }
   }
 
@@ -203,22 +235,18 @@ public abstract class ITAbstractSpannerTest {
    * @return the newly opened connection.
    */
   public ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   public ITConnection createConnection(AbortInterceptor interceptor) {
-    return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.singletonList(interceptor), Collections.emptyList());
   }
 
   public ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Arrays.<TransactionRetryListener>asList(transactionRetryListener));
+        Collections.singletonList(interceptor),
+        Collections.singletonList(transactionRetryListener));
   }
 
   /**

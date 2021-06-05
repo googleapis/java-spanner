@@ -37,6 +37,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -47,10 +48,11 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
-import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -64,10 +66,8 @@ import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwar
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
-import io.opencensus.common.ToLongFunction;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
 import io.opencensus.metrics.LabelValue;
@@ -76,12 +76,12 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -92,10 +92,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -109,12 +107,10 @@ import org.threeten.bp.Duration;
 import org.threeten.bp.Instant;
 
 /**
- * Maintains a pool of sessions some of which might be prepared for write by invoking
- * BeginTransaction rpc. It maintains two queues of sessions(read and write prepared) and two queues
- * of waiters who are waiting for a session to become available. This class itself is thread safe
- * and is meant to be used concurrently across multiple threads.
+ * Maintains a pool of sessions. This class itself is thread safe and is meant to be used
+ * concurrently across multiple threads.
  */
-final class SessionPool {
+class SessionPool {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
@@ -178,14 +174,11 @@ final class SessionPool {
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                synchronized (lock) {
-                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
-                    // All async operations for this read context have finished.
-                    AutoClosingReadContext.this.close();
-                  }
+            () -> {
+              synchronized (lock) {
+                if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                  // All async operations for this read context have finished.
+                  AutoClosingReadContext.this.close();
                 }
               }
             };
@@ -207,7 +200,7 @@ final class SessionPool {
     private final boolean isSingleUse;
     private final AtomicInteger asyncOperationsCount = new AtomicInteger();
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
@@ -319,7 +312,7 @@ final class SessionPool {
         if (isSingleUse || !sessionUsedForQuery) {
           // This class is only used by read-only transactions, so we know that we only need a
           // read-only session.
-          session = sessionPool.replaceReadSession(notFound, session);
+          session = sessionPool.replaceSession(notFound, session);
           readContextDelegate = readContextDelegateSupplier.apply(session);
         } else {
           throw notFound;
@@ -546,213 +539,288 @@ final class SessionPool {
     }
   }
 
-  private static class AutoClosingTransactionManager implements TransactionManager {
-    private class SessionPoolResultSet extends ForwardingResultSet {
-      private SessionPoolResultSet(ResultSet delegate) {
-        super(delegate);
-      }
-
-      @Override
-      public boolean next() {
-        try {
-          return super.next();
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-    }
-
+  interface SessionNotFoundHandler {
     /**
-     * {@link TransactionContext} that is used in combination with an {@link
-     * AutoClosingTransactionManager}. This {@link TransactionContext} handles {@link
-     * SessionNotFoundException}s by replacing the underlying session with a fresh one, and then
-     * throws an {@link AbortedException} to trigger the retry-loop that has been created by the
-     * caller.
+     * Handles the given {@link SessionNotFoundException} by possibly converting it to a different
+     * exception that should be thrown.
      */
-    private class SessionPoolTransactionContext implements TransactionContext {
-      private final TransactionContext delegate;
+    SpannerException handleSessionNotFound(SessionNotFoundException notFound);
+  }
 
-      private SessionPoolTransactionContext(TransactionContext delegate) {
-        this.delegate = delegate;
+  static class SessionPoolResultSet extends ForwardingResultSet {
+    private final SessionNotFoundHandler handler;
+
+    private SessionPoolResultSet(SessionNotFoundHandler handler, ResultSet delegate) {
+      super(delegate);
+      this.handler = Preconditions.checkNotNull(handler);
+    }
+
+    @Override
+    public boolean next() {
+      try {
+        return super.next();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
       }
+    }
+  }
 
-      @Override
-      public ResultSet read(
-          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-        return new SessionPoolResultSet(delegate.read(table, keys, columns, options));
-      }
+  static class AsyncSessionPoolResultSet extends ForwardingAsyncResultSet {
+    private final SessionNotFoundHandler handler;
 
-      @Override
-      public AsyncResultSet readAsync(
-          String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, "not yet implemented");
-      }
+    private AsyncSessionPoolResultSet(SessionNotFoundHandler handler, AsyncResultSet delegate) {
+      super(delegate);
+      this.handler = Preconditions.checkNotNull(handler);
+    }
 
-      @Override
-      public ResultSet readUsingIndex(
-          String table,
-          String index,
-          KeySet keys,
-          Iterable<String> columns,
-          ReadOption... options) {
-        return new SessionPoolResultSet(
-            delegate.readUsingIndex(table, index, keys, columns, options));
-      }
+    @Override
+    public ApiFuture<Void> setCallback(Executor executor, final ReadyCallback callback) {
+      return super.setCallback(
+          executor,
+          resultSet -> {
+            try {
+              return callback.cursorReady(resultSet);
+            } catch (SessionNotFoundException e) {
+              throw handler.handleSessionNotFound(e);
+            }
+          });
+    }
 
-      @Override
-      public AsyncResultSet readUsingIndexAsync(
-          String table,
-          String index,
-          KeySet keys,
-          Iterable<String> columns,
-          ReadOption... options) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, "not yet implemented");
-      }
-
-      @Override
-      public Struct readRow(String table, Key key, Iterable<String> columns) {
-        try {
-          return delegate.readRow(table, key, columns);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-        try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
-          return AbstractReadContext.consumeSingleRowAsync(rs);
-        }
-      }
-
-      @Override
-      public void buffer(Mutation mutation) {
-        delegate.buffer(mutation);
-      }
-
-      @Override
-      public Struct readRowUsingIndex(
-          String table, String index, Key key, Iterable<String> columns) {
-        try {
-          return delegate.readRowUsingIndex(table, index, key, columns);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Struct> readRowUsingIndexAsync(
-          String table, String index, Key key, Iterable<String> columns) {
-        try (AsyncResultSet rs =
-            readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
-          return AbstractReadContext.consumeSingleRowAsync(rs);
-        }
-      }
-
-      @Override
-      public void buffer(Iterable<Mutation> mutations) {
-        delegate.buffer(mutations);
-      }
-
-      @Override
-      public long executeUpdate(Statement statement) {
-        try {
-          return delegate.executeUpdate(statement);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<Long> executeUpdateAsync(Statement statement) {
-        try {
-          return delegate.executeUpdateAsync(statement);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public long[] batchUpdate(Iterable<Statement> statements) {
-        try {
-          return delegate.batchUpdate(statements);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements) {
-        try {
-          return delegate.batchUpdateAsync(statements);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ResultSet executeQuery(Statement statement, QueryOption... options) {
-        return new SessionPoolResultSet(delegate.executeQuery(statement, options));
-      }
-
-      @Override
-      public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-        try {
-          return delegate.executeQueryAsync(statement, options);
-        } catch (SessionNotFoundException e) {
-          throw handleSessionNotFound(e);
-        }
-      }
-
-      @Override
-      public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-        return new SessionPoolResultSet(delegate.analyzeQuery(statement, queryMode));
-      }
-
-      @Override
-      public void close() {
-        delegate.close();
+    @Override
+    public boolean next() {
+      try {
+        return super.next();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
       }
     }
 
+    @Override
+    public CursorState tryNext() {
+      try {
+        return super.tryNext();
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+  }
+
+  /**
+   * {@link TransactionContext} that is used in combination with an {@link
+   * AutoClosingTransactionManager}. This {@link TransactionContext} handles {@link
+   * SessionNotFoundException}s by replacing the underlying session with a fresh one, and then
+   * throws an {@link AbortedException} to trigger the retry-loop that has been created by the
+   * caller.
+   */
+  static class SessionPoolTransactionContext implements TransactionContext {
+    private final SessionNotFoundHandler handler;
+    final TransactionContext delegate;
+
+    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate) {
+      this.handler = Preconditions.checkNotNull(handler);
+      this.delegate = delegate;
+    }
+
+    @Override
+    public ResultSet read(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+    }
+
+    @Override
+    public AsyncResultSet readAsync(
+        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readAsync(table, keys, columns, options));
+    }
+
+    @Override
+    public ResultSet readUsingIndex(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new SessionPoolResultSet(
+          handler, delegate.readUsingIndex(table, index, keys, columns, options));
+    }
+
+    @Override
+    public AsyncResultSet readUsingIndexAsync(
+        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
+    }
+
+    @Override
+    public Struct readRow(String table, Key key, Iterable<String> columns) {
+      try {
+        return delegate.readRow(table, key, columns);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readAsync(table, KeySet.singleKey(key), columns)) {
+        return ApiFutures.catching(
+            AbstractReadContext.consumeSingleRowAsync(rs),
+            SessionNotFoundException.class,
+            input -> {
+              throw handler.handleSessionNotFound(input);
+            },
+            MoreExecutors.directExecutor());
+      }
+    }
+
+    @Override
+    public void buffer(Mutation mutation) {
+      delegate.buffer(mutation);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      return delegate.bufferAsync(mutation);
+    }
+
+    @Override
+    public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
+      try {
+        return delegate.readRowUsingIndex(table, index, key, columns);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Struct> readRowUsingIndexAsync(
+        String table, String index, Key key, Iterable<String> columns) {
+      try (AsyncResultSet rs = readUsingIndexAsync(table, index, KeySet.singleKey(key), columns)) {
+        return ApiFutures.catching(
+            AbstractReadContext.consumeSingleRowAsync(rs),
+            SessionNotFoundException.class,
+            input -> {
+              throw handler.handleSessionNotFound(input);
+            },
+            MoreExecutors.directExecutor());
+      }
+    }
+
+    @Override
+    public void buffer(Iterable<Mutation> mutations) {
+      delegate.buffer(mutations);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      return delegate.bufferAsync(mutations);
+    }
+
+    @Override
+    public long executeUpdate(Statement statement, UpdateOption... options) {
+      try {
+        return delegate.executeUpdate(statement, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
+      return ApiFutures.catching(
+          delegate.executeUpdateAsync(statement, options),
+          SessionNotFoundException.class,
+          input -> {
+            throw handler.handleSessionNotFound(input);
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
+      try {
+        return delegate.batchUpdate(statements, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
+    public ApiFuture<long[]> batchUpdateAsync(
+        Iterable<Statement> statements, UpdateOption... options) {
+      return ApiFutures.catching(
+          delegate.batchUpdateAsync(statements, options),
+          SessionNotFoundException.class,
+          input -> {
+            throw handler.handleSessionNotFound(input);
+          },
+          MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ResultSet executeQuery(Statement statement, QueryOption... options) {
+      return new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+    }
+
+    @Override
+    public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
+      return new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+    }
+
+    @Override
+    public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
+      return new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+    }
+
+    @Override
+    public void close() {
+      delegate.close();
+    }
+  }
+
+  private static class AutoClosingTransactionManager
+      implements TransactionManager, SessionNotFoundHandler {
     private TransactionManager delegate;
     private final SessionPool sessionPool;
     private PooledSessionFuture session;
+    private final TransactionOption[] options;
     private boolean closed;
     private boolean restartedAfterSessionNotFound;
 
-    AutoClosingTransactionManager(SessionPool sessionPool, PooledSessionFuture session) {
+    AutoClosingTransactionManager(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
       this.sessionPool = sessionPool;
       this.session = session;
+      this.options = options;
     }
 
     @Override
     public TransactionContext begin() {
-      this.delegate = session.get().transactionManager();
-      while (true) {
-        try {
-          return internalBegin();
-        } catch (SessionNotFoundException e) {
-          session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.get().delegate.transactionManager();
-        }
-      }
+      this.delegate = session.get().transactionManager(options);
+      // This cannot throw a SessionNotFoundException, as it does not call the BeginTransaction RPC.
+      // Instead, the BeginTransaction will be included with the first statement of the transaction.
+      return internalBegin();
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res = new SessionPoolTransactionContext(delegate.begin());
+      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();
       return res;
     }
 
-    private SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
-      session = sessionPool.replaceReadWriteSession(notFound, session);
-      delegate = session.get().delegate.transactionManager();
+    @Override
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
+      session = sessionPool.replaceSession(notFoundException, session);
+      PooledSession pooledSession = session.get();
+      delegate = pooledSession.delegate.transactionManager(options);
       restartedAfterSessionNotFound = true;
+      return createAbortedExceptionWithMinimalRetryDelay(notFoundException);
+    }
+
+    private static SpannerException createAbortedExceptionWithMinimalRetryDelay(
+        SessionNotFoundException notFoundException) {
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), notFound);
+          ErrorCode.ABORTED,
+          notFoundException.getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+              notFoundException.getMessage(), notFoundException, 0, 1));
     }
 
     @Override
@@ -782,15 +850,16 @@ final class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res = new SessionPoolTransactionContext(delegate.begin());
+            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(delegate.resetForRetry());
+            return new SessionPoolTransactionContext(this, delegate.resetForRetry());
           }
         } catch (SessionNotFoundException e) {
-          session = sessionPool.replaceReadWriteSession(e, session);
-          delegate = session.get().delegate.transactionManager();
+          session = sessionPool.replaceSession(e, session);
+          PooledSession pooledSession = session.get();
+          delegate = pooledSession.delegate.transactionManager(options);
           restartedAfterSessionNotFound = true;
         }
       }
@@ -799,6 +868,11 @@ final class SessionPool {
     @Override
     public Timestamp getCommitTimestamp() {
       return delegate.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return delegate.getCommitResponse();
     }
 
     @Override
@@ -828,21 +902,24 @@ final class SessionPool {
 
   /**
    * {@link TransactionRunner} that automatically handles {@link SessionNotFoundException}s by
-   * replacing the underlying read/write session and then restarts the transaction.
+   * replacing the underlying session and then restarts the transaction.
    */
   private static final class SessionPoolTransactionRunner implements TransactionRunner {
     private final SessionPool sessionPool;
     private PooledSessionFuture session;
+    private final TransactionOption[] options;
     private TransactionRunner runner;
 
-    private SessionPoolTransactionRunner(SessionPool sessionPool, PooledSessionFuture session) {
+    private SessionPoolTransactionRunner(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
       this.sessionPool = sessionPool;
       this.session = session;
+      this.options = options;
     }
 
     private TransactionRunner getRunner() {
       if (this.runner == null) {
-        this.runner = session.get().readWriteTransaction();
+        this.runner = session.get().readWriteTransaction(options);
       }
       return runner;
     }
@@ -857,8 +934,9 @@ final class SessionPool {
             result = getRunner().run(callable);
             break;
           } catch (SessionNotFoundException e) {
-            session = sessionPool.replaceReadWriteSession(e, session);
-            runner = session.get().delegate.readWriteTransaction();
+            session = sessionPool.replaceSession(e, session);
+            PooledSession ps = session.get();
+            runner = ps.delegate.readWriteTransaction();
           }
         }
         session.get().markUsed();
@@ -876,6 +954,11 @@ final class SessionPool {
     }
 
     @Override
+    public CommitResponse getCommitResponse() {
+      return getRunner().getCommitResponse();
+    }
+
+    @Override
     public TransactionRunner allowNestedTransaction() {
       getRunner().allowNestedTransaction();
       return this;
@@ -885,67 +968,85 @@ final class SessionPool {
   private static class SessionPoolAsyncRunner implements AsyncRunner {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
-    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private final TransactionOption[] options;
+    private SettableApiFuture<CommitResponse> commitResponse;
 
-    private SessionPoolAsyncRunner(SessionPool sessionPool, PooledSessionFuture session) {
+    private SessionPoolAsyncRunner(
+        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
       this.sessionPool = sessionPool;
       this.session = session;
+      this.options = options;
     }
 
     @Override
     public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
+          () -> {
+            SpannerException exception = null;
+            R r = null;
+            AsyncRunner runner = null;
+            while (true) {
               SpannerException se = null;
-              R r = null;
-              AsyncRunner runner = null;
-              while (true) {
-                try {
-                  runner = session.get().runAsync();
-                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
-                  break;
-                } catch (ExecutionException e) {
-                  se = SpannerExceptionFactory.newSpannerException(e.getCause());
-                } catch (InterruptedException e) {
-                  se = SpannerExceptionFactory.propagateInterrupt(e);
-                } catch (Throwable t) {
-                  se = SpannerExceptionFactory.newSpannerException(t);
-                } finally {
-                  if (se != null && se instanceof SessionNotFoundException) {
-                    session =
-                        sessionPool.replaceReadWriteSession((SessionNotFoundException) se, session);
-                  } else {
+              try {
+                runner = session.get().runAsync(options);
+                r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
+                break;
+              } catch (ExecutionException e) {
+                se = SpannerExceptionFactory.asSpannerException(e.getCause());
+              } catch (InterruptedException e) {
+                se = SpannerExceptionFactory.propagateInterrupt(e);
+              } catch (Throwable t) {
+                se = SpannerExceptionFactory.newSpannerException(t);
+              } finally {
+                if (se instanceof SessionNotFoundException) {
+                  try {
+                    // The replaceSession method will re-throw the SessionNotFoundException if the
+                    // session cannot be replaced with a new one.
+                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                    se = null;
+                  } catch (SessionNotFoundException e) {
+                    exception = e;
                     break;
                   }
+                } else {
+                  exception = se;
+                  break;
                 }
               }
-              session.get().markUsed();
-              session.close();
-              setCommitTimestamp(runner);
-              if (se != null) {
-                res.setException(se);
-              } else {
-                res.set(r);
-              }
+            }
+            session.get().markUsed();
+            session.close();
+            setCommitResponse(runner);
+            if (exception != null) {
+              res.setException(exception);
+            } else {
+              res.set(r);
             }
           });
       return res;
     }
 
-    private void setCommitTimestamp(AsyncRunner delegate) {
+    private void setCommitResponse(AsyncRunner delegate) {
       try {
-        commitTimestamp.set(delegate.getCommitTimestamp().get());
+        commitResponse.set(delegate.getCommitResponse().get());
       } catch (Throwable t) {
-        commitTimestamp.setException(t);
+        commitResponse.setException(t);
       }
     }
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
-      return commitTimestamp;
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return ApiFutures.transform(
+          commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ApiFuture<CommitResponse> getCommitResponse() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return commitResponse;
     }
   }
 
@@ -965,122 +1066,20 @@ final class SessionPool {
     CLOSING,
   }
 
-  /**
-   * Forwarding future that will return a {@link PooledSession}. If {@link #inProcessPrepare} has
-   * been set to true, the returned session will be prepared with a read/write session using the
-   * thread of the caller to {@link #get()}. This ensures that the executor that is responsible for
-   * background preparing of read/write transactions is not overwhelmed by requests in case of a
-   * large burst of write requests. Instead of filling up the queue of the background executor, the
-   * caller threads will be used for the BeginTransaction call.
-   */
-  private final class ForwardingListenablePooledSessionFuture
-      extends SimpleForwardingListenableFuture<SessionPool.PooledSession> {
-    private final boolean inProcessPrepare;
-    private final Span span;
-    private volatile boolean initialized = false;
-    private final Object prepareLock = new Object();
-    private volatile PooledSession result;
-    private volatile SpannerException error;
-
-    private ForwardingListenablePooledSessionFuture(
-        ListenableFuture<PooledSession> delegate, boolean inProcessPrepare, Span span) {
-      super(delegate);
-      this.inProcessPrepare = inProcessPrepare;
-      this.span = span;
-    }
-
-    @Override
-    public PooledSession get() throws InterruptedException, ExecutionException {
-      try {
-        return initialize(super.get());
-      } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.newSpannerException(e.getCause());
-      } catch (InterruptedException e) {
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      }
-    }
-
-    @Override
-    public PooledSession get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException {
-      try {
-        return initialize(super.get(timeout, unit));
-      } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.newSpannerException(e.getCause());
-      } catch (InterruptedException e) {
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      } catch (TimeoutException e) {
-        throw SpannerExceptionFactory.propagateTimeout(e);
-      }
-    }
-
-    private PooledSession initialize(PooledSession sess) {
-      if (!initialized) {
-        synchronized (prepareLock) {
-          if (!initialized) {
-            try {
-              result = prepare(sess);
-            } catch (Throwable t) {
-              error = SpannerExceptionFactory.newSpannerException(t);
-            } finally {
-              initialized = true;
-            }
-          }
-        }
-      }
-      if (error != null) {
-        throw error;
-      }
-      return result;
-    }
-
-    private PooledSession prepare(PooledSession sess) {
-      if (inProcessPrepare && !sess.delegate.hasReadyTransaction()) {
-        while (true) {
-          try {
-            sess.prepareReadWriteTransaction();
-            synchronized (lock) {
-              stopAutomaticPrepare = false;
-            }
-            break;
-          } catch (Throwable t) {
-            if (isClosed()) {
-              span.addAnnotation("Pool has been closed");
-              throw new IllegalStateException("Pool has been closed");
-            }
-            SpannerException e = newSpannerException(t);
-            WaiterFuture waiter = new WaiterFuture();
-            synchronized (lock) {
-              handlePrepareSessionFailure(e, sess, false);
-              if (!isSessionNotFound(e)) {
-                throw e;
-              }
-              readWaiters.add(waiter);
-            }
-            sess = waiter.get();
-            if (sess.delegate.hasReadyTransaction()) {
-              break;
-            }
-          }
-        }
-      }
-      return sess;
-    }
-  }
-
   private PooledSessionFuture createPooledSessionFuture(
       ListenableFuture<PooledSession> future, Span span) {
     return new PooledSessionFuture(future, span);
   }
 
-  final class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
+  class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements Session {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final Span span;
 
-    private PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+    @VisibleForTesting
+    PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
       super(delegate);
       this.span = span;
     }
@@ -1096,8 +1095,14 @@ final class SessionPool {
 
     @Override
     public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      return writeWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
-        return get().write(mutations);
+        return get().writeWithOptions(mutations, options);
       } finally {
         close();
       }
@@ -1105,8 +1110,14 @@ final class SessionPool {
 
     @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
-        return get().writeAtLeastOnce(mutations);
+        return get().writeAtLeastOnceWithOptions(mutations, options);
       } finally {
         close();
       }
@@ -1116,11 +1127,9 @@ final class SessionPool {
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                return session.get().delegate.singleUse();
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse();
             },
             SessionPool.this,
             this,
@@ -1135,11 +1144,9 @@ final class SessionPool {
     public ReadContext singleUse(final TimestampBound bound) {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                return session.get().delegate.singleUse(bound);
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse(bound);
             },
             SessionPool.this,
             this,
@@ -1153,11 +1160,9 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.singleUseReadOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction();
           },
           true);
     }
@@ -1165,11 +1170,9 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.singleUseReadOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction(bound);
           },
           true);
     }
@@ -1177,11 +1180,9 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.readOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction();
           },
           false);
     }
@@ -1189,11 +1190,9 @@ final class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              return session.get().delegate.readOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction(bound);
           },
           false);
     }
@@ -1211,29 +1210,29 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionRunner readWriteTransaction() {
-      return new SessionPoolTransactionRunner(SessionPool.this, this);
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return new SessionPoolTransactionRunner(SessionPool.this, this, options);
     }
 
     @Override
-    public TransactionManager transactionManager() {
-      return new AutoClosingTransactionManager(SessionPool.this, this);
+    public TransactionManager transactionManager(TransactionOption... options) {
+      return new AutoClosingTransactionManager(SessionPool.this, this, options);
     }
 
     @Override
-    public AsyncRunner runAsync() {
-      return new SessionPoolAsyncRunner(SessionPool.this, this);
+    public AsyncRunner runAsync(TransactionOption... options) {
+      return new SessionPoolAsyncRunner(SessionPool.this, this, options);
     }
 
     @Override
-    public AsyncTransactionManager transactionManagerAsync() {
-      return new SessionPoolAsyncTransactionManager(this);
+    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      return new SessionPoolAsyncTransactionManager(SessionPool.this, this, options);
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt) {
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
-        return get().executePartitionedUpdate(stmt);
+        return get().executePartitionedUpdate(stmt, options);
       } finally {
         close();
       }
@@ -1255,7 +1254,10 @@ final class SessionPool {
         leakedException = null;
         checkedOutSessions.remove(this);
       }
-      get().close();
+      PooledSession delegate = getOrNull();
+      if (delegate != null) {
+        delegate.close();
+      }
     }
 
     @Override
@@ -1264,7 +1266,19 @@ final class SessionPool {
         leakedException = null;
         checkedOutSessions.remove(this);
       }
-      return get().asyncClose();
+      PooledSession delegate = getOrNull();
+      if (delegate != null) {
+        return delegate.asyncClose();
+      }
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+
+    private PooledSession getOrNull() {
+      try {
+        return get();
+      } catch (Throwable t) {
+        return null;
+      }
     }
 
     @Override
@@ -1324,9 +1338,15 @@ final class SessionPool {
 
     @Override
     public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      return writeWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         markUsed();
-        return delegate.write(mutations);
+        return delegate.writeWithOptions(mutations, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1334,19 +1354,26 @@ final class SessionPool {
 
     @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         markUsed();
-        return delegate.writeAtLeastOnce(mutations);
+        return delegate.writeAtLeastOnceWithOptions(mutations, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt) throws SpannerException {
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options)
+        throws SpannerException {
       try {
         markUsed();
-        return delegate.executePartitionedUpdate(stmt);
+        return delegate.executePartitionedUpdate(stmt, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1383,18 +1410,18 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionRunner readWriteTransaction() {
-      return delegate.readWriteTransaction();
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return delegate.readWriteTransaction(options);
     }
 
     @Override
-    public AsyncRunner runAsync() {
-      return delegate.runAsync();
+    public AsyncRunner runAsync(TransactionOption... options) {
+      return delegate.runAsync(options);
     }
 
     @Override
-    public AsyncTransactionManagerImpl transactionManagerAsync() {
-      return delegate.transactionManagerAsync();
+    public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
+      return delegate.transactionManagerAsync(options);
     }
 
     @Override
@@ -1443,11 +1470,15 @@ final class SessionPool {
 
     private void keepAlive() {
       markUsed();
+      final Span previousSpan = delegate.getCurrentSpan();
+      delegate.setCurrentSpan(BlankSpan.INSTANCE);
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+      } finally {
+        delegate.setCurrentSpan(previousSpan);
       }
     }
 
@@ -1465,8 +1496,8 @@ final class SessionPool {
     }
 
     @Override
-    public TransactionManager transactionManager() {
-      return delegate.transactionManager();
+    public TransactionManager transactionManager(TransactionOption... options) {
+      return delegate.transactionManager(options);
     }
   }
 
@@ -1553,14 +1584,15 @@ final class SessionPool {
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
-    private final Duration keepAliveMilis =
+    private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
     int sessionsToClosePerLoop = 0;
+    boolean closed = false;
 
     @GuardedBy("lock")
     ScheduledFuture<?> scheduledFuture;
@@ -1573,31 +1605,32 @@ final class SessionPool {
       synchronized (lock) {
         scheduledFuture =
             executor.scheduleAtFixedRate(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    maintainPool();
-                  }
-                },
-                loopFrequency,
-                loopFrequency,
-                TimeUnit.MILLISECONDS);
+                this::maintainPool, loopFrequency, loopFrequency, TimeUnit.MILLISECONDS);
       }
     }
 
     void close() {
       synchronized (lock) {
-        scheduledFuture.cancel(false);
-        if (!running) {
-          decrementPendingClosures(1);
+        if (!closed) {
+          closed = true;
+          scheduledFuture.cancel(false);
+          if (!running) {
+            decrementPendingClosures(1);
+          }
         }
+      }
+    }
+
+    boolean isClosed() {
+      synchronized (lock) {
+        return closed;
       }
     }
 
     // Does various pool maintenance activities.
     void maintainPool() {
       synchronized (lock) {
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           return;
         }
         running = true;
@@ -1609,7 +1642,7 @@ final class SessionPool {
       replenishPool();
       synchronized (lock) {
         running = false;
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           decrementPendingClosures(1);
         }
       }
@@ -1619,18 +1652,15 @@ final class SessionPool {
       synchronized (lock) {
         // Determine the minimum last use time for a session to be deemed to still be alive. Remove
         // all sessions that have a lastUseTime before that time, unless it would cause us to go
-        // below MinSessions. Prefer to remove read sessions above write-prepared sessions.
+        // below MinSessions.
         Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
-        for (Iterator<PooledSession> iterator :
-            Arrays.asList(
-                readSessions.descendingIterator(), writePreparedSessions.descendingIterator())) {
-          while (iterator.hasNext()) {
-            PooledSession session = iterator.next();
-            if (session.lastUseTime.isBefore(minLastUseTime)) {
-              if (session.state != SessionState.CLOSING) {
-                removeFromPool(session);
-                iterator.remove();
-              }
+        Iterator<PooledSession> iterator = sessions.descendingIterator();
+        while (iterator.hasNext()) {
+          PooledSession session = iterator.next();
+          if (session.lastUseTime.isBefore(minLastUseTime)) {
+            if (session.state != SessionState.CLOSING) {
+              removeFromPool(session);
+              iterator.remove();
             }
           }
         }
@@ -1654,18 +1684,13 @@ final class SessionPool {
                         / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
         PooledSession sessionToKeepAlive = null;
         synchronized (lock) {
-          sessionToKeepAlive = findSessionToKeepAlive(readSessions, keepAliveThreshold, 0);
-          if (sessionToKeepAlive == null) {
-            sessionToKeepAlive =
-                findSessionToKeepAlive(
-                    writePreparedSessions, keepAliveThreshold, readSessions.size());
-          }
+          sessionToKeepAlive = findSessionToKeepAlive(sessions, keepAliveThreshold, 0);
         }
         if (sessionToKeepAlive == null) {
           break;
@@ -1692,18 +1717,16 @@ final class SessionPool {
     }
   }
 
-  private static enum Position {
+  private enum Position {
     FIRST,
-    RANDOM;
+    RANDOM
   }
 
   private final SessionPoolOptions options;
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
-  private final ScheduledExecutorService prepareExecutor;
 
-  private final int prepareThreadPoolSize;
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
   private final Object lock = new Object();
@@ -1725,19 +1748,10 @@ final class SessionPool {
   private boolean stopAutomaticPrepare;
 
   @GuardedBy("lock")
-  private final LinkedList<PooledSession> readSessions = new LinkedList<>();
+  private final LinkedList<PooledSession> sessions = new LinkedList<>();
 
   @GuardedBy("lock")
-  private final LinkedList<PooledSession> writePreparedSessions = new LinkedList<>();
-
-  @GuardedBy("lock")
-  private final Queue<WaiterFuture> readWaiters = new LinkedList<>();
-
-  @GuardedBy("lock")
-  private final Queue<WaiterFuture> readWriteWaiters = new LinkedList<>();
-
-  @GuardedBy("lock")
-  private int numSessionsBeingPrepared = 0;
+  private final Queue<WaiterFuture> waiters = new LinkedList<>();
 
   @GuardedBy("lock")
   private int numSessionsBeingCreated = 0;
@@ -1753,12 +1767,6 @@ final class SessionPool {
 
   @GuardedBy("lock")
   private long numSessionsReleased = 0;
-
-  @GuardedBy("lock")
-  private long numSessionsInProcessPrepared = 0;
-
-  @GuardedBy("lock")
-  private long numSessionsAsyncPrepared = 0;
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
@@ -1844,18 +1852,6 @@ final class SessionPool {
     this.options = options;
     this.executorFactory = executorFactory;
     this.executor = executor;
-    if (executor instanceof ThreadPoolExecutor) {
-      prepareThreadPoolSize = Math.max(((ThreadPoolExecutor) executor).getCorePoolSize(), 1);
-    } else {
-      prepareThreadPoolSize = 8;
-    }
-    this.prepareExecutor =
-        Executors.newScheduledThreadPool(
-            prepareThreadPoolSize,
-            new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("session-pool-prepare-%d")
-                .build());
     this.sessionClient = sessionClient;
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
@@ -1866,19 +1862,6 @@ final class SessionPool {
   int getNumberOfSessionsInUse() {
     synchronized (lock) {
       return numSessionsInUse;
-    }
-  }
-
-  long getNumberOfSessionsInProcessPrepared() {
-    synchronized (lock) {
-      return numSessionsInProcessPrepared;
-    }
-  }
-
-  @VisibleForTesting
-  long getNumberOfSessionsAsyncPrepared() {
-    synchronized (lock) {
-      return numSessionsAsyncPrepared;
     }
   }
 
@@ -1904,23 +1887,9 @@ final class SessionPool {
   }
 
   @VisibleForTesting
-  int getNumberOfAvailableWritePreparedSessions() {
-    synchronized (lock) {
-      return writePreparedSessions.size();
-    }
-  }
-
-  @VisibleForTesting
   int getNumberOfSessionsInPool() {
     synchronized (lock) {
-      return readSessions.size() + writePreparedSessions.size() + numSessionsBeingPrepared;
-    }
-  }
-
-  @VisibleForTesting
-  int getNumberOfWriteSessionsInPool() {
-    synchronized (lock) {
-      return writePreparedSessions.size() + numSessionsBeingPrepared;
+      return sessions.size();
     }
   }
 
@@ -1928,13 +1897,6 @@ final class SessionPool {
   int getNumberOfSessionsBeingCreated() {
     synchronized (lock) {
       return numSessionsBeingCreated;
-    }
-  }
-
-  @VisibleForTesting
-  int getNumberOfSessionsBeingPrepared() {
-    synchronized (lock) {
-      return numSessionsBeingPrepared;
     }
   }
 
@@ -1974,11 +1936,6 @@ final class SessionPool {
     return e instanceof DatabaseNotFoundException || e instanceof InstanceNotFoundException;
   }
 
-  private boolean shouldStopPrepareSessions(SpannerException e) {
-    return isDatabaseOrInstanceNotFound(e)
-        || SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES.contains(e.getErrorCode());
-  }
-
   private void invalidateSession(PooledSession session) {
     synchronized (lock) {
       if (isClosed()) {
@@ -2016,8 +1973,8 @@ final class SessionPool {
   }
 
   /**
-   * Returns a session to be used for read requests to spanner. It will block if a session is not
-   * currently available. In case the pool is exhausted and {@link
+   * Returns a session to be used for requests to spanner. This method is always non-blocking and
+   * returns a {@link PooledSessionFuture}. In case the pool is exhausted and {@link
    * SessionPoolOptions#isFailIfPoolExhausted()} has been set, it will throw an exception. Returned
    * session must be closed by calling {@link Session#close()}.
    *
@@ -2025,13 +1982,12 @@ final class SessionPool {
    *
    * <ol>
    *   <li>If a read session is available, return that.
-   *   <li>Otherwise if a writePreparedSession is available, return that.
    *   <li>Otherwise if a session can be created, fire a creation request.
    *   <li>Wait for a session to become available. Note that this can be unblocked either by a
    *       session being returned to the pool or a new session being created.
    * </ol>
    */
-  PooledSessionFuture getReadSession() throws SpannerException {
+  PooledSessionFuture getSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
@@ -2050,151 +2006,39 @@ final class SessionPool {
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
-      sess = readSessions.poll();
+      sess = sessions.poll();
       if (sess == null) {
-        sess = writePreparedSessions.poll();
-        if (sess == null) {
-          span.addAnnotation("No session available");
-          maybeCreateSession();
-          waiter = new WaiterFuture();
-          readWaiters.add(waiter);
-        } else {
-          span.addAnnotation("Acquired read write session");
-        }
+        span.addAnnotation("No session available");
+        maybeCreateSession();
+        waiter = new WaiterFuture();
+        waiters.add(waiter);
       } else {
-        span.addAnnotation("Acquired read only session");
+        span.addAnnotation("Acquired session");
       }
-      return checkoutSession(span, sess, waiter, false, false);
-    }
-  }
-
-  /**
-   * Returns a session which has been prepared for writes by invoking BeginTransaction rpc. It will
-   * block if such a session is not currently available.In case the pool is exhausted and {@link
-   * SessionPoolOptions#isFailIfPoolExhausted()} has been set, it will throw an exception. Returned
-   * session must closed by invoking {@link Session#close()}.
-   *
-   * <p>Implementation strategy:
-   *
-   * <ol>
-   *   <li>If a writePreparedSession is available, return that.
-   *   <li>Otherwise if we have an extra session being prepared for write, wait for that.
-   *   <li>Otherwise, if there is a read session available, start preparing that for write and wait.
-   *   <li>Otherwise start creating a new session and wait.
-   *   <li>Wait for write prepared session to become available. This can be unblocked either by the
-   *       session create/prepare request we fired in above request or by a session being released
-   *       to the pool which is then write prepared.
-   * </ol>
-   */
-  PooledSessionFuture getReadWriteSession() {
-    Span span = Tracing.getTracer().getCurrentSpan();
-    span.addAnnotation("Acquiring read write session");
-    PooledSession sess = null;
-    WaiterFuture waiter = null;
-    boolean inProcessPrepare = stopAutomaticPrepare;
-    synchronized (lock) {
-      if (closureFuture != null) {
-        span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed", closedException);
-      }
-      if (resourceNotFoundException != null) {
-        span.addAnnotation("Database has been deleted");
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.NOT_FOUND,
-            String.format(
-                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                resourceNotFoundException.getMessage()),
-            resourceNotFoundException);
-      }
-      sess = writePreparedSessions.poll();
-      if (sess == null) {
-        if (!inProcessPrepare && numSessionsBeingPrepared <= prepareThreadPoolSize) {
-          if (numSessionsBeingPrepared <= readWriteWaiters.size()) {
-            PooledSession readSession = readSessions.poll();
-            if (readSession != null) {
-              span.addAnnotation(
-                  "Acquired read only session. Preparing for read write transaction");
-              prepareSession(readSession);
-            } else {
-              span.addAnnotation("No session available");
-              maybeCreateSession();
-            }
-          }
-        } else {
-          inProcessPrepare = true;
-          numSessionsInProcessPrepared++;
-          PooledSession readSession = readSessions.poll();
-          if (readSession != null) {
-            // Create a read/write transaction in-process if there is already a queue for prepared
-            // sessions. This is more efficient than doing it asynchronously, as it scales with
-            // the number of user threads. The thread pool for asynchronously preparing sessions
-            // is fixed.
-            span.addAnnotation(
-                "Acquired read only session. Preparing in-process for read write transaction");
-            sess = readSession;
-          } else {
-            span.addAnnotation("No session available");
-            maybeCreateSession();
-          }
-        }
-        if (sess == null) {
-          waiter = new WaiterFuture();
-          if (inProcessPrepare) {
-            // inProcessPrepare=true means that we have already determined that the queue for
-            // preparing read/write sessions is larger than the number of threads in the prepare
-            // thread pool, and that it's more efficient to do the prepare in-process. We will
-            // therefore create a waiter for a read-only session, even though a read/write session
-            // has been requested.
-            readWaiters.add(waiter);
-          } else {
-            readWriteWaiters.add(waiter);
-          }
-        }
-      } else {
-        span.addAnnotation("Acquired read write session");
-      }
-      return checkoutSession(span, sess, waiter, true, inProcessPrepare);
+      return checkoutSession(span, sess, waiter);
     }
   }
 
   private PooledSessionFuture checkoutSession(
-      final Span span,
-      final PooledSession readySession,
-      WaiterFuture waiter,
-      boolean write,
-      final boolean inProcessPrepare) {
+      final Span span, final PooledSession readySession, WaiterFuture waiter) {
     ListenableFuture<PooledSession> sessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
-      span.addAnnotation(
-          String.format(
-              "Waiting for %s session to be available", write ? "read write" : "read only"));
+      span.addAnnotation("Waiting for a session to come available");
       sessionFuture = waiter;
     } else {
       SettableFuture<PooledSession> fut = SettableFuture.create();
       fut.set(readySession);
       sessionFuture = fut;
     }
-    ForwardingListenablePooledSessionFuture forwardingFuture =
-        new ForwardingListenablePooledSessionFuture(sessionFuture, inProcessPrepare, span);
-    PooledSessionFuture res = createPooledSessionFuture(forwardingFuture, span);
+    PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span);
     res.markCheckedOut();
     return res;
   }
 
-  PooledSessionFuture replaceReadSession(SessionNotFoundException e, PooledSessionFuture session) {
-    return replaceSession(e, session, false);
-  }
-
-  PooledSessionFuture replaceReadWriteSession(
-      SessionNotFoundException e, PooledSessionFuture session) {
-    return replaceSession(e, session, true);
-  }
-
-  private PooledSessionFuture replaceSession(
-      SessionNotFoundException e, PooledSessionFuture session, boolean write) {
+  PooledSessionFuture replaceSession(SessionNotFoundException e, PooledSessionFuture session) {
     if (!options.isFailIfSessionNotFound() && session.get().allowReplacing) {
       synchronized (lock) {
         numSessionsInUse--;
@@ -2203,7 +2047,7 @@ final class SessionPool {
       }
       session.leakedException = null;
       invalidateSession(session.get());
-      return write ? getReadWriteSession() : getReadSession();
+      return getSession();
     } else {
       throw e;
     }
@@ -2243,47 +2087,29 @@ final class SessionPool {
       }
     }
   }
-  /**
-   * Releases a session back to the pool. This might cause one of the waiters to be unblocked.
-   *
-   * <p>Implementation note:
-   *
-   * <ol>
-   *   <li>If there are no pending waiters, either add to the read sessions queue or start preparing
-   *       for write depending on what fraction of sessions are already prepared for writes.
-   *   <li>Otherwise either unblock a waiting reader or start preparing for a write. Exact strategy
-   *       on which option we chose, in case there are both waiting readers and writers, is
-   *       implemented in {@link #shouldUnblockReader}
-   * </ol>
-   */
+  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
   private void releaseSession(PooledSession session, Position position) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
-      if (readWaiters.size() == 0 && numSessionsBeingPrepared >= readWriteWaiters.size()) {
+      if (waiters.size() == 0) {
         // No pending waiters
-        if (shouldPrepareSession()) {
-          prepareSession(session);
-        } else {
-          switch (position) {
-            case RANDOM:
-              if (!readSessions.isEmpty()) {
-                int pos = random.nextInt(readSessions.size() + 1);
-                readSessions.add(pos, session);
-                break;
-              }
-              // fallthrough
-            case FIRST:
-            default:
-              readSessions.addFirst(session);
-          }
+        switch (position) {
+          case RANDOM:
+            if (!sessions.isEmpty()) {
+              int pos = random.nextInt(sessions.size() + 1);
+              sessions.add(pos, session);
+              break;
+            }
+            // fallthrough
+          case FIRST:
+          default:
+            sessions.addFirst(session);
         }
-      } else if (shouldUnblockReader()) {
-        readWaiters.poll().put(session);
       } else {
-        prepareSession(session);
+        waiters.poll().put(session);
       }
     }
   }
@@ -2291,52 +2117,15 @@ final class SessionPool {
   private void handleCreateSessionsFailure(SpannerException e, int count) {
     synchronized (lock) {
       for (int i = 0; i < count; i++) {
-        if (readWaiters.size() > 0) {
-          readWaiters.poll().put(e);
-        } else if (readWriteWaiters.size() > 0) {
-          readWriteWaiters.poll().put(e);
+        if (waiters.size() > 0) {
+          waiters.poll().put(e);
         } else {
           break;
         }
       }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
-      }
-    }
-  }
-
-  private void handlePrepareSessionFailure(
-      SpannerException e, PooledSession session, boolean informFirstWaiter) {
-    synchronized (lock) {
-      if (isSessionNotFound(e)) {
-        invalidateSession(session);
-      } else if (shouldStopPrepareSessions(e)) {
-        // Database has been deleted or the user has no permission to write to this database, or
-        // there is some other semi-permanent error. We should stop trying to prepare any
-        // transactions. Also propagate the error to all waiters if the database or instance has
-        // been deleted, as any further waiting is pointless.
-        stopAutomaticPrepare = true;
-        while (readWriteWaiters.size() > 0) {
-          readWriteWaiters.poll().put(e);
-        }
-        while (readWaiters.size() > 0) {
-          readWaiters.poll().put(e);
-        }
-        if (isDatabaseOrInstanceNotFound(e)) {
-          // Remove the session from the pool.
-          if (isClosed()) {
-            decrementPendingClosures(1);
-          }
-          allSessions.remove(session);
-          setResourceNotFoundException((ResourceNotFoundException) e);
-        } else {
-          releaseSession(session, Position.FIRST);
-        }
-      } else if (informFirstWaiter && readWriteWaiters.size() > 0) {
-        releaseSession(session, Position.FIRST);
-        readWriteWaiters.poll().put(e);
-      } else {
-        releaseSession(session, Position.FIRST);
+        poolMaintainer.close();
       }
     }
   }
@@ -2353,9 +2142,9 @@ final class SessionPool {
   }
 
   /**
-   * Close all the sessions. Once this method is invoked {@link #getReadSession()} and {@link
-   * #getReadWriteSession()} will start throwing {@code IllegalStateException}. The returned future
-   * blocks till all the sessions created in this pool have been closed.
+   * Close all the sessions. Once this method is invoked {@link #getSession()} will start throwing
+   * {@code IllegalStateException}. The returned future blocks till all the sessions created in this
+   * pool have been closed.
    */
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
@@ -2365,40 +2154,22 @@ final class SessionPool {
       }
       this.closedException = closedException;
       // Fail all pending waiters.
-      WaiterFuture waiter = readWaiters.poll();
+      WaiterFuture waiter = waiters.poll();
       while (waiter != null) {
         waiter.put(newSpannerException(ErrorCode.INTERNAL, "Client has been closed"));
-        waiter = readWaiters.poll();
-      }
-      waiter = readWriteWaiters.poll();
-      while (waiter != null) {
-        waiter.put(newSpannerException(ErrorCode.INTERNAL, "Client has been closed"));
-        waiter = readWriteWaiters.poll();
+        waiter = waiters.poll();
       }
       closureFuture = SettableFuture.create();
       retFuture = closureFuture;
-      pendingClosure =
-          totalSessions()
-              + numSessionsBeingCreated
-              + 2 /* For pool maintenance thread + prepareExecutor */;
 
-      poolMaintainer.close();
-      readSessions.clear();
-      writePreparedSessions.clear();
-      prepareExecutor.shutdown();
-      executor.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                prepareExecutor.awaitTermination(5L, TimeUnit.SECONDS);
-              } catch (Throwable t) {
-              }
-              synchronized (lock) {
-                decrementPendingClosures(1);
-              }
-            }
-          });
+      pendingClosure = totalSessions() + numSessionsBeingCreated;
+
+      if (!poolMaintainer.isClosed()) {
+        pendingClosure += 1; // For pool maintenance thread
+        poolMaintainer.close();
+      }
+
+      sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
           if (options.isFailOnSessionLeak()) {
@@ -2413,41 +2184,20 @@ final class SessionPool {
           closeSessionAsync(session);
         }
       }
-    }
-    retFuture.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            executorFactory.release(executor);
-          }
-        },
-        MoreExecutors.directExecutor());
-    return retFuture;
-  }
 
-  private boolean shouldUnblockReader() {
-    // This might not be the best strategy since a continuous burst of read requests can starve
-    // a write request. Maybe maintain a timestamp in the queue and unblock according to that
-    // or just flip a weighted coin.
-    synchronized (lock) {
-      int numWriteWaiters = readWriteWaiters.size() - numSessionsBeingPrepared;
-      return readWaiters.size() > numWriteWaiters;
-    }
-  }
-
-  private boolean shouldPrepareSession() {
-    synchronized (lock) {
-      if (stopAutomaticPrepare) {
-        return false;
+      // Nothing to be closed, mark as complete
+      if (pendingClosure == 0) {
+        closureFuture.set(null);
       }
-      int preparedSessions = writePreparedSessions.size() + numSessionsBeingPrepared;
-      return preparedSessions < Math.floor(options.getWriteSessionsFraction() * totalSessions());
     }
+
+    retFuture.addListener(() -> executorFactory.release(executor), MoreExecutors.directExecutor());
+    return retFuture;
   }
 
   private int numWaiters() {
     synchronized (lock) {
-      return readWaiters.size() + readWriteWaiters.size();
+      return waiters.size();
     }
   }
 
@@ -2461,62 +2211,22 @@ final class SessionPool {
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            synchronized (lock) {
-              allSessions.remove(sess);
-              if (isClosed()) {
-                decrementPendingClosures(1);
-                return;
-              }
-              // Create a new session if needed to unblock some waiter.
-              if (numWaiters() > numSessionsBeingCreated) {
-                createSessions(
-                    getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
-              }
+        () -> {
+          synchronized (lock) {
+            allSessions.remove(sess);
+            if (isClosed()) {
+              decrementPendingClosures(1);
+              return;
+            }
+            // Create a new session if needed to unblock some waiter.
+            if (numWaiters() > numSessionsBeingCreated) {
+              createSessions(
+                  getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
             }
           }
         },
         MoreExecutors.directExecutor());
     return res;
-  }
-
-  private void prepareSession(final PooledSession sess) {
-    synchronized (lock) {
-      numSessionsBeingPrepared++;
-    }
-    prepareExecutor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              logger.log(Level.FINE, "Preparing session");
-              sess.prepareReadWriteTransaction();
-              logger.log(Level.FINE, "Session prepared");
-              synchronized (lock) {
-                numSessionsAsyncPrepared++;
-                numSessionsBeingPrepared--;
-                if (!isClosed()) {
-                  if (readWriteWaiters.size() > 0) {
-                    readWriteWaiters.poll().put(sess);
-                  } else if (readWaiters.size() > 0) {
-                    readWaiters.poll().put(sess);
-                  } else {
-                    writePreparedSessions.add(sess);
-                  }
-                }
-              }
-            } catch (Throwable t) {
-              synchronized (lock) {
-                numSessionsBeingPrepared--;
-                if (!isClosed()) {
-                  handlePrepareSessionFailure(newSpannerException(t), sess, true);
-                }
-              }
-            }
-          }
-        });
   }
 
   /**
@@ -2665,106 +2375,57 @@ final class SessionPool {
 
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    maxInUseSessionsMetric.removeTimeSeries(labelValues);
     maxInUseSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.maxSessionsInUse;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.maxSessionsInUse);
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
+    maxAllowedSessionsMetric.removeTimeSeries(labelValues);
     maxAllowedSessionsMetric.createTimeSeries(
-        labelValues,
-        options,
-        new ToLongFunction<SessionPoolOptions>() {
-          @Override
-          public long applyAsLong(SessionPoolOptions options) {
-            return options.getMaxSessions();
-          }
-        });
+        labelValues, options, SessionPoolOptions::getMaxSessions);
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
-    sessionsTimeouts.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.getNumWaiterTimeouts();
-          }
-        });
+    sessionsTimeouts.removeTimeSeries(labelValues);
+    sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
 
+    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsAcquired;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsAcquired);
 
+    numReleasedSessionsMetric.removeTimeSeries(labelValues);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsReleased;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsReleased);
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithBeingPreparedType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsBeingPrepared;
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithInUseType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithInUseType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
-          }
-        });
+        labelValuesWithInUseType, this, sessionPool -> sessionPool.numSessionsInUse);
 
     List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
     labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithReadType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithReadType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.readSessions.size();
-          }
-        });
+        labelValuesWithReadType, this, sessionPool -> sessionPool.sessions.size());
 
     List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
     labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithWriteType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.writePreparedSessions.size();
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
   }
 }

@@ -17,13 +17,13 @@
 package com.google.cloud.spanner.connection;
 
 /** Enum used to define the behavior of DML statements in autocommit mode */
-enum AutocommitDmlMode {
+public enum AutocommitDmlMode {
   TRANSACTIONAL,
   PARTITIONED_NON_ATOMIC;
 
   private final String statementString;
 
-  private AutocommitDmlMode() {
+  AutocommitDmlMode() {
     this.statementString = name();
   }
 

@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.api.core.ApiFunction;
-import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -26,10 +24,15 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
+import com.google.common.base.Ticker;
+import com.google.common.collect.Iterables;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +61,12 @@ public class SpannerPool {
   private static final String CONNECTION_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final Logger logger = Logger.getLogger(SpannerPool.class.getName());
 
+  private static final Function<Spanner, Void> DEFAULT_CLOSE_FUNCTION =
+      spanner -> {
+        spanner.close();
+        return null;
+      };
+
   /**
    * Closes the default {@link SpannerPool} and all {@link Spanner} instances that have been opened
    * by connections and that are still open. Call this method at the end of your application to
@@ -78,12 +86,12 @@ public class SpannerPool {
   private static final long DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED = 60000L;
 
   static final SpannerPool INSTANCE =
-      new SpannerPool(DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED);
+      new SpannerPool(DEFAULT_CLOSE_SPANNER_AFTER_MILLISECONDS_UNUSED, Ticker.systemTicker());
 
   @VisibleForTesting
   enum CheckAndCloseSpannersMode {
     WARN,
-    ERROR;
+    ERROR
   }
 
   private final class CloseSpannerRunnable implements Runnable {
@@ -91,7 +99,7 @@ public class SpannerPool {
     public void run() {
       try {
         checkAndCloseSpanners(CheckAndCloseSpannersMode.WARN);
-      } catch (Exception e) {
+      } catch (Throwable e) {
         // ignore
       }
     }
@@ -108,24 +116,56 @@ public class SpannerPool {
     }
   }
 
+  static class CredentialsKey {
+    static final Object DEFAULT_CREDENTIALS_KEY = new Object();
+    final Object key;
+
+    static CredentialsKey create(ConnectionOptions options) {
+      return new CredentialsKey(
+          Iterables.find(
+              Arrays.asList(
+                  options.getOAuthToken(),
+                  options.getFixedCredentials(),
+                  options.getCredentialsUrl(),
+                  DEFAULT_CREDENTIALS_KEY),
+              Predicates.notNull()));
+    }
+
+    private CredentialsKey(Object key) {
+      this.key = Preconditions.checkNotNull(key);
+    }
+
+    public int hashCode() {
+      return key.hashCode();
+    }
+
+    public boolean equals(Object o) {
+      return (o instanceof CredentialsKey && Objects.equals(((CredentialsKey) o).key, this.key));
+    }
+  }
+
   static class SpannerPoolKey {
     private final String host;
     private final String projectId;
-    private final Credentials credentials;
+    private final CredentialsKey credentialsKey;
     private final SessionPoolOptions sessionPoolOptions;
     private final Integer numChannels;
     private final boolean usePlainText;
     private final String userAgent;
 
-    private static SpannerPoolKey of(ConnectionOptions options) {
+    @VisibleForTesting
+    static SpannerPoolKey of(ConnectionOptions options) {
       return new SpannerPoolKey(options);
     }
 
     private SpannerPoolKey(ConnectionOptions options) {
       this.host = options.getHost();
       this.projectId = options.getProjectId();
-      this.credentials = options.getCredentials();
-      this.sessionPoolOptions = options.getSessionPoolOptions();
+      this.credentialsKey = CredentialsKey.create(options);
+      this.sessionPoolOptions =
+          options.getSessionPoolOptions() == null
+              ? SessionPoolOptions.newBuilder().build()
+              : options.getSessionPoolOptions();
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
@@ -139,7 +179,7 @@ public class SpannerPool {
       SpannerPoolKey other = (SpannerPoolKey) o;
       return Objects.equals(this.host, other.host)
           && Objects.equals(this.projectId, other.projectId)
-          && Objects.equals(this.credentials, other.credentials)
+          && Objects.equals(this.credentialsKey, other.credentialsKey)
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
           && Objects.equals(this.usePlainText, other.usePlainText)
@@ -151,7 +191,7 @@ public class SpannerPool {
       return Objects.hash(
           this.host,
           this.projectId,
-          this.credentials,
+          this.credentialsKey,
           this.sessionPoolOptions,
           this.numChannels,
           this.usePlainText,
@@ -206,14 +246,17 @@ public class SpannerPool {
   @GuardedBy("this")
   private final Map<SpannerPoolKey, Long> lastConnectionClosedAt = new HashMap<>();
 
+  private final Ticker ticker;
+
   @VisibleForTesting
-  SpannerPool() {
-    this(0L);
+  SpannerPool(Ticker ticker) {
+    this(0L, ticker);
   }
 
   @VisibleForTesting
-  SpannerPool(long closeSpannerAfterMillisecondsUnused) {
+  SpannerPool(long closeSpannerAfterMillisecondsUnused, Ticker ticker) {
     this.closeSpannerAfterMillisecondsUnused = closeSpannerAfterMillisecondsUnused;
+    this.ticker = ticker;
   }
 
   /**
@@ -240,14 +283,11 @@ public class SpannerPool {
       if (spanners.get(key) != null) {
         spanner = spanners.get(key);
       } else {
-        spanner = createSpanner(key);
+        spanner = createSpanner(key, options);
         spanners.put(key, spanner);
       }
-      List<ConnectionImpl> registeredConnectionsForSpanner = connections.get(key);
-      if (registeredConnectionsForSpanner == null) {
-        registeredConnectionsForSpanner = new ArrayList<>();
-        connections.put(key, registeredConnectionsForSpanner);
-      }
+      List<ConnectionImpl> registeredConnectionsForSpanner =
+          connections.computeIfAbsent(key, k -> new ArrayList<>());
       registeredConnectionsForSpanner.add(connection);
       lastConnectionClosedAt.remove(key);
       return spanner;
@@ -260,13 +300,10 @@ public class SpannerPool {
     if (this.closeSpannerAfterMillisecondsUnused > 0) {
       this.closerService =
           Executors.newSingleThreadScheduledExecutor(
-              new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                  Thread thread = new Thread(r, "close-unused-spanners-worker");
-                  thread.setDaemon(true);
-                  return thread;
-                }
+              runnable -> {
+                Thread thread = new Thread(runnable, "close-unused-spanners-worker");
+                thread.setDaemon(true);
+                return thread;
               });
       this.closerService.scheduleAtFixedRate(
           new CloseUnusedSpannersRunnable(),
@@ -277,15 +314,14 @@ public class SpannerPool {
     initialized = true;
   }
 
-  @SuppressWarnings("rawtypes")
   @VisibleForTesting
-  Spanner createSpanner(SpannerPoolKey key) {
+  Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder();
     builder
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
-        .setCredentials(key.credentials);
+        .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
@@ -294,14 +330,10 @@ public class SpannerPool {
       // Credentials may not be sent over a plain text channel.
       builder.setCredentials(NoCredentials.getInstance());
       // Set a custom channel configurator to allow http instead of https.
-      builder.setChannelConfigurator(
-          new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-            @Override
-            public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-              input.usePlaintext();
-              return input;
-            }
-          });
+      builder.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+    }
+    if (options.getConfigurator() != null) {
+      options.getConfigurator().configure(builder);
     }
     return builder.build().getService();
   }
@@ -330,7 +362,8 @@ public class SpannerPool {
           if (registeredConnections.isEmpty()) {
             // Register the moment the last connection for this Spanner key was removed, so we know
             // which Spanner objects we could close.
-            lastConnectionClosedAt.put(key, System.currentTimeMillis());
+            lastConnectionClosedAt.put(
+                key, TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS));
           }
         }
       } else {
@@ -353,6 +386,12 @@ public class SpannerPool {
 
   @VisibleForTesting
   void checkAndCloseSpanners(CheckAndCloseSpannersMode mode) {
+    checkAndCloseSpanners(mode, DEFAULT_CLOSE_FUNCTION);
+  }
+
+  @VisibleForTesting
+  void checkAndCloseSpanners(
+      CheckAndCloseSpannersMode mode, Function<Spanner, Void> closeSpannerFunction) {
     List<SpannerPoolKey> keysStillInUse = new ArrayList<>();
     synchronized (this) {
       for (Entry<SpannerPoolKey, Spanner> entry : spanners.entrySet()) {
@@ -360,26 +399,34 @@ public class SpannerPool {
           keysStillInUse.add(entry.getKey());
         }
       }
-      if (keysStillInUse.isEmpty() || mode == CheckAndCloseSpannersMode.WARN) {
-        if (!keysStillInUse.isEmpty()) {
+      try {
+        if (keysStillInUse.isEmpty() || mode == CheckAndCloseSpannersMode.WARN) {
+          if (!keysStillInUse.isEmpty()) {
+            logLeakedConnections(keysStillInUse);
+            logger.log(
+                Level.WARNING,
+                "There is/are "
+                    + keysStillInUse.size()
+                    + " connection(s) still open."
+                    + " Close all connections before stopping the application");
+          }
+          // Force close all Spanner instances by passing in a value that will always be less than
+          // the
+          // difference between the current time and the close time of a connection.
+          closeUnusedSpanners(Long.MIN_VALUE, closeSpannerFunction);
+        } else {
           logLeakedConnections(keysStillInUse);
-          logger.log(
-              Level.WARNING,
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
               "There is/are "
                   + keysStillInUse.size()
-                  + " connection(s) still open."
-                  + " Close all connections before stopping the application");
+                  + " connection(s) still open. Close all connections before calling closeSpanner()");
         }
-        // Force close all Spanner instances by passing in a value that will always be less than the
-        // difference between the current time and the close time of a connection.
-        closeUnusedSpanners(Long.MIN_VALUE);
-      } else {
-        logLeakedConnections(keysStillInUse);
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.FAILED_PRECONDITION,
-            "There is/are "
-                + keysStillInUse.size()
-                + " connection(s) still open. Close all connections before calling closeSpanner()");
+      } finally {
+        if (closerService != null) {
+          closerService.shutdown();
+        }
+        initialized = false;
       }
     }
   }
@@ -406,6 +453,11 @@ public class SpannerPool {
    */
   @VisibleForTesting
   void closeUnusedSpanners(long closeSpannerAfterMillisecondsUnused) {
+    closeUnusedSpanners(closeSpannerAfterMillisecondsUnused, DEFAULT_CLOSE_FUNCTION);
+  }
+
+  void closeUnusedSpanners(
+      long closeSpannerAfterMillisecondsUnused, Function<Spanner, Void> closeSpannerFunction) {
     List<SpannerPoolKey> keysToBeRemoved = new ArrayList<>();
     synchronized (this) {
       for (Entry<SpannerPoolKey, Long> entry : lastConnectionClosedAt.entrySet()) {
@@ -413,12 +465,14 @@ public class SpannerPool {
         // Check whether the last connection was closed more than
         // closeSpannerAfterMillisecondsUnused milliseconds ago.
         if (closedAt != null
-            && ((System.currentTimeMillis() - closedAt.longValue()))
+            && ((TimeUnit.MILLISECONDS.convert(ticker.read(), TimeUnit.NANOSECONDS) - closedAt))
                 > closeSpannerAfterMillisecondsUnused) {
           Spanner spanner = spanners.get(entry.getKey());
           if (spanner != null) {
             try {
-              spanner.close();
+              closeSpannerFunction.apply(spanner);
+            } catch (Throwable t) {
+              // Ignore any errors and continue with the next one in the pool.
             } finally {
               // Even if the close operation failed, we should remove the spanner object as it is no
               // longer valid.

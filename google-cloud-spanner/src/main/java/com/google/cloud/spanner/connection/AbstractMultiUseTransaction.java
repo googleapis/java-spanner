@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
@@ -24,7 +25,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
-import java.util.concurrent.Callable;
+import com.google.spanner.v1.SpannerGrpc;
 
 /**
  * Base class for {@link Connection}-based transactions that can be used for multiple read and
@@ -46,6 +47,8 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
     return getState().isActive();
   }
 
+  abstract void checkAborted();
+
   /**
    * Check that the current transaction actually has a valid underlying transaction. If not, the
    * method will throw a {@link SpannerException}.
@@ -55,22 +58,20 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   /** Returns the {@link ReadContext} that can be used for queries on this transaction. */
   abstract ReadContext getReadContext();
 
-  @Override
-  public ResultSet executeQuery(
+  public ApiFuture<ResultSet> executeQueryAsync(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
     checkValidTransaction();
-    return asyncExecuteStatement(
+    return executeStatementAsync(
         statement,
-        new Callable<ResultSet>() {
-          @Override
-          public ResultSet call() throws Exception {
-            return DirectExecuteResultSet.ofResultSet(
-                internalExecuteQuery(statement, analyzeMode, options));
-          }
-        });
+        () -> {
+          checkAborted();
+          return DirectExecuteResultSet.ofResultSet(
+              internalExecuteQuery(statement, analyzeMode, options));
+        },
+        SpannerGrpc.getExecuteStreamingSqlMethod());
   }
 
   ResultSet internalExecuteQuery(
@@ -83,7 +84,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public long[] runBatch() {
+  public ApiFuture<long[]> runBatchAsync() {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Run batch is not supported for transactions");
   }

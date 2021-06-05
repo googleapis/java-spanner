@@ -19,20 +19,24 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,13 +54,7 @@ public class ValueTest {
   /** Returns an {@code Iterable} over {@code values} that is not a {@code Collection}. */
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
-    final List<T> list = Lists.newArrayList(values);
-    return new Iterable<T>() {
-      @Override
-      public Iterator<T> iterator() {
-        return list.iterator();
-      }
-    };
+    return Lists.newArrayList(values);
   }
 
   @Test
@@ -83,12 +81,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bool());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getBool();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("null value");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBool());
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -103,34 +97,23 @@ public class ValueTest {
   @Test
   public void int64TryGetBool() {
     Value value = Value.int64(1234);
-    try {
-      value.getBool();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
   }
 
   @Test
   public void int64NullTryGetBool() {
     Value value = Value.int64(null);
-    try {
-      value.getBool();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
   }
 
   @Test
   public void int64TryGetInt64Array() {
     Value value = Value.int64(1234);
-    try {
-      value.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: INT64");
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
+    assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: INT64");
   }
 
   @Test
@@ -148,12 +131,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.int64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getInt64();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("null value");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64());
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -180,12 +159,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.float64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getFloat64();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("null value");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64());
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -266,18 +241,92 @@ public class ValueTest {
   }
 
   @Test
+  public void numericPrecisionAndScale() {
+    for (long s : new long[] {1L, -1L}) {
+      BigDecimal sign = new BigDecimal(s);
+      assertThat(Value.numeric(new BigDecimal(Strings.repeat("9", 29)).multiply(sign)).toString())
+          .isEqualTo((s == -1L ? "-" : "") + Strings.repeat("9", 29));
+      SpannerException e1 =
+          assertThrows(
+              SpannerException.class,
+              () -> Value.numeric(new BigDecimal(Strings.repeat("9", 30)).multiply(sign)));
+      assertThat(e1.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      SpannerException e2 =
+          assertThrows(
+              SpannerException.class,
+              () -> Value.numeric(new BigDecimal("1" + Strings.repeat("0", 29)).multiply(sign)));
+      assertThat(e2.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+
+      assertThat(
+              Value.numeric(new BigDecimal("0." + Strings.repeat("9", 9)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0." + Strings.repeat("9", 9));
+      assertThat(
+              Value.numeric(new BigDecimal("0.1" + Strings.repeat("0", 8)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0.1" + Strings.repeat("0", 8));
+      // Cloud Spanner does not store precision and considers 0.1 to be equal to 0.10.
+      // 0.100000000000000000000000000 is therefore also a valid value, as it will be capped to 0.1.
+      assertThat(
+              Value.numeric(new BigDecimal("0.1" + Strings.repeat("0", 20)).multiply(sign))
+                  .toString())
+          .isEqualTo((s == -1L ? "-" : "") + "0.1" + Strings.repeat("0", 20));
+      SpannerException e3 =
+          assertThrows(
+              SpannerException.class,
+              () -> Value.numeric(new BigDecimal("0." + Strings.repeat("9", 10)).multiply(sign)));
+      assertThat(e3.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+
+      assertThat(
+              Value.numeric(
+                      new BigDecimal(Strings.repeat("9", 29) + "." + Strings.repeat("9", 9))
+                          .multiply(sign))
+                  .toString())
+          .isEqualTo(
+              (s == -1L ? "-" : "") + Strings.repeat("9", 29) + "." + Strings.repeat("9", 9));
+
+      SpannerException e4 =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  Value.numeric(
+                      new BigDecimal(Strings.repeat("9", 30) + "." + Strings.repeat("9", 9))
+                          .multiply(sign)));
+      assertThat(e4.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      SpannerException e5 =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  Value.numeric(
+                      new BigDecimal("1" + Strings.repeat("0", 29) + "." + Strings.repeat("9", 9))
+                          .multiply(sign)));
+      assertThat(e5.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+
+      SpannerException e6 =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  Value.numeric(
+                      new BigDecimal(Strings.repeat("9", 29) + "." + Strings.repeat("9", 10))
+                          .multiply(sign)));
+      assertThat(e6.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+      SpannerException e7 =
+          assertThrows(
+              SpannerException.class,
+              () -> Value.numeric(new BigDecimal("1." + Strings.repeat("9", 10)).multiply(sign)));
+      assertThat(e7.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_RANGE);
+    }
+  }
+
+  @Test
   public void numericNull() {
     Value v = Value.numeric(null);
     assertThat(v.getType()).isEqualTo(Type.numeric());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    try {
-      v.getNumeric();
-      fail("missing expected IllegalStateException");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("null value");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getNumeric());
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -294,12 +343,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.string());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getString();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getString());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -336,12 +381,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bytes());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getBytes();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBytes());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -363,12 +404,8 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     assertThat(v.isCommitTimestamp()).isFalse();
-    try {
-      v.getTimestamp();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getTimestamp());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -383,12 +420,8 @@ public class ValueTest {
             com.google.protobuf.Value.newBuilder()
                 .setStringValue("spanner.commit_timestamp()")
                 .build());
-    try {
-      v.getTimestamp();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Commit timestamp value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getTimestamp());
+    assertThat(e.getMessage().contains("Commit timestamp value"));
   }
 
   @Test
@@ -408,12 +441,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.date());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getDate();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getDate());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -437,12 +466,8 @@ public class ValueTest {
     Value v = Value.boolArray((boolean[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getBoolArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBoolArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -458,12 +483,8 @@ public class ValueTest {
     Value v = Value.boolArray((Iterable<Boolean>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getBoolArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBoolArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -485,13 +506,10 @@ public class ValueTest {
 
   @Test
   public void boolArrayTryGetInt64Array() {
-    Value value = Value.boolArray(Arrays.asList(true));
-    try {
-      value.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<BOOL>"));
-    }
+    Value value = Value.boolArray(Collections.singletonList(true));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
+    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<BOOL>"));
   }
 
   @Test
@@ -515,12 +533,8 @@ public class ValueTest {
     Value v = Value.int64Array((long[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64Array());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -536,34 +550,22 @@ public class ValueTest {
     Value v = Value.int64Array((Iterable<Long>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64Array());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
   public void int64ArrayTryGetBool() {
-    Value value = Value.int64Array(Arrays.asList(1234L));
-    try {
-      value.getBool();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
-    }
+    Value value = Value.int64Array(Collections.singletonList(1234L));
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
   }
 
   @Test
   public void int64ArrayNullTryGetBool() {
     Value value = Value.int64Array((Iterable<Long>) null);
-    try {
-      value.getBool();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
   }
 
   @Test
@@ -587,12 +589,8 @@ public class ValueTest {
     Value v = Value.float64Array((double[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getFloat64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64Array());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -608,23 +606,16 @@ public class ValueTest {
     Value v = Value.float64Array((Iterable<Double>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getFloat64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64Array());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
   public void float64ArrayTryGetInt64Array() {
-    Value value = Value.float64Array(Arrays.asList(.1));
-    try {
-      value.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
-    }
+    Value value = Value.float64Array(Collections.singletonList(.1));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
+    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
   }
 
   @Test
@@ -640,28 +631,21 @@ public class ValueTest {
 
   @Test
   public void numericArrayNull() {
-    Value v = Value.numericArray((Iterable<BigDecimal>) null);
+    Value v = Value.numericArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    try {
-      v.getNumericArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getNumericArray());
+    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
   }
 
   @Test
   public void numericArrayTryGetInt64Array() {
-    Value value = Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1)));
+    Value value = Value.numericArray(Collections.singletonList(BigDecimal.valueOf(1, 1)));
 
-    try {
-      value.getInt64Array();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
+    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>"));
   }
 
   @Test
@@ -677,23 +661,16 @@ public class ValueTest {
     Value v = Value.stringArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getStringArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStringArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
   public void stringArrayTryGetBytesArray() {
-    Value value = Value.stringArray(Arrays.asList("a"));
-    try {
-      value.getBytesArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<STRING>"));
-    }
+    Value value = Value.stringArray(Collections.singletonList("a"));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getBytesArray());
+    assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<STRING>"));
   }
 
   @Test
@@ -711,23 +688,16 @@ public class ValueTest {
     Value v = Value.bytesArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getBytesArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBytesArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
   public void bytesArrayTryGetStringArray() {
-    Value value = Value.bytesArray(Arrays.asList(newByteArray("a")));
-    try {
-      value.getStringArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<BYTES>"));
-    }
+    Value value = Value.bytesArray(Collections.singletonList(newByteArray("a")));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> value.getStringArray());
+    assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<BYTES>"));
   }
 
   @Test
@@ -749,12 +719,9 @@ public class ValueTest {
     Value v = Value.timestampArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getTimestampArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> v.getTimestampArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -775,12 +742,8 @@ public class ValueTest {
     Value v = Value.dateArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getDateArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getDateArray());
+    assertThat(e.getMessage().contains("null value"));
   }
 
   @Test
@@ -794,12 +757,14 @@ public class ValueTest {
 
     Value v2 = Value.struct(struct.getType(), struct);
     assertThat(v2).isEqualTo(v1);
-    try {
-      Value.struct(Type.struct(Arrays.asList(StructField.of("f3", Type.string()))), struct);
-      fail("Expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage().contains("Mismatch between struct value and type."));
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                Value.struct(
+                    Type.struct(Collections.singletonList(StructField.of("f3", Type.string()))),
+                    struct));
+    assertThat(e.getMessage().contains("Mismatch between struct value and type."));
   }
 
   @Test
@@ -812,12 +777,8 @@ public class ValueTest {
     assertThat(v.getType().getStructFields()).isEqualTo(fieldTypes);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      Value.struct(null);
-      fail("Expected exception");
-    } catch (NullPointerException e) {
-      assertThat(e.getMessage().contains("Illegal call to create a NULL struct value."));
-    }
+    NullPointerException e = assertThrows(NullPointerException.class, () -> Value.struct(null));
+    assertThat(e.getMessage().contains("Illegal call to create a NULL struct value."));
   }
 
   @Test
@@ -828,12 +789,8 @@ public class ValueTest {
 
     Value v = Value.struct(Type.struct(fieldTypes), null);
     assertThat(v.isNull()).isTrue();
-    try {
-      v.getStruct();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Illegal call to getter of null value.");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStruct());
+    assertThat(e.getMessage()).contains("Illegal call to getter of null value.");
   }
 
   @Test
@@ -915,12 +872,8 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.getType().getArrayElementType()).isEqualTo(elementType);
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    try {
-      v.getStructArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Illegal call to getter of null value");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStructArray());
+    assertThat(e.getMessage()).contains("Illegal call to getter of null value");
   }
 
   @Test
@@ -935,12 +888,384 @@ public class ValueTest {
         Arrays.asList(
             Struct.newBuilder().set("ff1").to("1").set("ff2").to(1).build(),
             Struct.newBuilder().set("ff1").to(2).set("ff2").to(3).build());
-    try {
-      Value.structArray(elementType, arrayElements);
-      fail("Expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("must have type STRUCT<ff1 STRING, ff2 INT64>");
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class, () -> Value.structArray(elementType, arrayElements));
+    assertThat(e.getMessage()).contains("must have type STRUCT<ff1 STRING, ff2 INT64>");
+  }
+
+  @Test
+  public void testValueToProto() {
+    // BASE types.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setBoolValue(true).build(),
+        Value.bool(true).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setBoolValue(false).build(),
+        Value.bool(false).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.bool(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("1").build(),
+        Value.int64(1L).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.int64(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build(),
+        Value.float64(3.14d).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.float64(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("test").build(),
+        Value.string("test").toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.string(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue(ByteArray.copyFrom("test").toBase64())
+            .build(),
+        Value.bytes(ByteArray.copyFrom("test")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.bytes(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("3.14").build(),
+        Value.numeric(new BigDecimal("3.14")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.numeric(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("2010-02-28").build(),
+        Value.date(Date.fromYearMonthDay(2010, 2, 28)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.date(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setStringValue("2012-04-10T15:16:17.123456789Z")
+            .build(),
+        Value.timestamp(Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z")).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.timestamp(null).toProto());
+
+    // ARRAY types.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setBoolValue(true).build(),
+                            com.google.protobuf.Value.newBuilder().setBoolValue(false).build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.boolArray(Arrays.asList(true, false, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("1").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.int64Array(Arrays.asList(1L, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.float64Array(Arrays.asList(3.14d, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("test").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.stringArray(Arrays.asList("test", null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(ByteArray.copyFrom("test").toBase64())
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.bytesArray(Arrays.asList(ByteArray.copyFrom("test"), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("3.14").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.numericArray(Arrays.asList(new BigDecimal("3.14"), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2010-02-28")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2012-04-10T15:16:17.123456789Z")
+                                .build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.timestampArray(
+                Arrays.asList(Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z"), null))
+            .toProto());
+
+    // STRUCT type with array field.
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setBoolValue(true)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setBoolValue(false)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.boolArray(Arrays.asList(true, false, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("1")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(Struct.newBuilder().add(Value.int64Array(Arrays.asList(1L, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(3.14d)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.float64Array(Arrays.asList(3.14d, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("test")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.stringArray(Arrays.asList("test", null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue(
+                                                    ByteArray.copyFrom("test").toBase64())
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.bytesArray(Arrays.asList(ByteArray.copyFrom("test"), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("3.14")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.numericArray(Arrays.asList(new BigDecimal("3.14"), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("2010-02-28")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2010, 2, 28), null)))
+                    .build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("2012-04-10T15:16:17.123456789Z")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(
+                        Value.timestampArray(
+                            Arrays.asList(
+                                Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z"), null)))
+                    .build())
+            .toProto());
   }
 
   @Test
@@ -991,7 +1316,7 @@ public class ValueTest {
     tester.addEqualityGroup(Value.struct(structValue1), Value.struct(structValue2));
 
     Type structType1 = structValue1.getType();
-    Type structType2 = Type.struct(Arrays.asList(StructField.of("f1", Type.string())));
+    Type structType2 = Type.struct(Collections.singletonList(StructField.of("f1", Type.string())));
     tester.addEqualityGroup(Value.struct(structType1, null), Value.struct(structType1, null));
     tester.addEqualityGroup(Value.struct(structType2, null), Value.struct(structType2, null));
 
@@ -1000,7 +1325,7 @@ public class ValueTest {
         Value.boolArray(new boolean[] {false, true}),
         Value.boolArray(new boolean[] {true, false, true, false}, 1, 2),
         Value.boolArray(plainIterable(false, true)));
-    tester.addEqualityGroup(Value.boolArray(Arrays.asList(false)));
+    tester.addEqualityGroup(Value.boolArray(Collections.singletonList(false)));
     tester.addEqualityGroup(Value.boolArray((Iterable<Boolean>) null));
 
     tester.addEqualityGroup(
@@ -1008,7 +1333,7 @@ public class ValueTest {
         Value.int64Array(new long[] {1L, 2L}),
         Value.int64Array(new long[] {0L, 1L, 2L, 3L}, 1, 2),
         Value.int64Array(plainIterable(1L, 2L)));
-    tester.addEqualityGroup(Value.int64Array(Arrays.asList(3L)));
+    tester.addEqualityGroup(Value.int64Array(Collections.singletonList(3L)));
     tester.addEqualityGroup(Value.int64Array((Iterable<Long>) null));
 
     tester.addEqualityGroup(
@@ -1016,23 +1341,24 @@ public class ValueTest {
         Value.float64Array(new double[] {.1, .2}),
         Value.float64Array(new double[] {.0, .1, .2, .3}, 1, 2),
         Value.float64Array(plainIterable(.1, .2)));
-    tester.addEqualityGroup(Value.float64Array(Arrays.asList(.3)));
+    tester.addEqualityGroup(Value.float64Array(Collections.singletonList(.3)));
     tester.addEqualityGroup(Value.float64Array((Iterable<Double>) null));
 
     tester.addEqualityGroup(
         Value.numericArray(Arrays.asList(BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1))));
-    tester.addEqualityGroup(Value.numericArray(Arrays.asList(BigDecimal.valueOf(3, 1))));
-    tester.addEqualityGroup(Value.numericArray((Iterable<BigDecimal>) null));
+    tester.addEqualityGroup(
+        Value.numericArray(Collections.singletonList(BigDecimal.valueOf(3, 1))));
+    tester.addEqualityGroup(Value.numericArray(null));
 
     tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
-    tester.addEqualityGroup(Value.stringArray(Arrays.asList("c")));
+    tester.addEqualityGroup(Value.stringArray(Collections.singletonList("c")));
     tester.addEqualityGroup(Value.stringArray(null));
 
     tester.addEqualityGroup(
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))),
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))));
-    tester.addEqualityGroup(Value.bytesArray(Arrays.asList(newByteArray("c"))));
+    tester.addEqualityGroup(Value.bytesArray(Collections.singletonList(newByteArray("c"))));
     tester.addEqualityGroup(Value.bytesArray(null));
 
     tester.addEqualityGroup(
@@ -1049,13 +1375,13 @@ public class ValueTest {
         Value.structArray(structType1, Arrays.asList(structValue1, null)),
         Value.structArray(structType1, Arrays.asList(structValue2, null)));
     tester.addEqualityGroup(
-        Value.structArray(structType1, Arrays.asList((Struct) null)),
-        Value.structArray(structType1, Arrays.asList((Struct) null)));
+        Value.structArray(structType1, Collections.singletonList(null)),
+        Value.structArray(structType1, Collections.singletonList(null)));
     tester.addEqualityGroup(
         Value.structArray(structType1, null), Value.structArray(structType1, null));
     tester.addEqualityGroup(
-        Value.structArray(structType1, new ArrayList<Struct>()),
-        Value.structArray(structType1, new ArrayList<Struct>()));
+        Value.structArray(structType1, new ArrayList<>()),
+        Value.structArray(structType1, new ArrayList<>()));
 
     tester.testEquals();
   }
@@ -1111,7 +1437,7 @@ public class ValueTest {
         Value.numericArray(
             BrokenSerializationList.of(
                 BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1), BigDecimal.valueOf(3, 1))));
-    reserializeAndAssert(Value.numericArray((Iterable<BigDecimal>) null));
+    reserializeAndAssert(Value.numericArray(null));
 
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));

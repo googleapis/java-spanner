@@ -16,16 +16,39 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
-import java.util.Arrays;
+import java.util.Collections;
 
 /** Implementation of {@link StatementResult} */
 class StatementResultImpl implements StatementResult {
+
+  /**
+   * Returns the {@link AsyncStatementResult} as a {@link StatementResult} with the guarantee that
+   * the underlying result is available.
+   */
+  static StatementResult of(AsyncStatementResult delegate) {
+    switch (delegate.getResultType()) {
+      case NO_RESULT:
+        get(delegate.getNoResultAsync());
+        break;
+      case RESULT_SET:
+        delegate.getResultSet();
+        break;
+      case UPDATE_COUNT:
+        delegate.getUpdateCount();
+        break;
+      default:
+        throw new IllegalStateException("Unknown result type: " + delegate.getResultType());
+    }
+    return delegate;
+  }
 
   /** {@link StatementResult} containing a {@link ResultSet} returned by Cloud Spanner. */
   static StatementResult of(ResultSet resultSet) {
@@ -54,7 +77,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.bool())),
-            Arrays.asList(Struct.newBuilder().set(name).to(value).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).to(value).build())),
         clientSideStatementType);
   }
 
@@ -67,7 +90,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.int64())),
-            Arrays.asList(Struct.newBuilder().set(name).to(value).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).to(value).build())),
         clientSideStatementType);
   }
 
@@ -80,7 +103,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.array(Type.int64()))),
-            Arrays.asList(Struct.newBuilder().set(name).toInt64Array(values).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).toInt64Array(values).build())),
         clientSideStatementType);
   }
 
@@ -93,7 +116,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.string())),
-            Arrays.asList(Struct.newBuilder().set(name).to(value).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).to(value).build())),
         clientSideStatementType);
   }
 
@@ -107,7 +130,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.string())),
-            Arrays.asList(Struct.newBuilder().set(name).to(value.toString()).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).to(value.toString()).build())),
         clientSideStatementType);
   }
 
@@ -120,7 +143,7 @@ class StatementResultImpl implements StatementResult {
     return of(
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.timestamp())),
-            Arrays.asList(Struct.newBuilder().set(name).to(value).build())),
+            Collections.singletonList(Struct.newBuilder().set(name).to(value).build())),
         clientSideStatementType);
   }
 

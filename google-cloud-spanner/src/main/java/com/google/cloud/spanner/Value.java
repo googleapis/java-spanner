@@ -75,7 +75,7 @@ public abstract class Value implements Serializable {
   private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
   private static final String NULL_STRING = "NULL";
-  private static final char LIST_SEPERATOR = ',';
+  private static final char LIST_SEPARATOR = ',';
   private static final char LIST_OPEN = '[';
   private static final char LIST_CLOSE = ']';
   private static final long serialVersionUID = -5289864325087675338L;
@@ -123,11 +123,37 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns a {@code NUMERIC} value.
+   * Returns a {@code NUMERIC} value. The valid value range for the whole component of the {@link
+   * BigDecimal} is from -9,999,999,999,999,999,999,999,999 to +9,999,999,999,999,999,999,999,999
+   * (both inclusive), i.e. the max length of the whole component is 29 digits. The max length of
+   * the fractional part is 9 digits. Trailing zeros in the fractional part are not considered and
+   * will be lost, as Cloud Spanner does not preserve the precision of a numeric value.
+   *
+   * <p>If you set a numeric value of a record to for example 0.10, Cloud Spanner will return this
+   * value as 0.1 in subsequent queries. Use {@link BigDecimal#stripTrailingZeros()} to compare
+   * inserted values with retrieved values if your application might insert numeric values with
+   * trailing zeros.
    *
    * @param v the value, which may be null
    */
   public static Value numeric(@Nullable BigDecimal v) {
+    if (v != null) {
+      // Cloud Spanner does not preserve the precision, so 0.1 is considered equal to 0.10.
+      BigDecimal test = v.stripTrailingZeros();
+      if (test.scale() > 9) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.OUT_OF_RANGE,
+            String.format(
+                "Max scale for a numeric is 9. The requested numeric has scale %d", test.scale()));
+      }
+      if (test.precision() - test.scale() > 29) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.OUT_OF_RANGE,
+            String.format(
+                "Max precision for the whole component of a numeric is 29. The requested numeric has a whole component with precision %d",
+                test.precision() - test.scale()));
+      }
+    }
     return new NumericImpl(v == null, v);
   }
 
@@ -517,7 +543,7 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  abstract List<Struct> getStructArray();
+  public abstract List<Struct> getStructArray();
 
   @Override
   public String toString() {
@@ -1168,7 +1194,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         if (nulls != null && nulls.get(i)) {
           b.append(NULL_STRING);
@@ -1352,7 +1378,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < value.size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         T v = value.get(i);
         if (v == null) {
@@ -1524,15 +1550,15 @@ public abstract class Value implements Serializable {
             Type elementType = fieldType.getArrayElementType();
             switch (elementType.getCode()) {
               case BOOL:
-                return Value.boolArray(value.getBooleanArray(fieldIndex));
+                return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
-                return Value.int64Array(value.getLongArray(fieldIndex));
+                return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
-                return Value.float64Array(value.getDoubleArray(fieldIndex));
+                return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:
                 return Value.numericArray(value.getBigDecimalList(fieldIndex));
               case DATE:
@@ -1571,7 +1597,7 @@ public abstract class Value implements Serializable {
   }
 
   private static class StructArrayImpl extends AbstractArrayValue<Struct> {
-    private static final Joiner joiner = Joiner.on(LIST_SEPERATOR).useForNull(NULL_STRING);
+    private static final Joiner joiner = Joiner.on(LIST_SEPARATOR).useForNull(NULL_STRING);
 
     private StructArrayImpl(Type elementType, @Nullable List<Struct> values) {
       super(values == null, elementType, values);

@@ -1,11 +1,11 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.instance.v1.stub;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
@@ -73,7 +74,7 @@ import java.util.List;
 import javax.annotation.Generated;
 import org.threeten.bp.Duration;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
  * Settings class to configure an instance of {@link InstanceAdminStub}.
  *
@@ -90,22 +91,22 @@ import org.threeten.bp.Duration;
  *
  * <p>For example, to set the total timeout of getInstanceConfig to 30 seconds:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  * InstanceAdminStubSettings.Builder instanceAdminSettingsBuilder =
  *     InstanceAdminStubSettings.newBuilder();
  * instanceAdminSettingsBuilder
  *     .getInstanceConfigSettings()
  *     .setRetrySettings(
- *         instanceAdminSettingsBuilder.getInstanceConfigSettings().getRetrySettings().toBuilder()
+ *         instanceAdminSettingsBuilder
+ *             .getInstanceConfigSettings()
+ *             .getRetrySettings()
+ *             .toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * InstanceAdminStubSettings instanceAdminSettings = instanceAdminSettingsBuilder.build();
- * </code>
- * </pre>
+ * }</pre>
  */
-@Generated("by gapic-generator")
-@BetaApi
+@Generated("by gapic-generator-java")
 public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSettings> {
   /** The default scopes of the service. */
   private static final ImmutableList<String> DEFAULT_SERVICE_SCOPES =
@@ -114,12 +115,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .add("https://www.googleapis.com/auth/spanner.admin")
           .build();
 
-  private final UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings;
-  private final OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationSettings;
-  private final UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings;
-  private final OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationSettings;
   private final PagedCallSettings<
           ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
       listInstanceConfigsSettings;
@@ -129,35 +124,131 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
       listInstancesSettings;
   private final UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings;
+  private final UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings;
+  private final OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationSettings;
+  private final UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings;
+  private final OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationSettings;
   private final UnaryCallSettings<DeleteInstanceRequest, Empty> deleteInstanceSettings;
   private final UnaryCallSettings<SetIamPolicyRequest, Policy> setIamPolicySettings;
   private final UnaryCallSettings<GetIamPolicyRequest, Policy> getIamPolicySettings;
   private final UnaryCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsSettings;
 
-  /** Returns the object with the settings used for calls to createInstance. */
-  public UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings() {
-    return createInstanceSettings;
-  }
+  private static final PagedListDescriptor<
+          ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
+      LIST_INSTANCE_CONFIGS_PAGE_STR_DESC =
+          new PagedListDescriptor<
+              ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
 
-  /** Returns the object with the settings used for calls to createInstance. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-      createInstanceOperationSettings() {
-    return createInstanceOperationSettings;
-  }
+            @Override
+            public ListInstanceConfigsRequest injectToken(
+                ListInstanceConfigsRequest payload, String token) {
+              return ListInstanceConfigsRequest.newBuilder(payload).setPageToken(token).build();
+            }
 
-  /** Returns the object with the settings used for calls to updateInstance. */
-  public UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings() {
-    return updateInstanceSettings;
-  }
+            @Override
+            public ListInstanceConfigsRequest injectPageSize(
+                ListInstanceConfigsRequest payload, int pageSize) {
+              return ListInstanceConfigsRequest.newBuilder(payload).setPageSize(pageSize).build();
+            }
 
-  /** Returns the object with the settings used for calls to updateInstance. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-      updateInstanceOperationSettings() {
-    return updateInstanceOperationSettings;
-  }
+            @Override
+            public Integer extractPageSize(ListInstanceConfigsRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListInstanceConfigsResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<InstanceConfig> extractResources(ListInstanceConfigsResponse payload) {
+              return payload.getInstanceConfigsList() == null
+                  ? ImmutableList.<InstanceConfig>of()
+                  : payload.getInstanceConfigsList();
+            }
+          };
+
+  private static final PagedListDescriptor<ListInstancesRequest, ListInstancesResponse, Instance>
+      LIST_INSTANCES_PAGE_STR_DESC =
+          new PagedListDescriptor<ListInstancesRequest, ListInstancesResponse, Instance>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListInstancesRequest injectToken(ListInstancesRequest payload, String token) {
+              return ListInstancesRequest.newBuilder(payload).setPageToken(token).build();
+            }
+
+            @Override
+            public ListInstancesRequest injectPageSize(ListInstancesRequest payload, int pageSize) {
+              return ListInstancesRequest.newBuilder(payload).setPageSize(pageSize).build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListInstancesRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListInstancesResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<Instance> extractResources(ListInstancesResponse payload) {
+              return payload.getInstancesList() == null
+                  ? ImmutableList.<Instance>of()
+                  : payload.getInstancesList();
+            }
+          };
+
+  private static final PagedListResponseFactory<
+          ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
+      LIST_INSTANCE_CONFIGS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListInstanceConfigsRequest,
+              ListInstanceConfigsResponse,
+              ListInstanceConfigsPagedResponse>() {
+            @Override
+            public ApiFuture<ListInstanceConfigsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse> callable,
+                ListInstanceConfigsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListInstanceConfigsResponse> futureResponse) {
+              PageContext<ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
+                  pageContext =
+                      PageContext.create(
+                          callable, LIST_INSTANCE_CONFIGS_PAGE_STR_DESC, request, context);
+              return ListInstanceConfigsPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
+
+  private static final PagedListResponseFactory<
+          ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
+      LIST_INSTANCES_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>() {
+            @Override
+            public ApiFuture<ListInstancesPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListInstancesRequest, ListInstancesResponse> callable,
+                ListInstancesRequest request,
+                ApiCallContext context,
+                ApiFuture<ListInstancesResponse> futureResponse) {
+              PageContext<ListInstancesRequest, ListInstancesResponse, Instance> pageContext =
+                  PageContext.create(callable, LIST_INSTANCES_PAGE_STR_DESC, request, context);
+              return ListInstancesPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
 
   /** Returns the object with the settings used for calls to listInstanceConfigs. */
   public PagedCallSettings<
@@ -180,6 +271,28 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   /** Returns the object with the settings used for calls to getInstance. */
   public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
     return getInstanceSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstance. */
+  public UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings() {
+    return createInstanceSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstance. */
+  public OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+      createInstanceOperationSettings() {
+    return createInstanceOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstance. */
+  public UnaryCallSettings<UpdateInstanceRequest, Operation> updateInstanceSettings() {
+    return updateInstanceSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstance. */
+  public OperationCallSettings<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+      updateInstanceOperationSettings() {
+    return updateInstanceOperationSettings;
   }
 
   /** Returns the object with the settings used for calls to deleteInstance. */
@@ -209,10 +322,10 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
         .getTransportName()
         .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcInstanceAdminStub.create(this);
-    } else {
-      throw new UnsupportedOperationException(
-          "Transport not supported: " + getTransportChannelProvider().getTransportName());
     }
+    throw new UnsupportedOperationException(
+        String.format(
+            "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
   }
 
   /** Returns a builder for the default ExecutorProvider for this service. */
@@ -272,148 +385,23 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   protected InstanceAdminStubSettings(Builder settingsBuilder) throws IOException {
     super(settingsBuilder);
 
-    createInstanceSettings = settingsBuilder.createInstanceSettings().build();
-    createInstanceOperationSettings = settingsBuilder.createInstanceOperationSettings().build();
-    updateInstanceSettings = settingsBuilder.updateInstanceSettings().build();
-    updateInstanceOperationSettings = settingsBuilder.updateInstanceOperationSettings().build();
     listInstanceConfigsSettings = settingsBuilder.listInstanceConfigsSettings().build();
     getInstanceConfigSettings = settingsBuilder.getInstanceConfigSettings().build();
     listInstancesSettings = settingsBuilder.listInstancesSettings().build();
     getInstanceSettings = settingsBuilder.getInstanceSettings().build();
+    createInstanceSettings = settingsBuilder.createInstanceSettings().build();
+    createInstanceOperationSettings = settingsBuilder.createInstanceOperationSettings().build();
+    updateInstanceSettings = settingsBuilder.updateInstanceSettings().build();
+    updateInstanceOperationSettings = settingsBuilder.updateInstanceOperationSettings().build();
     deleteInstanceSettings = settingsBuilder.deleteInstanceSettings().build();
     setIamPolicySettings = settingsBuilder.setIamPolicySettings().build();
     getIamPolicySettings = settingsBuilder.getIamPolicySettings().build();
     testIamPermissionsSettings = settingsBuilder.testIamPermissionsSettings().build();
   }
 
-  private static final PagedListDescriptor<
-          ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
-      LIST_INSTANCE_CONFIGS_PAGE_STR_DESC =
-          new PagedListDescriptor<
-              ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>() {
-            @Override
-            public String emptyToken() {
-              return "";
-            }
-
-            @Override
-            public ListInstanceConfigsRequest injectToken(
-                ListInstanceConfigsRequest payload, String token) {
-              return ListInstanceConfigsRequest.newBuilder(payload).setPageToken(token).build();
-            }
-
-            @Override
-            public ListInstanceConfigsRequest injectPageSize(
-                ListInstanceConfigsRequest payload, int pageSize) {
-              return ListInstanceConfigsRequest.newBuilder(payload).setPageSize(pageSize).build();
-            }
-
-            @Override
-            public Integer extractPageSize(ListInstanceConfigsRequest payload) {
-              return payload.getPageSize();
-            }
-
-            @Override
-            public String extractNextToken(ListInstanceConfigsResponse payload) {
-              return payload.getNextPageToken();
-            }
-
-            @Override
-            public Iterable<InstanceConfig> extractResources(ListInstanceConfigsResponse payload) {
-              return payload.getInstanceConfigsList() != null
-                  ? payload.getInstanceConfigsList()
-                  : ImmutableList.<InstanceConfig>of();
-            }
-          };
-
-  private static final PagedListDescriptor<ListInstancesRequest, ListInstancesResponse, Instance>
-      LIST_INSTANCES_PAGE_STR_DESC =
-          new PagedListDescriptor<ListInstancesRequest, ListInstancesResponse, Instance>() {
-            @Override
-            public String emptyToken() {
-              return "";
-            }
-
-            @Override
-            public ListInstancesRequest injectToken(ListInstancesRequest payload, String token) {
-              return ListInstancesRequest.newBuilder(payload).setPageToken(token).build();
-            }
-
-            @Override
-            public ListInstancesRequest injectPageSize(ListInstancesRequest payload, int pageSize) {
-              return ListInstancesRequest.newBuilder(payload).setPageSize(pageSize).build();
-            }
-
-            @Override
-            public Integer extractPageSize(ListInstancesRequest payload) {
-              return payload.getPageSize();
-            }
-
-            @Override
-            public String extractNextToken(ListInstancesResponse payload) {
-              return payload.getNextPageToken();
-            }
-
-            @Override
-            public Iterable<Instance> extractResources(ListInstancesResponse payload) {
-              return payload.getInstancesList() != null
-                  ? payload.getInstancesList()
-                  : ImmutableList.<Instance>of();
-            }
-          };
-
-  private static final PagedListResponseFactory<
-          ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
-      LIST_INSTANCE_CONFIGS_PAGE_STR_FACT =
-          new PagedListResponseFactory<
-              ListInstanceConfigsRequest,
-              ListInstanceConfigsResponse,
-              ListInstanceConfigsPagedResponse>() {
-            @Override
-            public ApiFuture<ListInstanceConfigsPagedResponse> getFuturePagedResponse(
-                UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse> callable,
-                ListInstanceConfigsRequest request,
-                ApiCallContext context,
-                ApiFuture<ListInstanceConfigsResponse> futureResponse) {
-              PageContext<ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
-                  pageContext =
-                      PageContext.create(
-                          callable, LIST_INSTANCE_CONFIGS_PAGE_STR_DESC, request, context);
-              return ListInstanceConfigsPagedResponse.createAsync(pageContext, futureResponse);
-            }
-          };
-
-  private static final PagedListResponseFactory<
-          ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
-      LIST_INSTANCES_PAGE_STR_FACT =
-          new PagedListResponseFactory<
-              ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>() {
-            @Override
-            public ApiFuture<ListInstancesPagedResponse> getFuturePagedResponse(
-                UnaryCallable<ListInstancesRequest, ListInstancesResponse> callable,
-                ListInstancesRequest request,
-                ApiCallContext context,
-                ApiFuture<ListInstancesResponse> futureResponse) {
-              PageContext<ListInstancesRequest, ListInstancesResponse, Instance> pageContext =
-                  PageContext.create(callable, LIST_INSTANCES_PAGE_STR_DESC, request, context);
-              return ListInstancesPagedResponse.createAsync(pageContext, futureResponse);
-            }
-          };
-
   /** Builder for InstanceAdminStubSettings. */
   public static class Builder extends StubSettings.Builder<InstanceAdminStubSettings, Builder> {
     private final ImmutableList<UnaryCallSettings.Builder<?, ?>> unaryMethodSettingsBuilders;
-
-    private final UnaryCallSettings.Builder<CreateInstanceRequest, Operation>
-        createInstanceSettings;
-    private final OperationCallSettings.Builder<
-            CreateInstanceRequest, Instance, CreateInstanceMetadata>
-        createInstanceOperationSettings;
-    private final UnaryCallSettings.Builder<UpdateInstanceRequest, Operation>
-        updateInstanceSettings;
-    private final OperationCallSettings.Builder<
-            UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-        updateInstanceOperationSettings;
     private final PagedCallSettings.Builder<
             ListInstanceConfigsRequest,
             ListInstanceConfigsResponse,
@@ -425,12 +413,21 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
         listInstancesSettings;
     private final UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings;
+    private final UnaryCallSettings.Builder<CreateInstanceRequest, Operation>
+        createInstanceSettings;
+    private final OperationCallSettings.Builder<
+            CreateInstanceRequest, Instance, CreateInstanceMetadata>
+        createInstanceOperationSettings;
+    private final UnaryCallSettings.Builder<UpdateInstanceRequest, Operation>
+        updateInstanceSettings;
+    private final OperationCallSettings.Builder<
+            UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+        updateInstanceOperationSettings;
     private final UnaryCallSettings.Builder<DeleteInstanceRequest, Empty> deleteInstanceSettings;
     private final UnaryCallSettings.Builder<SetIamPolicyRequest, Policy> setIamPolicySettings;
     private final UnaryCallSettings.Builder<GetIamPolicyRequest, Policy> getIamPolicySettings;
     private final UnaryCallSettings.Builder<TestIamPermissionsRequest, TestIamPermissionsResponse>
         testIamPermissionsSettings;
-
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -438,20 +435,19 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       ImmutableMap.Builder<String, ImmutableSet<StatusCode.Code>> definitions =
           ImmutableMap.builder();
       definitions.put(
-          "retry_policy_1_codes",
+          "retry_policy_0_codes",
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
       definitions.put(
           "no_retry_2_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
-      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       definitions.put(
-          "retry_policy_2_codes",
+          "no_retry_3_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
+      definitions.put(
+          "retry_policy_1_codes",
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
-      definitions.put(
-          "no_retry_1_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
     }
 
@@ -470,7 +466,23 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               .setMaxRpcTimeout(Duration.ofMillis(3600000L))
               .setTotalTimeout(Duration.ofMillis(3600000L))
               .build();
-      definitions.put("retry_policy_1_params", settings);
+      definitions.put("retry_policy_0_params", settings);
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .build();
+      definitions.put("no_retry_2_params", settings);
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofMillis(30000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(30000L))
+              .setTotalTimeout(Duration.ofMillis(30000L))
+              .build();
+      definitions.put("no_retry_3_params", settings);
       settings =
           RetrySettings.newBuilder()
               .setInitialRetryDelay(Duration.ofMillis(1000L))
@@ -481,143 +493,145 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               .setMaxRpcTimeout(Duration.ofMillis(30000L))
               .setTotalTimeout(Duration.ofMillis(30000L))
               .build();
-      definitions.put("retry_policy_2_params", settings);
-      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
-      definitions.put("no_retry_params", settings);
-      settings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
-              .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-              .setTotalTimeout(Duration.ofMillis(3600000L))
-              .build();
-      definitions.put("no_retry_1_params", settings);
-      settings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofMillis(30000L))
-              .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(30000L))
-              .setTotalTimeout(Duration.ofMillis(30000L))
-              .build();
-      definitions.put("no_retry_2_params", settings);
+      definitions.put("retry_policy_1_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
 
     protected Builder() {
-      this((ClientContext) null);
+      this(((ClientContext) null));
     }
 
     protected Builder(ClientContext clientContext) {
       super(clientContext);
 
-      createInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      createInstanceOperationSettings = OperationCallSettings.newBuilder();
-
-      updateInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      updateInstanceOperationSettings = OperationCallSettings.newBuilder();
-
       listInstanceConfigsSettings =
           PagedCallSettings.newBuilder(LIST_INSTANCE_CONFIGS_PAGE_STR_FACT);
-
       getInstanceConfigSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       listInstancesSettings = PagedCallSettings.newBuilder(LIST_INSTANCES_PAGE_STR_FACT);
-
       getInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
+      createInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createInstanceOperationSettings = OperationCallSettings.newBuilder();
+      updateInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateInstanceOperationSettings = OperationCallSettings.newBuilder();
       deleteInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       setIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       getIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       testIamPermissionsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-              createInstanceSettings,
-              updateInstanceSettings,
               listInstanceConfigsSettings,
               getInstanceConfigSettings,
               listInstancesSettings,
               getInstanceSettings,
+              createInstanceSettings,
+              updateInstanceSettings,
               deleteInstanceSettings,
               setIamPolicySettings,
               getIamPolicySettings,
               testIamPermissionsSettings);
-
       initDefaults(this);
     }
 
+    protected Builder(InstanceAdminStubSettings settings) {
+      super(settings);
+
+      listInstanceConfigsSettings = settings.listInstanceConfigsSettings.toBuilder();
+      getInstanceConfigSettings = settings.getInstanceConfigSettings.toBuilder();
+      listInstancesSettings = settings.listInstancesSettings.toBuilder();
+      getInstanceSettings = settings.getInstanceSettings.toBuilder();
+      createInstanceSettings = settings.createInstanceSettings.toBuilder();
+      createInstanceOperationSettings = settings.createInstanceOperationSettings.toBuilder();
+      updateInstanceSettings = settings.updateInstanceSettings.toBuilder();
+      updateInstanceOperationSettings = settings.updateInstanceOperationSettings.toBuilder();
+      deleteInstanceSettings = settings.deleteInstanceSettings.toBuilder();
+      setIamPolicySettings = settings.setIamPolicySettings.toBuilder();
+      getIamPolicySettings = settings.getIamPolicySettings.toBuilder();
+      testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
+
+      unaryMethodSettingsBuilders =
+          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
+              listInstanceConfigsSettings,
+              getInstanceConfigSettings,
+              listInstancesSettings,
+              getInstanceSettings,
+              createInstanceSettings,
+              updateInstanceSettings,
+              deleteInstanceSettings,
+              setIamPolicySettings,
+              getIamPolicySettings,
+              testIamPermissionsSettings);
+    }
+
     private static Builder createDefault() {
-      Builder builder = new Builder((ClientContext) null);
+      Builder builder = new Builder(((ClientContext) null));
+
       builder.setTransportChannelProvider(defaultTransportChannelProvider());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
       builder.setEndpoint(getDefaultEndpoint());
+
       return initDefaults(builder);
     }
 
     private static Builder initDefaults(Builder builder) {
-
-      builder
-          .createInstanceSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .updateInstanceSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
       builder
           .listInstanceConfigsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .getInstanceConfigSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .listInstancesSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .getInstanceSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .createInstanceSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
+
+      builder
+          .updateInstanceSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
 
       builder
           .deleteInstanceSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .setIamPolicySettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
+      builder
+          .getIamPolicySettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
 
       builder
-          .setIamPolicySettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
-
-      builder
-          .getIamPolicySettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_2_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_2_params"));
-
-      builder
           .testIamPermissionsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
       builder
           .createInstanceOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<CreateInstanceRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Instance.class))
@@ -629,18 +643,19 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
+
       builder
           .updateInstanceOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<UpdateInstanceRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Instance.class))
@@ -652,46 +667,16 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
 
       return builder;
     }
 
-    protected Builder(InstanceAdminStubSettings settings) {
-      super(settings);
-
-      createInstanceSettings = settings.createInstanceSettings.toBuilder();
-      createInstanceOperationSettings = settings.createInstanceOperationSettings.toBuilder();
-      updateInstanceSettings = settings.updateInstanceSettings.toBuilder();
-      updateInstanceOperationSettings = settings.updateInstanceOperationSettings.toBuilder();
-      listInstanceConfigsSettings = settings.listInstanceConfigsSettings.toBuilder();
-      getInstanceConfigSettings = settings.getInstanceConfigSettings.toBuilder();
-      listInstancesSettings = settings.listInstancesSettings.toBuilder();
-      getInstanceSettings = settings.getInstanceSettings.toBuilder();
-      deleteInstanceSettings = settings.deleteInstanceSettings.toBuilder();
-      setIamPolicySettings = settings.setIamPolicySettings.toBuilder();
-      getIamPolicySettings = settings.getIamPolicySettings.toBuilder();
-      testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
-
-      unaryMethodSettingsBuilders =
-          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-              createInstanceSettings,
-              updateInstanceSettings,
-              listInstanceConfigsSettings,
-              getInstanceConfigSettings,
-              listInstancesSettings,
-              getInstanceSettings,
-              deleteInstanceSettings,
-              setIamPolicySettings,
-              getIamPolicySettings,
-              testIamPermissionsSettings);
-    }
-
-    // NEXT_MAJOR_VER: remove 'throws Exception'
+    // NEXT_MAJOR_VER: remove 'throws Exception'.
     /**
      * Applies the given settings updater function to all of the unary API methods in this service.
      *
@@ -705,32 +690,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
 
     public ImmutableList<UnaryCallSettings.Builder<?, ?>> unaryMethodSettingsBuilders() {
       return unaryMethodSettingsBuilders;
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
-      return createInstanceSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to createInstance. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
-        createInstanceOperationSettings() {
-      return createInstanceOperationSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
-      return updateInstanceSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to updateInstance. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
-        updateInstanceOperationSettings() {
-      return updateInstanceOperationSettings;
     }
 
     /** Returns the builder for the settings used for calls to listInstanceConfigs. */
@@ -758,6 +717,32 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     /** Returns the builder for the settings used for calls to getInstance. */
     public UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings() {
       return getInstanceSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstance. */
+    public UnaryCallSettings.Builder<CreateInstanceRequest, Operation> createInstanceSettings() {
+      return createInstanceSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstance. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
+        createInstanceOperationSettings() {
+      return createInstanceOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    public UnaryCallSettings.Builder<UpdateInstanceRequest, Operation> updateInstanceSettings() {
+      return updateInstanceSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstance. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
+        updateInstanceOperationSettings() {
+      return updateInstanceOperationSettings;
     }
 
     /** Returns the builder for the settings used for calls to deleteInstance. */

@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
-import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.api.gax.grpc.testing.MockServiceHelper;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
@@ -129,8 +128,7 @@ public class MockDatabaseAdminServiceImplTest {
     mockOperations = new MockOperationsServiceImpl();
     mockDatabaseAdmin = new MockDatabaseAdminServiceImpl(mockOperations);
     serviceHelper =
-        new MockServiceHelper(
-            "in-process-1", Arrays.<MockGrpcService>asList(mockOperations, mockDatabaseAdmin));
+        new MockServiceHelper("in-process-1", Arrays.asList(mockOperations, mockDatabaseAdmin));
     serviceHelper.start();
   }
 

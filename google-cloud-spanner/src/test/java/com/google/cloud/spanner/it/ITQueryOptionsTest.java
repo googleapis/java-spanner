@@ -30,8 +30,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -115,11 +113,9 @@ public class ITQueryOptionsTest {
     assertThat(
             client
                 .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) {
-                        return transaction.executeUpdate(
+                .<Long>run(
+                    transaction ->
+                        transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
                                 .to(1L)
@@ -130,20 +126,16 @@ public class ITQueryOptionsTest {
                                         .setOptimizerVersion("1")
                                         .setOptimizerStatisticsPackage("custom-package")
                                         .build())
-                                .build());
-                      }
-                    }))
+                                .build())))
         .isEqualTo(1L);
 
     // Version 'latest' should also work.
     assertThat(
             client
                 .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) {
-                        return transaction.executeUpdate(
+                .<Long>run(
+                    transaction ->
+                        transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
                                 .to(2L)
@@ -151,9 +143,7 @@ public class ITQueryOptionsTest {
                                 .to("Two")
                                 .withQueryOptions(
                                     QueryOptions.newBuilder().setOptimizerVersion("latest").build())
-                                .build());
-                      }
-                    }))
+                                .build())))
         .isEqualTo(1L);
 
     // Version '100000' is an invalid value and should cause an error.
@@ -161,10 +151,8 @@ public class ITQueryOptionsTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) {
-                  return transaction.executeUpdate(
+              transaction ->
+                  transaction.executeUpdate(
                       Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                           .bind("id")
                           .to(3L)
@@ -172,9 +160,7 @@ public class ITQueryOptionsTest {
                           .to("Three")
                           .withQueryOptions(
                               QueryOptions.newBuilder().setOptimizerVersion("100000").build())
-                          .build());
-                }
-              });
+                          .build()));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);

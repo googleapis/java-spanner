@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiAsyncFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.ListenableFutureToApiFuture;
@@ -25,12 +24,15 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AbstractReadContext.ListenableAsyncResultSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -59,11 +61,11 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
     /** Does this state mean that the result set should permanently stop producing rows. */
     private final boolean shouldStop;
 
-    private State() {
+    State() {
       shouldStop = false;
     }
 
-    private State(boolean shouldStop) {
+    State(boolean shouldStop) {
       this.shouldStop = shouldStop;
     }
   }
@@ -87,8 +89,8 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   private final BlockingDeque<Struct> buffer;
   private Struct currentRow;
-  /** The underlying synchronous {@link ResultSet} that is producing the rows. */
-  private final ResultSet delegateResultSet;
+  /** Supplies the underlying synchronous {@link ResultSet} that will be producing the rows. */
+  private final Supplier<ResultSet> delegateResultSet;
 
   /**
    * Any exception that occurs while executing the query and iterating over the result set will be
@@ -113,36 +115,40 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   private State state = State.INITIALIZED;
 
   /**
-   * {@link #finished} indicates whether all the results from the underlying result set have been
-   * read.
+   * This variable indicates whether all the results from the underlying result set have been read.
    */
   private volatile boolean finished;
 
   private volatile ApiFuture<Void> result;
 
   /**
-   * {@link #cursorReturnedDoneOrException} indicates whether {@link #tryNext()} has returned {@link
-   * CursorState#DONE} or a {@link SpannerException}.
+   * This variable indicates whether {@link #tryNext()} has returned {@link CursorState#DONE} or a
+   * {@link SpannerException}.
    */
   private volatile boolean cursorReturnedDoneOrException;
 
   /**
-   * {@link #pausedLatch} is used to pause the producer when the {@link AsyncResultSet} is paused.
-   * The production of rows that are put into the buffer is only paused once the buffer is full.
+   * This variable is used to pause the producer when the {@link AsyncResultSet} is paused. The
+   * production of rows that are put into the buffer is only paused once the buffer is full.
    */
   private volatile CountDownLatch pausedLatch = new CountDownLatch(1);
   /**
-   * {@link #bufferConsumptionLatch} is used to pause the producer when the buffer is full and the
-   * consumer needs some time to catch up.
+   * This variable is used to pause the producer when the buffer is full and the consumer needs some
+   * time to catch up.
    */
   private volatile CountDownLatch bufferConsumptionLatch = new CountDownLatch(0);
   /**
-   * {@link #consumingLatch} is used to pause the producer when all rows have been put into the
-   * buffer, but the consumer (the callback) has not yet received and processed all rows.
+   * This variable is used to pause the producer when all rows have been put into the buffer, but
+   * the consumer (the callback) has not yet received and processed all rows.
    */
   private volatile CountDownLatch consumingLatch = new CountDownLatch(0);
 
   AsyncResultSetImpl(ExecutorProvider executorProvider, ResultSet delegate, int bufferSize) {
+    this(executorProvider, Suppliers.ofInstance(Preconditions.checkNotNull(delegate)), bufferSize);
+  }
+
+  AsyncResultSetImpl(
+      ExecutorProvider executorProvider, Supplier<ResultSet> delegate, int bufferSize) {
     super(delegate);
     this.executorProvider = Preconditions.checkNotNull(executorProvider);
     this.delegateResultSet = Preconditions.checkNotNull(delegate);
@@ -164,7 +170,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
         return;
       }
       if (state == State.INITIALIZED || state == State.SYNC) {
-        delegateResultSet.close();
+        delegateResultSet.get().close();
       }
       this.closed = true;
     }
@@ -227,7 +233,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
 
   private void closeDelegateResultSet() {
     try {
-      delegateResultSet.close();
+      delegateResultSet.get().close();
     } catch (Throwable t) {
       log.log(Level.FINE, "Ignoring error from closing delegate result set", t);
     }
@@ -246,6 +252,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
             if (cursorReturnedDoneOrException) {
               break;
             }
+            if (state == State.CANCELLED) {
+              // The callback should always get at least one chance to catch the CANCELLED
+              // exception. It is however possible that the callback does not call tryNext(), and
+              // instead directly returns PAUSE or DONE. In those cases, the callback runner should
+              // also stop, even though the callback has not seen the CANCELLED state.
+              cursorReturnedDoneOrException = true;
+            }
           }
           CallbackResponse response;
           try {
@@ -260,7 +273,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
                 // we'll keep the cancelled state.
                 return;
               }
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               cursorReturnedDoneOrException = true;
             }
             return;
@@ -274,7 +287,7 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
               switch (response) {
                 case DONE:
                   state = State.DONE;
-                  closeDelegateResultSet();
+                  cursorReturnedDoneOrException = true;
                   return;
                 case PAUSE:
                   state = State.PAUSED;
@@ -324,10 +337,10 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
       boolean stop = false;
       boolean hasNext = false;
       try {
-        hasNext = delegateResultSet.next();
+        hasNext = delegateResultSet.get().next();
       } catch (Throwable e) {
         synchronized (monitor) {
-          executionException = SpannerExceptionFactory.newSpannerException(e);
+          executionException = SpannerExceptionFactory.asSpannerException(e);
         }
       }
       try {
@@ -356,13 +369,13 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
               }
             }
             if (!stop) {
-              buffer.put(delegateResultSet.getCurrentRowAsStruct());
+              buffer.put(delegateResultSet.get().getCurrentRowAsStruct());
               startCallbackIfNecessary();
-              hasNext = delegateResultSet.next();
+              hasNext = delegateResultSet.get().next();
             }
           } catch (Throwable e) {
             synchronized (monitor) {
-              executionException = SpannerExceptionFactory.newSpannerException(e);
+              executionException = SpannerExceptionFactory.asSpannerException(e);
               stop = true;
             }
           }
@@ -483,12 +496,12 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   }
 
   private static class CreateListCallback<T> implements ReadyCallback {
-    private final SettableApiFuture<ImmutableList<T>> future;
+    private final SettableApiFuture<List<T>> future;
     private final Function<StructReader, T> transformer;
     private final ImmutableList.Builder<T> builder = ImmutableList.builder();
 
     private CreateListCallback(
-        SettableApiFuture<ImmutableList<T>> future, Function<StructReader, T> transformer) {
+        SettableApiFuture<List<T>> future, Function<StructReader, T> transformer) {
       this.future = future;
       this.transformer = transformer;
     }
@@ -516,37 +529,28 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
   }
 
   @Override
-  public <T> ApiFuture<ImmutableList<T>> toListAsync(
+  public <T> ApiFuture<List<T>> toListAsync(
       Function<StructReader, T> transformer, Executor executor) {
     synchronized (monitor) {
       Preconditions.checkState(!closed, "This AsyncResultSet has been closed");
       Preconditions.checkState(
           this.state == State.INITIALIZED, "This AsyncResultSet has already been used.");
-      final SettableApiFuture<ImmutableList<T>> res = SettableApiFuture.<ImmutableList<T>>create();
-      CreateListCallback<T> callback = new CreateListCallback<T>(res, transformer);
+      final SettableApiFuture<List<T>> res = SettableApiFuture.create();
+      CreateListCallback<T> callback = new CreateListCallback<>(res, transformer);
       ApiFuture<Void> finished = setCallback(executor, callback);
-      return ApiFutures.transformAsync(
-          finished,
-          new ApiAsyncFunction<Void, ImmutableList<T>>() {
-            @Override
-            public ApiFuture<ImmutableList<T>> apply(Void input) throws Exception {
-              return res;
-            }
-          },
-          MoreExecutors.directExecutor());
+      return ApiFutures.transformAsync(finished, ignored -> res, MoreExecutors.directExecutor());
     }
   }
 
   @Override
-  public <T> ImmutableList<T> toList(Function<StructReader, T> transformer)
-      throws SpannerException {
-    ApiFuture<ImmutableList<T>> future = toListAsync(transformer, MoreExecutors.directExecutor());
+  public <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException {
+    ApiFuture<List<T>> future = toListAsync(transformer, MoreExecutors.directExecutor());
     try {
       return future.get();
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (Throwable e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
+      throw SpannerExceptionFactory.asSpannerException(e);
     }
   }
 
@@ -558,14 +562,14 @@ class AsyncResultSetImpl extends ForwardingStructReader implements ListenableAsy
           "Cannot call next() on a result set with a callback.");
       this.state = State.SYNC;
     }
-    boolean res = delegateResultSet.next();
-    currentRow = delegateResultSet.getCurrentRowAsStruct();
+    boolean res = delegateResultSet.get().next();
+    currentRow = res ? delegateResultSet.get().getCurrentRowAsStruct() : null;
     return res;
   }
 
   @Override
   public ResultSetStats getStats() {
-    return delegateResultSet.getStats();
+    return delegateResultSet.get().getStats();
   }
 
   @Override

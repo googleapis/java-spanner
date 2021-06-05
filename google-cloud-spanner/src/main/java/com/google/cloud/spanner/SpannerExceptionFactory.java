@@ -22,10 +22,13 @@ import com.google.api.gax.rpc.WatchdogTimeoutException;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
+import com.google.rpc.ErrorInfo;
 import com.google.rpc.ResourceInfo;
+import com.google.rpc.RetryInfo;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
@@ -46,6 +49,8 @@ public final class SpannerExceptionFactory {
       "type.googleapis.com/google.spanner.admin.instance.v1.Instance";
   private static final Metadata.Key<ResourceInfo> KEY_RESOURCE_INFO =
       ProtoUtils.keyForProto(ResourceInfo.getDefaultInstance());
+  private static final Metadata.Key<ErrorInfo> KEY_ERROR_INFO =
+      ProtoUtils.keyForProto(ErrorInfo.getDefaultInstance());
 
   public static SpannerException newSpannerException(ErrorCode code, @Nullable String message) {
     return newSpannerException(code, message, null);
@@ -81,6 +86,18 @@ public final class SpannerExceptionFactory {
   public static SpannerException propagateTimeout(TimeoutException e) {
     return SpannerExceptionFactory.newSpannerException(
         ErrorCode.DEADLINE_EXCEEDED, "Operation did not complete in the given time", e);
+  }
+
+  /**
+   * Converts the given {@link Throwable} to a {@link SpannerException}. If <code>t</code> is
+   * already a (subclass of a) {@link SpannerException}, <code>t</code> is returned unaltered.
+   * Otherwise, a new {@link SpannerException} is created with <code>t</code> as its cause.
+   */
+  public static SpannerException asSpannerException(Throwable t) {
+    if (t instanceof SpannerException) {
+      return (SpannerException) t;
+    }
+    return newSpannerException(t);
   }
 
   /**
@@ -124,6 +141,20 @@ public final class SpannerExceptionFactory {
         "The transaction was aborted and could not be retried due to a database error during the retry",
         cause,
         databaseError);
+  }
+
+  /**
+   * Constructs a new {@link AbortedDueToConcurrentModificationException} that can be re-thrown for
+   * a transaction that had already been aborted, but that the client application tried to use for
+   * additional statements.
+   */
+  public static AbortedDueToConcurrentModificationException
+      newAbortedDueToConcurrentModificationException(
+          AbortedDueToConcurrentModificationException cause) {
+    return new AbortedDueToConcurrentModificationException(
+        DoNotConstructDirectly.ALLOWED,
+        "This transaction has already been aborted and could not be retried due to a concurrent modification. Rollback this transaction to start a new one.",
+        cause);
   }
 
   /**
@@ -187,6 +218,38 @@ public final class SpannerExceptionFactory {
     return null;
   }
 
+  private static ErrorInfo extractErrorInfo(Throwable cause) {
+    if (cause != null) {
+      Metadata trailers = Status.trailersFromThrowable(cause);
+      if (trailers != null) {
+        return trailers.get(KEY_ERROR_INFO);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Creates a {@link StatusRuntimeException} that contains a {@link RetryInfo} with the specified
+   * retry delay.
+   */
+  static StatusRuntimeException createAbortedExceptionWithRetryDelay(
+      String message, Throwable cause, long retryDelaySeconds, int retryDelayNanos) {
+    Metadata.Key<RetryInfo> key = ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos(retryDelayNanos)
+                    .setSeconds(retryDelaySeconds))
+            .build();
+    trailers.put(key, retryInfo);
+    return io.grpc.Status.ABORTED
+        .withDescription(message)
+        .withCause(cause)
+        .asRuntimeException(trailers);
+  }
+
   static SpannerException newSpannerExceptionPreformatted(
       ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
     // This is the one place in the codebase that is allowed to call constructors directly.
@@ -194,15 +257,26 @@ public final class SpannerExceptionFactory {
     switch (code) {
       case ABORTED:
         return new AbortedException(token, message, cause);
+      case RESOURCE_EXHAUSTED:
+        ErrorInfo info = extractErrorInfo(cause);
+        if (info != null
+            && info.getMetadataMap()
+                .containsKey(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY)
+            && AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_VALUE.equals(
+                info.getMetadataMap()
+                    .get(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY))) {
+          return new AdminRequestsPerMinuteExceededException(token, message, cause);
+        }
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
         if (resourceInfo != null) {
-          if (resourceInfo.getResourceType().equals(SESSION_RESOURCE_TYPE)) {
-            return new SessionNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(DATABASE_RESOURCE_TYPE)) {
-            return new DatabaseNotFoundException(token, message, resourceInfo, cause);
-          } else if (resourceInfo.getResourceType().equals(INSTANCE_RESOURCE_TYPE)) {
-            return new InstanceNotFoundException(token, message, resourceInfo, cause);
+          switch (resourceInfo.getResourceType()) {
+            case SESSION_RESOURCE_TYPE:
+              return new SessionNotFoundException(token, message, resourceInfo, cause);
+            case DATABASE_RESOURCE_TYPE:
+              return new DatabaseNotFoundException(token, message, resourceInfo, cause);
+            case INSTANCE_RESOURCE_TYPE:
+              return new InstanceNotFoundException(token, message, resourceInfo, cause);
           }
         }
         // Fall through to the default.

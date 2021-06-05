@@ -1,11 +1,11 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner.admin.database.v1.stub;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
@@ -87,7 +88,7 @@ import java.util.List;
 import javax.annotation.Generated;
 import org.threeten.bp.Duration;
 
-// AUTO-GENERATED DOCUMENTATION AND CLASS
+// AUTO-GENERATED DOCUMENTATION AND CLASS.
 /**
  * Settings class to configure an instance of {@link DatabaseAdminStub}.
  *
@@ -104,22 +105,22 @@ import org.threeten.bp.Duration;
  *
  * <p>For example, to set the total timeout of getDatabase to 30 seconds:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  * DatabaseAdminStubSettings.Builder databaseAdminSettingsBuilder =
  *     DatabaseAdminStubSettings.newBuilder();
  * databaseAdminSettingsBuilder
  *     .getDatabaseSettings()
  *     .setRetrySettings(
- *         databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
+ *         databaseAdminSettingsBuilder
+ *             .getDatabaseSettings()
+ *             .getRetrySettings()
+ *             .toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * DatabaseAdminStubSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();
- * </code>
- * </pre>
+ * }</pre>
  */
-@Generated("by gapic-generator")
-@BetaApi
+@Generated("by gapic-generator-java")
 public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSettings> {
   /** The default scopes of the service. */
   private static final ImmutableList<String> DEFAULT_SERVICE_SCOPES =
@@ -128,22 +129,16 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           .add("https://www.googleapis.com/auth/spanner.admin")
           .build();
 
-  private final UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings;
-  private final OperationCallSettings<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
-      createDatabaseOperationSettings;
-  private final UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings;
-  private final OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
-      updateDatabaseDdlOperationSettings;
-  private final UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings;
-  private final OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationSettings;
-  private final UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings;
-  private final OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationSettings;
   private final PagedCallSettings<
           ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
       listDatabasesSettings;
+  private final UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings;
+  private final OperationCallSettings<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
+      createDatabaseOperationSettings;
   private final UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings;
+  private final UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings;
+  private final OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
+      updateDatabaseDdlOperationSettings;
   private final UnaryCallSettings<DropDatabaseRequest, Empty> dropDatabaseSettings;
   private final UnaryCallSettings<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
       getDatabaseDdlSettings;
@@ -151,11 +146,17 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   private final UnaryCallSettings<GetIamPolicyRequest, Policy> getIamPolicySettings;
   private final UnaryCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsSettings;
+  private final UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings;
+  private final OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationSettings;
   private final UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings;
   private final UnaryCallSettings<UpdateBackupRequest, Backup> updateBackupSettings;
   private final UnaryCallSettings<DeleteBackupRequest, Empty> deleteBackupSettings;
   private final PagedCallSettings<ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
       listBackupsSettings;
+  private final UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings;
+  private final OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationSettings;
   private final PagedCallSettings<
           ListDatabaseOperationsRequest,
           ListDatabaseOperationsResponse,
@@ -166,223 +167,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           ListBackupOperationsResponse,
           ListBackupOperationsPagedResponse>
       listBackupOperationsSettings;
-
-  /** Returns the object with the settings used for calls to createDatabase. */
-  public UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings() {
-    return createDatabaseSettings;
-  }
-
-  /** Returns the object with the settings used for calls to createDatabase. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
-      createDatabaseOperationSettings() {
-    return createDatabaseOperationSettings;
-  }
-
-  /** Returns the object with the settings used for calls to updateDatabaseDdl. */
-  public UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings() {
-    return updateDatabaseDdlSettings;
-  }
-
-  /** Returns the object with the settings used for calls to updateDatabaseDdl. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
-      updateDatabaseDdlOperationSettings() {
-    return updateDatabaseDdlOperationSettings;
-  }
-
-  /** Returns the object with the settings used for calls to createBackup. */
-  public UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings() {
-    return createBackupSettings;
-  }
-
-  /** Returns the object with the settings used for calls to createBackup. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
-      createBackupOperationSettings() {
-    return createBackupOperationSettings;
-  }
-
-  /** Returns the object with the settings used for calls to restoreDatabase. */
-  public UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
-    return restoreDatabaseSettings;
-  }
-
-  /** Returns the object with the settings used for calls to restoreDatabase. */
-  @BetaApi("The surface for use by generated code is not stable yet and may change in the future.")
-  public OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-      restoreDatabaseOperationSettings() {
-    return restoreDatabaseOperationSettings;
-  }
-
-  /** Returns the object with the settings used for calls to listDatabases. */
-  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-      listDatabasesSettings() {
-    return listDatabasesSettings;
-  }
-
-  /** Returns the object with the settings used for calls to getDatabase. */
-  public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
-    return getDatabaseSettings;
-  }
-
-  /** Returns the object with the settings used for calls to dropDatabase. */
-  public UnaryCallSettings<DropDatabaseRequest, Empty> dropDatabaseSettings() {
-    return dropDatabaseSettings;
-  }
-
-  /** Returns the object with the settings used for calls to getDatabaseDdl. */
-  public UnaryCallSettings<GetDatabaseDdlRequest, GetDatabaseDdlResponse> getDatabaseDdlSettings() {
-    return getDatabaseDdlSettings;
-  }
-
-  /** Returns the object with the settings used for calls to setIamPolicy. */
-  public UnaryCallSettings<SetIamPolicyRequest, Policy> setIamPolicySettings() {
-    return setIamPolicySettings;
-  }
-
-  /** Returns the object with the settings used for calls to getIamPolicy. */
-  public UnaryCallSettings<GetIamPolicyRequest, Policy> getIamPolicySettings() {
-    return getIamPolicySettings;
-  }
-
-  /** Returns the object with the settings used for calls to testIamPermissions. */
-  public UnaryCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
-      testIamPermissionsSettings() {
-    return testIamPermissionsSettings;
-  }
-
-  /** Returns the object with the settings used for calls to getBackup. */
-  public UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings() {
-    return getBackupSettings;
-  }
-
-  /** Returns the object with the settings used for calls to updateBackup. */
-  public UnaryCallSettings<UpdateBackupRequest, Backup> updateBackupSettings() {
-    return updateBackupSettings;
-  }
-
-  /** Returns the object with the settings used for calls to deleteBackup. */
-  public UnaryCallSettings<DeleteBackupRequest, Empty> deleteBackupSettings() {
-    return deleteBackupSettings;
-  }
-
-  /** Returns the object with the settings used for calls to listBackups. */
-  public PagedCallSettings<ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
-      listBackupsSettings() {
-    return listBackupsSettings;
-  }
-
-  /** Returns the object with the settings used for calls to listDatabaseOperations. */
-  public PagedCallSettings<
-          ListDatabaseOperationsRequest,
-          ListDatabaseOperationsResponse,
-          ListDatabaseOperationsPagedResponse>
-      listDatabaseOperationsSettings() {
-    return listDatabaseOperationsSettings;
-  }
-
-  /** Returns the object with the settings used for calls to listBackupOperations. */
-  public PagedCallSettings<
-          ListBackupOperationsRequest,
-          ListBackupOperationsResponse,
-          ListBackupOperationsPagedResponse>
-      listBackupOperationsSettings() {
-    return listBackupOperationsSettings;
-  }
-
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
-  public DatabaseAdminStub createStub() throws IOException {
-    if (getTransportChannelProvider()
-        .getTransportName()
-        .equals(GrpcTransportChannel.getGrpcTransportName())) {
-      return GrpcDatabaseAdminStub.create(this);
-    } else {
-      throw new UnsupportedOperationException(
-          "Transport not supported: " + getTransportChannelProvider().getTransportName());
-    }
-  }
-
-  /** Returns a builder for the default ExecutorProvider for this service. */
-  public static InstantiatingExecutorProvider.Builder defaultExecutorProviderBuilder() {
-    return InstantiatingExecutorProvider.newBuilder();
-  }
-
-  /** Returns the default service endpoint. */
-  public static String getDefaultEndpoint() {
-    return "spanner.googleapis.com:443";
-  }
-
-  /** Returns the default service scopes. */
-  public static List<String> getDefaultServiceScopes() {
-    return DEFAULT_SERVICE_SCOPES;
-  }
-
-  /** Returns a builder for the default credentials for this service. */
-  public static GoogleCredentialsProvider.Builder defaultCredentialsProviderBuilder() {
-    return GoogleCredentialsProvider.newBuilder().setScopesToApply(DEFAULT_SERVICE_SCOPES);
-  }
-
-  /** Returns a builder for the default ChannelProvider for this service. */
-  public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
-    return InstantiatingGrpcChannelProvider.newBuilder()
-        .setMaxInboundMessageSize(Integer.MAX_VALUE);
-  }
-
-  public static TransportChannelProvider defaultTransportChannelProvider() {
-    return defaultGrpcTransportProviderBuilder().build();
-  }
-
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
-  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
-    return ApiClientHeaderProvider.newBuilder()
-        .setGeneratedLibToken(
-            "gapic", GaxProperties.getLibraryVersion(DatabaseAdminStubSettings.class))
-        .setTransportToken(
-            GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
-  }
-
-  /** Returns a new builder for this class. */
-  public static Builder newBuilder() {
-    return Builder.createDefault();
-  }
-
-  /** Returns a new builder for this class. */
-  public static Builder newBuilder(ClientContext clientContext) {
-    return new Builder(clientContext);
-  }
-
-  /** Returns a builder containing all the values of this settings class. */
-  public Builder toBuilder() {
-    return new Builder(this);
-  }
-
-  protected DatabaseAdminStubSettings(Builder settingsBuilder) throws IOException {
-    super(settingsBuilder);
-
-    createDatabaseSettings = settingsBuilder.createDatabaseSettings().build();
-    createDatabaseOperationSettings = settingsBuilder.createDatabaseOperationSettings().build();
-    updateDatabaseDdlSettings = settingsBuilder.updateDatabaseDdlSettings().build();
-    updateDatabaseDdlOperationSettings =
-        settingsBuilder.updateDatabaseDdlOperationSettings().build();
-    createBackupSettings = settingsBuilder.createBackupSettings().build();
-    createBackupOperationSettings = settingsBuilder.createBackupOperationSettings().build();
-    restoreDatabaseSettings = settingsBuilder.restoreDatabaseSettings().build();
-    restoreDatabaseOperationSettings = settingsBuilder.restoreDatabaseOperationSettings().build();
-    listDatabasesSettings = settingsBuilder.listDatabasesSettings().build();
-    getDatabaseSettings = settingsBuilder.getDatabaseSettings().build();
-    dropDatabaseSettings = settingsBuilder.dropDatabaseSettings().build();
-    getDatabaseDdlSettings = settingsBuilder.getDatabaseDdlSettings().build();
-    setIamPolicySettings = settingsBuilder.setIamPolicySettings().build();
-    getIamPolicySettings = settingsBuilder.getIamPolicySettings().build();
-    testIamPermissionsSettings = settingsBuilder.testIamPermissionsSettings().build();
-    getBackupSettings = settingsBuilder.getBackupSettings().build();
-    updateBackupSettings = settingsBuilder.updateBackupSettings().build();
-    deleteBackupSettings = settingsBuilder.deleteBackupSettings().build();
-    listBackupsSettings = settingsBuilder.listBackupsSettings().build();
-    listDatabaseOperationsSettings = settingsBuilder.listDatabaseOperationsSettings().build();
-    listBackupOperationsSettings = settingsBuilder.listBackupOperationsSettings().build();
-  }
 
   private static final PagedListDescriptor<ListDatabasesRequest, ListDatabasesResponse, Database>
       LIST_DATABASES_PAGE_STR_DESC =
@@ -414,9 +198,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
             @Override
             public Iterable<Database> extractResources(ListDatabasesResponse payload) {
-              return payload.getDatabasesList() != null
-                  ? payload.getDatabasesList()
-                  : ImmutableList.<Database>of();
+              return payload.getDatabasesList() == null
+                  ? ImmutableList.<Database>of()
+                  : payload.getDatabasesList();
             }
           };
 
@@ -450,9 +234,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
             @Override
             public Iterable<Backup> extractResources(ListBackupsResponse payload) {
-              return payload.getBackupsList() != null
-                  ? payload.getBackupsList()
-                  : ImmutableList.<Backup>of();
+              return payload.getBackupsList() == null
+                  ? ImmutableList.<Backup>of()
+                  : payload.getBackupsList();
             }
           };
 
@@ -492,9 +276,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
             @Override
             public Iterable<Operation> extractResources(ListDatabaseOperationsResponse payload) {
-              return payload.getOperationsList() != null
-                  ? payload.getOperationsList()
-                  : ImmutableList.<Operation>of();
+              return payload.getOperationsList() == null
+                  ? ImmutableList.<Operation>of()
+                  : payload.getOperationsList();
             }
           };
 
@@ -532,9 +316,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
             @Override
             public Iterable<Operation> extractResources(ListBackupOperationsResponse payload) {
-              return payload.getOperationsList() != null
-                  ? payload.getOperationsList()
-                  : ImmutableList.<Operation>of();
+              return payload.getOperationsList() == null
+                  ? ImmutableList.<Operation>of()
+                  : payload.getOperationsList();
             }
           };
 
@@ -619,32 +403,236 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             }
           };
 
+  /** Returns the object with the settings used for calls to listDatabases. */
+  public PagedCallSettings<ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+      listDatabasesSettings() {
+    return listDatabasesSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createDatabase. */
+  public UnaryCallSettings<CreateDatabaseRequest, Operation> createDatabaseSettings() {
+    return createDatabaseSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createDatabase. */
+  public OperationCallSettings<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
+      createDatabaseOperationSettings() {
+    return createDatabaseOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to getDatabase. */
+  public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
+    return getDatabaseSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabaseDdl. */
+  public UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings() {
+    return updateDatabaseDdlSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabaseDdl. */
+  public OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
+      updateDatabaseDdlOperationSettings() {
+    return updateDatabaseDdlOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to dropDatabase. */
+  public UnaryCallSettings<DropDatabaseRequest, Empty> dropDatabaseSettings() {
+    return dropDatabaseSettings;
+  }
+
+  /** Returns the object with the settings used for calls to getDatabaseDdl. */
+  public UnaryCallSettings<GetDatabaseDdlRequest, GetDatabaseDdlResponse> getDatabaseDdlSettings() {
+    return getDatabaseDdlSettings;
+  }
+
+  /** Returns the object with the settings used for calls to setIamPolicy. */
+  public UnaryCallSettings<SetIamPolicyRequest, Policy> setIamPolicySettings() {
+    return setIamPolicySettings;
+  }
+
+  /** Returns the object with the settings used for calls to getIamPolicy. */
+  public UnaryCallSettings<GetIamPolicyRequest, Policy> getIamPolicySettings() {
+    return getIamPolicySettings;
+  }
+
+  /** Returns the object with the settings used for calls to testIamPermissions. */
+  public UnaryCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
+      testIamPermissionsSettings() {
+    return testIamPermissionsSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createBackup. */
+  public UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings() {
+    return createBackupSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createBackup. */
+  public OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
+      createBackupOperationSettings() {
+    return createBackupOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to getBackup. */
+  public UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings() {
+    return getBackupSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateBackup. */
+  public UnaryCallSettings<UpdateBackupRequest, Backup> updateBackupSettings() {
+    return updateBackupSettings;
+  }
+
+  /** Returns the object with the settings used for calls to deleteBackup. */
+  public UnaryCallSettings<DeleteBackupRequest, Empty> deleteBackupSettings() {
+    return deleteBackupSettings;
+  }
+
+  /** Returns the object with the settings used for calls to listBackups. */
+  public PagedCallSettings<ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
+      listBackupsSettings() {
+    return listBackupsSettings;
+  }
+
+  /** Returns the object with the settings used for calls to restoreDatabase. */
+  public UnaryCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
+    return restoreDatabaseSettings;
+  }
+
+  /** Returns the object with the settings used for calls to restoreDatabase. */
+  public OperationCallSettings<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+      restoreDatabaseOperationSettings() {
+    return restoreDatabaseOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to listDatabaseOperations. */
+  public PagedCallSettings<
+          ListDatabaseOperationsRequest,
+          ListDatabaseOperationsResponse,
+          ListDatabaseOperationsPagedResponse>
+      listDatabaseOperationsSettings() {
+    return listDatabaseOperationsSettings;
+  }
+
+  /** Returns the object with the settings used for calls to listBackupOperations. */
+  public PagedCallSettings<
+          ListBackupOperationsRequest,
+          ListBackupOperationsResponse,
+          ListBackupOperationsPagedResponse>
+      listBackupOperationsSettings() {
+    return listBackupOperationsSettings;
+  }
+
+  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
+  public DatabaseAdminStub createStub() throws IOException {
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(GrpcTransportChannel.getGrpcTransportName())) {
+      return GrpcDatabaseAdminStub.create(this);
+    }
+    throw new UnsupportedOperationException(
+        String.format(
+            "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
+  }
+
+  /** Returns a builder for the default ExecutorProvider for this service. */
+  public static InstantiatingExecutorProvider.Builder defaultExecutorProviderBuilder() {
+    return InstantiatingExecutorProvider.newBuilder();
+  }
+
+  /** Returns the default service endpoint. */
+  public static String getDefaultEndpoint() {
+    return "spanner.googleapis.com:443";
+  }
+
+  /** Returns the default service scopes. */
+  public static List<String> getDefaultServiceScopes() {
+    return DEFAULT_SERVICE_SCOPES;
+  }
+
+  /** Returns a builder for the default credentials for this service. */
+  public static GoogleCredentialsProvider.Builder defaultCredentialsProviderBuilder() {
+    return GoogleCredentialsProvider.newBuilder().setScopesToApply(DEFAULT_SERVICE_SCOPES);
+  }
+
+  /** Returns a builder for the default ChannelProvider for this service. */
+  public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
+    return InstantiatingGrpcChannelProvider.newBuilder()
+        .setMaxInboundMessageSize(Integer.MAX_VALUE);
+  }
+
+  public static TransportChannelProvider defaultTransportChannelProvider() {
+    return defaultGrpcTransportProviderBuilder().build();
+  }
+
+  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
+  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+    return ApiClientHeaderProvider.newBuilder()
+        .setGeneratedLibToken(
+            "gapic", GaxProperties.getLibraryVersion(DatabaseAdminStubSettings.class))
+        .setTransportToken(
+            GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
+  }
+
+  /** Returns a new builder for this class. */
+  public static Builder newBuilder() {
+    return Builder.createDefault();
+  }
+
+  /** Returns a new builder for this class. */
+  public static Builder newBuilder(ClientContext clientContext) {
+    return new Builder(clientContext);
+  }
+
+  /** Returns a builder containing all the values of this settings class. */
+  public Builder toBuilder() {
+    return new Builder(this);
+  }
+
+  protected DatabaseAdminStubSettings(Builder settingsBuilder) throws IOException {
+    super(settingsBuilder);
+
+    listDatabasesSettings = settingsBuilder.listDatabasesSettings().build();
+    createDatabaseSettings = settingsBuilder.createDatabaseSettings().build();
+    createDatabaseOperationSettings = settingsBuilder.createDatabaseOperationSettings().build();
+    getDatabaseSettings = settingsBuilder.getDatabaseSettings().build();
+    updateDatabaseDdlSettings = settingsBuilder.updateDatabaseDdlSettings().build();
+    updateDatabaseDdlOperationSettings =
+        settingsBuilder.updateDatabaseDdlOperationSettings().build();
+    dropDatabaseSettings = settingsBuilder.dropDatabaseSettings().build();
+    getDatabaseDdlSettings = settingsBuilder.getDatabaseDdlSettings().build();
+    setIamPolicySettings = settingsBuilder.setIamPolicySettings().build();
+    getIamPolicySettings = settingsBuilder.getIamPolicySettings().build();
+    testIamPermissionsSettings = settingsBuilder.testIamPermissionsSettings().build();
+    createBackupSettings = settingsBuilder.createBackupSettings().build();
+    createBackupOperationSettings = settingsBuilder.createBackupOperationSettings().build();
+    getBackupSettings = settingsBuilder.getBackupSettings().build();
+    updateBackupSettings = settingsBuilder.updateBackupSettings().build();
+    deleteBackupSettings = settingsBuilder.deleteBackupSettings().build();
+    listBackupsSettings = settingsBuilder.listBackupsSettings().build();
+    restoreDatabaseSettings = settingsBuilder.restoreDatabaseSettings().build();
+    restoreDatabaseOperationSettings = settingsBuilder.restoreDatabaseOperationSettings().build();
+    listDatabaseOperationsSettings = settingsBuilder.listDatabaseOperationsSettings().build();
+    listBackupOperationsSettings = settingsBuilder.listBackupOperationsSettings().build();
+  }
+
   /** Builder for DatabaseAdminStubSettings. */
   public static class Builder extends StubSettings.Builder<DatabaseAdminStubSettings, Builder> {
     private final ImmutableList<UnaryCallSettings.Builder<?, ?>> unaryMethodSettingsBuilders;
-
+    private final PagedCallSettings.Builder<
+            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+        listDatabasesSettings;
     private final UnaryCallSettings.Builder<CreateDatabaseRequest, Operation>
         createDatabaseSettings;
     private final OperationCallSettings.Builder<
             CreateDatabaseRequest, Database, CreateDatabaseMetadata>
         createDatabaseOperationSettings;
+    private final UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings;
     private final UnaryCallSettings.Builder<UpdateDatabaseDdlRequest, Operation>
         updateDatabaseDdlSettings;
     private final OperationCallSettings.Builder<
             UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
         updateDatabaseDdlOperationSettings;
-    private final UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings;
-    private final OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
-        createBackupOperationSettings;
-    private final UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation>
-        restoreDatabaseSettings;
-    private final OperationCallSettings.Builder<
-            RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-        restoreDatabaseOperationSettings;
-    private final PagedCallSettings.Builder<
-            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-        listDatabasesSettings;
-    private final UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings;
     private final UnaryCallSettings.Builder<DropDatabaseRequest, Empty> dropDatabaseSettings;
     private final UnaryCallSettings.Builder<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
         getDatabaseDdlSettings;
@@ -652,12 +640,20 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     private final UnaryCallSettings.Builder<GetIamPolicyRequest, Policy> getIamPolicySettings;
     private final UnaryCallSettings.Builder<TestIamPermissionsRequest, TestIamPermissionsResponse>
         testIamPermissionsSettings;
+    private final UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings;
+    private final OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
+        createBackupOperationSettings;
     private final UnaryCallSettings.Builder<GetBackupRequest, Backup> getBackupSettings;
     private final UnaryCallSettings.Builder<UpdateBackupRequest, Backup> updateBackupSettings;
     private final UnaryCallSettings.Builder<DeleteBackupRequest, Empty> deleteBackupSettings;
     private final PagedCallSettings.Builder<
             ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
         listBackupsSettings;
+    private final UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation>
+        restoreDatabaseSettings;
+    private final OperationCallSettings.Builder<
+            RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+        restoreDatabaseOperationSettings;
     private final PagedCallSettings.Builder<
             ListDatabaseOperationsRequest,
             ListDatabaseOperationsResponse,
@@ -668,7 +664,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupOperationsResponse,
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings;
-
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -676,20 +671,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       ImmutableMap.Builder<String, ImmutableSet<StatusCode.Code>> definitions =
           ImmutableMap.builder();
       definitions.put(
-          "retry_policy_1_codes",
+          "retry_policy_0_codes",
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
       definitions.put(
           "no_retry_2_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
-      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       definitions.put(
-          "retry_policy_2_codes",
+          "no_retry_3_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
+      definitions.put(
+          "retry_policy_1_codes",
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
-      definitions.put(
-          "no_retry_1_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
     }
 
@@ -708,7 +702,23 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               .setMaxRpcTimeout(Duration.ofMillis(3600000L))
               .setTotalTimeout(Duration.ofMillis(3600000L))
               .build();
-      definitions.put("retry_policy_1_params", settings);
+      definitions.put("retry_policy_0_params", settings);
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .build();
+      definitions.put("no_retry_2_params", settings);
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofMillis(30000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(30000L))
+              .setTotalTimeout(Duration.ofMillis(30000L))
+              .build();
+      definitions.put("no_retry_3_params", settings);
       settings =
           RetrySettings.newBuilder()
               .setInitialRetryDelay(Duration.ofMillis(1000L))
@@ -719,204 +729,213 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               .setMaxRpcTimeout(Duration.ofMillis(30000L))
               .setTotalTimeout(Duration.ofMillis(30000L))
               .build();
-      definitions.put("retry_policy_2_params", settings);
-      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
-      definitions.put("no_retry_params", settings);
-      settings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
-              .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-              .setTotalTimeout(Duration.ofMillis(3600000L))
-              .build();
-      definitions.put("no_retry_1_params", settings);
-      settings =
-          RetrySettings.newBuilder()
-              .setInitialRpcTimeout(Duration.ofMillis(30000L))
-              .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.ofMillis(30000L))
-              .setTotalTimeout(Duration.ofMillis(30000L))
-              .build();
-      definitions.put("no_retry_2_params", settings);
+      definitions.put("retry_policy_1_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
 
     protected Builder() {
-      this((ClientContext) null);
+      this(((ClientContext) null));
     }
 
     protected Builder(ClientContext clientContext) {
       super(clientContext);
 
-      createDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      createDatabaseOperationSettings = OperationCallSettings.newBuilder();
-
-      updateDatabaseDdlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      updateDatabaseDdlOperationSettings = OperationCallSettings.newBuilder();
-
-      createBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      createBackupOperationSettings = OperationCallSettings.newBuilder();
-
-      restoreDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
-      restoreDatabaseOperationSettings = OperationCallSettings.newBuilder();
-
       listDatabasesSettings = PagedCallSettings.newBuilder(LIST_DATABASES_PAGE_STR_FACT);
-
+      createDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createDatabaseOperationSettings = OperationCallSettings.newBuilder();
       getDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
+      updateDatabaseDdlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateDatabaseDdlOperationSettings = OperationCallSettings.newBuilder();
       dropDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       getDatabaseDdlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       setIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       getIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       testIamPermissionsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
+      createBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createBackupOperationSettings = OperationCallSettings.newBuilder();
       getBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       updateBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       deleteBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
-
       listBackupsSettings = PagedCallSettings.newBuilder(LIST_BACKUPS_PAGE_STR_FACT);
-
+      restoreDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      restoreDatabaseOperationSettings = OperationCallSettings.newBuilder();
       listDatabaseOperationsSettings =
           PagedCallSettings.newBuilder(LIST_DATABASE_OPERATIONS_PAGE_STR_FACT);
-
       listBackupOperationsSettings =
           PagedCallSettings.newBuilder(LIST_BACKUP_OPERATIONS_PAGE_STR_FACT);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-              createDatabaseSettings,
-              updateDatabaseDdlSettings,
-              createBackupSettings,
-              restoreDatabaseSettings,
               listDatabasesSettings,
+              createDatabaseSettings,
               getDatabaseSettings,
+              updateDatabaseDdlSettings,
               dropDatabaseSettings,
               getDatabaseDdlSettings,
               setIamPolicySettings,
               getIamPolicySettings,
               testIamPermissionsSettings,
+              createBackupSettings,
               getBackupSettings,
               updateBackupSettings,
               deleteBackupSettings,
               listBackupsSettings,
+              restoreDatabaseSettings,
               listDatabaseOperationsSettings,
               listBackupOperationsSettings);
-
       initDefaults(this);
     }
 
+    protected Builder(DatabaseAdminStubSettings settings) {
+      super(settings);
+
+      listDatabasesSettings = settings.listDatabasesSettings.toBuilder();
+      createDatabaseSettings = settings.createDatabaseSettings.toBuilder();
+      createDatabaseOperationSettings = settings.createDatabaseOperationSettings.toBuilder();
+      getDatabaseSettings = settings.getDatabaseSettings.toBuilder();
+      updateDatabaseDdlSettings = settings.updateDatabaseDdlSettings.toBuilder();
+      updateDatabaseDdlOperationSettings = settings.updateDatabaseDdlOperationSettings.toBuilder();
+      dropDatabaseSettings = settings.dropDatabaseSettings.toBuilder();
+      getDatabaseDdlSettings = settings.getDatabaseDdlSettings.toBuilder();
+      setIamPolicySettings = settings.setIamPolicySettings.toBuilder();
+      getIamPolicySettings = settings.getIamPolicySettings.toBuilder();
+      testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
+      createBackupSettings = settings.createBackupSettings.toBuilder();
+      createBackupOperationSettings = settings.createBackupOperationSettings.toBuilder();
+      getBackupSettings = settings.getBackupSettings.toBuilder();
+      updateBackupSettings = settings.updateBackupSettings.toBuilder();
+      deleteBackupSettings = settings.deleteBackupSettings.toBuilder();
+      listBackupsSettings = settings.listBackupsSettings.toBuilder();
+      restoreDatabaseSettings = settings.restoreDatabaseSettings.toBuilder();
+      restoreDatabaseOperationSettings = settings.restoreDatabaseOperationSettings.toBuilder();
+      listDatabaseOperationsSettings = settings.listDatabaseOperationsSettings.toBuilder();
+      listBackupOperationsSettings = settings.listBackupOperationsSettings.toBuilder();
+
+      unaryMethodSettingsBuilders =
+          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
+              listDatabasesSettings,
+              createDatabaseSettings,
+              getDatabaseSettings,
+              updateDatabaseDdlSettings,
+              dropDatabaseSettings,
+              getDatabaseDdlSettings,
+              setIamPolicySettings,
+              getIamPolicySettings,
+              testIamPermissionsSettings,
+              createBackupSettings,
+              getBackupSettings,
+              updateBackupSettings,
+              deleteBackupSettings,
+              listBackupsSettings,
+              restoreDatabaseSettings,
+              listDatabaseOperationsSettings,
+              listBackupOperationsSettings);
+    }
+
     private static Builder createDefault() {
-      Builder builder = new Builder((ClientContext) null);
+      Builder builder = new Builder(((ClientContext) null));
+
       builder.setTransportChannelProvider(defaultTransportChannelProvider());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
       builder.setEndpoint(getDefaultEndpoint());
+
       return initDefaults(builder);
     }
 
     private static Builder initDefaults(Builder builder) {
+      builder
+          .listDatabasesSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .createDatabaseSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .updateDatabaseDdlSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .createBackupSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .restoreDatabaseSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"));
-
-      builder
-          .listDatabasesSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .getDatabaseSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .dropDatabaseSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .getDatabaseDdlSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
-
-      builder
-          .setIamPolicySettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
 
       builder
+          .getDatabaseSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .updateDatabaseDdlSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .dropDatabaseSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .getDatabaseDdlSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .setIamPolicySettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
+      builder
           .getIamPolicySettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_2_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_2_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
 
       builder
           .testIamPermissionsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
+      builder
+          .createBackupSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
 
       builder
           .getBackupSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .updateBackupSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .deleteBackupSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .listBackupsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .restoreDatabaseSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
 
       builder
           .listDatabaseOperationsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
           .listBackupOperationsSettings()
-          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
       builder
           .createDatabaseOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<CreateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Database.class))
@@ -928,18 +947,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
+
       builder
           .updateDatabaseDdlOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<UpdateDatabaseDdlRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Empty.class))
@@ -952,18 +972,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
+
       builder
           .createBackupOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<CreateBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Backup.class))
@@ -975,18 +996,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(172800000L))
                       .build()));
+
       builder
           .restoreDatabaseOperationSettings()
           .setInitialCallSettings(
               UnaryCallSettings
                   .<RestoreDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
-                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_1_codes"))
-                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_1_params"))
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
                   .build())
           .setResponseTransformer(
               ProtoOperationTransformers.ResponseTransformer.create(Database.class))
@@ -998,62 +1020,16 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setInitialRetryDelay(Duration.ofMillis(20000L))
                       .setRetryDelayMultiplier(1.5)
                       .setMaxRetryDelay(Duration.ofMillis(45000L))
-                      .setInitialRpcTimeout(Duration.ZERO) // ignored
-                      .setRpcTimeoutMultiplier(1.0) // ignored
-                      .setMaxRpcTimeout(Duration.ZERO) // ignored
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
 
       return builder;
     }
 
-    protected Builder(DatabaseAdminStubSettings settings) {
-      super(settings);
-
-      createDatabaseSettings = settings.createDatabaseSettings.toBuilder();
-      createDatabaseOperationSettings = settings.createDatabaseOperationSettings.toBuilder();
-      updateDatabaseDdlSettings = settings.updateDatabaseDdlSettings.toBuilder();
-      updateDatabaseDdlOperationSettings = settings.updateDatabaseDdlOperationSettings.toBuilder();
-      createBackupSettings = settings.createBackupSettings.toBuilder();
-      createBackupOperationSettings = settings.createBackupOperationSettings.toBuilder();
-      restoreDatabaseSettings = settings.restoreDatabaseSettings.toBuilder();
-      restoreDatabaseOperationSettings = settings.restoreDatabaseOperationSettings.toBuilder();
-      listDatabasesSettings = settings.listDatabasesSettings.toBuilder();
-      getDatabaseSettings = settings.getDatabaseSettings.toBuilder();
-      dropDatabaseSettings = settings.dropDatabaseSettings.toBuilder();
-      getDatabaseDdlSettings = settings.getDatabaseDdlSettings.toBuilder();
-      setIamPolicySettings = settings.setIamPolicySettings.toBuilder();
-      getIamPolicySettings = settings.getIamPolicySettings.toBuilder();
-      testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
-      getBackupSettings = settings.getBackupSettings.toBuilder();
-      updateBackupSettings = settings.updateBackupSettings.toBuilder();
-      deleteBackupSettings = settings.deleteBackupSettings.toBuilder();
-      listBackupsSettings = settings.listBackupsSettings.toBuilder();
-      listDatabaseOperationsSettings = settings.listDatabaseOperationsSettings.toBuilder();
-      listBackupOperationsSettings = settings.listBackupOperationsSettings.toBuilder();
-
-      unaryMethodSettingsBuilders =
-          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-              createDatabaseSettings,
-              updateDatabaseDdlSettings,
-              createBackupSettings,
-              restoreDatabaseSettings,
-              listDatabasesSettings,
-              getDatabaseSettings,
-              dropDatabaseSettings,
-              getDatabaseDdlSettings,
-              setIamPolicySettings,
-              getIamPolicySettings,
-              testIamPermissionsSettings,
-              getBackupSettings,
-              updateBackupSettings,
-              deleteBackupSettings,
-              listBackupsSettings,
-              listDatabaseOperationsSettings,
-              listBackupOperationsSettings);
-    }
-
-    // NEXT_MAJOR_VER: remove 'throws Exception'
+    // NEXT_MAJOR_VER: remove 'throws Exception'.
     /**
      * Applies the given settings updater function to all of the unary API methods in this service.
      *
@@ -1069,6 +1045,13 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       return unaryMethodSettingsBuilders;
     }
 
+    /** Returns the builder for the settings used for calls to listDatabases. */
+    public PagedCallSettings.Builder<
+            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
+        listDatabasesSettings() {
+      return listDatabasesSettings;
+    }
+
     /** Returns the builder for the settings used for calls to createDatabase. */
     public UnaryCallSettings.Builder<CreateDatabaseRequest, Operation> createDatabaseSettings() {
       return createDatabaseSettings;
@@ -1080,6 +1063,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     public OperationCallSettings.Builder<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
         createDatabaseOperationSettings() {
       return createDatabaseOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to getDatabase. */
+    public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
+      return getDatabaseSettings;
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */
@@ -1094,44 +1082,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     public OperationCallSettings.Builder<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
         updateDatabaseDdlOperationSettings() {
       return updateDatabaseDdlOperationSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to createBackup. */
-    public UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings() {
-      return createBackupSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to createBackup. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
-        createBackupOperationSettings() {
-      return createBackupOperationSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to restoreDatabase. */
-    public UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
-      return restoreDatabaseSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to restoreDatabase. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
-    public OperationCallSettings.Builder<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
-        restoreDatabaseOperationSettings() {
-      return restoreDatabaseOperationSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to listDatabases. */
-    public PagedCallSettings.Builder<
-            ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
-        listDatabasesSettings() {
-      return listDatabasesSettings;
-    }
-
-    /** Returns the builder for the settings used for calls to getDatabase. */
-    public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
-      return getDatabaseSettings;
     }
 
     /** Returns the builder for the settings used for calls to dropDatabase. */
@@ -1161,6 +1111,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       return testIamPermissionsSettings;
     }
 
+    /** Returns the builder for the settings used for calls to createBackup. */
+    public UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings() {
+      return createBackupSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createBackup. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
+        createBackupOperationSettings() {
+      return createBackupOperationSettings;
+    }
+
     /** Returns the builder for the settings used for calls to getBackup. */
     public UnaryCallSettings.Builder<GetBackupRequest, Backup> getBackupSettings() {
       return getBackupSettings;
@@ -1181,6 +1144,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupsRequest, ListBackupsResponse, ListBackupsPagedResponse>
         listBackupsSettings() {
       return listBackupsSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to restoreDatabase. */
+    public UnaryCallSettings.Builder<RestoreDatabaseRequest, Operation> restoreDatabaseSettings() {
+      return restoreDatabaseSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to restoreDatabase. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
+        restoreDatabaseOperationSettings() {
+      return restoreDatabaseOperationSettings;
     }
 
     /** Returns the builder for the settings used for calls to listDatabaseOperations. */

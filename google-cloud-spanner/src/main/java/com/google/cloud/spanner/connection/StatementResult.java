@@ -43,7 +43,7 @@ public interface StatementResult {
      * DDL statements and client side statements that set the state of a connection return no
      * result.
      */
-    NO_RESULT;
+    NO_RESULT
   }
 
   /** The type of client side statement that was executed. */
@@ -60,12 +60,15 @@ public interface StatementResult {
     SET_STATEMENT_TIMEOUT,
     SHOW_READ_TIMESTAMP,
     SHOW_COMMIT_TIMESTAMP,
+    SHOW_COMMIT_RESPONSE,
     SHOW_READ_ONLY_STALENESS,
     SET_READ_ONLY_STALENESS,
     SHOW_OPTIMIZER_VERSION,
     SET_OPTIMIZER_VERSION,
     SHOW_OPTIMIZER_STATISTICS_PACKAGE,
     SET_OPTIMIZER_STATISTICS_PACKAGE,
+    SHOW_RETURN_COMMIT_STATS,
+    SET_RETURN_COMMIT_STATS,
     BEGIN,
     COMMIT,
     ROLLBACK,
@@ -73,7 +76,7 @@ public interface StatementResult {
     START_BATCH_DDL,
     START_BATCH_DML,
     RUN_BATCH,
-    ABORT_BATCH;
+    ABORT_BATCH
   }
 
   /**

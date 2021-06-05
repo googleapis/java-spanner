@@ -39,7 +39,6 @@ import java.math.BigInteger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,7 +52,6 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
-  private static final Logger logger = Logger.getLogger(ITReadOnlySpannerTest.class.getName());
   private static final long TEST_ROWS_COUNT = 1000L;
 
   @Override
@@ -68,7 +66,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         // create tables
         SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
         verifier.verifyStatementsInFile(
-            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class);
+            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class, false);
 
         // fill tables with data
         connection.setAutocommit(false);
@@ -103,7 +101,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
     // Wait 100ms to ensure that staleness tests in the script succeed.
     Thread.sleep(100L);
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class);
+    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class, false);
   }
 
   @Test
@@ -126,29 +124,20 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void testStatementTimeoutTransactionalMultipleStatements() {
-    long startTime = System.currentTimeMillis();
     try (ITConnection connection = createConnection()) {
       connection.beginTransaction();
       for (int i = 0; i < 3; i++) {
-        boolean timedOut = false;
-        connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
+        connection.setStatementTimeout(1L, TimeUnit.MICROSECONDS);
         try (ResultSet rs =
             connection.executeQuery(
                 Statement.of(
                     "SELECT (SELECT COUNT(*) FROM PRIME_NUMBERS)/(SELECT COUNT(*) FROM NUMBERS) AS PRIME_NUMBER_RATIO"))) {
+          fail("Missing expected exception");
         } catch (SpannerException e) {
-          timedOut = e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED;
+          assertThat(e.getErrorCode(), is(ErrorCode.DEADLINE_EXCEEDED));
         }
-        assertThat(timedOut, is(true));
       }
       connection.commit();
-    }
-    long endTime = System.currentTimeMillis();
-    long executionTime = endTime - startTime;
-    if (executionTime > 25L) {
-      logger.warning("Total test execution time exceeded 25 milliseconds: " + executionTime);
-    } else {
-      logger.info("Total test execution time: " + executionTime);
     }
   }
 
@@ -211,18 +200,12 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       final ResultSet rs2 = connection.executeQuery(Statement.of("SELECT * FROM NUMBERS"));
       ExecutorService exec = Executors.newFixedThreadPool(2);
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs1.next()) {}
-            }
+          () -> {
+            while (rs1.next()) {}
           });
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs2.next()) {}
-            }
+          () -> {
+            while (rs2.next()) {}
           });
       exec.shutdown();
       exec.awaitTermination(1000L, TimeUnit.SECONDS);
