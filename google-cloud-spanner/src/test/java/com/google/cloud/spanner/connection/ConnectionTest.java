@@ -43,37 +43,13 @@ import org.junit.runner.RunWith;
 
 @RunWith(Enclosed.class)
 public class ConnectionTest {
-
-  public static class DefaultConnectionOptionsTest extends AbstractMockServerTest {
-    @Test
-    public void testDefaultOptimizerVersion() {
-      try (Connection connection = createConnection()) {
-        try (ResultSet rs =
-            connection.executeQuery(Statement.of("SHOW VARIABLE OPTIMIZER_VERSION"))) {
-          assertThat(rs.next()).isTrue();
-          assertThat(rs.getString("OPTIMIZER_VERSION")).isEqualTo("");
-          assertThat(rs.next()).isFalse();
-        }
-      }
-    }
-
-    @Test
-    public void testDefaultOptimizerStatisticsPackage() {
-      try (Connection connection = createConnection()) {
-        try (ResultSet rs =
-            connection.executeQuery(Statement.of("SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE"))) {
-          assertThat(rs.next()).isTrue();
-          assertThat(rs.getString("OPTIMIZER_STATISTICS_PACKAGE")).isEqualTo("");
-          assertThat(rs.next()).isFalse();
-        }
-      }
-    }
-
+  public static class EnvironmentConnectionOptionsTest extends AbstractMockServerTest {
     @Test
     public void testUseOptimizerVersionAndStatisticsPackageFromEnvironment() {
       try {
         SpannerOptions.useEnvironment(
             new SpannerOptions.SpannerEnvironment() {
+              @Nonnull
               @Override
               public String getOptimizerVersion() {
                 return "20";
@@ -139,6 +115,32 @@ public class ConnectionTest {
         }
       } finally {
         SpannerOptions.useDefaultEnvironment();
+      }
+    }
+  }
+
+  public static class DefaultConnectionOptionsTest extends AbstractMockServerTest {
+    @Test
+    public void testDefaultOptimizerVersion() {
+      try (Connection connection = createConnection()) {
+        try (ResultSet rs =
+            connection.executeQuery(Statement.of("SHOW VARIABLE OPTIMIZER_VERSION"))) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getString("OPTIMIZER_VERSION")).isEqualTo("");
+          assertThat(rs.next()).isFalse();
+        }
+      }
+    }
+
+    @Test
+    public void testDefaultOptimizerStatisticsPackage() {
+      try (Connection connection = createConnection()) {
+        try (ResultSet rs =
+            connection.executeQuery(Statement.of("SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE"))) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getString("OPTIMIZER_STATISTICS_PACKAGE")).isEqualTo("");
+          assertThat(rs.next()).isFalse();
+        }
       }
     }
 
