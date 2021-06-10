@@ -76,8 +76,8 @@ import org.junit.Test;
 public class InstanceAdminClientTest {
   private static MockInstanceAdmin mockInstanceAdmin;
   private static MockServiceHelper mockServiceHelper;
-  private InstanceAdminClient client;
   private LocalChannelProvider channelProvider;
+  private InstanceAdminClient client;
 
   @BeforeClass
   public static void startStaticServer() {
