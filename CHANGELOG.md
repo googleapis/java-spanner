@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.6.1](https://www.github.com/googleapis/java-spanner/compare/v6.6.0...v6.6.1) (2021-06-10)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.3.3 ([#1241](https://www.github.com/googleapis/java-spanner/issues/1241)) ([9816b3f](https://www.github.com/googleapis/java-spanner/commit/9816b3fe90419486e94a4927f368c8cecfaac424))
+
 ## [6.6.0](https://www.github.com/googleapis/java-spanner/compare/v6.5.0...v6.6.0) (2021-06-07)
 
 
