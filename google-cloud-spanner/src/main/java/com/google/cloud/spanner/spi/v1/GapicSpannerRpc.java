@@ -83,9 +83,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.grpc.gcp.GcpManagedChannelBuilder;
-import com.google.grpc.gcp.GcpManagedChannelOptions;
-import com.google.grpc.gcp.GcpManagedChannelOptions.GcpMetricsOptions;
+import com.google.cloud.grpc.GcpManagedChannelBuilder;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -517,8 +517,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return sb.toString();
   }
 
-  // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified. Adds
-  // more labels on top of provided.
+  // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified.
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
@@ -528,16 +527,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (metricsOptions.getMetricRegistry() == null) {
       metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
     }
-    List<LabelKey> labelKeys = metricsOptions.getLabelKeys();
-    List<LabelValue> labelValues = metricsOptions.getLabelValues();
     // TODO: Add default labels with values: client_id, database, instance_id.
-    labelKeys.add(LabelKey.create("grpc_gcp_version", "gRPC-GCP library version"));
-    String gRpcGcpVersion = GcpManagedChannelBuilder.class.getPackage().getImplementationVersion();
-    if (gRpcGcpVersion == null) {
-      gRpcGcpVersion = "";
-    }
-    labelValues.add(LabelValue.create(gRpcGcpVersion));
-    metricsOptionsBuilder.withLabels(labelKeys, labelValues);
     if (metricsOptions.getNamePrefix().equals("")) {
       metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
     }

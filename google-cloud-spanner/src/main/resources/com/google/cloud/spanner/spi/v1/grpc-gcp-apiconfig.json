@@ -1,7 +1,7 @@
 {
   "channelPool": {
     "maxSize": 3,
-    "maxConcurrentStreamsLowWatermark": 1
+    "maxConcurrentStreamsLowWatermark": 0
   },
   "method": [
     {

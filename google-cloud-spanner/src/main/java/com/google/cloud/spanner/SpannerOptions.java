@@ -48,7 +48,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.grpc.gcp.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -1018,12 +1018,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Sets the options for gRPC-GCP extension. The metric registry and default Spanner metric
-     * labels will be added automatically.
-     *
-     * <p>Note that gRPC-GCP extension must be enabled first with {@code setUseGrpcGcpExtension}.
+     * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
+     * and default Spanner metric labels will be added automatically.
      */
-    public Builder setGrpcGcpOptions(GcpManagedChannelOptions options) {
+    public Builder withGrpcGcpOptions(GcpManagedChannelOptions options) {
+      this.useGrpcGcpExtension = true;
       this.grpcGcpOptions = options;
       return this;
     }
