@@ -115,12 +115,9 @@ public class ITSessionPoolIntegrationTest {
     Session session2 = pool.getSession().get();
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                try (Session session3 = pool.getSession().get()) {
-                  latch.countDown();
-                }
+            () -> {
+              try (Session session3 = pool.getSession().get()) {
+                latch.countDown();
               }
             })
         .start();
@@ -138,12 +135,9 @@ public class ITSessionPoolIntegrationTest {
     final CountDownLatch latch = new CountDownLatch(numSessions);
     for (int i = 0; i < numSessions; i++) {
       new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  try (Session session = pool.getSession().get()) {
-                    latch.countDown();
-                  }
+              () -> {
+                try (Session session = pool.getSession().get()) {
+                  latch.countDown();
                 }
               })
           .start();

@@ -27,6 +27,7 @@ public interface AsyncRunner {
    * Functional interface for executing a read/write transaction asynchronously that returns a
    * result of type R.
    */
+  @FunctionalInterface
   interface AsyncWork<R> {
     /**
      * Performs a single transaction attempt. All reads/writes should be performed using {@code

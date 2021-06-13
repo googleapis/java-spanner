@@ -23,7 +23,7 @@ public enum AutocommitDmlMode {
 
   private final String statementString;
 
-  private AutocommitDmlMode() {
+  AutocommitDmlMode() {
     this.statementString = name();
   }
 

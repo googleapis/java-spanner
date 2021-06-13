@@ -18,11 +18,10 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -36,42 +35,30 @@ public class OptionsTest {
 
   @Test
   public void negativeLimitsNotAllowed() {
-    try {
-      Options.limit(-1);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.limit(-1));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void zeroLimitNotAllowed() {
-    try {
-      Options.limit(0);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.limit(0));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void negativePrefetchChunksNotAllowed() {
-    try {
-      Options.prefetchChunks(-1);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.prefetchChunks(-1));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void zeroPrefetchChunksNotAllowed() {
-    try {
-      Options.prefetchChunks(0);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Options.prefetchChunks(0));
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -111,13 +98,7 @@ public class OptionsTest {
 
     assertThat(options.toString())
         .isEqualTo(
-            "pageSize: "
-                + Integer.toString(pageSize)
-                + " pageToken: "
-                + pageToken
-                + " filter: "
-                + filter
-                + " ");
+            "pageSize: " + pageSize + " pageToken: " + pageToken + " filter: " + filter + " ");
 
     assertThat(options.hasPageSize()).isTrue();
     assertThat(options.hasPageToken()).isTrue();
@@ -174,8 +155,7 @@ public class OptionsTest {
     String tag = "app=spanner,env=test,action=read";
     Options options = Options.fromReadOptions(Options.limit(limit), Options.tag(tag));
 
-    assertThat(options.toString())
-        .isEqualTo("limit: " + Integer.toString(limit) + " " + "tag: " + tag + " ");
+    assertThat(options.toString()).isEqualTo("limit: " + limit + " " + "tag: " + tag + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertThat(options.hashCode()).isEqualTo(-1111478426);
   }
@@ -207,7 +187,7 @@ public class OptionsTest {
     String tag = "app=spanner,env=test,action=query";
     Options options = Options.fromQueryOptions(Options.prefetchChunks(chunks), Options.tag(tag));
     assertThat(options.toString())
-        .isEqualTo("prefetchChunks: " + Integer.toString(chunks) + " " + "tag: " + tag + " ");
+        .isEqualTo("prefetchChunks: " + chunks + " " + "tag: " + tag + " ");
     assertThat(options.prefetchChunks()).isEqualTo(chunks);
     assertThat(options.tag()).isEqualTo(tag);
     assertThat(options.hashCode()).isEqualTo(-97431824);
@@ -333,11 +313,11 @@ public class OptionsTest {
         Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
     Options optionsWithHighPriority2 =
         Options.fromTransactionOptions(Options.priority(RpcPriority.HIGH));
-    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+    assertEquals(optionsWithHighPriority1, optionsWithHighPriority2);
 
     Options optionsWithMediumPriority =
         Options.fromTransactionOptions(Options.priority(RpcPriority.MEDIUM));
-    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+    assertNotEquals(optionsWithHighPriority1, optionsWithMediumPriority);
   }
 
   @Test
@@ -357,7 +337,7 @@ public class OptionsTest {
   public void testUpdateOptionsEquality() {
     Options option1 = Options.fromUpdateOptions();
     Options option2 = Options.fromUpdateOptions();
-    assertTrue(option1.equals(option2));
+    assertEquals(option1, option2);
   }
 
   @Test
@@ -373,11 +353,11 @@ public class OptionsTest {
         Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
     Options optionsWithHighPriority2 =
         Options.fromUpdateOptions(Options.priority(RpcPriority.HIGH));
-    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+    assertEquals(optionsWithHighPriority1, optionsWithHighPriority2);
 
     Options optionsWithMediumPriority =
         Options.fromUpdateOptions(Options.priority(RpcPriority.MEDIUM));
-    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+    assertNotEquals(optionsWithHighPriority1, optionsWithMediumPriority);
   }
 
   @Test
@@ -397,7 +377,7 @@ public class OptionsTest {
   public void testQueryOptionsEquality() {
     Options option1 = Options.fromQueryOptions();
     Options option2 = Options.fromQueryOptions();
-    assertTrue(option1.equals(option2));
+    assertEquals(option1, option2);
   }
 
   @Test
@@ -411,15 +391,15 @@ public class OptionsTest {
   public void testQueryOptionsWithPriorityEquality() {
     Options optionsWithHighPriority1 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
     Options optionsWithHighPriority2 = Options.fromQueryOptions(Options.priority(RpcPriority.HIGH));
-    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+    assertEquals(optionsWithHighPriority1, optionsWithHighPriority2);
 
     Options optionsWithMediumPriority =
         Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM));
-    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+    assertNotEquals(optionsWithHighPriority1, optionsWithMediumPriority);
 
     Options optionsWithHighPriorityAndBufferRows =
         Options.fromQueryOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
-    assertFalse(optionsWithHighPriorityAndBufferRows.equals(optionsWithHighPriority1));
+    assertNotEquals(optionsWithHighPriorityAndBufferRows, optionsWithHighPriority1);
   }
 
   @Test
@@ -442,7 +422,7 @@ public class OptionsTest {
   public void testReadOptionsEquality() {
     Options option1 = Options.fromReadOptions();
     Options option2 = Options.fromReadOptions();
-    assertTrue(option1.equals(option2));
+    assertEquals(option1, option2);
   }
 
   @Test
@@ -456,15 +436,15 @@ public class OptionsTest {
   public void testReadOptionsWithPriorityEquality() {
     Options optionsWithHighPriority1 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
     Options optionsWithHighPriority2 = Options.fromReadOptions(Options.priority(RpcPriority.HIGH));
-    assertTrue(optionsWithHighPriority1.equals(optionsWithHighPriority2));
+    assertEquals(optionsWithHighPriority1, optionsWithHighPriority2);
 
     Options optionsWithMediumPriority =
         Options.fromReadOptions(Options.priority(RpcPriority.MEDIUM));
-    assertFalse(optionsWithHighPriority1.equals(optionsWithMediumPriority));
+    assertNotEquals(optionsWithHighPriority1, optionsWithMediumPriority);
 
     Options optionsWithHighPriorityAndBufferRows =
         Options.fromReadOptions(Options.priority(RpcPriority.HIGH), Options.bufferRows(10));
-    assertFalse(optionsWithHighPriorityAndBufferRows.equals(optionsWithHighPriority1));
+    assertNotEquals(optionsWithHighPriorityAndBufferRows, optionsWithHighPriority1);
   }
 
   @Test

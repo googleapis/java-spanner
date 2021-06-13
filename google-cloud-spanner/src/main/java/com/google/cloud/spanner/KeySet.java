@@ -47,7 +47,7 @@ public final class KeySet implements Serializable {
    * as there are columns in the primary or index key with this this key set is used.
    */
   public static KeySet singleKey(Key key) {
-    return new KeySet(false, ImmutableList.of(key), ImmutableList.<KeyRange>of());
+    return new KeySet(false, ImmutableList.of(key), ImmutableList.of());
   }
 
   /**
@@ -55,7 +55,7 @@ public final class KeySet implements Serializable {
    * ranges.
    */
   public static KeySet range(KeyRange range) {
-    return new KeySet(false, ImmutableList.<Key>of(), ImmutableList.of(range));
+    return new KeySet(false, ImmutableList.of(), ImmutableList.of(range));
   }
 
   /**
@@ -68,7 +68,7 @@ public final class KeySet implements Serializable {
 
   /** Creates a key set that will retrieve all rows of a table or index. */
   public static KeySet all() {
-    return new KeySet(true, ImmutableList.<Key>of(), ImmutableList.<KeyRange>of());
+    return new KeySet(true, ImmutableList.of(), ImmutableList.of());
   }
 
   /** Returns a new builder that can be used to construct a key set. */
@@ -124,8 +124,8 @@ public final class KeySet implements Serializable {
     public KeySet build() {
       return new KeySet(
           all,
-          keys != null ? keys.build() : ImmutableList.<Key>of(),
-          ranges != null ? ranges.build() : ImmutableList.<KeyRange>of());
+          keys != null ? keys.build() : ImmutableList.of(),
+          ranges != null ? ranges.build() : ImmutableList.of());
     }
   }
 

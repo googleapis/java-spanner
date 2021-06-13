@@ -30,8 +30,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -61,12 +59,17 @@ public class ITQueryOptionsTest {
   @Test
   public void executeQuery() {
     // Version '1' should work.
+    // Statistics package 'custom-package' should work.
     try (ResultSet rs =
         client
             .singleUse()
             .executeQuery(
                 Statement.newBuilder("SELECT 1")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build())) {
       while (rs.next()) {
         assertThat(rs.getLong(0)).isEqualTo(1L);
@@ -106,35 +109,33 @@ public class ITQueryOptionsTest {
   @Test
   public void executeUpdate() {
     // Optimizer version 1 should work.
+    // Optimizer statistics package 'custom-package' should work.
     assertThat(
             client
                 .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) {
-                        return transaction.executeUpdate(
+                .<Long>run(
+                    transaction ->
+                        transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
                                 .to(1L)
                                 .bind("name")
                                 .to("One")
                                 .withQueryOptions(
-                                    QueryOptions.newBuilder().setOptimizerVersion("1").build())
-                                .build());
-                      }
-                    }))
+                                    QueryOptions.newBuilder()
+                                        .setOptimizerVersion("1")
+                                        .setOptimizerStatisticsPackage("custom-package")
+                                        .build())
+                                .build())))
         .isEqualTo(1L);
 
     // Version 'latest' should also work.
     assertThat(
             client
                 .readWriteTransaction()
-                .run(
-                    new TransactionCallable<Long>() {
-                      @Override
-                      public Long run(TransactionContext transaction) {
-                        return transaction.executeUpdate(
+                .<Long>run(
+                    transaction ->
+                        transaction.executeUpdate(
                             Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                                 .bind("id")
                                 .to(2L)
@@ -142,9 +143,7 @@ public class ITQueryOptionsTest {
                                 .to("Two")
                                 .withQueryOptions(
                                     QueryOptions.newBuilder().setOptimizerVersion("latest").build())
-                                .build());
-                      }
-                    }))
+                                .build())))
         .isEqualTo(1L);
 
     // Version '100000' is an invalid value and should cause an error.
@@ -152,10 +151,8 @@ public class ITQueryOptionsTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) {
-                  return transaction.executeUpdate(
+              transaction ->
+                  transaction.executeUpdate(
                       Statement.newBuilder("INSERT INTO TEST (ID, NAME) VALUES (@id, @name)")
                           .bind("id")
                           .to(3L)
@@ -163,20 +160,22 @@ public class ITQueryOptionsTest {
                           .to("Three")
                           .withQueryOptions(
                               QueryOptions.newBuilder().setOptimizerVersion("100000").build())
-                          .build());
-                }
-              });
+                          .build()));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Query optimizer version: 100000 is not supported");
     }
 
-    // Setting an optimizer version for PDML should also be allowed.
+    // Setting an optimizer version and statistics package for PDML should also be allowed.
     assertThat(
             client.executePartitionedUpdate(
                 Statement.newBuilder("UPDATE TEST SET NAME='updated' WHERE 1=1")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build()))
         .isEqualTo(2L);
   }
@@ -184,12 +183,17 @@ public class ITQueryOptionsTest {
   @Test
   public void spannerOptions() {
     // Version '1' should work.
+    // Statistics package 'custom-package' should work.
     try (Spanner spanner =
         env.getTestHelper()
             .getOptions()
             .toBuilder()
             .setDefaultQueryOptions(
-                db.getId(), QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                db.getId(),
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .build()
             .getService()) {
       DatabaseClient client = spanner.getDatabaseClient(db.getId());

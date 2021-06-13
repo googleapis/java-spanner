@@ -59,13 +59,7 @@ class SessionImpl implements Session {
   private static final Tracer tracer = Tracing.getTracer();
 
   /** Keep track of running transactions on this session per thread. */
-  static final ThreadLocal<Boolean> hasPendingTransaction =
-      new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-          return false;
-        }
-      };
+  static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
 
   static void throwIfTransactionsPending() {
     if (hasPendingTransaction.get() == Boolean.TRUE) {
@@ -79,7 +73,7 @@ class SessionImpl implements Session {
    * transactions, and read-write transactions. The defining characteristic is that a session may
    * only have one such transaction active at a time.
    */
-  static interface SessionTransaction {
+  interface SessionTransaction {
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
     /** Registers the current span on the transaction. */
@@ -141,12 +135,9 @@ class SessionImpl implements Session {
             ? (Collection<Mutation>) mutations
             : Lists.newArrayList(mutations);
     runner.run(
-        new TransactionRunner.TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext ctx) {
-            ctx.buffer(finalMutations);
-            return null;
-          }
+        ctx -> {
+          ctx.buffer(finalMutations);
+          return null;
         });
     return runner.getCommitResponse();
   }
@@ -322,29 +313,26 @@ class SessionImpl implements Session {
     requestFuture.addListener(
         tracer.withSpan(
             span,
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  Transaction txn = requestFuture.get();
-                  if (txn.getId().isEmpty()) {
-                    throw newSpannerException(
-                        ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-                  }
-                  span.end(TraceUtil.END_SPAN_OPTIONS);
-                  res.set(txn.getId());
-                } catch (ExecutionException e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(
-                      SpannerExceptionFactory.newSpannerException(
-                          e.getCause() == null ? e : e.getCause()));
-                } catch (InterruptedException e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-                } catch (Exception e) {
-                  TraceUtil.endSpanWithFailure(span, e);
-                  res.setException(e);
+            () -> {
+              try {
+                Transaction txn = requestFuture.get();
+                if (txn.getId().isEmpty()) {
+                  throw newSpannerException(
+                      ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
                 }
+                span.end(TraceUtil.END_SPAN_OPTIONS);
+                res.set(txn.getId());
+              } catch (ExecutionException e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(
+                    SpannerExceptionFactory.newSpannerException(
+                        e.getCause() == null ? e : e.getCause()));
+              } catch (InterruptedException e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              } catch (Exception e) {
+                TraceUtil.endSpanWithFailure(span, e);
+                res.setException(e);
               }
             }),
         MoreExecutors.directExecutor());

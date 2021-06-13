@@ -110,7 +110,7 @@ public interface SpannerRpc extends ServiceRpc {
    *
    * @param <T> the type of result
    */
-  public static final class Paginated<T> {
+  final class Paginated<T> {
     private final Iterable<T> results;
     private final String nextPageToken;
 
@@ -123,7 +123,7 @@ public interface SpannerRpc extends ServiceRpc {
     public Paginated(@Nullable Iterable<T> results, @Nullable String nextPageToken) {
       // The generated HTTP client has null members when no results are present, rather than an
       // empty list.  Implicitly convert to an empty list to minimize the risk of NPEs.
-      this.results = (results == null) ? ImmutableList.<T>of() : results;
+      this.results = (results == null) ? ImmutableList.of() : results;
       this.nextPageToken =
           (nextPageToken == null || nextPageToken.isEmpty()) ? null : nextPageToken;
     }
@@ -158,7 +158,7 @@ public interface SpannerRpc extends ServiceRpc {
   interface StreamingCall {
 
     /**
-     * Requests more messages from the stream. We disable the auto flow control mechanisam in grpc,
+     * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,
      * so we need to request messages ourself. This gives us more control over how much buffer we
      * maintain in the client. Grpc will request 1 initial message automatically so we don't need to
      * call this at the beginning. After that it should be called whenever there is a flow control
@@ -354,7 +354,7 @@ public interface SpannerRpc extends ServiceRpc {
   TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions);
 
-  public void shutdown();
+  void shutdown();
 
   boolean isClosed();
 }

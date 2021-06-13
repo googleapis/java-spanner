@@ -66,7 +66,10 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
   public void test01_CreateTables() throws Exception {
     try (ITConnection connection = createConnection()) {
       verifier.verifyStatementsInFile(
-          SpannerGenericConnection.of(connection), CREATE_TABLES_FILE, SqlScriptVerifier.class);
+          SpannerGenericConnection.of(connection),
+          CREATE_TABLES_FILE,
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -76,7 +79,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           INSERT_AND_VERIFY_TEST_DATA,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     } catch (SpannerException e) {
       if (isUsingEmulator() && e.getErrorCode() == ErrorCode.ALREADY_EXISTS) {
         // Errors in a transaction are 'sticky' on the emulator, so any query in the same
@@ -92,7 +96,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_GET_READ_TIMESTAMP,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -102,7 +107,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_GET_COMMIT_TIMESTAMP,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     } catch (SpannerException e) {
       if (isUsingEmulator() && e.getErrorCode() == ErrorCode.INVALID_ARGUMENT) {
         // Errors in a transaction are 'sticky' on the emulator, so any query in the same
@@ -117,7 +123,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_TEMPORARY_TRANSACTIONS,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -125,7 +132,10 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
   public void test06_TestTransactionMode() throws Exception {
     try (ITConnection connection = createConnection()) {
       verifier.verifyStatementsInFile(
-          SpannerGenericConnection.of(connection), TEST_TRANSACTION_MODE, SqlScriptVerifier.class);
+          SpannerGenericConnection.of(connection),
+          TEST_TRANSACTION_MODE,
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -135,7 +145,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_TRANSACTION_MODE_READ_ONLY,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -145,7 +156,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_READ_ONLY_STALENESS,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -155,7 +167,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_AUTOCOMMIT_DML_MODE,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -165,7 +178,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_AUTOCOMMIT_READ_ONLY,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -173,7 +187,10 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
   public void test11_TestStatementTimeout() throws Exception {
     try (ITConnection connection = createConnection()) {
       verifier.verifyStatementsInFile(
-          SpannerGenericConnection.of(connection), TEST_STATEMENT_TIMEOUT, SqlScriptVerifier.class);
+          SpannerGenericConnection.of(connection),
+          TEST_STATEMENT_TIMEOUT,
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -181,7 +198,10 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
   public void test12_TestSetStatements() throws Exception {
     try (ITConnection connection = createConnection()) {
       verifier.verifyStatementsInFile(
-          SpannerGenericConnection.of(connection), TEST_SET_STATEMENTS, SqlScriptVerifier.class);
+          SpannerGenericConnection.of(connection),
+          TEST_SET_STATEMENTS,
+          SqlScriptVerifier.class,
+          false);
     }
   }
 
@@ -191,7 +211,8 @@ public class ITSqlScriptTest extends ITAbstractSpannerTest {
       verifier.verifyStatementsInFile(
           SpannerGenericConnection.of(connection),
           TEST_INVALID_STATEMENTS,
-          SqlScriptVerifier.class);
+          SqlScriptVerifier.class,
+          false);
     }
   }
 }

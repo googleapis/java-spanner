@@ -44,7 +44,7 @@ SELECT LastName AS ACTUAL, 'Some Other Last Name' AS EXPECTED
 FROM Singers
 WHERE SingerId=1;
 
--- Reset to original value in partioned mode
+-- Reset to original value in partitioned mode
 @EXPECT NO_RESULT
 SET AUTOCOMMIT_DML_MODE = 'partitioned_non_atomic';
 

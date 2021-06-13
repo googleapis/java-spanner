@@ -38,14 +38,7 @@ class ClientSideStatementValueConverters {
 
     /** Create an map using the name of the enum elements as keys. */
     private CaseInsensitiveEnumMap(Class<E> elementType) {
-      this(
-          elementType,
-          new Function<E, String>() {
-            @Override
-            public String apply(E input) {
-              return input.name();
-            }
-          });
+      this(elementType, Enum::name);
     }
 
     /** Create a map using the specific function to get the key per enum value. */
@@ -114,7 +107,7 @@ class ClientSideStatementValueConverters {
         } else {
           Duration duration =
               ReadOnlyStalenessUtil.createDuration(
-                  Long.valueOf(matcher.group(1)),
+                  Long.parseLong(matcher.group(1)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(2)));
           if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
             return null;
@@ -171,7 +164,7 @@ class ClientSideStatementValueConverters {
           case EXACT_STALENESS:
             try {
               return TimestampBound.ofExactStaleness(
-                  Long.valueOf(matcher.group(groupIndex + 2)),
+                  Long.parseLong(matcher.group(groupIndex + 2)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(
@@ -180,7 +173,7 @@ class ClientSideStatementValueConverters {
           case MAX_STALENESS:
             try {
               return TimestampBound.ofMaxStaleness(
-                  Long.valueOf(matcher.group(groupIndex + 2)),
+                  Long.parseLong(matcher.group(groupIndex + 2)),
                   ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(groupIndex + 3)));
             } catch (IllegalArgumentException e) {
               throw SpannerExceptionFactory.newSpannerException(
@@ -231,14 +224,7 @@ class ClientSideStatementValueConverters {
   static class TransactionModeConverter
       implements ClientSideStatementValueConverter<TransactionMode> {
     private final CaseInsensitiveEnumMap<TransactionMode> values =
-        new CaseInsensitiveEnumMap<>(
-            TransactionMode.class,
-            new Function<TransactionMode, String>() {
-              @Override
-              public String apply(TransactionMode input) {
-                return input.getStatementString();
-              }
-            });
+        new CaseInsensitiveEnumMap<>(TransactionMode.class, TransactionMode::getStatementString);
 
     public TransactionModeConverter(String allowedValues) {}
 

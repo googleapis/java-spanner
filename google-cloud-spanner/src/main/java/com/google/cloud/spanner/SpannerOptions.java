@@ -107,6 +107,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean useGrpcGcpExtension;
   private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
@@ -130,7 +131,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -165,28 +166,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Context context =
    *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try {
-   *           client
-   *               .readWriteTransaction()
-   *               .run(
-   *                   new TransactionCallable<long[]>() {
-   *                     public long[] run(TransactionContext transaction) throws Exception {
-   *                       return transaction.batchUpdate(
-   *                           ImmutableList.of(statement1, statement2));
-   *                     }
-   *                   });
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // handle timeout exception.
-   *           }
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
-  public static interface CallContextConfigurator {
+  public interface CallContextConfigurator {
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -288,24 +287,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *             SpannerCallContextTimeoutConfigurator.create()
    *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try (ResultSet rs =
-   *             client
-   *                 .singleUse()
-   *                 .executeQuery(
-   *                     Statement.of(
-   *                         "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
-   *           while (rs.next()) {
-   *             System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
-   *           }
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // Handle timeout.
-   *           }
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
@@ -479,7 +476,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
   static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
@@ -563,6 +560,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     useGrpcGcpExtension = builder.useGrpcGcpExtension;
     grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
@@ -585,13 +583,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
      */
     @Nonnull
     String getOptimizerVersion();
+
+    /**
+     * The optimizer statistics package to use. Must return an empty string to indicate that no
+     * value has been set.
+     */
+    @Nonnull
+    default String getOptimizerStatisticsPackage() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   /**
@@ -601,12 +608,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static class SpannerEnvironmentImpl implements SpannerEnvironment {
     private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
     private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
+    private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
+        "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
 
     private SpannerEnvironmentImpl() {}
 
     @Override
     public String getOptimizerVersion() {
       return MoreObjects.firstNonNull(System.getenv(SPANNER_OPTIMIZER_VERSION_ENV_VAR), "");
+    }
+
+    @Override
+    public String getOptimizerStatisticsPackage() {
+      return MoreObjects.firstNonNull(
+          System.getenv(SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR), "");
     }
   }
 
@@ -615,6 +630,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setRetryDelayMultiplier(2.0)
+            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxAttempts(10)
+            .build();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
@@ -643,6 +665,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
     private boolean useGrpcGcpExtension = false;
     private GcpManagedChannelOptions grpcGcpOptions;
+    private RetrySettings retryAdministrativeRequestsSettings =
+        DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -693,6 +717,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.useGrpcGcpExtension = options.useGrpcGcpExtension;
       this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
@@ -906,6 +931,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the retry settings for retrying administrative requests when the quote of administrative
+     * requests per minute has been exceeded.
+     */
+    Builder setRetryAdministrativeRequestsSettings(
+        RetrySettings retryAdministrativeRequestsSettings) {
+      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      return this;
+    }
+
+    /**
      * Instructs the client library to track the first request of each read/write transaction. This
      * statement will include a BeginTransaction option and will return a transaction id as part of
      * its result. All other statements in the same transaction must wait for this first statement
@@ -948,6 +983,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     QueryOptions getEnvironmentQueryOptions() {
       return QueryOptions.newBuilder()
           .setOptimizerVersion(environment.getOptimizerVersion())
+          .setOptimizerStatisticsPackage(environment.getOptimizerStatisticsPackage())
           .build();
     }
 
@@ -992,7 +1028,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {
@@ -1036,7 +1072,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -1047,13 +1082,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setHost(emulatorHost);
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
-        this.setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder builder) {
-                return builder.usePlaintext();
-              }
-            });
+        this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
@@ -1137,6 +1166,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public RetrySettings getRetryAdministrativeRequestsSettings() {
+    return retryAdministrativeRequestsSettings;
   }
 
   public boolean isTrackTransactionStarter() {

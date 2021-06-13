@@ -53,7 +53,7 @@ public class ITTransactionModeTest extends ITAbstractSpannerTest {
   @Test
   public void testSqlScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITTransactionModeTest.sql", SqlScriptVerifier.class);
+    verifier.verifyStatementsInFile("ITTransactionModeTest.sql", SqlScriptVerifier.class, false);
   }
 
   @Test

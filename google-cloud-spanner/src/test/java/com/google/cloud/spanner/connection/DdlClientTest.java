@@ -27,6 +27,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class DdlClientTest {
     DdlClient subject = createSubject(client);
     String ddl = "CREATE TABLE FOO";
     subject.executeDdl(ddl);
-    verify(client).updateDatabaseDdl(instanceId, databaseId, Arrays.asList(ddl), null);
+    verify(client).updateDatabaseDdl(instanceId, databaseId, Collections.singletonList(ddl), null);
 
     subject = createSubject(client);
     List<String> ddlList = Arrays.asList("CREATE TABLE FOO", "DROP TABLE FOO");

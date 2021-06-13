@@ -124,12 +124,12 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
     }
 
     @Override
-    protected int getColumnCount() throws Exception {
+    protected int getColumnCount() {
       return resultSet.getColumnCount();
     }
 
     @Override
-    protected Object getFirstValue() throws Exception {
+    protected Object getFirstValue() {
       return getValue(resultSet.getType().getStructFields().get(0).getName());
     }
   }
@@ -151,7 +151,7 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
       if (this.connection != null) {
         this.connection.close();
       }

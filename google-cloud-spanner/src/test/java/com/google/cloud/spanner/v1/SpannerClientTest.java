@@ -90,9 +90,9 @@ import org.junit.Test;
 @Generated("by gapic-generator-java")
 public class SpannerClientTest {
   private static MockServiceHelper mockServiceHelper;
-  private SpannerClient client;
   private static MockSpanner mockSpanner;
   private LocalChannelProvider channelProvider;
+  private SpannerClient client;
 
   @BeforeClass
   public static void startStaticServer() {

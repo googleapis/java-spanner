@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "1e6e23f8d64cd16d5e5034c89c65283b3b0cae89"
+        "sha": "f2d0e716f22c29abb333d1f670956f5134ad2a5e"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "6ce40ff8faf68226782f507ca6b2d497a77044de",
-        "internalRef": "365498709"
+        "sha": "9e3105549a35520f215359065c11e8dce15e18af",
+        "internalRef": "378266372"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "572ef8f70edd9041f5bcfa71511aed6aecfc2098"
+        "sha": "8eae0234a16b26c2ff616d305dbd9786c8b10a47"
       }
     }
   ],
@@ -57,7 +57,6 @@
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/ISSUE_TEMPLATE/support_request.md",
     ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/blunderbuss.yml",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
     ".github/snippet-bot.yml",
@@ -271,6 +270,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponse.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DatabaseName.java",
@@ -343,6 +343,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeCode.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeProto.java",
+    "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/commit_response.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/keys.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/mutation.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/query_plan.proto",

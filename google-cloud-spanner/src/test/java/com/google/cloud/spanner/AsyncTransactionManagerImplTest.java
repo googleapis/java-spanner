@@ -40,7 +40,7 @@ public class AsyncTransactionManagerImplTest {
         new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
           .thenReturn(transaction);
-      when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.<Void>immediateFuture(null));
+      when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));
       Timestamp commitTimestamp = Timestamp.ofTimeMicroseconds(1);
       CommitResponse response = mock(CommitResponse.class);
       when(response.getCommitTimestamp()).thenReturn(commitTimestamp);

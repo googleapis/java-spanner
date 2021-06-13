@@ -72,7 +72,7 @@ import java.util.concurrent.TimeUnit;
  * staleness relative to the current time.
  *
  * <p>These modes do not require a "negotiation phase" to pick a timestamp. As a result, they
- * execute slightly faster than the equivalent boundedly stale concurrency modes. On the other hand,
+ * execute slightly faster than the equivalent bounded stale concurrency modes. On the other hand,
  * boundedly stale reads usually return fresher results.
  *
  * <p>Use {@link #ofReadTimestamp(Timestamp)} and {@link #ofExactStaleness(long, TimeUnit)} to
@@ -85,7 +85,7 @@ import java.util.concurrent.TimeUnit;
  * bound that allows execution of the reads at the closest available replica without blocking.
  *
  * <p>All rows yielded are consistent with each other -- if any part of the read observes a
- * transaction, all parts of the read see the transaction. Boundedly stale reads are not repeatable:
+ * transaction, all parts of the read see the transaction. Bounded stale reads are not repeatable:
  * two stale reads, even if they use the same staleness bound, can execute at different timestamps
  * and thus return inconsistent results.
  *

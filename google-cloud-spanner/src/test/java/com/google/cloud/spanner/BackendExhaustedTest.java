@@ -24,7 +24,6 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -205,13 +204,7 @@ public class BackendExhaustedTest {
     @Override
     public void run() {
       TransactionRunner runner = client.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Long>() {
-            @Override
-            public Long run(TransactionContext transaction) {
-              return transaction.executeUpdate(UPDATE_STATEMENT);
-            }
-          });
+      runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     }
   }
 }

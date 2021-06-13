@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.api.client.util.Lists;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.rpc.FailedPreconditionException;
@@ -50,7 +51,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
@@ -61,7 +61,6 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreSourceType;
 import io.grpc.Status;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -227,7 +226,8 @@ public class ITBackupTest {
         dbAdminClient.createDatabase(
             testHelper.getInstanceId().getInstance(),
             testHelper.getUniqueDatabaseId() + "_db2",
-            Arrays.asList("CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
+            Collections.singletonList(
+                "CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     // Make sure all databases are created before we try to create any backups.
     Database db1 = dbOp1.get();
     Database db2 = dbOp2.get();
@@ -236,7 +236,7 @@ public class ITBackupTest {
     // Insert some data into db2 to make sure the backup will have a size>0.
     DatabaseClient client = testHelper.getDatabaseClient(db2);
     client.writeAtLeastOnce(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("BAR")
                 .set("ID")
                 .to(1L)
@@ -280,8 +280,8 @@ public class ITBackupTest {
 
     // Ensure both backups have been created before we proceed.
     logger.info("Waiting for backup operations to finish");
-    Backup backup1 = null;
-    Backup backup2 = null;
+    Backup backup1;
+    Backup backup2;
     Stopwatch watch = Stopwatch.createStarted();
     try {
       backup1 = op1.get(6L, TimeUnit.MINUTES);
@@ -319,7 +319,7 @@ public class ITBackupTest {
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertOrUpdateBuilder("BAR")
                     .set("ID")
                     .to(2L)
@@ -574,6 +574,12 @@ public class ITBackupTest {
 
   private void testPagination(int expectedMinimumTotalBackups) {
     logger.info("Listing backups using pagination");
+
+    // First get all current backups without using pagination so we can compare that list with
+    // the same list when pagination fails.
+    List<Backup> initialBackups =
+        Lists.newArrayList(dbAdminClient.listBackups(instanceId).iterateAll());
+
     int numBackups = 0;
     logger.info("Fetching first page");
     Page<Backup> page = dbAdminClient.listBackups(instanceId, Options.pageSize(1));
@@ -587,6 +593,21 @@ public class ITBackupTest {
           String.format(
               "Fetching page %d with page token %s", numBackups + 1, page.getNextPageToken()));
       // The backend should not return the same page token twice.
+      if (seenPageTokens.contains(page.getNextPageToken())) {
+        // This should not happen, so to try to figure out why we list all the backups here to see
+        // if there's anything that we can figure out from the list of backups now compared with
+        // the initial list (for example that a new backup has been added while we were iterating).
+        logger.info("Pagination of backups failed. Initial list of backups was:");
+        for (Backup backup : initialBackups) {
+          logger.info(backup.getId().toString());
+        }
+        logger.info("Current list of backups is:");
+        List<Backup> currentBackups =
+            Lists.newArrayList(dbAdminClient.listBackups(instanceId).iterateAll());
+        for (Backup backup : currentBackups) {
+          logger.info(backup.getId().toString());
+        }
+      }
       assertThat(seenPageTokens).doesNotContain(page.getNextPageToken());
       seenPageTokens.add(page.getNextPageToken());
       page =
@@ -710,42 +731,22 @@ public class ITBackupTest {
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isTrue();
     assertThat(
             Iterables.any(
                 instance.listBackupOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(backupOperationName);
-                  }
-                }))
+                input -> input.getName().equals(backupOperationName)))
         .isFalse();
     assertThat(
             Iterables.any(
                 instance.listDatabaseOperations().iterateAll(),
-                new Predicate<Operation>() {
-                  @Override
-                  public boolean apply(Operation input) {
-                    return input.getName().equals(restoreOperationName);
-                  }
-                }))
+                input -> input.getName().equals(restoreOperationName)))
         .isTrue();
   }
 }

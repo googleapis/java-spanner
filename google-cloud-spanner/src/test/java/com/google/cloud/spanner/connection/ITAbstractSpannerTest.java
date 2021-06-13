@@ -41,7 +41,6 @@ import io.grpc.protobuf.ProtoUtils;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -76,7 +75,7 @@ public abstract class ITAbstractSpannerTest {
   }
 
   public static class AbortInterceptor implements StatementExecutionInterceptor {
-    /** We need to replicate the enum here as it is not visibible outside the connection package */
+    /** We need to replicate the enum here as it is not visible outside the connection package */
     public enum ExecutionStep {
       /** The initial execution of a statement (DML/Query) */
       EXECUTE_STATEMENT,
@@ -236,22 +235,18 @@ public abstract class ITAbstractSpannerTest {
    * @return the newly opened connection.
    */
   public ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   public ITConnection createConnection(AbortInterceptor interceptor) {
-    return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.singletonList(interceptor), Collections.emptyList());
   }
 
   public ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Arrays.<TransactionRetryListener>asList(transactionRetryListener));
+        Collections.singletonList(interceptor),
+        Collections.singletonList(transactionRetryListener));
   }
 
   /**

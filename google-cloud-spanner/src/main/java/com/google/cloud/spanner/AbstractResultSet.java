@@ -28,10 +28,10 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -208,7 +208,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       Object merged =
           kind == KindCase.STRING_VALUE
               ? value.getStringValue()
-              : new ArrayList<com.google.protobuf.Value>(value.getListValue().getValuesList());
+              : new ArrayList<>(value.getListValue().getValuesList());
       while (current.getChunkedValue() && pos == current.getValuesCount()) {
         if (!ensureReady(StreamValue.RESULT)) {
           throw newSpannerException(
@@ -224,7 +224,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                   + newValue.getKindCase());
         }
         if (kind == KindCase.STRING_VALUE) {
-          merged = (String) merged + newValue.getStringValue();
+          merged = merged + newValue.getStringValue();
         } else {
           concatLists(
               (List<com.google.protobuf.Value>) merged, newValue.getListValue().getValuesList());
@@ -318,7 +318,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         KindCase lastKind = last.getKindCase();
         KindCase firstKind = first.getKindCase();
         if (isMergeable(lastKind) && lastKind == firstKind) {
-          com.google.protobuf.Value merged = null;
+          com.google.protobuf.Value merged;
           if (lastKind == KindCase.STRING_VALUE) {
             String lastStr = last.getStringValue();
             String firstStr = first.getStringValue();
@@ -523,12 +523,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           // Use a view: element conversion is virtually free.
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, Boolean>() {
-                @Override
-                public Boolean apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
@@ -550,12 +545,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRING:
           return Lists.transform(
               listValue.getValuesList(),
-              new Function<com.google.protobuf.Value, String>() {
-                @Override
-                public String apply(com.google.protobuf.Value input) {
-                  return input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue();
-                }
-              });
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case BYTES:
           {
             // Materialize list: element conversion is expensive and should happen only once.
@@ -677,6 +667,62 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     protected Date getDateInternal(int columnIndex) {
       return (Date) rowData.get(columnIndex);
+    }
+
+    @Override
+    protected Value getValueInternal(int columnIndex) {
+      final List<Type.StructField> structFields = getType().getStructFields();
+      final StructField structField = structFields.get(columnIndex);
+      final Type columnType = structField.getType();
+      final boolean isNull = rowData.get(columnIndex) == null;
+      switch (columnType.getCode()) {
+        case BOOL:
+          return Value.bool(isNull ? null : getBooleanInternal(columnIndex));
+        case INT64:
+          return Value.int64(isNull ? null : getLongInternal(columnIndex));
+        case NUMERIC:
+          return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
+        case FLOAT64:
+          return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
+        case STRING:
+          return Value.string(isNull ? null : getStringInternal(columnIndex));
+        case BYTES:
+          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+        case TIMESTAMP:
+          return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
+        case DATE:
+          return Value.date(isNull ? null : getDateInternal(columnIndex));
+        case STRUCT:
+          return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case ARRAY:
+          switch (columnType.getArrayElementType().getCode()) {
+            case BOOL:
+              return Value.boolArray(isNull ? null : getBooleanListInternal(columnIndex));
+            case INT64:
+              return Value.int64Array(isNull ? null : getLongListInternal(columnIndex));
+            case NUMERIC:
+              return Value.numericArray(isNull ? null : getBigDecimalListInternal(columnIndex));
+            case FLOAT64:
+              return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
+            case STRING:
+              return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
+            case BYTES:
+              return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
+            case TIMESTAMP:
+              return Value.timestampArray(isNull ? null : getTimestampListInternal(columnIndex));
+            case DATE:
+              return Value.dateArray(isNull ? null : getDateListInternal(columnIndex));
+            case STRUCT:
+              return Value.structArray(
+                  columnType.getArrayElementType(),
+                  isNull ? null : getStructListInternal(columnIndex));
+            default:
+              throw new IllegalArgumentException(
+                  "Invalid array value type " + this.type.getArrayElementType());
+          }
+        default:
+          throw new IllegalArgumentException("Invalid value type " + this.type);
+      }
     }
 
     @Override
@@ -955,12 +1001,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
       final CountDownLatch latch = new CountDownLatch(1);
       final Context.CancellationListener listener =
-          new Context.CancellationListener() {
-            @Override
-            public void cancelled(Context context) {
-              // Wakeup on cancellation / DEADLINE_EXCEEDED.
-              latch.countDown();
-            }
+          ignored -> {
+            // Wakeup on cancellation / DEADLINE_EXCEEDED.
+            latch.countDown();
           };
 
       context.addListener(listener, DirectExecutor.INSTANCE);
@@ -1278,6 +1321,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected Date getDateInternal(int columnIndex) {
     return currRow().getDateInternal(columnIndex);
+  }
+
+  @Override
+  protected Value getValueInternal(int columnIndex) {
+    return currRow().getValueInternal(columnIndex);
   }
 
   @Override

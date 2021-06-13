@@ -34,7 +34,7 @@ public class ConnectionStatementWithOneParameterTest {
   private final StatementParser parser = StatementParser.INSTANCE;
 
   @Test
-  public void testExecuteSetAutcommit() {
+  public void testExecuteSetAutocommit() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit = true"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -56,15 +56,13 @@ public class ConnectionStatementWithOneParameterTest {
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
-      subject
-          .getClientSideStatement()
-          .execute(executor, String.format("set readonly = %s", Boolean.toString(mode)));
+      subject.getClientSideStatement().execute(executor, String.format("set readonly = %s", mode));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }
 
   @Test
-  public void testExecuteSetAutcommitDmlMode() {
+  public void testExecuteSetAutocommitDmlMode() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit_dml_mode='foo'"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
@@ -102,9 +100,8 @@ public class ConnectionStatementWithOneParameterTest {
         verify(connection, times(1)).setStatementTimeout(val, unit);
       }
     }
-    ParsedStatement subject =
-        parser.parse(Statement.of(String.format("set statement_timeout=null")));
-    subject.getClientSideStatement().execute(executor, String.format("set statement_timeout=null"));
+    ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
+    subject.getClientSideStatement().execute(executor, "set statement_timeout=null");
     verify(connection, times(1)).clearStatementTimeout();
   }
 
@@ -160,6 +157,22 @@ public class ConnectionStatementWithOneParameterTest {
           .getClientSideStatement()
           .execute(executor, String.format("set optimizer_version='%s'", version));
       verify(connection, times(1)).setOptimizerVersion(version);
+    }
+  }
+
+  @Test
+  public void testExecuteSetOptimizerStatisticsPackage() {
+    ParsedStatement subject = parser.parse(Statement.of("set optimizer_statistics_package='foo'"));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementSetOptimizerStatisticsPackage(any(String.class))).thenCallRealMethod();
+    for (String statisticsPackage : new String[] {"custom-package", ""}) {
+      subject
+          .getClientSideStatement()
+          .execute(
+              executor, String.format("set optimizer_statistics_package='%s'", statisticsPackage));
+      verify(connection, times(1)).setOptimizerStatisticsPackage(statisticsPackage);
     }
   }
 

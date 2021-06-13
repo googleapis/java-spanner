@@ -44,7 +44,7 @@ final class RetriableBatchUpdate implements RetriableStatement {
 
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
-    long[] newCount = null;
+    long[] newCount;
     try {
       transaction
           .getStatementExecutor()

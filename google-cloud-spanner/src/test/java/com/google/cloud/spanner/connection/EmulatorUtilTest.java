@@ -77,7 +77,7 @@ public class EmulatorUtilTest {
     when(databaseClient.createDatabase(
             Matchers.eq("test-instance"),
             Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.<String>of())))
+            Matchers.eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenReturn(mock(Database.class));
 
@@ -92,8 +92,7 @@ public class EmulatorUtilTest {
                 .setInstanceConfigId(InstanceConfigId.of("test-project", "emulator-config"))
                 .setNodeCount(1)
                 .build());
-    verify(databaseClient)
-        .createDatabase("test-instance", "test-database", ImmutableList.<String>of());
+    verify(databaseClient).createDatabase("test-instance", "test-database", ImmutableList.of());
   }
 
   @Test
@@ -127,7 +126,7 @@ public class EmulatorUtilTest {
     when(databaseClient.createDatabase(
             Matchers.eq("test-instance"),
             Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.<String>of())))
+            Matchers.eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -146,8 +145,7 @@ public class EmulatorUtilTest {
                 .setInstanceConfigId(InstanceConfigId.of("test-project", "emulator-config"))
                 .setNodeCount(1)
                 .build());
-    verify(databaseClient)
-        .createDatabase("test-instance", "test-database", ImmutableList.<String>of());
+    verify(databaseClient).createDatabase("test-instance", "test-database", ImmutableList.of());
   }
 
   @Test
@@ -235,7 +233,7 @@ public class EmulatorUtilTest {
     when(databaseClient.createDatabase(
             Matchers.eq("test-instance"),
             Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.<String>of())))
+            Matchers.eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -279,7 +277,7 @@ public class EmulatorUtilTest {
     when(databaseClient.createDatabase(
             Matchers.eq("test-instance"),
             Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.<String>of())))
+            Matchers.eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenThrow(new InterruptedException());
 

@@ -46,8 +46,7 @@ class AsyncStatementResultImpl implements AsyncStatementResult {
           clientSideStatementResult.getClientSideStatementType());
     } else {
       return new AsyncStatementResultImpl(
-          clientSideStatementResult.getClientSideStatementType(),
-          ApiFutures.<Void>immediateFuture(null));
+          clientSideStatementResult.getClientSideStatementType(), ApiFutures.immediateFuture(null));
     }
   }
 

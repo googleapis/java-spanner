@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -67,8 +68,9 @@ public class ValueBinderTest {
           // Array of structs.
           assertThat(binderMethod.getParameterTypes()).hasLength(2);
 
-          Value expected = (Value) method.invoke(Value.class, structType, Arrays.asList(struct));
-          assertThat(binderMethod.invoke(binder, structType, Arrays.asList(struct)))
+          Value expected =
+              (Value) method.invoke(Value.class, structType, Collections.singletonList(struct));
+          assertThat(binderMethod.invoke(binder, structType, Collections.singletonList(struct)))
               .isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
 

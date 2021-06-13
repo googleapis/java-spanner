@@ -151,7 +151,7 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} bound to the given instance ID. All databases created
    * using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(InstanceId instanceId) throws Throwable {
+  public static RemoteSpannerHelper create(InstanceId instanceId) {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
@@ -166,8 +166,7 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} for the given option and bound to the given instance ID.
    * All databases created using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId)
-      throws Throwable {
+  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId) {
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
   }

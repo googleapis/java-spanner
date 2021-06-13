@@ -17,8 +17,8 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -360,7 +360,7 @@ public class SpannerPoolTest {
   private static final long MILLISECOND = TimeUnit.NANOSECONDS.convert(1L, TimeUnit.MILLISECONDS);
 
   @Test
-  public void testAutomaticCloser() throws InterruptedException {
+  public void testAutomaticCloser() {
     FakeTicker ticker = new FakeTicker();
     SpannerPool pool = createSubjectAndMocks(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS, ticker);
     Spanner spanner1;
@@ -455,9 +455,9 @@ public class SpannerPoolTest {
     SpannerPoolKey key2 = SpannerPoolKey.of(options2);
     SpannerPoolKey key3 = SpannerPoolKey.of(options3);
 
-    assertFalse(key1.equals(key2));
-    assertTrue(key2.equals(key3));
-    assertFalse(key1.equals(key3));
-    assertFalse(key1.equals(new Object()));
+    assertNotEquals(key1, key2);
+    assertEquals(key2, key3);
+    assertNotEquals(key1, key3);
+    assertNotEquals(key1, new Object());
   }
 }

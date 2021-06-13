@@ -794,8 +794,7 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    GrpcResultSet resultSet = new GrpcResultSet(stream, this);
-    return resultSet;
+    return new GrpcResultSet(stream, this);
   }
 
   private Struct consumeSingleRow(ResultSet resultSet) {

@@ -205,9 +205,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-   *      for
-   *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-   *      is
+   *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
    *   * `error` - Error associated with the long-running operation.
@@ -224,8 +222,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    *     `(metadata.name:howl) AND` &#92;
    *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Returns operations where:
-   *     * The operation's metadata type is
-   *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+   *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
    *     * The backup name contains the string "howl".
    *     * The operation started before 2018-03-28T14:50:00Z.
    *     * The operation resulted in an error.
@@ -262,9 +259,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-   *      for
-   *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-   *      is
+   *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
    *   * `error` - Error associated with the long-running operation.
@@ -281,8 +276,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    *     `(metadata.name:howl) AND` &#92;
    *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Returns operations where:
-   *     * The operation's metadata type is
-   *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+   *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
    *     * The backup name contains the string "howl".
    *     * The operation started before 2018-03-28T14:50:00Z.
    *     * The operation resulted in an error.
@@ -332,9 +326,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-   * from a previous
-   * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-   * to the same `parent` and with the same `filter`.
+   * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+   * same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -359,9 +352,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-   * from a previous
-   * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-   * to the same `parent` and with the same `filter`.
+   * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+   * same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -889,9 +881,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-     *      for
-     *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-     *      is
+     *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
      *   * `error` - Error associated with the long-running operation.
@@ -908,8 +898,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *     `(metadata.name:howl) AND` &#92;
      *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Returns operations where:
-     *     * The operation's metadata type is
-     *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+     *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
      *     * The backup name contains the string "howl".
      *     * The operation started before 2018-03-28T14:50:00Z.
      *     * The operation resulted in an error.
@@ -945,9 +934,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-     *      for
-     *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-     *      is
+     *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
      *   * `error` - Error associated with the long-running operation.
@@ -964,8 +951,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *     `(metadata.name:howl) AND` &#92;
      *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Returns operations where:
-     *     * The operation's metadata type is
-     *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+     *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
      *     * The backup name contains the string "howl".
      *     * The operation started before 2018-03-28T14:50:00Z.
      *     * The operation resulted in an error.
@@ -1001,9 +987,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-     *      for
-     *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-     *      is
+     *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
      *   * `error` - Error associated with the long-running operation.
@@ -1020,8 +1004,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *     `(metadata.name:howl) AND` &#92;
      *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Returns operations where:
-     *     * The operation's metadata type is
-     *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+     *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
      *     * The backup name contains the string "howl".
      *     * The operation started before 2018-03-28T14:50:00Z.
      *     * The operation resulted in an error.
@@ -1056,9 +1039,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-     *      for
-     *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-     *      is
+     *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
      *   * `error` - Error associated with the long-running operation.
@@ -1075,8 +1056,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *     `(metadata.name:howl) AND` &#92;
      *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Returns operations where:
-     *     * The operation's metadata type is
-     *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+     *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
      *     * The backup name contains the string "howl".
      *     * The operation started before 2018-03-28T14:50:00Z.
      *     * The operation resulted in an error.
@@ -1107,9 +1087,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-     *      for
-     *      [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]
-     *      is
+     *      for [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
      *   * `error` - Error associated with the long-running operation.
@@ -1126,8 +1104,7 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      *     `(metadata.name:howl) AND` &#92;
      *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Returns operations where:
-     *     * The operation's metadata type is
-     *     [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
+     *     * The operation's metadata type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata].
      *     * The backup name contains the string "howl".
      *     * The operation started before 2018-03-28T14:50:00Z.
      *     * The operation resulted in an error.
@@ -1211,9 +1188,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      * <pre>
      * If non-empty, `page_token` should contain a
      * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-     * from a previous
-     * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-     * to the same `parent` and with the same `filter`.
+     * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+     * same `parent` and with the same `filter`.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1237,9 +1213,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      * <pre>
      * If non-empty, `page_token` should contain a
      * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-     * from a previous
-     * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-     * to the same `parent` and with the same `filter`.
+     * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+     * same `parent` and with the same `filter`.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1263,9 +1238,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      * <pre>
      * If non-empty, `page_token` should contain a
      * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-     * from a previous
-     * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-     * to the same `parent` and with the same `filter`.
+     * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+     * same `parent` and with the same `filter`.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1288,9 +1262,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      * <pre>
      * If non-empty, `page_token` should contain a
      * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-     * from a previous
-     * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-     * to the same `parent` and with the same `filter`.
+     * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+     * same `parent` and with the same `filter`.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1309,9 +1282,8 @@ public final class ListBackupOperationsRequest extends com.google.protobuf.Gener
      * <pre>
      * If non-empty, `page_token` should contain a
      * [next_page_token][google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token]
-     * from a previous
-     * [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse]
-     * to the same `parent` and with the same `filter`.
+     * from a previous [ListBackupOperationsResponse][google.spanner.admin.database.v1.ListBackupOperationsResponse] to the
+     * same `parent` and with the same `filter`.
      * </pre>
      *
      * <code>string page_token = 4;</code>

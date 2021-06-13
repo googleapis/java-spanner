@@ -26,8 +26,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,9 +40,6 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -50,8 +47,8 @@ import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
@@ -70,7 +67,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -179,7 +176,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Timestamp timestamp =
         client.write(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
@@ -195,7 +192,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.HIGH));
 
@@ -212,7 +209,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     CommitResponse response =
         client.writeWithOptions(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
     assertNotNull(response);
@@ -226,7 +223,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Timestamp timestamp =
         client.writeAtLeastOnce(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
   }
@@ -237,7 +234,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(
-            Arrays.asList(
+            Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.commitStats());
     assertNotNull(response);
@@ -258,7 +255,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.LOW));
 
@@ -276,7 +273,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.tag("app=spanner,env=test"));
 
@@ -341,16 +338,12 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.executeQuery(
-                    SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -370,19 +363,16 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.read(
-                    READ_TABLE_NAME,
-                    KeySet.singleKey(Key.of(1L)),
-                    READ_COLUMN_NAMES,
-                    Options.tag("app=spanner,env=test,action=read"))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.tag("app=spanner,env=test,action=read"))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -401,13 +391,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            return transaction.executeUpdate(
-                UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=update"));
-          }
-        });
+        transaction ->
+            transaction.executeUpdate(
+                UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=update")));
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -425,13 +411,10 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=txn"));
     runner.run(
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) throws Exception {
-            return transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.tag("app=spanner,env=test,action=batch"));
-          }
-        });
+        transaction ->
+            transaction.batchUpdate(
+                Collections.singletonList(UPDATE_STATEMENT),
+                Options.tag("app=spanner,env=test,action=batch")));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -467,12 +450,9 @@ public class DatabaseClientImplTest {
     TransactionRunner runner =
         client.readWriteTransaction(Options.tag("app=spanner,env=test,action=commit"));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
         });
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -510,12 +490,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.tag("app=spanner,env=test,action=runner"));
     get(
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                return ApiFutures.immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
             },
             executor));
 
@@ -538,13 +515,9 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync());
@@ -597,19 +570,16 @@ public class DatabaseClientImplTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });
@@ -619,7 +589,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void singleUseAsyncWithoutCallback() throws Exception {
+  public void singleUseAsyncWithoutCallback() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     int rowCount = 0;
@@ -675,19 +645,16 @@ public class DatabaseClientImplTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });
@@ -818,12 +785,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          return null;
         });
     assertNotNull(runner.getCommitTimestamp());
   }
@@ -834,12 +798,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
+          return null;
         });
     assertNotNull(runner.getCommitResponse());
     assertNotNull(runner.getCommitResponse().getCommitStats());
@@ -857,12 +818,9 @@ public class DatabaseClientImplTest {
     // transaction.
     mockSpanner.unfreeze();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          return null;
         });
   }
 
@@ -874,13 +832,7 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> result =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
-              }
-            },
-            executor);
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT)), executor);
     assertEquals(UPDATE_COUNT, result.get().longValue());
     assertNotNull(runner.getCommitTimestamp().get());
     executor.shutdown();
@@ -894,12 +846,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.commitStats());
     ApiFuture<Void> result =
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("FOO", Key.of("foo")));
-                return ApiFutures.<Void>immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("FOO", Key.of("foo")));
+              return ApiFutures.immediateFuture(null);
             },
             executor);
     assertNull(get(result));
@@ -919,13 +868,7 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT));
-              }
-            },
-            executor);
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(UPDATE_STATEMENT)), executor);
     mockSpanner.unfreeze();
     assertThat(fut.get()).isEqualTo(UPDATE_COUNT);
     executor.shutdown();
@@ -939,31 +882,25 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync();
     ApiFuture<Long> fut =
         runner.runAsync(
-            new AsyncWork<Long>() {
-              @Override
-              public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT));
-              }
-            },
+            txn -> ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT)),
             executor);
-    try {
-      fut.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-    }
+
+    ExecutionException e = assertThrows(ExecutionException.class, () -> fut.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+
     executor.shutdown();
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void testTransactionManager() throws Exception {
+  public void testTransactionManager() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
       while (true) {
-        TransactionContext transaction = manager.begin();
         try {
           transaction.executeUpdate(UPDATE_STATEMENT);
           manager.commit();
@@ -976,13 +913,14 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void testTransactionManager_returnsCommitStats() throws InterruptedException {
+  public void testTransactionManager_returnsCommitStats() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
+      TransactionContext transaction = manager.begin();
       while (true) {
-        TransactionContext transaction = manager.begin();
         try {
           transaction.buffer(Mutation.delete("FOO", Key.of("foo")));
           manager.commit();
@@ -997,6 +935,7 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void transactionManagerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
@@ -1004,59 +943,56 @@ public class DatabaseClientImplTest {
         spannerWithEmptySessionPool.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (TransactionManager txManager = client.transactionManager()) {
+      mockSpanner.unfreeze();
+      TransactionContext transaction = txManager.begin();
       while (true) {
-        mockSpanner.unfreeze();
-        TransactionContext tx = txManager.begin();
         try {
-          tx.executeUpdate(UPDATE_STATEMENT);
+          transaction.executeUpdate(UPDATE_STATEMENT);
           txManager.commit();
           break;
         } catch (AbortedException e) {
           Thread.sleep(e.getRetryDelayInMillis());
-          tx = txManager.resetForRetry();
+          transaction = txManager.resetForRetry();
         }
       }
     }
   }
 
+  @SuppressWarnings("resource")
   @Test
   public void transactionManagerExecuteQueryAsync() throws Exception {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     final AtomicInteger rowCount = new AtomicInteger();
     try (TransactionManager txManager = client.transactionManager()) {
+      TransactionContext transaction = txManager.begin();
       while (true) {
-        TransactionContext tx = txManager.begin();
         try {
-          try (AsyncResultSet rs = tx.executeQueryAsync(SELECT1)) {
+          try (AsyncResultSet rs = transaction.executeQueryAsync(SELECT1)) {
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            rowCount.incrementAndGet();
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  try {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          rowCount.incrementAndGet();
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (Throwable t) {
-                      return CallbackResponse.DONE;
                     }
+                  } catch (Throwable t) {
+                    return CallbackResponse.DONE;
                   }
                 });
           }
           txManager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
-          tx = txManager.resetForRetry();
+          transaction = txManager.resetForRetry();
         }
       }
     }
@@ -1132,23 +1068,18 @@ public class DatabaseClientImplTest {
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
 
       // Normal DML should timeout.
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Void>() {
-                  @Override
-                  public Void run(TransactionContext transaction) {
-                    transaction.executeUpdate(UPDATE_STATEMENT);
-                    return null;
-                  }
-                });
-        fail("expected DEADLINE_EXCEEDED");
-      } catch (SpannerException e) {
-        if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-          fail("expected DEADLINE_EXCEEDED");
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            transaction.executeUpdate(UPDATE_STATEMENT);
+                            return null;
+                          }));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -1170,27 +1101,17 @@ public class DatabaseClientImplTest {
       // PDML should timeout with these settings.
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
-      try {
-        client.executePartitionedUpdate(UPDATE_STATEMENT);
-        fail("expected DEADLINE_EXCEEDED");
-      } catch (SpannerException e) {
-        if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-          fail("expected DEADLINE_EXCEEDED");
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class, () -> client.executePartitionedUpdate(UPDATE_STATEMENT));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
 
       // Normal DML should not timeout.
       mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
       long updateCount =
           client
               .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) {
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
-                    }
-                  });
+              .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     }
   }
@@ -1231,20 +1152,14 @@ public class DatabaseClientImplTest {
 
       // Normal DML should timeout as it should use the ExecuteSQL RPC settings.
       mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
-      try {
-        client
-            .readWriteTransaction()
-            .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    return transaction.executeUpdate(UPDATE_STATEMENT);
-                  }
-                });
-        fail("missing expected DEADLINE_EXCEEDED exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
       assertThat(updateCount).isEqualTo(UPDATE_COUNT);
     }
   }
@@ -1331,19 +1246,13 @@ public class DatabaseClientImplTest {
                     DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
         // The create session failure should propagate to the client and not retry.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          rs.next();
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          assertThrows(ResourceNotFoundException.class, () -> rs.next());
           // The server should only receive one BatchCreateSessions request.
           assertThat(mockSpanner.getRequests()).hasSize(1);
         }
-        try {
-          dbClient.readWriteTransaction();
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-          // No additional requests should have been sent by the client.
-          assertThat(mockSpanner.getRequests()).hasSize(1);
-        }
+        assertThrows(ResourceNotFoundException.class, () -> dbClient.readWriteTransaction());
+        // No additional requests should have been sent by the client.
+        assertThat(mockSpanner.getRequests()).hasSize(1);
       }
       mockSpanner.reset();
       mockSpanner.removeAllExecutionTimes();
@@ -1437,48 +1346,22 @@ public class DatabaseClientImplTest {
 
         // All subsequent calls should fail with a DatabaseNotFoundException.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          while (rs.next()) {}
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
+          assertThrows(ResourceNotFoundException.class, () -> rs.next());
         }
-        try {
-          dbClient
-              .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) {
-                      return null;
-                    }
-                  });
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-        }
+        assertThrows(
+            ResourceNotFoundException.class,
+            () -> dbClient.readWriteTransaction().run(transaction -> null));
 
         // Now simulate that the database has been re-created. The database client should still
-        // throw
-        // DatabaseNotFoundExceptions, as it is not the same database. The server should not receive
-        // any new requests.
+        // throw DatabaseNotFoundExceptions, as it is not the same database. The server should not
+        // receive any new requests.
         mockSpanner.reset();
         // All subsequent calls should fail with a DatabaseNotFoundException.
-        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          while (rs.next()) {}
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-        }
-        try {
-          dbClient
-              .readWriteTransaction()
-              .run(
-                  new TransactionCallable<Void>() {
-                    @Override
-                    public Void run(TransactionContext transaction) {
-                      return null;
-                    }
-                  });
-          fail("missing expected exception");
-        } catch (DatabaseNotFoundException | InstanceNotFoundException e) {
-        }
+        assertThrows(
+            ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+        assertThrows(
+            ResourceNotFoundException.class,
+            () -> dbClient.readWriteTransaction().run(transaction -> null));
         assertThat(mockSpanner.getRequests()).isEmpty();
         // Now get a new database client. Normally multiple calls to Spanner#getDatabaseClient will
         // return the same instance, but not when the instance has been invalidated by a
@@ -1493,6 +1376,49 @@ public class DatabaseClientImplTest {
           while (rs.next()) {}
         }
         assertThat(mockSpanner.getRequests()).isNotEmpty();
+      }
+      mockSpanner.reset();
+      mockSpanner.removeAllExecutionTimes();
+    }
+  }
+
+  @Test
+  public void testGetInvalidatedClientMultipleTimes() {
+    StatusRuntimeException[] exceptions =
+        new StatusRuntimeException[] {
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        };
+    for (StatusRuntimeException exception : exceptions) {
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(TEST_PROJECT)
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+              .build()
+              .getService()) {
+        for (int run = 0; run < 2; run++) {
+          DatabaseClientImpl dbClient =
+              (DatabaseClientImpl)
+                  spanner.getDatabaseClient(
+                      DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+          for (int useClient = 0; useClient < 2; useClient++) {
+            // Using the same client multiple times should continue to return the same
+            // ResourceNotFoundException, even though the session pool has been invalidated.
+            assertThrows(
+                ResourceNotFoundException.class,
+                () -> dbClient.singleUse().executeQuery(SELECT1).next());
+            // The server should only receive one BatchCreateSessions request for each run as we
+            // have set MinSessions=0.
+            assertThat(mockSpanner.getRequests()).hasSize(run + 1);
+            assertThat(dbClient.pool.isValid()).isFalse();
+          }
+        }
       }
       mockSpanner.reset();
       mockSpanner.removeAllExecutionTimes();
@@ -1517,12 +1443,9 @@ public class DatabaseClientImplTest {
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
-                    return transaction.executeUpdate(UPDATE_STATEMENT);
-                  }
+                transaction -> {
+                  assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  return transaction.executeUpdate(UPDATE_STATEMENT);
                 });
     assertThat(res).isEqualTo(UPDATE_COUNT);
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
@@ -1552,39 +1475,33 @@ public class DatabaseClientImplTest {
             .readWriteTransaction()
             .allowNestedTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) {
-                    // Client1 should have 1 session checked out.
-                    // Client2 should have 0 sessions checked out.
-                    assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
-                    assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
-                    Long add =
-                        client2
-                            .readWriteTransaction()
-                            .run(
-                                new TransactionCallable<Long>() {
-                                  @Override
-                                  public Long run(TransactionContext transaction) {
-                                    // Both clients should now have 1 session checked out.
-                                    assertThat(client1.pool.getNumberOfSessionsInPool())
-                                        .isEqualTo(minSessions - 1);
-                                    assertThat(client2.pool.getNumberOfSessionsInPool())
-                                        .isEqualTo(minSessions - 1);
-                                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                                      if (rs.next()) {
-                                        return rs.getLong(0);
-                                      }
-                                      return 0L;
-                                    }
+                transaction -> {
+                  // Client1 should have 1 session checked out.
+                  // Client2 should have 0 sessions checked out.
+                  assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions - 1);
+                  assertThat(client2.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
+                  Long add =
+                      client2
+                          .readWriteTransaction()
+                          .run(
+                              transaction1 -> {
+                                // Both clients should now have 1 session checked out.
+                                assertThat(client1.pool.getNumberOfSessionsInPool())
+                                    .isEqualTo(minSessions - 1);
+                                assertThat(client2.pool.getNumberOfSessionsInPool())
+                                    .isEqualTo(minSessions - 1);
+                                try (ResultSet rs = transaction1.executeQuery(SELECT1)) {
+                                  if (rs.next()) {
+                                    return rs.getLong(0);
                                   }
-                                });
-                    try (ResultSet rs = transaction.executeQuery(SELECT1)) {
-                      if (rs.next()) {
-                        return add + rs.getLong(0);
-                      }
-                      return add + 0L;
+                                  return 0L;
+                                }
+                              });
+                  try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                    if (rs.next()) {
+                      return add + rs.getLong(0);
                     }
+                    return add;
                   }
                 });
     assertThat(res).isEqualTo(2L);
@@ -1602,11 +1519,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       DatabaseClient client =
@@ -1616,18 +1529,25 @@ public class DatabaseClientImplTest {
               .singleUse()
               .executeQuery(
                   Statement.newBuilder(SELECT1.getSql())
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("1")
+                              .setOptimizerStatisticsPackage("custom-package")
+                              .build())
                       .build())) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
     }
   }
 
@@ -1640,11 +1560,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       DatabaseClient client =
@@ -1653,20 +1569,27 @@ public class DatabaseClientImplTest {
         try (ResultSet rs =
             tx.analyzeQuery(
                 Statement.newBuilder(SELECT1.getSql())
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("1")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build(),
                 QueryAnalyzeMode.PROFILE)) {
           // Just iterate over the results to execute the query.
           while (rs.next()) {}
         }
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
       assertThat(request.getQueryMode()).isEqualTo(QueryMode.PROFILE);
     }
   }
@@ -1680,11 +1603,7 @@ public class DatabaseClientImplTest {
             .setProjectId("[PROJECT]")
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(
-                SessionPoolOptions.newBuilder()
-                    .setMinSessions(0)
-                    .setWriteSessionsFraction(0.0f)
-                    .build())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
             .build()
             .getService()) {
       BatchClient client =
@@ -1695,19 +1614,26 @@ public class DatabaseClientImplTest {
           transaction.partitionQuery(
               PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
               Statement.newBuilder(SELECT1.getSql())
-                  .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                  .withQueryOptions(
+                      QueryOptions.newBuilder()
+                          .setOptimizerVersion("1")
+                          .setOptimizerStatisticsPackage("custom-package")
+                          .build())
                   .build());
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
       }
-      // Check that the last query was executed using a custom optimizer version.
+      // Check that the last query was executed using a custom optimizer version and statistics
+      // package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assertThat(requests).isNotEmpty();
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
       ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
       assertThat(request.getQueryOptions()).isNotNull();
       assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
     }
   }
 
@@ -1729,28 +1655,25 @@ public class DatabaseClientImplTest {
       resultSetClosed =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  try {
-                    while (true) {
-                      switch (rs.tryNext()) {
-                        case DONE:
-                          finished.set(true);
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          receivedResults.add(resultSet.getCurrentRowAsStruct());
-                          break;
-                        default:
-                          throw new IllegalStateException("Unknown cursor state");
-                      }
+              asyncResultSet -> {
+                try {
+                  while (true) {
+                    switch (rs.tryNext()) {
+                      case DONE:
+                        finished.set(true);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        receivedResults.add(asyncResultSet.getCurrentRowAsStruct());
+                        break;
+                      default:
+                        throw new IllegalStateException("Unknown cursor state");
                     }
-                  } catch (Throwable t) {
-                    finished.setException(t);
-                    return CallbackResponse.DONE;
                   }
+                } catch (Throwable t) {
+                  finished.setException(t);
+                  return CallbackResponse.DONE;
                 }
               });
     }
@@ -1783,7 +1706,7 @@ public class DatabaseClientImplTest {
             assertThat(client.clientId).isEqualTo(prevClientId);
           }
           prevClientId = client.clientId;
-          client.singleUse().readRow("MyTable", Key.of(0), Arrays.asList("MyColumn"));
+          client.singleUse().readRow("MyTable", Key.of(0), Collections.singletonList("MyColumn"));
         } catch (Exception e) {
           // ignore
         }
@@ -1807,13 +1730,9 @@ public class DatabaseClientImplTest {
       DatabaseClient client = spanner.getDatabaseClient(databaseId);
       // The following call is non-blocking and will not generate an exception.
       ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      try {
-        // Actually trying to get any results will cause an exception.
-        rs.next();
-        fail("missing PERMISSION_DENIED exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PERMISSION_DENIED);
-      }
+      // Actually trying to get any results will cause an exception.
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
     }
   }
 
@@ -1829,9 +1748,7 @@ public class DatabaseClientImplTest {
             .singleUse()
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id'");
       // The error message should normally not include the parameter values to prevent sensitive
@@ -1850,9 +1767,7 @@ public class DatabaseClientImplTest {
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
       logger.setLevel(Level.FINEST);
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       // With log level set to FINEST the error should also include the parameter values.
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id {id: 1}'");
@@ -1870,9 +1785,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs =
         client.singleUse().read("FOO", KeySet.singleKey(Key.of(1L)), ImmutableList.of("BAR"))) {
-      rs.next();
-      fail("missing expected exception");
-    } catch (SpannerException e) {
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).doesNotContain("Statement:");
     }
@@ -1890,27 +1803,16 @@ public class DatabaseClientImplTest {
             SpannerCallContextTimeoutConfigurator.create()
                 .withExecuteQueryTimeout(Duration.ofNanos(1L)))
         .run(
-            new Runnable() {
-              @Override
-              public void run() {
-                // Query should fail with a timeout.
-                try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-                  rs.next();
-                  fail("missing expected DEADLINE_EXCEEDED exception");
-                } catch (SpannerException e) {
-                  assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-                }
-                // Update should succeed.
-                client
-                    .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Long>() {
-                          @Override
-                          public Long run(TransactionContext transaction) throws Exception {
-                            return transaction.executeUpdate(UPDATE_STATEMENT);
-                          }
-                        });
+            () -> {
+              // Query should fail with a timeout.
+              try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
               }
+              // Update should succeed.
+              client
+                  .readWriteTransaction()
+                  .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
             });
   }
 
@@ -1925,16 +1827,9 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
-      ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      try {
-        while (rs.next()) {
-          fail("Missing expected exception");
-        }
-      } catch (SpannerException e) {
+      try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+        SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      } finally {
-        // This should not cause any failures.
-        rs.close();
       }
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
@@ -2037,15 +1932,12 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -2061,19 +1953,16 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            try (ResultSet resultSet =
-                transaction.read(
-                    READ_TABLE_NAME,
-                    KeySet.singleKey(Key.of(1L)),
-                    READ_COLUMN_NAMES,
-                    Options.priority(RpcPriority.HIGH))) {
-              while (resultSet.next()) {}
-            }
-            return null;
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
           }
+          return null;
         });
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -2089,12 +1978,8 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            return transaction.executeUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH));
-          }
-        });
+        transaction ->
+            transaction.executeUpdate(UPDATE_STATEMENT, Options.priority(RpcPriority.HIGH)));
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -2109,13 +1994,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<long[]>() {
-          @Override
-          public long[] run(TransactionContext transaction) throws Exception {
-            return transaction.batchUpdate(
-                Arrays.asList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH));
-          }
-        });
+        transaction ->
+            transaction.batchUpdate(
+                Collections.singletonList(UPDATE_STATEMENT), Options.priority(RpcPriority.HIGH)));
 
     List<ExecuteBatchDmlRequest> requests =
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
@@ -2144,12 +2025,9 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.priority(RpcPriority.HIGH));
     runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws Exception {
-            transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-            return null;
-          }
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
         });
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
@@ -2182,12 +2060,9 @@ public class DatabaseClientImplTest {
     AsyncRunner runner = client.runAsync(Options.priority(RpcPriority.HIGH));
     get(
         runner.runAsync(
-            new AsyncWork<Void>() {
-              @Override
-              public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-                txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                return ApiFutures.immediateFuture(null);
-              }
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
             },
             executor));
 
@@ -2208,13 +2083,9 @@ public class DatabaseClientImplTest {
       get(
           transaction
               .then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.buffer(Mutation.delete("TEST", KeySet.all()));
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync());
