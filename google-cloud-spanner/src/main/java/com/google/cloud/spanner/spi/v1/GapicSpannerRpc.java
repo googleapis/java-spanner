@@ -55,6 +55,9 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannelBuilder;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.ErrorCode;
@@ -81,11 +84,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.cloud.grpc.GcpManagedChannelBuilder;
-import com.google.cloud.grpc.GcpManagedChannelOptions;
-import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -164,9 +165,9 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.opencensus.metrics.Metrics;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -521,24 +522,21 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   private static String parseGrpcGcpApiConfig() {
-    InputStream inputStream = GapicSpannerRpc.class.getResourceAsStream(API_FILE);
-    StringBuilder sb = new StringBuilder();
     try {
-      for (int ch; (ch = inputStream.read()) != -1; ) {
-        sb.append((char) ch);
-      }
+      return Resources.toString(
+          GapicSpannerRpc.class.getResource(API_FILE), Charset.forName("UTF8"));
     } catch (IOException e) {
       throw newSpannerException(e);
     }
-    return sb.toString();
   }
 
   // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified.
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
-    GcpMetricsOptions metricsOptions = MoreObjects.firstNonNull(
-        grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
+    GcpMetricsOptions metricsOptions =
+        MoreObjects.firstNonNull(
+            grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
     GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
     if (metricsOptions.getMetricRegistry() == null) {
       metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
@@ -553,7 +551,9 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @SuppressWarnings("rawtypes")
-  private static void maybeEnableGrpcGcpExtension(InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder, final SpannerOptions options) {
+  private static void maybeEnableGrpcGcpExtension(
+      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder,
+      final SpannerOptions options) {
     if (!options.isUseGrpcGcpExtension()) {
       return;
     }
