@@ -89,7 +89,9 @@ public class InstanceInfo {
      * (inclusive) when creating a new instance with node count = 0. Processing units from 1000 and
      * up must always be a multiple of 1000 (i.e. equal to an integer number of nodes).
      */
-    public abstract Builder setProcessingUnits(int processingUnits);
+    public Builder setProcessingUnits(int processingUnits) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
 
     public abstract Builder setState(State state);
 

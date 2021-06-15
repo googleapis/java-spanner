@@ -35,7 +35,7 @@ public class InstanceInfoTest {
     InstanceInfo.Builder builder = InstanceInfo.newBuilder(id);
     InstanceInfo info = builder.build();
     assertNull(info.getDisplayName());
-    assertEquals(InstanceId.of("test-project", "test-instance"),info.getId());
+    assertEquals(InstanceId.of("test-project", "test-instance"), info.getId());
     assertNull(info.getInstanceConfigId());
     assertNull(info.getState());
     assertEquals(0, info.getNodeCount());
