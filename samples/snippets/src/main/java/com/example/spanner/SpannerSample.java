@@ -1507,7 +1507,11 @@ public class SpannerSample {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
-                db, QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                db, QueryOptions
+                    .newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("auto_20191128_14_47_22UTC")
+                    .build())
             .build();
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(db);
@@ -1531,7 +1535,11 @@ public class SpannerSample {
             .executeQuery(
                 Statement
                     .newBuilder("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(QueryOptions
+                        .newBuilder()
+                        .setOptimizerVersion("1")
+                        .setOptimizerStatisticsPackage("latest")
+                        .build())
                     .build())) {
       while (resultSet.next()) {
         System.out.printf(
@@ -1620,6 +1628,8 @@ public class SpannerSample {
       if (pollingFuture.get().getErrorCode() == null) {
         // Backup was created before it could be cancelled. Delete the backup.
         backup.delete();
+        System.out.println("Backup operation for [" + backup.getId()
+            + "] successfully finished before it could be cancelled");
       } else if (pollingFuture.get().getErrorCode().getCode() == StatusCode.Code.CANCELLED) {
         System.out.println("Backup operation for [" + backup.getId() + "] successfully cancelled");
       }

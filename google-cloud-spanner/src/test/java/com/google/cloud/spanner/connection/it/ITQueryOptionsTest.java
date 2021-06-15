@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,28 @@
 
 package com.google.cloud.spanner.connection.it;
 
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-/** Execute DDL statements using the generic connection API. */
-@Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
-public class ITDdlTest extends ITAbstractSpannerTest {
+public class ITQueryOptionsTest extends ITAbstractSpannerTest {
+
+  private static final String TEST_QUERY_OPTIONS = "ITSqlScriptTest_TestQueryOptions.sql";
+
+  private SqlScriptVerifier verifier;
+
+  @Before
+  public void setUp() {
+    verifier = new SqlScriptVerifier();
+  }
 
   @Test
-  public void testSqlScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITDdlTest.sql", SqlScriptVerifier.class, false);
+  public void verifiesQueryOptions() throws Exception {
+    try (ITConnection connection = createConnection()) {
+      verifier.verifyStatementsInFile(
+          SpannerGenericConnection.of(connection), TEST_QUERY_OPTIONS, SqlScriptVerifier.class);
+    }
   }
 }

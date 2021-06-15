@@ -77,6 +77,14 @@
 	  "exampleStatements": ["show variable optimizer_version"]
 	},
 	{
+	  "name": "SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+optimizer_statistics_package\\s*\\z",
+	  "method": "statementShowOptimizerStatisticsPackage",
+	  "exampleStatements": ["show variable optimizer_statistics_package"]
+	},
+	{
 	  "name": "SHOW VARIABLE RETURN_COMMIT_STATS",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -278,6 +286,20 @@
 	    "propertyName": "OPTIMIZER_VERSION",
 	    "separator": "=",
 	    "allowedValues": "'((\\d{1,20})|(LATEST)|())'",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "SET OPTIMIZER_STATISTICS_PACKAGE = '<package>'|''",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+optimizer_statistics_package\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetOptimizerStatisticsPackage",
+	  "exampleStatements": ["set optimizer_statistics_package='auto_20191128_14_47_22UTC'", "set optimizer_statistics_package=''"],
+	  "setStatement": {
+	    "propertyName": "OPTIMIZER_STATISTICS_PACKAGE",
+	    "separator": "=",
+	    "allowedValues": "'((\\S+)|())'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},

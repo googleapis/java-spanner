@@ -16,7 +16,11 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,6 +48,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class AsyncResultSetImplTest {
@@ -298,6 +304,103 @@ public class AsyncResultSetImplTest {
       // There should be exactly 4 callbacks as we only consume one row per callback.
       assertThat(callbackCounter.get()).isEqualTo(4);
       assertThat(rowCounter).isEqualTo(3);
+    }
+  }
+
+  @Test
+  public void testCallbackIsNotCalledWhilePaused() throws InterruptedException, ExecutionException {
+    Executor executor = Executors.newSingleThreadExecutor();
+    final int simulatedRows = 100;
+    ResultSet delegate = mock(ResultSet.class);
+    when(delegate.next())
+        .thenAnswer(
+            new Answer<Boolean>() {
+              int row = 0;
+
+              @Override
+              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                row++;
+                if (row > simulatedRows) {
+                  return false;
+                }
+                return true;
+              }
+            });
+    when(delegate.getCurrentRowAsStruct()).thenReturn(mock(Struct.class));
+    final AtomicInteger callbackCounter = new AtomicInteger();
+    final BlockingDeque<Object> queue = new LinkedBlockingDeque<>(1);
+    final AtomicBoolean paused = new AtomicBoolean();
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      ApiFuture<Void> callbackResult =
+          rs.setCallback(
+              executor,
+              resultSet -> {
+                assertFalse(paused.get());
+                callbackCounter.incrementAndGet();
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        paused.set(true);
+                        queue.put(new Object());
+                        return CallbackResponse.PAUSE;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                    }
+                  }
+                } catch (InterruptedException e) {
+                  throw SpannerExceptionFactory.propagateInterrupt(e);
+                }
+              });
+      int rowCounter = 0;
+      while (!callbackResult.isDone()) {
+        Object o = queue.poll(1L, TimeUnit.MILLISECONDS);
+        if (o != null) {
+          rowCounter++;
+        }
+        Thread.yield();
+        paused.set(false);
+        rs.resume();
+      }
+      // Empty the queue to ensure we count all elements.
+      while (queue.poll() != null) {
+        rowCounter++;
+      }
+      // Assert that we can get the result from the callback future without any exceptions. That
+      // indicates that the callback function never failed with an unexpected exception.
+      assertNull(callbackResult.get());
+      assertThat(callbackCounter.get()).isEqualTo(simulatedRows + 1);
+      assertThat(rowCounter).isEqualTo(simulatedRows);
+    }
+  }
+
+  @Test
+  public void testCallbackIsNotCalledWhilePausedAndCanceled()
+      throws InterruptedException, ExecutionException {
+    Executor executor = Executors.newSingleThreadExecutor();
+    ResultSet delegate = mock(ResultSet.class);
+
+    final AtomicInteger callbackCounter = new AtomicInteger();
+    ApiFuture<Void> callbackResult;
+
+    try (AsyncResultSetImpl rs =
+        new AsyncResultSetImpl(simpleProvider, delegate, AsyncResultSetImpl.DEFAULT_BUFFER_SIZE)) {
+      callbackResult =
+          rs.setCallback(
+              executor,
+              resultSet -> {
+                callbackCounter.getAndIncrement();
+                return CallbackResponse.PAUSE;
+              });
+
+      rs.cancel();
+
+      SpannerException exception = assertThrows(SpannerException.class, () -> get(callbackResult));
+      assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
+      assertEquals(1, callbackCounter.get());
     }
   }
 

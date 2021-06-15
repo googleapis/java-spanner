@@ -130,8 +130,7 @@ public class SpannerGaxRetryTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Make sure the session pool is empty by default.
-    builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder().setMinSessions(0).setWriteSessionsFraction(0.0f).build());
+    builder.setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
     // Create one client with default timeout values and one with short timeout values specifically
     // for the test cases that expect a DEADLINE_EXCEEDED.
     spanner = builder.build().getService();

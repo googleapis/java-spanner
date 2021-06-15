@@ -15,10 +15,13 @@
  */
 
 /*
- * Test setting and getting the optimizer version to use.
+ * Test setting and getting the following query options:
+ *   - Optimizer version
+ *   - Optimizer statistics package
  */
 
 -- Set and get valid values.
+-- Optimizer version
 @EXPECT NO_RESULT
 SET OPTIMIZER_VERSION = '1';
 
@@ -43,9 +46,27 @@ SET OPTIMIZER_VERSION = '';
 @EXPECT RESULT_SET 'OPTIMIZER_VERSION',''
 SHOW VARIABLE OPTIMIZER_VERSION;
 
+-- Optimizer statistics package
+@EXPECT NO_RESULT
+SET OPTIMIZER_STATISTICS_PACKAGE = 'custom-package_withNumbers-1234';
+
+@EXPECT RESULT_SET 'OPTIMIZER_STATISTICS_PACKAGE','custom-package_withNumbers-1234'
+SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;
+
+@EXPECT NO_RESULT
+SET OPTIMIZER_STATISTICS_PACKAGE = '';
+
+@EXPECT RESULT_SET 'OPTIMIZER_STATISTICS_PACKAGE',''
+SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;
+
 -- Try to set invalid values.
+-- Optimizer version
 @EXPECT EXCEPTION INVALID_ARGUMENT 'INVALID_ARGUMENT: Unknown value for OPTIMIZER_VERSION: 'None''
 SET OPTIMIZER_VERSION = 'None';
 
 @EXPECT EXCEPTION INVALID_ARGUMENT 'INVALID_ARGUMENT: Unknown value for OPTIMIZER_VERSION: 'v1''
 SET OPTIMIZER_VERSION = 'v1';
+
+-- Optimizer statistics package
+@EXPECT EXCEPTION INVALID_ARGUMENT 'INVALID_ARGUMENT: Unknown value for OPTIMIZER_STATISTICS_PACKAGE: '  ''
+SET OPTIMIZER_STATISTICS_PACKAGE = '  ';

@@ -54,7 +54,9 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +76,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
    * because it was invalidated by a later transaction in the same session.
    */
   private static final String TRANSACTION_CANCELLED_MESSAGE = "invalidated by a later transaction";
+
+  private static final String TRANSACTION_ALREADY_COMMITTED_MESSAGE =
+      "Transaction has already committed";
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
@@ -146,7 +151,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    @GuardedBy("lock")
+    private final Object committingLock = new Object();
+
+    @GuardedBy("committingLock")
     private volatile boolean committing;
 
     @GuardedBy("lock")
@@ -155,8 +162,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-    @GuardedBy("lock")
-    private List<Mutation> mutations = new ArrayList<>();
+    private final Queue<Mutation> mutations = new ConcurrentLinkedQueue<>();
 
     @GuardedBy("lock")
     private boolean aborted;
@@ -280,6 +286,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        committing = true;
+        if (!mutations.isEmpty()) {
+          Mutation.toProto(mutations, mutationsProto);
+        }
+      }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder =
@@ -303,14 +319,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } else {
           finishOps = finishedAsyncOperations;
         }
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
       }
+      builder.addAllMutations(mutationsProto);
       finishOps.addListener(
           new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
@@ -603,20 +613,42 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Mutation mutation) {
-      synchronized (lock) {
-        checkNotNull(mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         mutations.add(checkNotNull(mutation));
       }
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutation);
+      return ApiFutures.immediateFuture(null);
+    }
+
+    @Override
     public void buffer(Iterable<Mutation> mutations) {
-      synchronized (lock) {
-        checkNotNull(this.mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         for (Mutation mutation : mutations) {
           this.mutations.add(checkNotNull(mutation));
         }
       }
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutations);
+      return ApiFutures.immediateFuture(null);
     }
 
     @Override

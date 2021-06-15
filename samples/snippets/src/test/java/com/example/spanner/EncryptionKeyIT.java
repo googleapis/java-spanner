@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,6 +42,7 @@ import org.junit.runners.JUnit4;
  * CreateBackupWithEncryptionKey} and {@link RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
+@Ignore
 public class EncryptionKeyIT {
 
   private static String projectId;

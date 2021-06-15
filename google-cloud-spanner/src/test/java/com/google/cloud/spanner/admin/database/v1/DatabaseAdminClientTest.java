@@ -89,10 +89,10 @@ import org.junit.Test;
 
 @Generated("by gapic-generator-java")
 public class DatabaseAdminClientTest {
-  private static MockServiceHelper mockServiceHelper;
   private static MockDatabaseAdmin mockDatabaseAdmin;
-  private DatabaseAdminClient client;
+  private static MockServiceHelper mockServiceHelper;
   private LocalChannelProvider channelProvider;
+  private DatabaseAdminClient client;
 
   @BeforeClass
   public static void startStaticServer() {

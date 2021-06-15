@@ -56,7 +56,7 @@ public class AsyncResultSetImplStressTest {
   private static final int TEST_RUNS = 25;
 
   /** Timeout is applied to each test case individually. */
-  @Rule public Timeout timeout = new Timeout(120, TimeUnit.SECONDS);
+  @Rule public Timeout timeout = new Timeout(240, TimeUnit.SECONDS);
 
   @Parameter(0)
   public int resultSetSize;

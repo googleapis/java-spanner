@@ -157,6 +157,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
+  private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
 
@@ -174,6 +175,8 @@ public class ConnectionOptions {
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
+  /** Name of the 'encodedCredentials' connection property. */
+  public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
   /**
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
@@ -188,6 +191,9 @@ public class ConnectionOptions {
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
   private static final String OPTIMIZER_VERSION_PROPERTY_NAME = "optimizerVersion";
+  /** Query optimizer statistics package to use for a connection. */
+  private static final String OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME =
+      "optimizerStatisticsPackage";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
 
@@ -210,7 +216,10 @@ public class ConnectionOptions {
                       DEFAULT_RETRY_ABORTS_INTERNALLY),
                   ConnectionProperty.createStringProperty(
                       CREDENTIALS_PROPERTY_NAME,
-                      "The location of the credentials file to use for this connection. If this property is not set, the connection will use the default Google Cloud credentials for the runtime environment."),
+                      "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment."),
+                  ConnectionProperty.createStringProperty(
+                      ENCODED_CREDENTIALS_PROPERTY_NAME,
+                      "Base64-encoded credentials to use for this connection. If neither this property or a credentials location are set, the connection will use the default Google Cloud credentials for the runtime environment."),
                   ConnectionProperty.createStringProperty(
                       OAUTH_TOKEN_PROPERTY_NAME,
                       "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file."),
@@ -233,6 +242,8 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_VERSION_PROPERTY_NAME,
                       "Sets the default query optimizer version to use for this connection."),
+                  ConnectionProperty.createStringProperty(
+                      OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
@@ -344,6 +355,9 @@ public class ConnectionOptions {
      *       ConnectionOptions.Builder#setCredentialsUrl(String)} method. If you do not specify any
      *       credentials at all, the default credentials of the environment as returned by {@link
      *       GoogleCredentials#getApplicationDefault()} will be used.
+     *   <li>encodedCredentials (String): A Base64 encoded string containing the Google credentials
+     *       to use. You should only set either this property or the `credentials` (file location)
+     *       property, but not both at the same time.
      *   <li>autocommit (boolean): Sets the initial autocommit mode for the connection. Default is
      *       true.
      *   <li>readonly (boolean): Sets the initial readonly mode for the connection. Default is
@@ -458,6 +472,7 @@ public class ConnectionOptions {
   private final String uri;
   private final String warnings;
   private final String credentialsUrl;
+  private final String encodedCredentials;
   private final String oauthToken;
   private final Credentials fixedCredentials;
 
@@ -491,17 +506,28 @@ public class ConnectionOptions {
     this.uri = builder.uri;
     this.credentialsUrl =
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
+    this.encodedCredentials = parseEncodedCredentials(builder.uri);
+    // Check that not both a credentials location and encoded credentials have been specified in the
+    // connection URI.
+    Preconditions.checkArgument(
+        this.credentialsUrl == null || this.encodedCredentials == null,
+        "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
+
     this.oauthToken =
         builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
     this.fixedCredentials = builder.credentials;
     // Check that not both credentials and an OAuth token have been specified.
     Preconditions.checkArgument(
-        (builder.credentials == null && this.credentialsUrl == null) || this.oauthToken == null,
+        (builder.credentials == null
+                && this.credentialsUrl == null
+                && this.encodedCredentials == null)
+            || this.oauthToken == null,
         "Cannot specify both credentials and an OAuth token.");
 
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
     queryOptionsBuilder.setOptimizerVersion(parseOptimizerVersion(this.uri));
+    queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
@@ -515,6 +541,7 @@ public class ConnectionOptions {
     // credentials from the environment, but default to NoCredentials.
     if (builder.credentials == null
         && this.credentialsUrl == null
+        && this.encodedCredentials == null
         && this.oauthToken == null
         && this.usePlainText) {
       this.credentials = NoCredentials.getInstance();
@@ -522,6 +549,8 @@ public class ConnectionOptions {
       this.credentials = new GoogleCredentials(new AccessToken(oauthToken, null));
     } else if (this.fixedCredentials != null) {
       this.credentials = fixedCredentials;
+    } else if (this.encodedCredentials != null) {
+      this.credentials = getCredentialsService().decodeCredentials(this.encodedCredentials);
     } else {
       this.credentials = getCredentialsService().createCredentials(this.credentialsUrl);
     }
@@ -633,6 +662,11 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static String parseEncodedCredentials(String uri) {
+    return parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
+  }
+
+  @VisibleForTesting
   static String parseOAuthToken(String uri) {
     String value = parseUriProperty(uri, OAUTH_TOKEN_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OAUTH_TOKEN;
@@ -666,6 +700,12 @@ public class ConnectionOptions {
   static String parseOptimizerVersion(String uri) {
     String value = parseUriProperty(uri, OPTIMIZER_VERSION_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OPTIMIZER_VERSION;
+  }
+
+  @VisibleForTesting
+  static String parseOptimizerStatisticsPackage(String uri) {
+    String value = parseUriProperty(uri, OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_OPTIMIZER_STATISTICS_PACKAGE;
   }
 
   @VisibleForTesting

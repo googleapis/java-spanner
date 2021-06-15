@@ -676,6 +676,11 @@ class SessionPool {
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      return delegate.bufferAsync(mutation);
+    }
+
+    @Override
     public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
       try {
         return delegate.readRowUsingIndex(table, index, key, columns);
@@ -701,6 +706,11 @@ class SessionPool {
     @Override
     public void buffer(Iterable<Mutation> mutations) {
       delegate.buffer(mutations);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      return delegate.bufferAsync(mutations);
     }
 
     @Override

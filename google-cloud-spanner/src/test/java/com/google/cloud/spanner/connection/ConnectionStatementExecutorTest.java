@@ -102,6 +102,12 @@ public class ConnectionStatementExecutorTest {
   }
 
   @Test
+  public void testStatementGetOptimizerStatisticsPackage() {
+    subject.statementShowOptimizerStatisticsPackage();
+    verify(connection).getOptimizerStatisticsPackage();
+  }
+
+  @Test
   public void testStatementGetReadTimestamp() {
     subject.statementShowReadTimestamp();
     verify(connection).getReadTimestampOrNull();
@@ -181,6 +187,14 @@ public class ConnectionStatementExecutorTest {
     verify(connection).setOptimizerVersion("");
     subject.statementSetOptimizerVersion("LATEST");
     verify(connection).setOptimizerVersion("LATEST");
+  }
+
+  @Test
+  public void testStatementSetOptimizerStatisticsPackage() {
+    subject.statementSetOptimizerStatisticsPackage("custom-package");
+    verify(connection).setOptimizerStatisticsPackage("custom-package");
+    subject.statementSetOptimizerStatisticsPackage("");
+    verify(connection).setOptimizerStatisticsPackage("");
   }
 
   @Test
