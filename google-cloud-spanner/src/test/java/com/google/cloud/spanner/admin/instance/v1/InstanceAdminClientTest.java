@@ -374,6 +374,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -417,6 +418,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -460,6 +462,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -517,6 +520,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -574,6 +578,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
