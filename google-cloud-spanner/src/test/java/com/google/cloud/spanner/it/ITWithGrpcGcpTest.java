@@ -56,7 +56,7 @@ public class ITWithGrpcGcpTest {
   public static void setUpDatabase() {
     // Get default spanner options for an integration test.
     SpannerOptions.Builder builder = env.getTestHelper().getOptions().toBuilder();
-    builder.setUseGrpcGcpExtension(true);
+    builder.enableGrpcGcpExtension();
 
     // Create a new testHelper with the gRPC-GCP extension enabled.
     testHelper = RemoteSpannerHelper.create(builder.build(), env.getTestHelper().getInstanceId());

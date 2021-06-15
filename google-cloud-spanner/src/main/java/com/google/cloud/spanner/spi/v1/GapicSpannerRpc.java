@@ -554,7 +554,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static void maybeEnableGrpcGcpExtension(
       InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder,
       final SpannerOptions options) {
-    if (!options.isUseGrpcGcpExtension()) {
+    if (!options.isGrpcGcpExtensionEnabled()) {
       return;
     }
 
