@@ -177,7 +177,8 @@ public class InstanceAdminClientImplTest {
     } catch (IllegalArgumentException e) {
       assertTrue(
           e.getMessage()
-              .contains(InstanceAdminClientImpl.NOT_BOTH_NODE_COUNT_AND_PROCESSING_UNITS));
+              .contains(
+                  "Only one of nodeCount and processingUnits can be set when creating a new instance"));
     }
   }
 
