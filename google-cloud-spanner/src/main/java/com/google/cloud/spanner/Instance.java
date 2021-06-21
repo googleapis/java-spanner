@@ -68,6 +68,12 @@ public class Instance extends InstanceInfo {
     }
 
     @Override
+    public Builder setProcessingUnits(int processingUnits) {
+      infoBuilder.setProcessingUnits(processingUnits);
+      return this;
+    }
+
+    @Override
     public Builder setState(State state) {
       infoBuilder.setState(state);
       return this;
@@ -198,7 +204,8 @@ public class Instance extends InstanceInfo {
         new Builder(instanceClient, dbClient, id)
             .setInstanceConfigId(InstanceConfigId.of(proto.getConfig()))
             .setDisplayName(proto.getDisplayName())
-            .setNodeCount(proto.getNodeCount());
+            .setNodeCount(proto.getNodeCount())
+            .setProcessingUnits(proto.getProcessingUnits());
     State state;
     switch (proto.getState()) {
       case STATE_UNSPECIFIED:
