@@ -30,32 +30,18 @@ public class TransactionWithTagSample {
 
   // [START spanner_set_transaction_and_request_tags]
   static void taggedTransaction(DatabaseClient databaseClient) {
-    // The request below would have transaction_tag set as "app=spanner,env=test".
+    // The request below would have transaction_tag set as "app=cart,env=dev".
     databaseClient
-        .readWriteTransaction(Options.tag("app=spanner,env=test"))
+        .readWriteTransaction(Options.tag("app=cart,env=dev"))
         .run(
             new TransactionCallable<Void>() {
               @Override
               public Void run(TransactionContext transaction) throws Exception {
-                // The request below would have request_tag set as
-                // "app=spanner,env=test,action=select".
-                ResultSet queryResultSet = transaction
-                    .executeQuery(
-                        Statement.of("SELECT SingerId, FirstName, LastName FROM " + table),
-                        Options.tag("app=spanner,env=test,action=select"));
-                while (queryResultSet.next()) {
-                  System.out.printf(
-                      "%d %s %s\n",
-                      queryResultSet.getLong(0), queryResultSet.getString(1),
-                      queryResultSet.getString(2));
-                }
-
-                transaction
-                    .buffer(Mutation.newInsertOrUpdateBuilder("Singers")
-                        .set("SingerId").to(100)
-                        .set("FirstName").to("George")
-                        .set("LastName").to("Washington")
-                        .build());
+                transaction.executeQuery(Statement.of("SELECT 1"),
+                    Options.tag("app=cart,env=dev,action=list"));
+                transaction.executeUpdate(
+                    Statement.of("UPDATE foo SET bar='baz' WHERE TRUE"),
+                    Options.tag("app=cart,env=dev,action=update"));
                 return null;
               }
             });
@@ -68,7 +54,7 @@ public class TransactionWithTagSample {
     // see: https://cloud.google.com/spanner/docs/introspection/query-statistics, for more details.
     String sql =
         "SELECT t.REQUEST_TAG, t.AVG_LATENCY_SECONDS, t.AVG_CPU_SECONDS "
-            + "FROM SPANNER_SYS.QUERY_STATS_TOP_MINUTE";
+            + "FROM SPANNER_SYS.QUERY_STATS_TOP_MINUTE as t";
     try (ResultSet resultSet = databaseClient.singleUse().executeQuery(Statement.of(sql))) {
       while (resultSet.next()) {
         System.out.printf(
