@@ -902,6 +902,8 @@ public class SpannerOptionsTest {
     ScheduledExecutorService service = mock(ScheduledExecutorService.class);
     SpannerOptions options =
         SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
             .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
             .build();
     assertSame(service, options.getAsyncExecutorProvider().getExecutor());
