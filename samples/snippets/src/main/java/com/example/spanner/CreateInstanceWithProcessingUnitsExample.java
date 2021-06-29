@@ -44,7 +44,7 @@ class CreateInstanceWithProcessingUnitsExample {
     // Set Instance configuration.
     String configId = "regional-us-central1";
     // This will create an instance with the processing power of 0.2 nodes.
-    int processingUnits = 200;
+    int processingUnits = 500;
     String displayName = "Descriptive name";
 
     // Create an InstanceInfo object that will be used to create the instance.
