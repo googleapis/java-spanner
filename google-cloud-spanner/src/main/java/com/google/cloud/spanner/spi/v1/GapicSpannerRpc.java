@@ -18,6 +18,7 @@ package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
+import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
@@ -54,6 +55,9 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannelBuilder;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
 import com.google.cloud.spanner.ErrorCode;
@@ -80,6 +84,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -156,10 +161,13 @@ import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
 import io.grpc.Context;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opencensus.metrics.Metrics;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -249,6 +257,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final String CLIENT_LIBRARY_LANGUAGE = "spanner-java";
   public static final String DEFAULT_USER_AGENT =
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
+  private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
   private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
@@ -367,6 +376,9 @@ public class GapicSpannerRpc implements SpannerRpc {
               // Attempts direct access to spanner service over gRPC to improve throughput,
               // whether the attempt is allowed is totally controlled by service owner.
               .setAttemptDirectPath(true);
+
+      // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
+      maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
       TransportChannelProvider channelProvider =
           MoreObjects.firstNonNull(
@@ -507,6 +519,62 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.partitionedDmlRetrySettings = null;
       this.executorProvider = null;
     }
+  }
+
+  private static String parseGrpcGcpApiConfig() {
+    try {
+      return Resources.toString(
+          GapicSpannerRpc.class.getResource(API_FILE), Charset.forName("UTF8"));
+    } catch (IOException e) {
+      throw newSpannerException(e);
+    }
+  }
+
+  // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified.
+  private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
+    GcpManagedChannelOptions grpcGcpOptions =
+        MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
+    GcpMetricsOptions metricsOptions =
+        MoreObjects.firstNonNull(
+            grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
+    GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
+    if (metricsOptions.getMetricRegistry() == null) {
+      metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
+    }
+    // TODO: Add default labels with values: client_id, database, instance_id.
+    if (metricsOptions.getNamePrefix().equals("")) {
+      metricsOptionsBuilder.withNamePrefix("cloud.google.com/java/spanner/gcp-channel-pool/");
+    }
+    return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
+        .withMetricsOptions(metricsOptionsBuilder.build())
+        .build();
+  }
+
+  @SuppressWarnings("rawtypes")
+  private static void maybeEnableGrpcGcpExtension(
+      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder,
+      final SpannerOptions options) {
+    if (!options.isGrpcGcpExtensionEnabled()) {
+      return;
+    }
+
+    final String jsonApiConfig = parseGrpcGcpApiConfig();
+    final GcpManagedChannelOptions grpcGcpOptions = grpcGcpOptionsWithMetrics(options);
+
+    ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder> apiFunction =
+        channelBuilder -> {
+          if (options.getChannelConfigurator() != null) {
+            channelBuilder = options.getChannelConfigurator().apply(channelBuilder);
+          }
+          return GcpManagedChannelBuilder.forDelegateBuilder(channelBuilder)
+              .withApiConfigJsonString(jsonApiConfig)
+              .withOptions(grpcGcpOptions)
+              .setPoolSize(options.getNumChannels());
+        };
+
+    // Disable the GAX channel pooling functionality by setting the GAX channel pool size to 1.
+    // Enable gRPC-GCP channel pool via the channel configurator.
+    defaultChannelProviderBuilder.setPoolSize(1).setChannelConfigurator(apiFunction);
   }
 
   private static HeaderProvider headerProviderWithUserAgentFrom(HeaderProvider headerProvider) {

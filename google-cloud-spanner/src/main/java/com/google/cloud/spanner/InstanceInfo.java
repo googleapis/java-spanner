@@ -78,16 +78,16 @@ public class InstanceInfo {
     public abstract Builder setDisplayName(String displayName);
 
     /**
-     * Sets the number of nodes for the instance. Only one of processing units or node count must be
-     * set when creating a new instance.
+     * Sets the number of nodes for the instance. Exactly one of processing units or node count must
+     * be set when creating a new instance.
      */
     public abstract Builder setNodeCount(int nodeCount);
 
     /**
-     * Sets the number of processing units for the instance. Only one of processing units or node
+     * Sets the number of processing units for the instance. Exactly one of processing units or node
      * count must be set when creating a new instance. Processing units must be between 1 and 999
      * (inclusive) when creating a new instance with node count = 0. Processing units from 1000 and
-     * up must always be a multiple of 1000 (i.e. equal to an integer number of nodes).
+     * up must always be a multiple of 1000 (that is equal to an integer number of nodes).
      */
     public Builder setProcessingUnits(int processingUnits) {
       throw new UnsupportedOperationException("Unimplemented");

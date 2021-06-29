@@ -58,15 +58,15 @@ public final class TypeProto {
           + "ructType\0223\n\006fields\030\001 \003(\0132#.google.spanne"
           + "r.v1.StructType.Field\032<\n\005Field\022\014\n\004name\030\001"
           + " \001(\t\022%\n\004type\030\002 \001(\0132\027.google.spanner.v1.T"
-          + "ype*\233\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIFIE"
+          + "ype*\245\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIFIE"
           + "D\020\000\022\010\n\004BOOL\020\001\022\t\n\005INT64\020\002\022\013\n\007FLOAT64\020\003\022\r\n"
           + "\tTIMESTAMP\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005BY"
           + "TES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\t\022\013\n\007NUMERIC\020"
-          + "\nB\257\001\n\025com.google.spanner.v1B\tTypeProtoP\001"
-          + "Z8google.golang.org/genproto/googleapis/"
-          + "spanner/v1;spanner\252\002\027Google.Cloud.Spanne"
-          + "r.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google:"
-          + ":Cloud::Spanner::V1b\006proto3"
+          + "\n\022\010\n\004JSON\020\013B\257\001\n\025com.google.spanner.v1B\tT"
+          + "ypeProtoP\001Z8google.golang.org/genproto/g"
+          + "oogleapis/spanner/v1;spanner\252\002\027Google.Cl"
+          + "oud.Spanner.V1\312\002\027Google\\Cloud\\Spanner\\V1"
+          + "\352\002\032Google::Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

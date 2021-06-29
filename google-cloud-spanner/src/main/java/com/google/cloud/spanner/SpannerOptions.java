@@ -29,10 +29,9 @@ import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
-import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -103,6 +102,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
+  private final boolean grpcGcpExtensionEnabled;
+  private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
@@ -554,6 +555,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
+    grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
+    grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
     retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
@@ -658,6 +661,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private boolean grpcGcpExtensionEnabled = false;
+    private GcpManagedChannelOptions grpcGcpOptions;
     private RetrySettings retryAdministrativeRequestsSettings =
         DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
@@ -707,6 +712,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
+      this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
+      this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
       this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
@@ -1035,6 +1042,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Enables gRPC-GCP extension with the default settings. */
+    public Builder enableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = true;
+      return this;
+    }
+
+    /**
+     * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
+     * and default Spanner metric labels will be added automatically.
+     */
+    public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
+      this.grpcGcpExtensionEnabled = true;
+      this.grpcGcpOptions = options;
+      return this;
+    }
+
+    /** Disables gRPC-GCP extension. */
+    public Builder disableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = false;
+      return this;
+    }
+
     /**
      * Sets the host of an emulator to use. By default the value is read from an environment
      * variable. If the environment variable is not set, this will be <code>null</code>.
@@ -1126,6 +1155,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public Duration getPartitionedDmlTimeout() {
     return partitionedDmlTimeout;
+  }
+
+  public boolean isGrpcGcpExtensionEnabled() {
+    return grpcGcpExtensionEnabled;
+  }
+
+  public GcpManagedChannelOptions getGrpcGcpOptions() {
+    return grpcGcpOptions;
   }
 
   public boolean isAutoThrottleAdministrativeRequests() {
