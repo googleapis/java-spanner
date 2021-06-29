@@ -471,13 +471,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final AtomicInteger DEFAULT_POOL_COUNT = new AtomicInteger();
 
   /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
-  interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+  public interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
     void close();
   }
 
-  static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+  /**
+   * Implementation of {@link CloseableExecutorProvider} that uses a fixed single {@link
+   * ScheduledExecutorService}.
+   */
+  public static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
     private final ScheduledExecutorService executor;
 
     private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
@@ -500,7 +504,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Creates a FixedCloseableExecutorProvider. */
-    static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
+    public static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
       return new FixedCloseableExecutorProvider(executor);
     }
   }
@@ -516,8 +520,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
   }
 
-  @VisibleForTesting
-  static CloseableExecutorProvider createAsyncExecutorProvider(
+  /**
+   * Creates a {@link CloseableExecutorProvider} that can be used as an {@link ExecutorProvider} for
+   * the async API. The {@link ExecutorProvider} will lazily create up to poolSize threads. The
+   * backing threads will automatically be shutdown if they have not been used during the keep-alive
+   * time. The backing threads are created as daemon threads.
+   *
+   * @param poolSize the maximum number of threads to create in the pool
+   * @param keepAliveTime the time that an unused thread in the pool should be kept alive
+   * @param unit the time unit used for the keepAliveTime
+   * @return a {@link CloseableExecutorProvider} that can be used for {@link
+   *     SpannerOptions.Builder#setAsyncExecutorProvider(CloseableExecutorProvider)}
+   */
+  public static CloseableExecutorProvider createAsyncExecutorProvider(
       int poolSize, long keepAliveTime, TimeUnit unit) {
     String format =
         String.format("spanner-async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
@@ -1019,6 +1034,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link ExecutorProvider} to use for high-level async calls that need an executor,
+     * such as fetching results for an {@link AsyncResultSet}.
+     *
+     * <p>Async methods will use a sensible default if no custom {@link ExecutorProvider} has been
+     * set. The default {@link ExecutorProvider} uses a cached thread pool containing a maximum of 8
+     * threads. The pool is lazily initialized and will not create any threads if the user
+     * application does not use any async methods. It will also scale down the thread usage if the
+     * async load allows for that.
+     *
+     * <p>Call {@link SpannerOptions#createAsyncExecutorProvider(int, long, TimeUnit)} to create a
+     * provider with a custom pool size or call {@link
+     * FixedCloseableExecutorProvider#create(ScheduledExecutorService)} to create a {@link
+     * CloseableExecutorProvider} from a standard Java {@link ScheduledExecutorService}.
+     */
+    public Builder setAsyncExecutorProvider(CloseableExecutorProvider provider) {
+      this.asyncExecutorProvider = provider;
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -1198,7 +1233,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return options;
   }
 
-  CloseableExecutorProvider getAsyncExecutorProvider() {
+  public CloseableExecutorProvider getAsyncExecutorProvider() {
     return asyncExecutorProvider;
   }
 

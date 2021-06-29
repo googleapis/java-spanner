@@ -19,7 +19,9 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
@@ -29,6 +31,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
@@ -54,6 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -891,5 +895,15 @@ public class SpannerOptionsTest {
                     SpannerGrpc.getPartitionReadMethod())
                 .getTimeout())
         .isEqualTo(Duration.ofSeconds(6L));
+  }
+
+  @Test
+  public void testCustomAsyncExecutorProvider() {
+    ScheduledExecutorService service = mock(ScheduledExecutorService.class);
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
+            .build();
+    assertSame(service, options.getAsyncExecutorProvider().getExecutor());
   }
 }
