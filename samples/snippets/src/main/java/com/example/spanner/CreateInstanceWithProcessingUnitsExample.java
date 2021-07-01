@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 //[START spanner_create_instance_with_processing_units]
+
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
@@ -26,7 +27,6 @@ import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import java.util.concurrent.ExecutionException;
 
 class CreateInstanceWithProcessingUnitsExample {
 
@@ -47,26 +47,28 @@ class CreateInstanceWithProcessingUnitsExample {
     int processingUnits = 500;
     String displayName = "Descriptive name";
 
-    // Create an InstanceInfo object that will be used to create the instance.
-    InstanceInfo instanceInfo =
-        InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-            .setProcessingUnits(processingUnits)
-            .setDisplayName(displayName)
-            .build();
-    OperationFuture<Instance, CreateInstanceMetadata> operation =
-        instanceAdminClient.createInstance(instanceInfo);
     try {
+      // Creates a new instance
+      System.out.printf("Creating instance %s.%n", instanceId);
+      OperationFuture<Instance, CreateInstanceMetadata> operation =
+          instanceAdminClient.createInstance(InstanceInfo
+              .newBuilder(InstanceId.of(projectId, instanceId))
+              .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
+              .setProcessingUnits(processingUnits)
+              .setDisplayName(displayName)
+              .build());
+
       // Wait for the createInstance operation to finish.
-      Instance instance = operation.get();
-      System.out.printf("Instance %s was successfully created with %d processing units%n",
-          instance.getId(), instance.getProcessingUnits());
-    } catch (ExecutionException e) {
-      System.out.printf(
-          "Error: Creating instance %s failed with error message %s%n",
-          instanceInfo.getId(), e.getMessage());
-    } catch (InterruptedException e) {
-      System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
+      Instance createdInstance = operation.get();
+
+      System.out.printf("Created instance %s.%n", createdInstance.getId().getInstance());
+
+      Instance instance = instanceAdminClient.getInstance(instanceId);
+      System.out.printf("Instance %s has %d processing units.%n", instance.getId().getInstance(),
+          instance.getProcessingUnits());
+    } catch (Exception e) {
+      System.out.printf("Error: %s.%n", e.getMessage());
     }
     spanner.close();
   }
