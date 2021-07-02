@@ -23,7 +23,6 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import java.math.BigDecimal;
 
 class UpdateJsonDataSample {
 
@@ -48,7 +47,9 @@ class UpdateJsonDataSample {
                 .set("VenueId")
                 .to(4L)
                 .set("RevenueDetails")
-                .to(Value.json("[{\"name\":\"room 1\",\"open\":true},{\"name\":\"room 2\",\"open\":false}]"))
+                .to(
+                    Value.json(
+                        "[{\"name\":\"room 1\",\"open\":true},{\"name\":\"room 2\",\"open\":false}]"))
                 .build(),
             Mutation.newInsertOrUpdateBuilder("Venues")
                 .set("VenueId")
@@ -60,7 +61,9 @@ class UpdateJsonDataSample {
                 .set("VenueId")
                 .to(42L)
                 .set("RevenueDetails")
-                .to(Value.json("{\"name\":null,\"open\":{\"Monday\":true,\"Tuesday\":false},\"tags\":[\"large\",\"airy\"]}"))
+                .to(
+                    Value.json(
+                        "{\"name\":null,\"open\":{\"Monday\":true,\"Tuesday\":false},\"tags\":[\"large\",\"airy\"]}"))
                 .build()));
     System.out.println("Venues successfully updated");
   }

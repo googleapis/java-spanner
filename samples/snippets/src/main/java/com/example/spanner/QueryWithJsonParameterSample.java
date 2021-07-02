@@ -23,7 +23,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import java.math.BigDecimal;
 
 class QueryWithJsonParameterSample {
 
@@ -45,9 +44,9 @@ class QueryWithJsonParameterSample {
     String exampleJson = "{rating: 9}";
     Statement statement =
         Statement.newBuilder(
-            "SELECT VenueId, VenueDetails\n"
-                + "FROM Venues\n"
-                + "WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')")
+                "SELECT VenueId, VenueDetails\n"
+                    + "FROM Venues\n"
+                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')")
             .bind("details")
             .to(Value.json(exampleJson))
             .build();
@@ -55,8 +54,7 @@ class QueryWithJsonParameterSample {
       while (resultSet.next()) {
         System.out.printf(
             "VenueId: %s, VenueDetails: %s%n",
-            resultSet.getLong("VenueId"),
-            resultSet.getString("VenueDetails"));
+            resultSet.getLong("VenueId"), resultSet.getString("VenueDetails"));
       }
     }
   }

@@ -88,22 +88,26 @@ public class SpannerSampleIT {
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases(instanceId, baseDbId);
-    key = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
-        options.getProjectId(), keyLocation, keyRing, keyName);
+    key =
+        String.format(
+            "projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
+            options.getProjectId(), keyLocation, keyRing, keyName);
   }
-  
+
   static void deleteStaleTestDatabases(String instanceId, String baseDbId) {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
     for (Database db : dbClient.listDatabases(instanceId).iterateAll()) {
-      if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
-          TimeUnit.SECONDS) > 24) {
+      if (TimeUnit.HOURS.convert(
+              now.getSeconds() - db.getCreateTime().getSeconds(), TimeUnit.SECONDS)
+          > 24) {
         if (db.getId().getDatabase().length() >= DBID_LENGTH) {
           if (samplePattern.matcher(toComparableId(baseDbId, db.getId().getDatabase())).matches()) {
             db.drop();
           }
-          if (restoredPattern.matcher(toComparableId("restored", db.getId().getDatabase()))
+          if (restoredPattern
+              .matcher(toComparableId("restored", db.getId().getDatabase()))
               .matches()) {
             db.drop();
           }
@@ -308,25 +312,22 @@ public class SpannerSampleIT {
 
     String backupName =
         String.format(
-            "%s_%02d",
-            dbId.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
+            "%s_%02d", dbId.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
     BackupId backupId = BackupId.of(dbId.getInstanceId(), backupName);
 
     out = runSample("createbackup");
     assertThat(out).contains("Created backup [" + backupId + "]");
 
     out = runSample("cancelcreatebackup");
-    assertThat(out).contains(
-        "Backup operation for [" + backupId + "_cancel] successfully");
+    assertThat(out).contains("Backup operation for [" + backupId + "_cancel] successfully");
 
     // TODO: remove try-catch when filtering on metadata fields works.
     try {
       out = runSample("listbackupoperations");
-      assertThat(out).contains(
-          String.format(
-              "Backup %s on database %s pending:",
-              backupId.getName(),
-              dbId.getName()));
+      assertThat(out)
+          .contains(
+              String.format(
+                  "Backup %s on database %s pending:", backupId.getName(), dbId.getName()));
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Cannot evaluate filter expression");
@@ -334,16 +335,17 @@ public class SpannerSampleIT {
 
     out = runSample("listbackups");
     assertThat(out).contains("All backups:");
-    assertThat(out).contains(
-        String.format("All backups with backup name containing \"%s\":", backupId.getBackup()));
-    assertThat(out).contains(String.format(
-        "All backups for databases with a name containing \"%s\":",
-        dbId.getDatabase()));
-    assertThat(out).contains(
-        String.format("All backups that expire before"));
+    assertThat(out)
+        .contains(
+            String.format("All backups with backup name containing \"%s\":", backupId.getBackup()));
+    assertThat(out)
+        .contains(
+            String.format(
+                "All backups for databases with a name containing \"%s\":", dbId.getDatabase()));
+    assertThat(out).contains(String.format("All backups that expire before"));
     assertThat(out).contains("All backups with size greater than 100 bytes:");
-    assertThat(out).containsMatch(
-        Pattern.compile("All databases created after (.+) and that are ready:"));
+    assertThat(out)
+        .containsMatch(Pattern.compile("All databases created after (.+) and that are ready:"));
     assertThat(out).contains("All backups, listed using pagination:");
     // All the above tests should include the created backup exactly once, i.e. exactly 7 times.
     assertThat(countOccurrences(out, backupId.getName())).isEqualTo(7);
@@ -356,12 +358,9 @@ public class SpannerSampleIT {
     while (true) {
       try {
         out = runSample("restorebackup");
-        assertThat(out).contains(
-            "Restored database ["
-                + dbId.getName()
-                + "] from ["
-                + backupId.getName()
-                + "]");
+        assertThat(out)
+            .contains(
+                "Restored database [" + dbId.getName() + "] from [" + backupId.getName() + "]");
         restored = true;
         break;
       } catch (SpannerException e) {
@@ -372,7 +371,7 @@ public class SpannerSampleIT {
           if (restoreAttempts == 10) {
             System.out.println(
                 "Restore operation failed 10 times because of other pending restores. "
-                + "Giving up restore.");
+                    + "Giving up restore.");
             break;
           }
           Uninterruptibles.sleepUninterruptibly(60L, TimeUnit.SECONDS);
@@ -384,18 +383,16 @@ public class SpannerSampleIT {
 
     if (restored) {
       out = runSample("listdatabaseoperations");
-      assertThat(out).contains(
-          String.format(
-              "Database %s restored from backup",
-              DatabaseId.of(
-                  dbId.getInstanceId(),
-                  SpannerSample.createRestoredSampleDbId(dbId))
-              .getName()));
+      assertThat(out)
+          .contains(
+              String.format(
+                  "Database %s restored from backup",
+                  DatabaseId.of(dbId.getInstanceId(), SpannerSample.createRestoredSampleDbId(dbId))
+                      .getName()));
     }
 
     out = runSample("updatebackup");
-    assertThat(out).contains(
-        String.format("Updated backup [" + backupId + "]"));
+    assertThat(out).contains(String.format("Updated backup [" + backupId + "]"));
 
     // Drop the restored database before we try to delete the backup.
     // Otherwise the delete backup operation might fail as the backup is still in use by
@@ -405,40 +402,55 @@ public class SpannerSampleIT {
 
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
-    
+
     String projectId = spanner.getOptions().getProjectId();
-    out = SampleRunner
-        .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-            dbClient,
-            projectId,
-            instanceId,
-            encryptedDatabaseId,
-            key));
-    assertThat(out).contains(String.format(
-        "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
-        projectId, instanceId, encryptedDatabaseId, key));
+    out =
+        SampleRunner.runSample(
+            () ->
+                CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedDatabaseId, key));
+    assertThat(out)
+        .contains(
+            String.format(
+                "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
+                projectId, instanceId, encryptedDatabaseId, key));
 
-    out = SampleRunner.runSampleWithRetry(
-        () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(dbClient, projectId,
-            instanceId, encryptedDatabaseId, encryptedBackupId, key),
-        new ShouldRetryBackupOperation());
-    assertThat(out).containsMatch(String.format(
-        "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
-        + "was created at (.*) using encryption key %s",
-        projectId, instanceId, encryptedBackupId, key));
+    out =
+        SampleRunner.runSampleWithRetry(
+            () ->
+                CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedDatabaseId, encryptedBackupId, key),
+            new ShouldRetryBackupOperation());
+    assertThat(out)
+        .containsMatch(
+            String.format(
+                "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+                    + "was created at (.*) using encryption key %s",
+                projectId, instanceId, encryptedBackupId, key));
 
-    out = SampleRunner.runSampleWithRetry(
-        () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(dbClient, projectId,
-            instanceId, encryptedBackupId, encryptedRestoreId, key),
-        new ShouldRetryBackupOperation());
-    assertThat(out).contains(String.format(
-        "Database projects/%s/instances/%s/databases/%s"
-        + " restored to projects/%s/instances/%s/databases/%s" 
-        + " from backup projects/%s/instances/%s/backups/%s" 
-        + " using encryption key %s",
-        projectId, instanceId, encryptedDatabaseId,
-        projectId, instanceId, encryptedRestoreId,
-        projectId, instanceId, encryptedBackupId, key));
+    out =
+        SampleRunner.runSampleWithRetry(
+            () ->
+                RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedBackupId, encryptedRestoreId, key),
+            new ShouldRetryBackupOperation());
+    assertThat(out)
+        .contains(
+            String.format(
+                "Database projects/%s/instances/%s/databases/%s"
+                    + " restored to projects/%s/instances/%s/databases/%s"
+                    + " from backup projects/%s/instances/%s/backups/%s"
+                    + " using encryption key %s",
+                projectId,
+                instanceId,
+                encryptedDatabaseId,
+                projectId,
+                instanceId,
+                encryptedRestoreId,
+                projectId,
+                instanceId,
+                encryptedBackupId,
+                key));
   }
 
   private String runSampleRunnable(Runnable sample) {
@@ -455,14 +467,14 @@ public class SpannerSampleIT {
   public void testCreateInstanceSample() {
     String instanceId = formatForTest("sample-inst");
     String out =
-        runSampleRunnable(() -> {
-          try {
-            CreateInstanceExample.createInstance(
-                dbId.getInstanceId().getProject(), instanceId);
-          } finally {
-            spanner.getInstanceAdminClient().deleteInstance(instanceId);
-          }
-        });
+        runSampleRunnable(
+            () -> {
+              try {
+                CreateInstanceExample.createInstance(dbId.getInstanceId().getProject(), instanceId);
+              } finally {
+                spanner.getInstanceAdminClient().deleteInstance(instanceId);
+              }
+            });
     assertThat(out)
         .contains(
             String.format(
@@ -473,7 +485,7 @@ public class SpannerSampleIT {
   private static int countOccurrences(String input, String search) {
     return input.split(search).length - 1;
   }
-  
+
   private static String toComparableId(String baseId, String existingId) {
     String zeroUuid = "00000000-0000-0000-0000-0000-00000000";
     int shouldBeLength = (baseId + "-" + zeroUuid).length();
@@ -486,7 +498,7 @@ public class SpannerSampleIT {
         baseDbId + "-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}",
         Pattern.CASE_INSENSITIVE);
   }
-  
+
   static String formatForTest(String name) {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
   }
@@ -502,9 +514,12 @@ public class SpannerSampleIT {
         attempts++;
         if (attempts == MAX_ATTEMPTS) {
           // Throw custom exception so it is easier to locate in the log why it went wrong.
-          throw SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED,
-              String.format("Operation failed %d times because of other pending operations. "
-                  + "Giving up operation.\n", attempts),
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.DEADLINE_EXCEEDED,
+              String.format(
+                  "Operation failed %d times because of other pending operations. "
+                      + "Giving up operation.\n",
+                  attempts),
               e);
         }
         // Wait one minute before retrying.

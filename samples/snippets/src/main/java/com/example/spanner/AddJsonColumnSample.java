@@ -40,8 +40,7 @@ class AddJsonColumnSample {
     }
   }
 
-  static void addJsonColumn(
-      DatabaseAdminClient adminClient, String instanceId, String databaseId)
+  static void addJsonColumn(DatabaseAdminClient adminClient, String instanceId, String databaseId)
       throws InterruptedException, ExecutionException {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
         adminClient.updateDatabaseDdl(
