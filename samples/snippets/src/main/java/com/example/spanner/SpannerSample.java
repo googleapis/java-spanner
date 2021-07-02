@@ -148,6 +148,7 @@ public class SpannerSample {
     final boolean outdoorVenue;
     final float popularityScore;
     final BigDecimal revenue;
+    final String revenueDetails;
 
     Venue(
         long venueId,
@@ -158,7 +159,8 @@ public class SpannerSample {
         String lastContactDate,
         boolean outdoorVenue,
         float popularityScore,
-        BigDecimal revenue) {
+        BigDecimal revenue,
+        String revenueDetails) {
       this.venueId = venueId;
       this.venueName = venueName;
       this.venueInfo = venueInfo;
@@ -168,6 +170,7 @@ public class SpannerSample {
       this.outdoorVenue = outdoorVenue;
       this.popularityScore = popularityScore;
       this.revenue = revenue;
+      this.revenueDetails = revenueDetails;
     }
   }
 
@@ -237,7 +240,8 @@ public class SpannerSample {
               "2018-09-02",
               false,
               0.85543f,
-              new BigDecimal("215100.10")),
+              new BigDecimal("215100.10"),
+              Value.json("[{\"name\":\"room 1\",\"open\":true},{\"name\":\"room 2\",\"open\":false}]")),
           new Venue(
               19,
               "Venue 19",
@@ -247,7 +251,8 @@ public class SpannerSample {
               "2019-01-15",
               true,
               0.98716f,
-              new BigDecimal("1200100.00")),
+              new BigDecimal("1200100.00"),
+              Value.json("{\"rating\":9,\"open\":true}")),
           new Venue(
               42,
               "Venue 42",
@@ -257,7 +262,8 @@ public class SpannerSample {
               "2018-10-01",
               false,
               0.72598f,
-              new BigDecimal("390650.99")));
+              new BigDecimal("390650.99"),
+              Value.json("{\"name\":null,\"open\":{\"Monday\":true,\"Tuesday\":false},\"tags\":[\"large\",\"airy\"]}")));
   // [END spanner_insert_datatypes_data]
 
   // [START spanner_create_database]
@@ -1258,6 +1264,7 @@ public class SpannerSample {
                     + "  OutdoorVenue    BOOL, "
                     + "  PopularityScore FLOAT64, "
                     + "  Revenue         NUMERIC, "
+                    + "  RevenueDetails  JSON, "
                     + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
                     + ") PRIMARY KEY (VenueId)"),
             null);
@@ -1300,6 +1307,8 @@ public class SpannerSample {
               .to(venue.popularityScore)
               .set("Revenue")
               .to(venue.revenue)
+              .set("RevenueDetails")
+              .to(venue.revenueDetails)
               .set("LastUpdateTime")
               .to(Value.COMMIT_TIMESTAMP)
               .build());
@@ -1501,6 +1510,28 @@ public class SpannerSample {
     }
   }
   // [END spanner_query_with_numeric_parameter]
+
+  // [START spanner_query_with_json_parameter]
+  static void queryWithJson(DatabaseClient dbClient) {
+    String exampleJson = "{rating: 9}";
+    Statement statement =
+        Statement.newBuilder(
+            "SELECT VenueId, VenueDetails\n"
+                + "FROM Venues\n"
+                + "WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')")
+            .bind("details")
+            .to(Value.json(exampleJson))
+            .build();
+    try (ResultSet resultSet = dbClient.singleUse().executeQuery(statement)) {
+      while (resultSet.next()) {
+        System.out.printf(
+            "VenueId: %s, VenueDetails: %s%n",
+            resultSet.getLong("VenueId"),
+            resultSet.getString("VenueDetails"));
+      }
+    }
+  }
+  // [END spanner_query_with_json_parameter]
 
   // [START spanner_create_client_with_query_options]
   static void clientWithQueryOptions(DatabaseId db) {
@@ -2014,6 +2045,9 @@ public class SpannerSample {
         break;
       case "querywithnumeric":
         queryWithNumeric(dbClient);
+        break;
+      case "querywithjson":
+        queryWithJson(dbClient);
         break;
       case "clientwithqueryoptions":
         clientWithQueryOptions(database);
