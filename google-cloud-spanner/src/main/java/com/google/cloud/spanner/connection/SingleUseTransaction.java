@@ -26,6 +26,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
@@ -281,7 +282,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
     ConnectionPreconditions.checkState(
@@ -291,10 +292,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     ApiFuture<Long> res;
     switch (autocommitDmlMode) {
       case TRANSACTIONAL:
-        res = executeTransactionalUpdateAsync(update);
+        res = executeTransactionalUpdateAsync(update, options);
         break;
       case PARTITIONED_NON_ATOMIC:
-        res = executePartitionedUpdateAsync(update);
+        res = executePartitionedUpdateAsync(update, options);
         break;
       default:
         throw SpannerExceptionFactory.newSpannerException(
@@ -307,7 +308,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     for (ParsedStatement update : updates) {
       Preconditions.checkArgument(
@@ -320,7 +322,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
     switch (autocommitDmlMode) {
       case TRANSACTIONAL:
-        return executeTransactionalBatchUpdateAsync(updates);
+        return executeTransactionalBatchUpdateAsync(updates, options);
       case PARTITIONED_NON_ATOMIC:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed in " + autocommitDmlMode);
@@ -336,14 +338,15 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         : dbClient.readWriteTransaction();
   }
 
-  private ApiFuture<Long> executeTransactionalUpdateAsync(final ParsedStatement update) {
+  private ApiFuture<Long> executeTransactionalUpdateAsync(
+      final ParsedStatement update, final UpdateOption... options) {
     Callable<Long> callable =
         () -> {
           try {
             writeTransaction = createWriteTransaction();
             Long res =
                 writeTransaction.run(
-                    transaction -> transaction.executeUpdate(update.getStatement()));
+                    transaction -> transaction.executeUpdate(update.getStatement(), options));
             state = UnitOfWorkState.COMMITTED;
             return res;
           } catch (Throwable t) {
@@ -357,11 +360,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
-  private ApiFuture<Long> executePartitionedUpdateAsync(final ParsedStatement update) {
+  private ApiFuture<Long> executePartitionedUpdateAsync(
+      final ParsedStatement update, final UpdateOption... options) {
     Callable<Long> callable =
         () -> {
           try {
-            Long res = dbClient.executePartitionedUpdate(update.getStatement());
+            Long res = dbClient.executePartitionedUpdate(update.getStatement(), options);
             state = UnitOfWorkState.COMMITTED;
             return res;
           } catch (Throwable t) {
@@ -373,7 +377,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private ApiFuture<long[]> executeTransactionalBatchUpdateAsync(
-      final Iterable<ParsedStatement> updates) {
+      final Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Callable<long[]> callable =
         () -> {
           writeTransaction = createWriteTransaction();
@@ -382,7 +386,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                 try {
                   long[] res =
                       transaction.batchUpdate(
-                          Iterables.transform(updates, ParsedStatement::getStatement));
+                          Iterables.transform(updates, ParsedStatement::getStatement), options);
                   state = UnitOfWorkState.COMMITTED;
                   return res;
                 } catch (Throwable t) {

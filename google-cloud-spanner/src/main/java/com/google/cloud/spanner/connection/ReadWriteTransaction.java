@@ -32,6 +32,8 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -42,6 +44,7 @@ import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
@@ -70,7 +73,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final int MAX_INTERNAL_RETRIES = 50;
   private final long transactionId;
   private final DatabaseClient dbClient;
-  private TransactionManager txManager;
+  private final TransactionManager txManager;
   private final boolean retryAbortsInternally;
   private int transactionRetryAttempts;
   private int successfulRetries;
@@ -136,10 +139,26 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
-    this.txManager =
-        builder.returnCommitStats
-            ? dbClient.transactionManager(Options.commitStats())
-            : dbClient.transactionManager();
+    this.txManager = dbClient.transactionManager(extractOptions(builder));
+  }
+
+  private TransactionOption[] extractOptions(Builder builder) {
+    int numOptions = 0;
+    if (builder.returnCommitStats) {
+      numOptions++;
+    }
+    if (this.transactionTag != null) {
+      numOptions++;
+    }
+    TransactionOption[] options = new TransactionOption[numOptions];
+    int index = 0;
+    if (builder.returnCommitStats) {
+      options[index++] = Options.commitStats();
+    }
+    if (this.transactionTag != null) {
+      options[index++] = Options.tag(this.transactionTag);
+    }
+    return options;
   }
 
   @Override
@@ -147,6 +166,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return new StringBuilder()
         .append("ReadWriteTransaction - ID: ")
         .append(transactionId)
+        .append("; Tag: ")
+        .append(Strings.nullToEmpty(transactionTag))
         .append("; Status: ")
         .append(internalGetStateName())
         .append("; Started: ")
@@ -363,7 +384,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(final ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(
+      final ParsedStatement update, final UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
@@ -383,8 +405,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
                         long updateCount =
-                            get(txContextFuture).executeUpdate(update.getStatement());
-                        createAndAddRetriableUpdate(update, updateCount);
+                            get(txContextFuture).executeUpdate(update.getStatement(), options);
+                        createAndAddRetriableUpdate(update, updateCount, options);
                         return updateCount;
                       } catch (AbortedException e) {
                         throw e;
@@ -440,7 +462,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     final List<Statement> updateStatements = new LinkedList<>();
     for (ParsedStatement update : updates) {
@@ -466,8 +489,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 EXECUTE_BATCH_UPDATE_STATEMENT,
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
-                        long[] updateCounts = get(txContextFuture).batchUpdate(updateStatements);
-                        createAndAddRetriableBatchUpdate(updateStatements, updateCounts);
+                        long[] updateCounts =
+                            get(txContextFuture).batchUpdate(updateStatements, options);
+                        createAndAddRetriableBatchUpdate(updateStatements, updateCounts, options);
                         return updateCounts;
                       } catch (AbortedException e) {
                         throw e;
@@ -668,15 +692,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
   }
 
-  private void createAndAddRetriableUpdate(ParsedStatement update, long updateCount) {
+  private void createAndAddRetriableUpdate(
+      ParsedStatement update, long updateCount, UpdateOption... options) {
     if (retryAbortsInternally) {
-      addRetryStatement(new RetriableUpdate(this, update, updateCount));
+      addRetryStatement(new RetriableUpdate(this, update, updateCount, options));
     }
   }
 
-  private void createAndAddRetriableBatchUpdate(Iterable<Statement> updates, long[] updateCounts) {
+  private void createAndAddRetriableBatchUpdate(
+      Iterable<Statement> updates, long[] updateCounts, UpdateOption... options) {
     if (retryAbortsInternally) {
-      addRetryStatement(new RetriableBatchUpdate(this, updates, updateCounts));
+      addRetryStatement(new RetriableBatchUpdate(this, updates, updateCounts, options));
     }
   }
 

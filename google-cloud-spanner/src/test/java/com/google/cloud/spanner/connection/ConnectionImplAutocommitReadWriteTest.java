@@ -85,6 +85,10 @@ public class ConnectionImplAutocommitReadWriteTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -226,6 +230,10 @@ public class ConnectionImplAutocommitReadWriteTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // there is no transaction
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -375,6 +383,10 @@ public class ConnectionImplAutocommitReadWriteTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -515,6 +527,10 @@ public class ConnectionImplAutocommitReadWriteTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // there is no transaction
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -660,6 +676,10 @@ public class ConnectionImplAutocommitReadWriteTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -799,6 +819,10 @@ public class ConnectionImplAutocommitReadWriteTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // in temporary transaction
+      return true;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return true;
     }
 
@@ -955,6 +979,10 @@ public class ConnectionImplAutocommitReadWriteTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isSetAutocommitDmlModeAllowed() {
       return true;
@@ -1092,6 +1120,11 @@ public class ConnectionImplAutocommitReadWriteTest {
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // in temporary transaction
       return true;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      // Transaction is read-only
+      return false;
     }
 
     @Override
@@ -1233,6 +1266,10 @@ public class ConnectionImplAutocommitReadWriteTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 

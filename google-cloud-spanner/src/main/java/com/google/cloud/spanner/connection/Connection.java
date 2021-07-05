@@ -33,6 +33,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -329,6 +330,52 @@ public interface Connection extends AutoCloseable {
    *     the connection is in a transaction.
    */
   TransactionMode getTransactionMode();
+
+  /**
+   * Sets the transaction tag to use for the current transaction. This method may only be called
+   * when in a transaction and before any statements have been executed in the transaction.
+   *
+   * <p>The tag will be set as the transaction tag of all statements during the transaction, and as
+   * the transaction tag of the commit.
+   *
+   * <p>The transaction tag will automatically be cleared after the transaction has ended.
+   *
+   * @param tag The tag to use.
+   */
+  default void setTransactionTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /** @return The transaction tag of the current transaction. */
+  default String getTransactionTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sets the statement tag to use for the next statement that is executed. The tag is automatically
+   * cleared after the statement is executed. Statement tags can be used both with autocommit=true
+   * and autocommit=false, and can be used for partitioned DML.
+   *
+   * <p>Statement tags are not allowed before COMMIT and ROLLBACK statements.
+   *
+   * <p>Statement tags are allowed before START BATCH DML statements and will be included in the
+   * {@link ExecuteBatchDmlRequest} that is sent to Spanner. Statement tags are not allowed inside a
+   * batch.
+   *
+   * @param tag The statement tag to use with the next statement that will be executed on this
+   *     connection.
+   */
+  default void setStatementTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The statement tag that will be used with the next statement that is executed on this
+   *     connection.
+   */
+  default String getStatementTag() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions

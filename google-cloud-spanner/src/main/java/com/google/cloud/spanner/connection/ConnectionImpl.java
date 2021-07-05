@@ -26,7 +26,9 @@ import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -45,6 +47,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -205,6 +208,9 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
+
+  private String transactionTag;
+  private String statementTag;
 
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
@@ -512,6 +518,47 @@ class ConnectionImpl implements Connection {
     this.unitOfWorkType = UnitOfWorkType.of(transactionMode);
   }
 
+  @Override
+  public String getTransactionTag() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    return transactionTag;
+  }
+
+  @Override
+  public void setTransactionTag(String tag) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set transaction tag while in a batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "The transaction tag cannot be set after the transaction has started");
+    ConnectionPreconditions.checkState(
+        getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
+        "Transaction tag can only be set for a read/write transaction");
+
+    this.transactionBeginMarked = true;
+    this.transactionTag = tag;
+  }
+
+  @Override
+  public String getStatementTag() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
+    return statementTag;
+  }
+
+  @Override
+  public void setStatementTag(String tag) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
+
+    this.statementTag = tag;
+  }
+
   /**
    * Throws an {@link SpannerException} with code {@link ErrorCode#FAILED_PRECONDITION} if the
    * current state of this connection does not allow changing the setting for retryAbortsInternally.
@@ -643,6 +690,7 @@ class ConnectionImpl implements Connection {
               ? UnitOfWorkType.READ_ONLY_TRANSACTION
               : UnitOfWorkType.READ_WRITE_TRANSACTION;
       batchMode = BatchMode.NONE;
+      transactionTag = null;
     } else {
       popUnitOfWorkFromTransactionStack();
     }
@@ -717,6 +765,8 @@ class ConnectionImpl implements Connection {
   private ApiFuture<Void> endCurrentTransactionAsync(EndTransactionMethod endTransactionMethod) {
     ConnectionPreconditions.checkState(!isBatchActive(), "This connection has an active batch");
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        statementTag == null, "Statement tags are not supported for COMMIT or ROLLBACK");
     ApiFuture<Void> res;
     try {
       if (isTransactionStarted()) {
@@ -954,6 +1004,34 @@ class ConnectionImpl implements Connection {
     return internalExecuteBatchUpdateAsync(parsedStatements);
   }
 
+  private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
+    if (this.statementTag != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.tag(statementTag)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
+      }
+      this.statementTag = null;
+    }
+    return options;
+  }
+
+  private UpdateOption[] mergeUpdateStatementTag(UpdateOption... options) {
+    if (this.statementTag != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.tag(statementTag)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
+      }
+      this.statementTag = null;
+    }
+    return options;
+  }
+
   private ResultSet internalExecuteQuery(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
@@ -961,7 +1039,8 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return get(transaction.executeQueryAsync(statement, analyzeMode, options));
+    return get(
+        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -972,21 +1051,23 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(statement, analyzeMode, options),
+        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)),
         spanner.getAsyncExecutorProvider(),
         options);
   }
 
-  private ApiFuture<Long> internalExecuteUpdateAsync(final ParsedStatement update) {
+  private ApiFuture<Long> internalExecuteUpdateAsync(
+      final ParsedStatement update, UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeUpdateAsync(update);
+    return transaction.executeUpdateAsync(update, mergeUpdateStatementTag(options));
   }
 
-  private ApiFuture<long[]> internalExecuteBatchUpdateAsync(List<ParsedStatement> updates) {
+  private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
+      List<ParsedStatement> updates, UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeBatchUpdateAsync(updates);
+    return transaction.executeBatchUpdateAsync(updates, mergeUpdateStatementTag(options));
   }
 
   /**
@@ -1001,7 +1082,8 @@ class ConnectionImpl implements Connection {
     return this.currentUnitOfWork;
   }
 
-  private UnitOfWork createNewUnitOfWork() {
+  @VisibleForTesting
+  UnitOfWork createNewUnitOfWork() {
     if (isAutocommit() && !isInTransaction() && !isInBatch()) {
       return SingleUseTransaction.newBuilder()
           .setDdlClient(ddlClient)
@@ -1021,6 +1103,7 @@ class ConnectionImpl implements Connection {
               .setReadOnlyStaleness(readOnlyStaleness)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setTransactionTag(transactionTag)
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
@@ -1030,6 +1113,7 @@ class ConnectionImpl implements Connection {
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setTransactionTag(transactionTag)
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -1039,6 +1123,7 @@ class ConnectionImpl implements Connection {
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setStatementTag(statementTag)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()

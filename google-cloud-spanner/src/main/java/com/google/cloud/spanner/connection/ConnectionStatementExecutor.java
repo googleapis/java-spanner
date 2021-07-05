@@ -74,6 +74,14 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetStatementTag(String tag);
+
+  StatementResult statementShowStatementTag();
+
+  StatementResult statementSetTransactionTag(String tag);
+
+  StatementResult statementShowTransactionTag();
+
   StatementResult statementBeginTransaction();
 
   StatementResult statementCommit();
